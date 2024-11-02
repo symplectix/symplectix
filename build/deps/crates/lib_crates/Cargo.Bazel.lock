@@ -1,5 +1,5 @@
 {
-  "checksum": "3375dc3cb00e9f763e5a829c3ea7ebb1b965cbd90959b9641df48e00d731ceba",
+  "checksum": "2049d7b9ba09430d197d1b485cc5bf6cec639e57d8970b3cfa91443cfd5f4de7",
   "crates": {
     "abscissa_core 0.6.0": {
       "name": "abscissa_core",
@@ -1605,7 +1605,7 @@
         "deps": {
           "common": [
             {
-              "id": "cc 1.0.81",
+              "id": "cc 1.0.83",
               "target": "cc"
             }
           ],
@@ -2251,13 +2251,13 @@
       },
       "license": "Apache-2.0 OR MIT"
     },
-    "cc 1.0.81": {
+    "cc 1.0.83": {
       "name": "cc",
-      "version": "1.0.81",
+      "version": "1.0.83",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/cc/1.0.81/download",
-          "sha256": "6c6b2562119bf28c3439f7f02db99faf0aa1a8cdfe5772a2ee155d32227239f0"
+          "url": "https://crates.io/api/v1/crates/cc/1.0.83/download",
+          "sha256": "f1174fb0b6ec23863f8b971027804a42614e347eafb0a95bf0b12cdae21fc4d0"
         }
       },
       "targets": [
@@ -2300,7 +2300,7 @@
           }
         },
         "edition": "2018",
-        "version": "1.0.81"
+        "version": "1.0.83"
       },
       "license": "MIT OR Apache-2.0"
     },
@@ -3665,6 +3665,14 @@
             {
               "id": "tracing-subscriber 0.3.17",
               "target": "tracing_subscriber"
+            },
+            {
+              "id": "tree-sitter 0.20.10",
+              "target": "tree_sitter"
+            },
+            {
+              "id": "tree-sitter-rust 0.20.4",
+              "target": "tree_sitter_rust"
             }
           ],
           "selects": {}
@@ -4001,7 +4009,7 @@
         "deps": {
           "common": [
             {
-              "id": "cc 1.0.81",
+              "id": "cc 1.0.83",
               "target": "cc"
             }
           ],
@@ -10210,7 +10218,7 @@
         "deps": {
           "common": [
             {
-              "id": "cc 1.0.81",
+              "id": "cc 1.0.83",
               "target": "cc"
             }
           ],
@@ -11645,7 +11653,7 @@
         "deps": {
           "common": [
             {
-              "id": "cc 1.0.81",
+              "id": "cc 1.0.83",
               "target": "cc"
             },
             {
@@ -14326,7 +14334,7 @@
         "deps": {
           "common": [
             {
-              "id": "cc 1.0.81",
+              "id": "cc 1.0.83",
               "target": "cc"
             }
           ],
@@ -18534,6 +18542,138 @@
         },
         "edition": "2018",
         "version": "0.3.17"
+      },
+      "license": "MIT"
+    },
+    "tree-sitter 0.20.10": {
+      "name": "tree-sitter",
+      "version": "0.20.10",
+      "repository": {
+        "Http": {
+          "url": "https://crates.io/api/v1/crates/tree-sitter/0.20.10/download",
+          "sha256": "e747b1f9b7b931ed39a548c1fae149101497de3c1fc8d9e18c62c1a66c683d3d"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "tree_sitter",
+            "crate_root": "binding_rust/lib.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "binding_rust/build.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        }
+      ],
+      "library_target_name": "tree_sitter",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "regex 1.9.1",
+              "target": "regex"
+            },
+            {
+              "id": "tree-sitter 0.20.10",
+              "target": "build_script_build"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2021",
+        "version": "0.20.10"
+      },
+      "build_script_attrs": {
+        "data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "cc 1.0.83",
+              "target": "cc"
+            }
+          ],
+          "selects": {}
+        }
+      },
+      "license": "MIT"
+    },
+    "tree-sitter-rust 0.20.4": {
+      "name": "tree-sitter-rust",
+      "version": "0.20.4",
+      "repository": {
+        "Http": {
+          "url": "https://crates.io/api/v1/crates/tree-sitter-rust/0.20.4/download",
+          "sha256": "b0832309b0b2b6d33760ce5c0e818cb47e1d72b468516bfe4134408926fa7594"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "tree_sitter_rust",
+            "crate_root": "bindings/rust/lib.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "bindings/rust/build.rs",
+            "srcs": [
+              "**/*.rs"
+            ]
+          }
+        }
+      ],
+      "library_target_name": "tree_sitter_rust",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "tree-sitter 0.20.10",
+              "target": "tree_sitter"
+            },
+            {
+              "id": "tree-sitter-rust 0.20.4",
+              "target": "build_script_build"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2021",
+        "version": "0.20.4"
+      },
+      "build_script_attrs": {
+        "data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "cc 1.0.83",
+              "target": "cc"
+            }
+          ],
+          "selects": {}
+        }
       },
       "license": "MIT"
     },

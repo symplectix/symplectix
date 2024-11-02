@@ -45,9 +45,22 @@ _lib_crates_packages = {
         version = "1.1.0",
         features = ["libc"],
     ),
+
+    # A framework for serializing and deserializing Rust data structures.
     "serde": crate.spec(
         version = "1.0.188",
         features = ["derive"],
+    ),
+
+    # A Rust tree-sitter binding.
+    # Tree-sitter is a parser generator tool and an incremental parsing library.
+    #
+    # https://tree-sitter.github.io/tree-sitter/
+    "tree-sitter": crate.spec(
+        version = "0.20",
+    ),
+    "tree-sitter-rust": crate.spec(
+        version = "0.20",
     ),
 
     # Proroc plugins for prost/tonic
