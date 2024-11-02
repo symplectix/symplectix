@@ -6,4 +6,4 @@ def build_dependencies_setup():
     bin_crates_repositories()
     crates_repositories()
 
-    native.register_toolchains("//build/toolchains:prost_toolchain")
+    native.register_toolchains("//toolchains:prost_toolchain")

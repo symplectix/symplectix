@@ -10,8 +10,17 @@ load("@rules_rust//proto/prost:repositories.bzl", "rust_prost_dependencies")
 load("@rules_rust//proto/prost:transitive_repositories.bzl", "rust_prost_transitive_repositories")
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
 load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
-load("//build/deps:versions.bzl", "GO_VERSION", "RUST_EDITION", "RUST_VERSIONS")
-load("//build/deps/crates:defs.bzl", "bin_crates", "crates")
+load("//3rdparty/crates:defs.bzl", "bin_crates", "crates")
+
+_RUST_EDITION = "2021"
+
+_RUST_VERSIONS = [
+    "1.72.1",
+    # https://github.com/oxalica/rust-overlay/tree/master/manifests/nightly
+    "nightly/2023-09-28",
+]
+
+_GO_VERSION = "1.20.5"
 
 def build_dependencies():
     bazel_skylib_workspace()
@@ -29,8 +38,8 @@ def build_dependencies():
     rules_rust_dependencies()
 
     rust_register_toolchains(
-        edition = RUST_EDITION,
-        versions = RUST_VERSIONS,
+        edition = _RUST_EDITION,
+        versions = _RUST_VERSIONS,
     )
 
     # Load the dependencies for the rust-project.json generator tool.
@@ -68,5 +77,5 @@ def build_dependencies():
     bin_crates.repository()
 
     go_rules_dependencies()
-    go_register_toolchains(version = GO_VERSION)
+    go_register_toolchains(version = _GO_VERSION)
     gazelle_dependencies()

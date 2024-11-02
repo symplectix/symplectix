@@ -1,11 +1,5 @@
 load("@aspect_bazel_lib//lib:jq.bzl", "jq")
 
-exports_files([
-    ".clippy.toml",
-    ".rustfmt.toml",
-    "WORKSPACE",
-])
-
 jq(
     name = "status",
     srcs = [],

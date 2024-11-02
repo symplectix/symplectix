@@ -43,7 +43,7 @@ http_archive(
 
 http_archive(
     name = "zlib",
-    build_file = "//build/deps/zlib:BUILD.zlib.bazel",
+    build_file = "//3rdparty/zlib:BUILD.zlib.bazel",
     sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
     strip_prefix = "zlib-1.2.13",
     urls = [
@@ -54,7 +54,7 @@ http_archive(
 
 http_archive(
     name = "openssl",
-    build_file = "//build/deps/openssl:BUILD.openssl.bazel",
+    build_file = "//3rdparty/openssl:BUILD.openssl.bazel",
     sha256 = "cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8",
     strip_prefix = "openssl-1.1.1w",
     urls = [
@@ -66,7 +66,7 @@ http_archive(
 
 http_archive(
     name = "nasm",
-    build_file = "//build/deps/openssl:BUILD.nasm.bazel",
+    build_file = "//3rdparty/openssl:BUILD.nasm.bazel",
     sha256 = "f5c93c146f52b4f1664fa3ce6579f961a910e869ab0dae431bd871bdd2584ef2",
     strip_prefix = "nasm-2.15.05",
     urls = [
@@ -143,11 +143,11 @@ rules_proto_grpc_toolchains()
 
 rules_proto_grpc_repos()
 
-load("//build/deps:repositories.bzl", "build_dependencies")
+load("//3rdparty:repositories.bzl", "build_dependencies")
 
 build_dependencies()
 
-load("//build/deps:setup.bzl", "build_dependencies_setup")
+load("//3rdparty:setup.bzl", "build_dependencies_setup")
 
 build_dependencies_setup()
 

@@ -1,4 +1,0 @@
-sh_binary(
-    name = "workspace_status",
-    srcs = ["workspace_status.sh"],
-)

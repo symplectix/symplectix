@@ -15,7 +15,7 @@ build:verbose --verbose_failures
 test:verbose --test_output=errors
 
 # https://bazel.build/docs/user-manual#workspace_status
-common:stamp --stamp --workspace_status_command=build/stamp/workspace_status.sh
+common:stamp --stamp --workspace_status_command=stamp/workspace_status.sh
 
 # Bazel picks up host-OS-specific config lines from bazelrc files.
 # https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
@@ -71,9 +71,9 @@ build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
 #
 # * Some tools like sanitizers depend on nightly.
 #   https://github.com/bazelbuild/rules_rust/blob/main/rust/toolchain/channel/BUILD.bazel
-build:stable --platforms=//build/platform:stable
+build:stable --platforms=//platforms:stable
 build:stable --@rules_rust//rust/toolchain/channel=stable
-build:nightly --platforms=//build/platform:nightly
+build:nightly --platforms=//platforms:nightly
 build:nightly --@rules_rust//rust/toolchain/channel=nightly
 
 # compilation_mode to rustc codegen options

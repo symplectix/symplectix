@@ -265,8 +265,8 @@ def _crates_repository(**kwargs):
     crates_repository(
         name = "crates",
         annotations = _crates_annotations,
-        cargo_lockfile = "//build/deps/crates:Cargo.lock",
-        lockfile = "//build/deps/crates:Cargo.Bazel.lock",
+        cargo_lockfile = "//3rdparty/crates:Cargo.lock",
+        lockfile = "//3rdparty/crates:Cargo.Bazel.lock",
         packages = _crates_packages,
         **kwargs
     )
@@ -278,7 +278,7 @@ crates = struct(
 def _bin_crates_repository(**kwargs):
     http_archive(
         name = "geckodriver",
-        build_file = "//build/deps/crates/bin_crates:BUILD.geckodriver.bazel",
+        build_file = "//3rdparty/crates/bin_crates:BUILD.geckodriver.bazel",
         sha256 = "6847d9046206c0f0189857d356991b9b225554045241cb0d33b43c1c83d732b7",
         strip_prefix = "geckodriver-0.33.0",
         type = "tar.gz",
@@ -287,8 +287,8 @@ def _bin_crates_repository(**kwargs):
 
     crates_repository(
         name = "bin_crates",
-        cargo_lockfile = "//build/deps/crates/bin_crates:Cargo.lock",
-        lockfile = "//build/deps/crates/bin_crates:Cargo.Bazel.lock",
+        cargo_lockfile = "//3rdparty/crates/bin_crates:Cargo.lock",
+        lockfile = "//3rdparty/crates/bin_crates:Cargo.Bazel.lock",
         manifests = [
             "@geckodriver//:Cargo.toml",
         ],
