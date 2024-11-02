@@ -1,3 +1,4 @@
+use std::env;
 use std::io;
 use std::os::unix::process::{CommandExt, ExitStatusExt};
 use std::path::PathBuf;
@@ -18,13 +19,8 @@ mod tests;
 
 use Error::*;
 
-pub fn parse_args() -> Options {
-    Options::parse()
-}
-
-/// ProcessWrapper executes a subprocess.
 #[derive(Debug, Clone, Parser)]
-pub struct Options {
+pub struct Entrypoint {
     /// List of paths to wait for before spawning the child process.
     #[arg(long = "wait-file", value_name = "PATH")]
     wait_files: Vec<PathBuf>,
@@ -41,7 +37,12 @@ pub struct Options {
     #[arg(long, value_name = "PATH")]
     stderr: Option<PathBuf>,
 
+    /// Environment variables visible to the spawned process.
+    #[arg(long = "env", value_name = "KEY")]
+    envs: Vec<String>,
+
     /// Kill the spawned child process after the specified duration.
+    ///
     /// The timeout clock does not tick until the child spawns.
     /// So the operations before spawning, for example waiting for `wait-file`s, never times out.
     #[arg(long, value_name = "DURATION")]
@@ -81,70 +82,72 @@ pub enum Error {
     ExitedUnsuccessfully(i32),
 }
 
-#[tracing::instrument(
-    skip(opts),
-    fields(
-        command = %opts.command,
-    )
-)]
-pub async fn run(opts: &Options) -> Result {
-    // #[cfg(target_os = "linux")]
-    // unsafe {
-    //     libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
-    // }
+impl Entrypoint {
+    #[tracing::instrument(
+        skip(self),
+        fields(
+            command = %self.command,
+        )
+    )]
+    pub async fn run(&self) -> Result {
+        // #[cfg(target_os = "linux")]
+        // unsafe {
+        //     libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
+        // }
 
-    wait(opts).await?;
+        wait(self).await?;
 
-    let timer = timer(opts);
+        let timer = timer(self);
 
-    let mut interrupt = signal(SignalKind::interrupt()).map_err(Error::Io)?;
-    let mut terminate = signal(SignalKind::terminate()).map_err(Error::Io)?;
+        let mut interrupt = signal(SignalKind::interrupt()).map_err(Error::Io)?;
+        let mut terminate = signal(SignalKind::terminate()).map_err(Error::Io)?;
 
-    let mut child = spawn(opts).await?;
-    let id = child.id().expect("fetching the OS-assigned process id") as libc::c_int;
+        let mut child = spawn(self).await?;
+        let id = child.id().expect("fetching the OS-assigned process id") as libc::c_int;
 
-    tokio::select! {
-        biased;
-        _ = future::select(
-            interrupt.recv().boxed_local(),
-            terminate.recv().boxed_local(),
-        ) => {
-            tracing::trace!(id, branch = "signaled");
+        tokio::select! {
+            biased;
+            _ = future::select(
+                interrupt.recv().boxed_local(),
+                terminate.recv().boxed_local(),
+            ) => {
+                tracing::trace!(id, branch = "signaled");
+            }
+            _ = timer => {
+                tracing::trace!(id, branch = "timedout");
+            }
+            wait_result = child.wait() => match wait_result {
+                Ok(exit_status) => tracing::trace!(id, branch = "wait_exited", ?exit_status),
+                Err(io_err) => tracing::warn!(id, branch = "wait_failed", %io_err),
+            }
         }
-        _ = timer => {
-            tracing::trace!(id, branch = "timedout");
-        }
-        wait_result = child.wait() => match wait_result {
-            Ok(exit_status) => tracing::trace!(id, branch = "wait_exited", ?exit_status),
-            Err(io_err) => tracing::warn!(id, branch = "wait_failed", %io_err),
-        }
-    }
 
-    killpg(id).await;
+        killpg(id).await;
 
-    // TODO: Wait all descendant processes, if any.
-    // Currently, the direct child is the only process to be waited before exiting.
-    let result = match child.try_wait() {
-        // It is possible for the child process to complete and exceed the timeout
-        // without returning an error.
-        Ok(Some(status)) => into_process_result(status),
+        // TODO: Wait all descendant processes, if any.
+        // Currently, the direct child is the only process to be waited before exiting.
+        let result = match child.try_wait() {
+            // It is possible for the child process to complete and exceed the timeout
+            // without returning an error.
+            Ok(Some(status)) => into_process_result(status),
 
-        // The exit status is not available at this time.
-        // The child process(es) may still be running.
-        Ok(None) => match child.wait().await {
-            Ok(status) => into_process_result(status),
+            // The exit status is not available at this time.
+            // The child process(es) may still be running.
+            Ok(None) => match child.wait().await {
+                Ok(status) => into_process_result(status),
+                Err(err) => Err(WaitFailed(err)),
+            },
+
+            // Some error happens on collecting the child status.
             Err(err) => Err(WaitFailed(err)),
-        },
+        };
 
-        // Some error happens on collecting the child status.
-        Err(err) => Err(WaitFailed(err)),
-    };
-
-    post(opts, result).await
+        post(self, result).await
+    }
 }
 
 #[tracing::instrument(skip(opts))]
-async fn wait(opts: &Options) -> Result {
+async fn wait(opts: &Entrypoint) -> Result {
     let wait_files = opts.wait_files.iter().map(|ok_file| async move {
         let err_file = ok_file.with_extension("err");
 
@@ -167,7 +170,7 @@ async fn wait(opts: &Options) -> Result {
 }
 
 #[tracing::instrument(skip(opts, result))]
-async fn post(opts: &Options, result: Result) -> Result {
+async fn post(opts: &Entrypoint, result: Result) -> Result {
     let Some(path) = opts.post_file.as_ref() else {
         return Ok(());
     };
@@ -186,7 +189,7 @@ async fn post(opts: &Options, result: Result) -> Result {
     result
 }
 
-async fn spawn(opts: &Options) -> Result<Child> {
+async fn spawn(opts: &Entrypoint) -> Result<Child> {
     let mut cmd = StdCommand::new(opts.command.as_str());
 
     cmd.args(&opts.command_args);
@@ -203,7 +206,7 @@ async fn spawn(opts: &Options) -> Result<Child> {
         Stdio::inherit()
     });
 
-    cmd.env_clear();
+    cmd.env_clear().envs(env::vars().filter(|(key, _)| opts.envs.contains(key)));
 
     // Put the child into a new process group.
     cmd.process_group(0);
@@ -211,7 +214,7 @@ async fn spawn(opts: &Options) -> Result<Child> {
     Command::from(cmd).spawn().map_err(NotSpawned)
 }
 
-fn timer(opts: &Options) -> future::Either<future::Pending<()>, time::Sleep> {
+fn timer(opts: &Entrypoint) -> future::Either<future::Pending<()>, time::Sleep> {
     match opts.timeout.as_ref() {
         None => future::pending().left_future(),
         Some(&dur) => time::sleep(dur.into()).right_future(),

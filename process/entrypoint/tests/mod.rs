@@ -3,14 +3,15 @@ use std::path::{Path, PathBuf};
 use testing::TempDirExt;
 use tokio::task;
 
-use crate::Options;
+use crate::Entrypoint;
 
-fn sleep<S: Into<String>>(duration: S) -> Options {
-    Options {
+fn sleep<S: Into<String>>(duration: S) -> Entrypoint {
+    Entrypoint {
         wait_files: vec![],
         post_file: None,
         stdout: None,
         stderr: None,
+        envs: vec![],
         timeout: None,
         command: "sleep".into(),
         command_args: vec![duration.into()],

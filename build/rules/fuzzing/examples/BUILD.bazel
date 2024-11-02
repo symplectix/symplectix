@@ -1,0 +1,49 @@
+load("//build/rules/fuzzing:defs.bzl", "rust_fuzz_binary")
+
+package(default_visibility = ["//:__subpackages__"])
+
+rust_fuzz_binary(
+    name = "buffer_overflow",
+    srcs = ["buffer_overflow.rs"],
+    sanitizer = "address",
+    deps = [
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
+    ],
+)
+
+rust_fuzz_binary(
+    name = "use_after_scope",
+    srcs = ["use_after_scope.rs"],
+    sanitizer = "address",
+    deps = [
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
+    ],
+)
+
+rust_fuzz_binary(
+    name = "memory_leaks",
+    srcs = ["memory_leaks.rs"],
+    envs = {
+        "ASAN_OPTIONS": ":".join([
+            "detect_leaks=1",
+            "detect_stack_use_after_return=1",
+        ]),
+    },
+    sanitizer = "address",
+    deps = [
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
+    ],
+)
+
+rust_fuzz_binary(
+    name = "data_race",
+    srcs = ["data_race.rs"],
+    sanitizer = "thread",
+    deps = [
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
+    ],
+)

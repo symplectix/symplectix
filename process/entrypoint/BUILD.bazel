@@ -1,10 +1,13 @@
-load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
-rust_binary(
+rust_library(
     name = "entrypoint",
-    srcs = ["main.rs"],
+    srcs = glob([
+        "*.rs",
+        "tests/*.rs",
+    ]),
     # will not work as expected on windows
     target_compatible_with = select({
         "@platforms//os:linux": [],
@@ -12,10 +15,33 @@ rust_binary(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     deps = [
-        "//process/process_wrapper",
         "@crates//:anyhow",
+        "@crates//:clap",
+        "@crates//:futures",
+        "@crates//:humantime",
+        "@crates//:libc",
+        "@crates//:thiserror",
         "@crates//:tokio",
         "@crates//:tracing",
-        "@crates//:tracing-subscriber",
     ],
+)
+
+rust_test(
+    name = "entrypoint_test",
+    size = "small",
+    crate = ":entrypoint",
+    deps = [
+        "//testing",
+    ],
+)
+
+rust_doc_test(
+    name = "entrypoint_doc_test",
+    size = "small",
+    crate = ":entrypoint",
+)
+
+rust_doc(
+    name = "entrypoint_doc",
+    crate = ":entrypoint",
 )
