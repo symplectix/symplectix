@@ -240,11 +240,17 @@ _crates = {
     # For auditing Rust packages.
     "cargo-audit": struct(
         spec = crate.spec(
-            version = "0.18.2",
+            version = "0.20.0",
         ),
         annotations = [crate.annotation(
             gen_binaries = ["cargo-audit"],
         )],
+    ),
+    # https://rustsec.org/advisories/RUSTSEC-2024-0332
+    "h2": struct(
+        spec = crate.spec(
+            version = "0.3.26",
+        ),
     ),
 }
 

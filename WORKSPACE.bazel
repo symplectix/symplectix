@@ -131,15 +131,3 @@ crates.repository(
 load("@crates//:defs.bzl", crates_repositories = "crate_repositories")
 
 crates_repositories()
-
-load("//x/bin_crates:defs.bzl", "bin_crates")
-
-# The bin_crates repository is for cargo packages that contain binaries but no library.
-# https://bazelbuild.github.io/rules_rust/crate_universe.html#binary-dependencies
-#
-# CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=bin_crates bazel sync --only=bin_crates
-bin_crates.repository()
-
-load("@bin_crates//:defs.bzl", bin_crates_repositories = "crate_repositories")
-
-bin_crates_repositories()

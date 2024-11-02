@@ -1,14 +1,14 @@
 {
-  "checksum": "6079151c4cc4fed6f3c3331a77e41bbe6e044856d15bfcd36589fc6aa4af3540",
+  "checksum": "d42613f34b4182f5a98a20f499baadb21d4682725364631b84e52a797b30946a",
   "crates": {
-    "abscissa_core 0.6.0": {
+    "abscissa_core 0.7.0": {
       "name": "abscissa_core",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "package_url": "https://github.com/iqlusioninc/abscissa/tree/main/core/",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/abscissa_core/0.6.0/download",
-          "sha256": "6750843603bf31a83accd3c8177f9dbf53a7d64275688fc7371e0a4d9f8628b5"
+          "url": "https://static.crates.io/crates/abscissa_core/0.7.0/download",
+          "sha256": "8346a52bf3fb445d5949d144c37360ad2f1d7950cfcc6d4e9e4999b1cd1bd42a"
         }
       },
       "targets": [
@@ -71,7 +71,7 @@
               "target": "canonical_path"
             },
             {
-              "id": "clap 3.2.25",
+              "id": "clap 4.3.19",
               "target": "clap"
             },
             {
@@ -79,7 +79,7 @@
               "target": "color_eyre"
             },
             {
-              "id": "fs-err 2.9.0",
+              "id": "fs-err 2.11.0",
               "target": "fs_err"
             },
             {
@@ -133,13 +133,13 @@
         "proc_macro_deps": {
           "common": [
             {
-              "id": "abscissa_derive 0.6.0",
+              "id": "abscissa_derive 0.7.0",
               "target": "abscissa_derive"
             }
           ],
           "selects": {}
         },
-        "version": "0.6.0"
+        "version": "0.7.0"
       },
       "license": "Apache-2.0",
       "license_ids": [
@@ -147,14 +147,14 @@
       ],
       "license_file": null
     },
-    "abscissa_derive 0.6.0": {
+    "abscissa_derive 0.7.0": {
       "name": "abscissa_derive",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "package_url": "https://github.com/iqlusioninc/abscissa/tree/main/abscissa_derive",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/abscissa_derive/0.6.0/download",
-          "sha256": "1a3473aa652e90865a06b723102aaa4a54a7d9f2092dbf4582497a61d0537d3f"
+          "url": "https://static.crates.io/crates/abscissa_derive/0.7.0/download",
+          "sha256": "55bfb86e57d13c06e482c570826ddcddcc8f07fab916760e8911141d4fda8b62"
         }
       },
       "targets": [
@@ -202,7 +202,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.6.0"
+        "version": "0.7.0"
       },
       "license": "Apache-2.0",
       "license_ids": [
@@ -459,7 +459,7 @@
               "target": "colorchoice"
             },
             {
-              "id": "is-terminal 0.4.9",
+              "id": "is-terminal 0.4.12",
               "target": "is_terminal"
             },
             {
@@ -850,6 +850,45 @@
         ],
         "edition": "2018",
         "version": "1.6.0"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "license_file": "LICENSE-APACHE"
+    },
+    "arrayvec 0.7.4": {
+      "name": "arrayvec",
+      "version": "0.7.4",
+      "package_url": "https://github.com/bluss/arrayvec",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/arrayvec/0.7.4/download",
+          "sha256": "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "arrayvec",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "arrayvec",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "edition": "2018",
+        "version": "0.7.4"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -1550,7 +1589,7 @@
               "target": "mime"
             },
             {
-              "id": "percent-encoding 2.3.0",
+              "id": "percent-encoding 2.3.1",
               "target": "percent_encoding"
             },
             {
@@ -1957,14 +1996,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "bitflags 2.3.3": {
+    "bitflags 2.5.0": {
       "name": "bitflags",
-      "version": "2.3.3",
+      "version": "2.5.0",
       "package_url": "https://github.com/bitflags/bitflags",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/bitflags/2.3.3/download",
-          "sha256": "630be753d4e58660abd17930c71b647fe46c27ea6b63cc59e1e3851406972e42"
+          "url": "https://static.crates.io/crates/bitflags/2.5.0/download",
+          "sha256": "cf4b9d6a944f767f8e5e0db018570623c85f3d925ac718db4e06d0187adb21c1"
         }
       },
       "targets": [
@@ -2052,6 +2091,9 @@
             "thumbv8m.main-none-eabi": [
               "std"
             ],
+            "wasm32-unknown-unknown": [
+              "std"
+            ],
             "wasm32-wasi": [
               "std"
             ],
@@ -2082,7 +2124,7 @@
           }
         },
         "edition": "2021",
-        "version": "2.3.3"
+        "version": "2.5.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -2399,14 +2441,14 @@
       ],
       "license_file": null
     },
-    "cargo-audit 0.18.2": {
+    "cargo-audit 0.20.0": {
       "name": "cargo-audit",
-      "version": "0.18.2",
+      "version": "0.20.0",
       "package_url": "https://github.com/RustSec/rustsec/tree/main/cargo-audit",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/cargo-audit/0.18.2/download",
-          "sha256": "596642f33fd57a8014990a19a449473184938642d8011b6e27a5ad50195c5e09"
+          "url": "https://static.crates.io/crates/cargo-audit/0.20.0/download",
+          "sha256": "8c5d412d2749c2c2e01944e4c004433ed132a9a4aa663b74901f230af82ab1ff"
         }
       },
       "targets": [
@@ -2450,7 +2492,7 @@
         "deps": {
           "common": [
             {
-              "id": "abscissa_core 0.6.0",
+              "id": "abscissa_core 0.7.0",
               "target": "abscissa_core"
             },
             {
@@ -2470,12 +2512,20 @@
               "target": "cargo_lock"
             },
             {
-              "id": "clap 3.2.25",
+              "id": "clap 4.3.19",
               "target": "clap"
+            },
+            {
+              "id": "display-error-chain 0.2.0",
+              "target": "display_error_chain"
             },
             {
               "id": "home 0.5.5",
               "target": "home"
+            },
+            {
+              "id": "is-terminal 0.4.12",
+              "target": "is_terminal"
             },
             {
               "id": "once_cell 1.18.0",
@@ -2486,7 +2536,7 @@
               "target": "quitters"
             },
             {
-              "id": "rustsec 0.28.2",
+              "id": "rustsec 0.29.0",
               "target": "rustsec"
             },
             {
@@ -2505,7 +2555,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.18.2"
+        "version": "0.20.0"
       },
       "license": "Apache-2.0 OR MIT",
       "license_ids": [
@@ -2569,7 +2619,7 @@
               "target": "toml"
             },
             {
-              "id": "url 2.4.0",
+              "id": "url 2.5.0",
               "target": "url"
             }
           ],
@@ -2850,106 +2900,6 @@
       ],
       "license_file": "LICENSE-MIT"
     },
-    "clap 3.2.25": {
-      "name": "clap",
-      "version": "3.2.25",
-      "package_url": "https://github.com/clap-rs/clap",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/clap/3.2.25/download",
-          "sha256": "4ea181bf566f71cb9a5d17a59e1871af638180a18fb0035c92ae62b705207123"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "clap",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "clap",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "crate_features": {
-          "common": [
-            "atty",
-            "clap_derive",
-            "color",
-            "default",
-            "derive",
-            "once_cell",
-            "std",
-            "strsim",
-            "suggestions",
-            "termcolor"
-          ],
-          "selects": {}
-        },
-        "deps": {
-          "common": [
-            {
-              "id": "atty 0.2.14",
-              "target": "atty"
-            },
-            {
-              "id": "bitflags 1.3.2",
-              "target": "bitflags"
-            },
-            {
-              "id": "clap_lex 0.2.4",
-              "target": "clap_lex"
-            },
-            {
-              "id": "indexmap 1.9.3",
-              "target": "indexmap"
-            },
-            {
-              "id": "once_cell 1.18.0",
-              "target": "once_cell"
-            },
-            {
-              "id": "strsim 0.10.0",
-              "target": "strsim"
-            },
-            {
-              "id": "termcolor 1.2.0",
-              "target": "termcolor"
-            },
-            {
-              "id": "textwrap 0.16.0",
-              "target": "textwrap"
-            }
-          ],
-          "selects": {}
-        },
-        "edition": "2021",
-        "proc_macro_deps": {
-          "common": [
-            {
-              "id": "clap_derive 3.2.25",
-              "target": "clap_derive"
-            }
-          ],
-          "selects": {}
-        },
-        "version": "3.2.25"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
-      "license_file": "LICENSE-APACHE"
-    },
     "clap 4.3.19": {
       "name": "clap",
       "version": "4.3.19",
@@ -3095,76 +3045,6 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "clap_derive 3.2.25": {
-      "name": "clap_derive",
-      "version": "3.2.25",
-      "package_url": "https://github.com/clap-rs/clap/tree/master/clap_derive",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/clap_derive/3.2.25/download",
-          "sha256": "ae6371b8bdc8b7d3959e9cf7b22d4435ef3e79e138688421ec654acf8c81b008"
-        }
-      },
-      "targets": [
-        {
-          "ProcMacro": {
-            "crate_name": "clap_derive",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "clap_derive",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "crate_features": {
-          "common": [
-            "default"
-          ],
-          "selects": {}
-        },
-        "deps": {
-          "common": [
-            {
-              "id": "heck 0.4.1",
-              "target": "heck"
-            },
-            {
-              "id": "proc-macro-error 1.0.4",
-              "target": "proc_macro_error"
-            },
-            {
-              "id": "proc-macro2 1.0.66",
-              "target": "proc_macro2"
-            },
-            {
-              "id": "quote 1.0.32",
-              "target": "quote"
-            },
-            {
-              "id": "syn 1.0.109",
-              "target": "syn"
-            }
-          ],
-          "selects": {}
-        },
-        "edition": "2021",
-        "version": "3.2.25"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
-      "license_file": "LICENSE-APACHE"
-    },
     "clap_derive 4.3.12": {
       "name": "clap_derive",
       "version": "4.3.12",
@@ -3223,54 +3103,6 @@
         },
         "edition": "2021",
         "version": "4.3.12"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
-      "license_file": "LICENSE-APACHE"
-    },
-    "clap_lex 0.2.4": {
-      "name": "clap_lex",
-      "version": "0.2.4",
-      "package_url": "https://github.com/clap-rs/clap/tree/master/clap_lex",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/clap_lex/0.2.4/download",
-          "sha256": "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "clap_lex",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "clap_lex",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "os_str_bytes 6.5.1",
-              "target": "os_str_bytes"
-            }
-          ],
-          "selects": {}
-        },
-        "edition": "2021",
-        "version": "0.2.4"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -3686,14 +3518,90 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "crossbeam-channel 0.5.8": {
-      "name": "crossbeam-channel",
-      "version": "0.5.8",
+    "crossbeam 0.8.4": {
+      "name": "crossbeam",
+      "version": "0.8.4",
       "package_url": "https://github.com/crossbeam-rs/crossbeam",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/crossbeam-channel/0.5.8/download",
-          "sha256": "a33c2bf77f2df06183c3aa30d1e96c0695a313d4f9c453cc3762a6db39f99200"
+          "url": "https://static.crates.io/crates/crossbeam/0.8.4/download",
+          "sha256": "1137cd7e7fc0fb5d3c5a8678be38ec56e819125d8d7907411fe24ccb943faca8"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "crossbeam",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "crossbeam",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "crate_features": {
+          "common": [
+            "alloc",
+            "crossbeam-channel",
+            "crossbeam-deque",
+            "crossbeam-epoch",
+            "crossbeam-queue",
+            "default",
+            "std"
+          ],
+          "selects": {}
+        },
+        "deps": {
+          "common": [
+            {
+              "id": "crossbeam-channel 0.5.12",
+              "target": "crossbeam_channel"
+            },
+            {
+              "id": "crossbeam-deque 0.8.5",
+              "target": "crossbeam_deque"
+            },
+            {
+              "id": "crossbeam-epoch 0.9.18",
+              "target": "crossbeam_epoch"
+            },
+            {
+              "id": "crossbeam-queue 0.3.11",
+              "target": "crossbeam_queue"
+            },
+            {
+              "id": "crossbeam-utils 0.8.19",
+              "target": "crossbeam_utils"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2021",
+        "version": "0.8.4"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "license_file": "LICENSE-APACHE"
+    },
+    "crossbeam-channel 0.5.12": {
+      "name": "crossbeam-channel",
+      "version": "0.5.12",
+      "package_url": "https://github.com/crossbeam-rs/crossbeam",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/crossbeam-channel/0.5.12/download",
+          "sha256": "ab3db02a9c5b5121e1e42fbdb1aeb65f5e02624cc58c43f2884c6ccac0b82f95"
         }
       },
       "targets": [
@@ -3717,7 +3625,6 @@
         ],
         "crate_features": {
           "common": [
-            "crossbeam-utils",
             "default",
             "std"
           ],
@@ -3726,18 +3633,14 @@
         "deps": {
           "common": [
             {
-              "id": "cfg-if 1.0.0",
-              "target": "cfg_if"
-            },
-            {
-              "id": "crossbeam-utils 0.8.16",
+              "id": "crossbeam-utils 0.8.19",
               "target": "crossbeam_utils"
             }
           ],
           "selects": {}
         },
-        "edition": "2018",
-        "version": "0.5.8"
+        "edition": "2021",
+        "version": "0.5.12"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -3746,14 +3649,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "crossbeam-deque 0.8.3": {
+    "crossbeam-deque 0.8.5": {
       "name": "crossbeam-deque",
-      "version": "0.8.3",
+      "version": "0.8.5",
       "package_url": "https://github.com/crossbeam-rs/crossbeam",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/crossbeam-deque/0.8.3/download",
-          "sha256": "ce6fd6f855243022dcecf8702fef0c297d4338e226845fe067f6341ad9fa0cef"
+          "url": "https://static.crates.io/crates/crossbeam-deque/0.8.5/download",
+          "sha256": "613f8cc01fe9cf1a3eb3d7f488fd2fa8388403e97039e2f73692932e291a770d"
         }
       },
       "targets": [
@@ -3777,8 +3680,6 @@
         ],
         "crate_features": {
           "common": [
-            "crossbeam-epoch",
-            "crossbeam-utils",
             "default",
             "std"
           ],
@@ -3787,22 +3688,18 @@
         "deps": {
           "common": [
             {
-              "id": "cfg-if 1.0.0",
-              "target": "cfg_if"
-            },
-            {
-              "id": "crossbeam-epoch 0.9.15",
+              "id": "crossbeam-epoch 0.9.18",
               "target": "crossbeam_epoch"
             },
             {
-              "id": "crossbeam-utils 0.8.16",
+              "id": "crossbeam-utils 0.8.19",
               "target": "crossbeam_utils"
             }
           ],
           "selects": {}
         },
-        "edition": "2018",
-        "version": "0.8.3"
+        "edition": "2021",
+        "version": "0.8.5"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -3811,14 +3708,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "crossbeam-epoch 0.9.15": {
+    "crossbeam-epoch 0.9.18": {
       "name": "crossbeam-epoch",
-      "version": "0.9.15",
+      "version": "0.9.18",
       "package_url": "https://github.com/crossbeam-rs/crossbeam",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/crossbeam-epoch/0.9.15/download",
-          "sha256": "ae211234986c545741a7dc064309f67ee1e5ad243d0e48335adc0484d960bcc7"
+          "url": "https://static.crates.io/crates/crossbeam-epoch/0.9.18/download",
+          "sha256": "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e"
         }
       },
       "targets": [
@@ -3826,18 +3723,6 @@
           "Library": {
             "crate_name": "crossbeam_epoch",
             "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        },
-        {
-          "BuildScript": {
-            "crate_name": "build_script_build",
-            "crate_root": "build.rs",
             "srcs": {
               "allow_empty": false,
               "include": [
@@ -3862,44 +3747,14 @@
         "deps": {
           "common": [
             {
-              "id": "cfg-if 1.0.0",
-              "target": "cfg_if"
-            },
-            {
-              "id": "crossbeam-epoch 0.9.15",
-              "target": "build_script_build"
-            },
-            {
-              "id": "crossbeam-utils 0.8.16",
+              "id": "crossbeam-utils 0.8.19",
               "target": "crossbeam_utils"
-            },
-            {
-              "id": "memoffset 0.9.0",
-              "target": "memoffset"
-            },
-            {
-              "id": "scopeguard 1.2.0",
-              "target": "scopeguard"
             }
           ],
           "selects": {}
         },
-        "edition": "2018",
-        "version": "0.9.15"
-      },
-      "build_script_attrs": {
-        "data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "autocfg 1.1.0",
-              "target": "autocfg"
-            }
-          ],
-          "selects": {}
-        }
+        "edition": "2021",
+        "version": "0.9.18"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -3908,14 +3763,69 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "crossbeam-utils 0.8.16": {
-      "name": "crossbeam-utils",
-      "version": "0.8.16",
+    "crossbeam-queue 0.3.11": {
+      "name": "crossbeam-queue",
+      "version": "0.3.11",
       "package_url": "https://github.com/crossbeam-rs/crossbeam",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/crossbeam-utils/0.8.16/download",
-          "sha256": "5a22b2d63d4d1dc0b7f1b6b2747dd0088008a9be28b6ddf0b1e7d335e3037294"
+          "url": "https://static.crates.io/crates/crossbeam-queue/0.3.11/download",
+          "sha256": "df0346b5d5e76ac2fe4e327c5fd1118d6be7c51dfb18f9b7922923f287471e35"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "crossbeam_queue",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "crossbeam_queue",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "crate_features": {
+          "common": [
+            "alloc",
+            "std"
+          ],
+          "selects": {}
+        },
+        "deps": {
+          "common": [
+            {
+              "id": "crossbeam-utils 0.8.19",
+              "target": "crossbeam_utils"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2021",
+        "version": "0.3.11"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "license_file": "LICENSE-APACHE"
+    },
+    "crossbeam-utils 0.8.19": {
+      "name": "crossbeam-utils",
+      "version": "0.8.19",
+      "package_url": "https://github.com/crossbeam-rs/crossbeam",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/crossbeam-utils/0.8.19/download",
+          "sha256": "248e3bacc7dc6baa3b21e405ee045c3047101a49145e7e9eca583ab4c2ca5345"
         }
       },
       "targets": [
@@ -3959,18 +3869,14 @@
         "deps": {
           "common": [
             {
-              "id": "cfg-if 1.0.0",
-              "target": "cfg_if"
-            },
-            {
-              "id": "crossbeam-utils 0.8.16",
+              "id": "crossbeam-utils 0.8.19",
               "target": "build_script_build"
             }
           ],
           "selects": {}
         },
-        "edition": "2018",
-        "version": "0.8.16"
+        "edition": "2021",
+        "version": "0.8.19"
       },
       "build_script_attrs": {
         "data_glob": [
@@ -4232,11 +4138,11 @@
               "target": "arbitrary"
             },
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             },
             {
-              "id": "cargo-audit 0.18.2",
+              "id": "cargo-audit 0.20.0",
               "target": "cargo_audit"
             },
             {
@@ -4246,6 +4152,10 @@
             {
               "id": "futures 0.3.28",
               "target": "futures"
+            },
+            {
+              "id": "h2 0.3.26",
+              "target": "h2"
             },
             {
               "id": "humantime 2.1.0",
@@ -4304,7 +4214,7 @@
               "target": "serde"
             },
             {
-              "id": "tempfile 3.7.0",
+              "id": "tempfile 3.10.1",
               "target": "tempfile"
             },
             {
@@ -4478,6 +4388,45 @@
         "version": "0.3.7"
       },
       "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "license_file": "LICENSE-APACHE"
+    },
+    "display-error-chain 0.2.0": {
+      "name": "display-error-chain",
+      "version": "0.2.0",
+      "package_url": "https://github.com/mexus/display-error-chain.git",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/display-error-chain/0.2.0/download",
+          "sha256": "f77af9e75578c1ab34f5f04545a8b05be0c36fbd7a9bb3cf2d2a971e435fdbb9"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "display_error_chain",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "display_error_chain",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "edition": "2021",
+        "version": "0.2.0"
+      },
+      "license": "Apache-2.0/MIT",
       "license_ids": [
         "Apache-2.0",
         "MIT"
@@ -4723,14 +4672,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "errno 0.3.2": {
+    "errno 0.3.8": {
       "name": "errno",
-      "version": "0.3.2",
+      "version": "0.3.8",
       "package_url": "https://github.com/lambda-fairy/rust-errno",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/errno/0.3.2/download",
-          "sha256": "6b30f669a7961ef1631673d2766cc92f52d64f7ef354d4fe0ddfd30ed52f0f4f"
+          "url": "https://static.crates.io/crates/errno/0.3.8/download",
+          "sha256": "a258e46cdc063eb8519c00b9fc845fc47bcfca4130e2f08e88665ceda8474245"
         }
       },
       "targets": [
@@ -4752,15 +4701,15 @@
         "compile_data_glob": [
           "**"
         ],
+        "crate_features": {
+          "common": [
+            "std"
+          ],
+          "selects": {}
+        },
         "deps": {
           "common": [],
           "selects": {
-            "cfg(target_os = \"dragonfly\")": [
-              {
-                "id": "errno-dragonfly 0.1.2",
-                "target": "errno_dragonfly"
-              }
-            ],
             "cfg(target_os = \"hermit\")": [
               {
                 "id": "libc 0.2.153",
@@ -4781,14 +4730,14 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.48.0",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ]
           }
         },
         "edition": "2018",
-        "version": "0.3.2"
+        "version": "0.3.8"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -4796,83 +4745,6 @@
         "MIT"
       ],
       "license_file": "LICENSE-APACHE"
-    },
-    "errno-dragonfly 0.1.2": {
-      "name": "errno-dragonfly",
-      "version": "0.1.2",
-      "package_url": "https://github.com/mneumann/errno-dragonfly-rs",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/errno-dragonfly/0.1.2/download",
-          "sha256": "aa68f1b12764fab894d2755d2518754e71b4fd80ecfb822714a1206c2aab39bf"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "errno_dragonfly",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        },
-        {
-          "BuildScript": {
-            "crate_name": "build_script_build",
-            "crate_root": "build.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "errno_dragonfly",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "errno-dragonfly 0.1.2",
-              "target": "build_script_build"
-            },
-            {
-              "id": "libc 0.2.153",
-              "target": "libc"
-            }
-          ],
-          "selects": {}
-        },
-        "edition": "2018",
-        "version": "0.1.2"
-      },
-      "build_script_attrs": {
-        "data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "cc 1.0.83",
-              "target": "cc"
-            }
-          ],
-          "selects": {}
-        }
-      },
-      "license": "MIT",
-      "license_ids": [
-        "MIT"
-      ],
-      "license_file": "LICENSE"
     },
     "eyre 0.6.8": {
       "name": "eyre",
@@ -4955,14 +4827,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "faster-hex 0.8.1": {
+    "faster-hex 0.9.0": {
       "name": "faster-hex",
-      "version": "0.8.1",
+      "version": "0.9.0",
       "package_url": "https://github.com/NervosFoundation/faster-hex",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/faster-hex/0.8.1/download",
-          "sha256": "239f7bfb930f820ab16a9cd95afc26f88264cf6905c960b340a615384aa3338a"
+          "url": "https://static.crates.io/crates/faster-hex/0.9.0/download",
+          "sha256": "a2a2b11eda1d40935b26cf18f6833c526845ae8c41e58d09af6adeb6f0269183"
         }
       },
       "targets": [
@@ -4984,26 +4856,8 @@
         "compile_data_glob": [
           "**"
         ],
-        "crate_features": {
-          "common": [
-            "alloc",
-            "default",
-            "serde",
-            "std"
-          ],
-          "selects": {}
-        },
-        "deps": {
-          "common": [
-            {
-              "id": "serde 1.0.188",
-              "target": "serde"
-            }
-          ],
-          "selects": {}
-        },
         "edition": "2018",
-        "version": "0.8.1"
+        "version": "0.9.0"
       },
       "license": "MIT",
       "license_ids": [
@@ -5011,14 +4865,14 @@
       ],
       "license_file": "LICENSE"
     },
-    "fastrand 2.0.0": {
+    "fastrand 2.0.2": {
       "name": "fastrand",
-      "version": "2.0.0",
+      "version": "2.0.2",
       "package_url": "https://github.com/smol-rs/fastrand",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/fastrand/2.0.0/download",
-          "sha256": "6999dc1837253364c2ebb0704ba97994bd874e8f195d665c50b7548f6ea92764"
+          "url": "https://static.crates.io/crates/fastrand/2.0.2/download",
+          "sha256": "658bd65b1cf4c852a3cc96f18a8ce7b5640f6b703f905c7d74532294c2a63984"
         }
       },
       "targets": [
@@ -5049,7 +4903,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "2.0.0"
+        "version": "2.0.2"
       },
       "license": "Apache-2.0 OR MIT",
       "license_ids": [
@@ -5454,14 +5308,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "form_urlencoded 1.2.0": {
+    "form_urlencoded 1.2.1": {
       "name": "form_urlencoded",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "package_url": "https://github.com/servo/rust-url",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/form_urlencoded/1.2.0/download",
-          "sha256": "a62bc1cf6f830c2ec14a513a9fb124d0a213a629668a4186f329db21fe045652"
+          "url": "https://static.crates.io/crates/form_urlencoded/1.2.1/download",
+          "sha256": "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
         }
       },
       "targets": [
@@ -5494,14 +5348,14 @@
         "deps": {
           "common": [
             {
-              "id": "percent-encoding 2.3.0",
+              "id": "percent-encoding 2.3.1",
               "target": "percent_encoding"
             }
           ],
           "selects": {}
         },
         "edition": "2018",
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -5510,14 +5364,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "fs-err 2.9.0": {
+    "fs-err 2.11.0": {
       "name": "fs-err",
-      "version": "2.9.0",
+      "version": "2.11.0",
       "package_url": "https://github.com/andrewhickman/fs-err",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/fs-err/2.9.0/download",
-          "sha256": "0845fa252299212f0389d64ba26f34fa32cfe41588355f21ed507c59a0f64541"
+          "url": "https://static.crates.io/crates/fs-err/2.11.0/download",
+          "sha256": "88a41f105fe1d5b6b34b2055e3dc59bb79b46b48b2040b9e6c7b4b5de097aa41"
         }
       },
       "targets": [
@@ -5532,6 +5386,18 @@
               ]
             }
           }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
         }
       ],
       "library_target_name": "fs_err",
@@ -5539,8 +5405,31 @@
         "compile_data_glob": [
           "**"
         ],
+        "deps": {
+          "common": [
+            {
+              "id": "fs-err 2.11.0",
+              "target": "build_script_build"
+            }
+          ],
+          "selects": {}
+        },
         "edition": "2018",
-        "version": "2.9.0"
+        "version": "2.11.0"
+      },
+      "build_script_attrs": {
+        "data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "autocfg 1.1.0",
+              "target": "autocfg"
+            }
+          ],
+          "selects": {}
+        }
       },
       "license": "MIT/Apache-2.0",
       "license_ids": [
@@ -6408,14 +6297,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix 0.53.1": {
+    "gix 0.58.0": {
       "name": "gix",
-      "version": "0.53.1",
+      "version": "0.58.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix/0.53.1/download",
-          "sha256": "06a8c9f9452078f474fecd2880de84819b8c77224ab62273275b646bf785f906"
+          "url": "https://static.crates.io/crates/gix/0.58.0/download",
+          "sha256": "31887c304d9a935f3e5494fb5d6a0106c34e965168ec0db9b457424eedd0c741"
         }
       },
       "targets": [
@@ -6442,11 +6331,18 @@
             "attributes",
             "blocking-http-transport-reqwest",
             "blocking-network-client",
+            "command",
             "credentials",
             "excludes",
             "gix-protocol",
             "gix-transport",
             "index",
+            "max-control",
+            "max-performance-safe",
+            "pack-cache-lru-dynamic",
+            "pack-cache-lru-static",
+            "parallel",
+            "parallel-walkdir",
             "revision",
             "worktree-mutation"
           ],
@@ -6455,163 +6351,167 @@
         "deps": {
           "common": [
             {
-              "id": "gix-actor 0.26.0",
+              "id": "gix-actor 0.30.0",
               "target": "gix_actor"
             },
             {
-              "id": "gix-attributes 0.18.0",
+              "id": "gix-attributes 0.22.2",
               "target": "gix_attributes"
             },
             {
-              "id": "gix-commitgraph 0.20.0",
+              "id": "gix-command 0.3.6",
+              "target": "gix_command"
+            },
+            {
+              "id": "gix-commitgraph 0.24.2",
               "target": "gix_commitgraph"
             },
             {
-              "id": "gix-config 0.29.0",
+              "id": "gix-config 0.34.0",
               "target": "gix_config"
             },
             {
-              "id": "gix-credentials 0.19.0",
+              "id": "gix-credentials 0.24.2",
               "target": "gix_credentials"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-diff 0.35.0",
+              "id": "gix-diff 0.40.0",
               "target": "gix_diff"
             },
             {
-              "id": "gix-discover 0.24.0",
+              "id": "gix-discover 0.29.0",
               "target": "gix_discover"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-filter 0.4.0",
+              "id": "gix-filter 0.9.0",
               "target": "gix_filter"
             },
             {
-              "id": "gix-fs 0.6.0",
+              "id": "gix-fs 0.10.1",
               "target": "gix_fs"
             },
             {
-              "id": "gix-glob 0.12.0",
+              "id": "gix-glob 0.16.2",
               "target": "gix_glob"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-hashtable 0.4.0",
+              "id": "gix-hashtable 0.5.2",
               "target": "gix_hashtable"
             },
             {
-              "id": "gix-ignore 0.7.0",
+              "id": "gix-ignore 0.11.2",
               "target": "gix_ignore"
             },
             {
-              "id": "gix-index 0.24.0",
+              "id": "gix-index 0.29.0",
               "target": "gix_index"
             },
             {
-              "id": "gix-lock 9.0.0",
+              "id": "gix-lock 13.1.1",
               "target": "gix_lock"
             },
             {
-              "id": "gix-negotiate 0.7.0",
+              "id": "gix-negotiate 0.12.0",
               "target": "gix_negotiate"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-odb 0.52.0",
+              "id": "gix-odb 0.57.0",
               "target": "gix_odb"
             },
             {
-              "id": "gix-pack 0.42.0",
+              "id": "gix-pack 0.47.0",
               "target": "gix_pack"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-pathspec 0.2.0",
+              "id": "gix-pathspec 0.6.0",
               "target": "gix_pathspec"
             },
             {
-              "id": "gix-prompt 0.7.0",
+              "id": "gix-prompt 0.8.4",
               "target": "gix_prompt"
             },
             {
-              "id": "gix-protocol 0.39.0",
+              "id": "gix-protocol 0.44.2",
               "target": "gix_protocol"
             },
             {
-              "id": "gix-ref 0.36.0",
+              "id": "gix-ref 0.41.0",
               "target": "gix_ref"
             },
             {
-              "id": "gix-refspec 0.17.0",
+              "id": "gix-refspec 0.22.0",
               "target": "gix_refspec"
             },
             {
-              "id": "gix-revision 0.21.0",
+              "id": "gix-revision 0.26.0",
               "target": "gix_revision"
             },
             {
-              "id": "gix-revwalk 0.7.0",
+              "id": "gix-revwalk 0.12.0",
               "target": "gix_revwalk"
             },
             {
-              "id": "gix-sec 0.10.0",
+              "id": "gix-sec 0.10.6",
               "target": "gix_sec"
             },
             {
-              "id": "gix-submodule 0.3.0",
+              "id": "gix-submodule 0.8.0",
               "target": "gix_submodule"
             },
             {
-              "id": "gix-tempfile 9.0.0",
+              "id": "gix-tempfile 13.1.1",
               "target": "gix_tempfile"
             },
             {
-              "id": "gix-trace 0.1.3",
+              "id": "gix-trace 0.1.8",
               "target": "gix_trace"
             },
             {
-              "id": "gix-transport 0.36.1",
+              "id": "gix-transport 0.41.2",
               "target": "gix_transport"
             },
             {
-              "id": "gix-traverse 0.32.0",
+              "id": "gix-traverse 0.37.0",
               "target": "gix_traverse"
             },
             {
-              "id": "gix-url 0.23.0",
+              "id": "gix-url 0.27.2",
               "target": "gix_url"
             },
             {
-              "id": "gix-utils 0.1.5",
+              "id": "gix-utils 0.1.11",
               "target": "gix_utils"
             },
             {
-              "id": "gix-validate 0.8.0",
+              "id": "gix-validate 0.8.4",
               "target": "gix_validate"
             },
             {
-              "id": "gix-worktree 0.25.0",
+              "id": "gix-worktree 0.30.0",
               "target": "gix_worktree"
             },
             {
-              "id": "gix-worktree-state 0.2.0",
+              "id": "gix-worktree-state 0.7.0",
               "target": "gix_worktree_state"
             },
             {
@@ -6623,7 +6523,7 @@
               "target": "parking_lot"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -6631,26 +6531,19 @@
               "target": "thiserror"
             }
           ],
-          "selects": {
-            "cfg(target_vendor = \"apple\")": [
-              {
-                "id": "unicode-normalization 0.1.22",
-                "target": "unicode_normalization"
-              }
-            ]
-          }
+          "selects": {}
         },
         "edition": "2021",
         "proc_macro_deps": {
           "common": [
             {
-              "id": "gix-macros 0.1.0",
+              "id": "gix-macros 0.1.4",
               "target": "gix_macros"
             }
           ],
           "selects": {}
         },
-        "version": "0.53.1"
+        "version": "0.58.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -6659,14 +6552,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-actor 0.26.0": {
+    "gix-actor 0.30.0": {
       "name": "gix-actor",
-      "version": "0.26.0",
+      "version": "0.30.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-actor/0.26.0/download",
-          "sha256": "8e8c6778cc03bca978b2575a03e04e5ba6f430a9dd9b0f1259f0a8a9a5e5cc66"
+          "url": "https://static.crates.io/crates/gix-actor/0.30.0/download",
+          "sha256": "0a7bb9fad6125c81372987c06469601d37e1a2d421511adb69971b9083517a8a"
         }
       },
       "targets": [
@@ -6699,7 +6592,7 @@
               "target": "btoi"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
@@ -6711,14 +6604,14 @@
               "target": "thiserror"
             },
             {
-              "id": "winnow 0.5.15",
+              "id": "winnow 0.5.40",
               "target": "winnow"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.26.0"
+        "version": "0.30.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -6727,14 +6620,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-attributes 0.18.0": {
+    "gix-attributes 0.22.2": {
       "name": "gix-attributes",
-      "version": "0.18.0",
+      "version": "0.22.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-attributes/0.18.0/download",
-          "sha256": "d3548b76829d33a7160a4685134df16de0cc3b77418302e8a9969f0b662e698f"
+          "url": "https://static.crates.io/crates/gix-attributes/0.22.2/download",
+          "sha256": "eefb48f42eac136a4a0023f49a54ec31be1c7a9589ed762c45dcb9b953f7ecc8"
         }
       },
       "targets": [
@@ -6763,19 +6656,19 @@
               "target": "bstr"
             },
             {
-              "id": "gix-glob 0.12.0",
+              "id": "gix-glob 0.16.2",
               "target": "gix_glob"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-quote 0.4.7",
+              "id": "gix-quote 0.4.12",
               "target": "gix_quote"
             },
             {
-              "id": "gix-trace 0.1.3",
+              "id": "gix-trace 0.1.8",
               "target": "gix_trace"
             },
             {
@@ -6783,7 +6676,7 @@
               "target": "kstring"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -6798,7 +6691,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.18.0"
+        "version": "0.22.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -6807,14 +6700,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-bitmap 0.2.7": {
+    "gix-bitmap 0.2.11": {
       "name": "gix-bitmap",
-      "version": "0.2.7",
+      "version": "0.2.11",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-bitmap/0.2.7/download",
-          "sha256": "0ccab4bc576844ddb51b78d81b4a42d73e6229660fa614dfc3d3999c874d1959"
+          "url": "https://static.crates.io/crates/gix-bitmap/0.2.11/download",
+          "sha256": "a371db66cbd4e13f0ed9dc4c0fea712d7276805fccc877f77e96374d317e87ae"
         }
       },
       "targets": [
@@ -6846,7 +6739,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.2.7"
+        "version": "0.2.11"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -6855,14 +6748,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-chunk 0.4.4": {
+    "gix-chunk 0.4.8": {
       "name": "gix-chunk",
-      "version": "0.4.4",
+      "version": "0.4.8",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-chunk/0.4.4/download",
-          "sha256": "5b42ea64420f7994000130328f3c7a2038f639120518870436d31b8bde704493"
+          "url": "https://static.crates.io/crates/gix-chunk/0.4.8/download",
+          "sha256": "45c8751169961ba7640b513c3b24af61aa962c967aaf04116734975cd5af0c52"
         }
       },
       "targets": [
@@ -6894,7 +6787,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.4.4"
+        "version": "0.4.8"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -6903,14 +6796,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-command 0.2.9": {
+    "gix-command 0.3.6": {
       "name": "gix-command",
-      "version": "0.2.9",
+      "version": "0.3.6",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-command/0.2.9/download",
-          "sha256": "0f28f654184b5f725c5737c7e4f466cbd8f0102ac352d5257eeab19647ee4256"
+          "url": "https://static.crates.io/crates/gix-command/0.3.6/download",
+          "sha256": "f90009020dc4b3de47beed28e1334706e0a330ddd17f5cfeb097df3b15a54b77"
         }
       },
       "targets": [
@@ -6937,12 +6830,24 @@
             {
               "id": "bstr 1.6.2",
               "target": "bstr"
+            },
+            {
+              "id": "gix-path 0.10.7",
+              "target": "gix_path"
+            },
+            {
+              "id": "gix-trace 0.1.8",
+              "target": "gix_trace"
+            },
+            {
+              "id": "shell-words 1.1.0",
+              "target": "shell_words"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.2.9"
+        "version": "0.3.6"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -6951,14 +6856,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-commitgraph 0.20.0": {
+    "gix-commitgraph 0.24.2": {
       "name": "gix-commitgraph",
-      "version": "0.20.0",
+      "version": "0.24.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-commitgraph/0.20.0/download",
-          "sha256": "4676ede3a7d37e7028e2889830349a6aca22efc1d2f2dd9fa3351c1a8ddb0c6a"
+          "url": "https://static.crates.io/crates/gix-commitgraph/0.24.2/download",
+          "sha256": "f7b102311085da4af18823413b5176d7c500fb2272eaf391cfa8635d8bcb12c4"
         }
       },
       "targets": [
@@ -6987,19 +6892,19 @@
               "target": "bstr"
             },
             {
-              "id": "gix-chunk 0.4.4",
+              "id": "gix-chunk 0.4.8",
               "target": "gix_chunk"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "memmap2 0.7.1",
+              "id": "memmap2 0.9.4",
               "target": "memmap2"
             },
             {
@@ -7010,7 +6915,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.20.0"
+        "version": "0.24.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7019,14 +6924,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-config 0.29.0": {
+    "gix-config 0.34.0": {
       "name": "gix-config",
-      "version": "0.29.0",
+      "version": "0.34.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-config/0.29.0/download",
-          "sha256": "1108c4ac88248dd25cc8ab0d0dae796e619fb72d92f88e30e00b29d61bb93cc4"
+          "url": "https://static.crates.io/crates/gix-config/0.34.0/download",
+          "sha256": "e62bf2073b6ce3921ffa6d8326f645f30eec5fc4a8e8a4bc0fcb721a2f3f69dc"
         }
       },
       "targets": [
@@ -7055,27 +6960,27 @@
               "target": "bstr"
             },
             {
-              "id": "gix-config-value 0.14.0",
+              "id": "gix-config-value 0.14.6",
               "target": "gix_config_value"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-glob 0.12.0",
+              "id": "gix-glob 0.16.2",
               "target": "gix_glob"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-ref 0.36.0",
+              "id": "gix-ref 0.41.0",
               "target": "gix_ref"
             },
             {
-              "id": "gix-sec 0.10.0",
+              "id": "gix-sec 0.10.6",
               "target": "gix_sec"
             },
             {
@@ -7087,7 +6992,7 @@
               "target": "once_cell"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -7099,14 +7004,14 @@
               "target": "unicode_bom"
             },
             {
-              "id": "winnow 0.5.15",
+              "id": "winnow 0.5.40",
               "target": "winnow"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.29.0"
+        "version": "0.34.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7115,14 +7020,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-config-value 0.14.0": {
+    "gix-config-value 0.14.6": {
       "name": "gix-config-value",
-      "version": "0.14.0",
+      "version": "0.14.6",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-config-value/0.14.0/download",
-          "sha256": "ea7505b97f4d8e7933e29735a568ba2f86d8de466669d9f0e8321384f9972f47"
+          "url": "https://static.crates.io/crates/gix-config-value/0.14.6/download",
+          "sha256": "fbd06203b1a9b33a78c88252a625031b094d9e1b647260070c25b09910c0a804"
         }
       },
       "targets": [
@@ -7147,7 +7052,7 @@
         "deps": {
           "common": [
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             },
             {
@@ -7155,7 +7060,7 @@
               "target": "bstr"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
@@ -7173,7 +7078,7 @@
           }
         },
         "edition": "2021",
-        "version": "0.14.0"
+        "version": "0.14.6"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7182,14 +7087,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-credentials 0.19.0": {
+    "gix-credentials 0.24.2": {
       "name": "gix-credentials",
-      "version": "0.19.0",
+      "version": "0.24.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-credentials/0.19.0/download",
-          "sha256": "363e16428096b7311c380afe972831ea8b58fc1a1d1621dbdd865caf34921a54"
+          "url": "https://static.crates.io/crates/gix-credentials/0.24.2/download",
+          "sha256": "5c70146183bd3c7119329a3c7392d1aa0e0adbe48d727f4df31828fe6d8fdaa1"
         }
       },
       "targets": [
@@ -7218,27 +7123,31 @@
               "target": "bstr"
             },
             {
-              "id": "gix-command 0.2.9",
+              "id": "gix-command 0.3.6",
               "target": "gix_command"
             },
             {
-              "id": "gix-config-value 0.14.0",
+              "id": "gix-config-value 0.14.6",
               "target": "gix_config_value"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-prompt 0.7.0",
+              "id": "gix-prompt 0.8.4",
               "target": "gix_prompt"
             },
             {
-              "id": "gix-sec 0.10.0",
+              "id": "gix-sec 0.10.6",
               "target": "gix_sec"
             },
             {
-              "id": "gix-url 0.23.0",
+              "id": "gix-trace 0.1.8",
+              "target": "gix_trace"
+            },
+            {
+              "id": "gix-url 0.27.2",
               "target": "gix_url"
             },
             {
@@ -7249,7 +7158,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.19.0"
+        "version": "0.24.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7258,14 +7167,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-date 0.8.0": {
+    "gix-date 0.8.5": {
       "name": "gix-date",
-      "version": "0.8.0",
+      "version": "0.8.5",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-date/0.8.0/download",
-          "sha256": "fc7df669639582dc7c02737642f76890b03b5544e141caba68a7d6b4eb551e0d"
+          "url": "https://static.crates.io/crates/gix-date/0.8.5/download",
+          "sha256": "180b130a4a41870edfbd36ce4169c7090bca70e195da783dea088dd973daa59c"
         }
       },
       "targets": [
@@ -7309,7 +7218,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.8.0"
+        "version": "0.8.5"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7318,14 +7227,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-diff 0.35.0": {
+    "gix-diff 0.40.0": {
       "name": "gix-diff",
-      "version": "0.35.0",
+      "version": "0.40.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-diff/0.35.0/download",
-          "sha256": "b45e342d148373bd9070d557e6fb1280aeae29a3e05e32506682d027278501eb"
+          "url": "https://static.crates.io/crates/gix-diff/0.40.0/download",
+          "sha256": "cbdcb5e49c4b9729dd1c361040ae5c3cd7c497b2260b18c954f62db3a63e98cf"
         }
       },
       "targets": [
@@ -7350,11 +7259,15 @@
         "deps": {
           "common": [
             {
-              "id": "gix-hash 0.13.0",
+              "id": "bstr 1.6.2",
+              "target": "bstr"
+            },
+            {
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
@@ -7365,7 +7278,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.35.0"
+        "version": "0.40.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7374,14 +7287,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-discover 0.24.0": {
+    "gix-discover 0.29.0": {
       "name": "gix-discover",
-      "version": "0.24.0",
+      "version": "0.29.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-discover/0.24.0/download",
-          "sha256": "da4cacda5ee9dd1b38b0e2506834e40e66c08cf050ef55c344334c76745f277b"
+          "url": "https://static.crates.io/crates/gix-discover/0.29.0/download",
+          "sha256": "b4669218f3ec0cbbf8f16857b32200890f8ca585f36f5817242e4115fe4551af"
         }
       },
       "targets": [
@@ -7410,19 +7323,23 @@
               "target": "bstr"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-fs 0.10.1",
+              "target": "gix_fs"
+            },
+            {
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-ref 0.36.0",
+              "id": "gix-ref 0.41.0",
               "target": "gix_ref"
             },
             {
-              "id": "gix-sec 0.10.0",
+              "id": "gix-sec 0.10.6",
               "target": "gix_sec"
             },
             {
@@ -7440,7 +7357,7 @@
           }
         },
         "edition": "2021",
-        "version": "0.24.0"
+        "version": "0.29.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7449,14 +7366,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-features 0.34.0": {
+    "gix-features 0.38.1": {
       "name": "gix-features",
-      "version": "0.34.0",
+      "version": "0.38.1",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-features/0.34.0/download",
-          "sha256": "f414c99e1a7abc69b21f3225a6539d203b0513f1d1d448607c4ea81cdcf9ee59"
+          "url": "https://static.crates.io/crates/gix-features/0.38.1/download",
+          "sha256": "db4254037d20a247a0367aa79333750146a369719f0c6617fec4f5752cc62b37"
         }
       },
       "targets": [
@@ -7482,8 +7399,12 @@
           "common": [
             "crc32",
             "default",
+            "fs-read-dir",
+            "fs-walkdir-parallel",
             "io-pipe",
             "once_cell",
+            "parallel",
+            "prodash",
             "progress",
             "rustsha1",
             "walkdir",
@@ -7502,23 +7423,39 @@
               "target": "crc32fast"
             },
             {
+              "id": "crossbeam-channel 0.5.12",
+              "target": "crossbeam_channel"
+            },
+            {
               "id": "flate2 1.0.27",
               "target": "flate2"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-trace 0.1.3",
+              "id": "gix-trace 0.1.8",
               "target": "gix_trace"
+            },
+            {
+              "id": "gix-utils 0.1.11",
+              "target": "gix_utils"
+            },
+            {
+              "id": "jwalk 0.8.1",
+              "target": "jwalk"
             },
             {
               "id": "once_cell 1.18.0",
               "target": "once_cell"
             },
             {
-              "id": "prodash 26.2.2",
+              "id": "parking_lot 0.12.1",
+              "target": "parking_lot"
+            },
+            {
+              "id": "prodash 28.0.0",
               "target": "prodash"
             },
             {
@@ -7544,7 +7481,7 @@
           }
         },
         "edition": "2021",
-        "version": "0.34.0"
+        "version": "0.38.1"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7553,14 +7490,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-filter 0.4.0": {
+    "gix-filter 0.9.0": {
       "name": "gix-filter",
-      "version": "0.4.0",
+      "version": "0.9.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-filter/0.4.0/download",
-          "sha256": "afbdb2ffae9e595d70f8c7b40953a82706d536bb8107874c258fe6368389832b"
+          "url": "https://static.crates.io/crates/gix-filter/0.9.0/download",
+          "sha256": "9240862840fb740d209422937195e129e4ed3da49af212383260134bea8f6c1a"
         }
       },
       "targets": [
@@ -7593,40 +7530,44 @@
               "target": "encoding_rs"
             },
             {
-              "id": "gix-attributes 0.18.0",
+              "id": "gix-attributes 0.22.2",
               "target": "gix_attributes"
             },
             {
-              "id": "gix-command 0.2.9",
+              "id": "gix-command 0.3.6",
               "target": "gix_command"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-packetline-blocking 0.16.6",
+              "id": "gix-packetline-blocking 0.17.3",
               "target": "gix_packetline_blocking",
               "alias": "gix_packetline"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-quote 0.4.7",
+              "id": "gix-quote 0.4.12",
               "target": "gix_quote"
             },
             {
-              "id": "gix-trace 0.1.3",
+              "id": "gix-trace 0.1.8",
               "target": "gix_trace"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "gix-utils 0.1.11",
+              "target": "gix_utils"
+            },
+            {
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -7637,7 +7578,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.4.0"
+        "version": "0.9.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7646,14 +7587,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-fs 0.6.0": {
+    "gix-fs 0.10.1": {
       "name": "gix-fs",
-      "version": "0.6.0",
+      "version": "0.10.1",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-fs/0.6.0/download",
-          "sha256": "404795da3d4c660c9ab6c3b2ad76d459636d1e1e4b37b0c7ff68eee898c298d4"
+          "url": "https://static.crates.io/crates/gix-fs/0.10.1/download",
+          "sha256": "634b8a743b0aae03c1a74ee0ea24e8c5136895efac64ce52b3ea106e1c6f0613"
         }
       },
       "targets": [
@@ -7678,14 +7619,18 @@
         "deps": {
           "common": [
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
+            },
+            {
+              "id": "gix-utils 0.1.11",
+              "target": "gix_utils"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.6.0"
+        "version": "0.10.1"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7694,14 +7639,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-glob 0.12.0": {
+    "gix-glob 0.16.2": {
       "name": "gix-glob",
-      "version": "0.12.0",
+      "version": "0.16.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-glob/0.12.0/download",
-          "sha256": "e3ac79c444193b0660fe0c0925d338bd338bd643e32138784dccfb12c628b892"
+          "url": "https://static.crates.io/crates/gix-glob/0.16.2/download",
+          "sha256": "682bdc43cb3c00dbedfcc366de2a849b582efd8d886215dbad2ea662ec156bb5"
         }
       },
       "targets": [
@@ -7726,7 +7671,7 @@
         "deps": {
           "common": [
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             },
             {
@@ -7734,18 +7679,18 @@
               "target": "bstr"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.12.0"
+        "version": "0.16.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7754,14 +7699,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-hash 0.13.0": {
+    "gix-hash 0.14.2": {
       "name": "gix-hash",
-      "version": "0.13.0",
+      "version": "0.14.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-hash/0.13.0/download",
-          "sha256": "2ccf425543779cddaa4a7c62aba3fa9d90ea135b160be0a72dd93c063121ad4a"
+          "url": "https://static.crates.io/crates/gix-hash/0.14.2/download",
+          "sha256": "f93d7df7366121b5018f947a04d37f034717e113dcf9ccd85c34b58e57a74d5e"
         }
       },
       "targets": [
@@ -7786,7 +7731,7 @@
         "deps": {
           "common": [
             {
-              "id": "faster-hex 0.8.1",
+              "id": "faster-hex 0.9.0",
               "target": "faster_hex"
             },
             {
@@ -7797,7 +7742,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.13.0"
+        "version": "0.14.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7806,14 +7751,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-hashtable 0.4.0": {
+    "gix-hashtable 0.5.2": {
       "name": "gix-hashtable",
-      "version": "0.4.0",
+      "version": "0.5.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-hashtable/0.4.0/download",
-          "sha256": "409268480841ad008e81c17ca5a293393fbf9f2b6c2f85b8ab9de1f0c5176a16"
+          "url": "https://static.crates.io/crates/gix-hashtable/0.5.2/download",
+          "sha256": "7ddf80e16f3c19ac06ce415a38b8591993d3f73aede049cb561becb5b3a8e242"
         }
       },
       "targets": [
@@ -7838,7 +7783,7 @@
         "deps": {
           "common": [
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
@@ -7853,7 +7798,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.4.0"
+        "version": "0.5.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7862,14 +7807,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-ignore 0.7.0": {
+    "gix-ignore 0.11.2": {
       "name": "gix-ignore",
-      "version": "0.7.0",
+      "version": "0.11.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-ignore/0.7.0/download",
-          "sha256": "04ff3ec0fd9fb5bb0ae36b252976b0bc94b45ba969b1639f7402425d9d6baf67"
+          "url": "https://static.crates.io/crates/gix-ignore/0.11.2/download",
+          "sha256": "640dbeb4f5829f9fc14d31f654a34a0350e43a24e32d551ad130d99bf01f63f1"
         }
       },
       "targets": [
@@ -7898,12 +7843,16 @@
               "target": "bstr"
             },
             {
-              "id": "gix-glob 0.12.0",
+              "id": "gix-glob 0.16.2",
               "target": "gix_glob"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
+            },
+            {
+              "id": "gix-trace 0.1.8",
+              "target": "gix_trace"
             },
             {
               "id": "unicode-bom 2.0.2",
@@ -7913,7 +7862,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.7.0"
+        "version": "0.11.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -7922,14 +7871,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-index 0.24.0": {
+    "gix-index 0.29.0": {
       "name": "gix-index",
-      "version": "0.24.0",
+      "version": "0.29.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-index/0.24.0/download",
-          "sha256": "0e9599fc30b3d6aad231687a403f85dfa36ae37ccf1b68ee1f621ad5b7fc7a0d"
+          "url": "https://static.crates.io/crates/gix-index/0.29.0/download",
+          "sha256": "1d7152181ba8f0a3addc5075dd612cea31fc3e252b29c8be8c45f4892bf87426"
         }
       },
       "targets": [
@@ -7954,7 +7903,7 @@
         "deps": {
           "common": [
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             },
             {
@@ -7970,31 +7919,31 @@
               "target": "filetime"
             },
             {
-              "id": "gix-bitmap 0.2.7",
+              "id": "gix-bitmap 0.2.11",
               "target": "gix_bitmap"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-fs 0.6.0",
+              "id": "gix-fs 0.10.1",
               "target": "gix_fs"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-lock 9.0.0",
+              "id": "gix-lock 13.1.1",
               "target": "gix_lock"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-traverse 0.32.0",
+              "id": "gix-traverse 0.37.0",
               "target": "gix_traverse"
             },
             {
@@ -8002,11 +7951,11 @@
               "target": "itoa"
             },
             {
-              "id": "memmap2 0.7.1",
+              "id": "memmap2 0.9.4",
               "target": "memmap2"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -8014,10 +7963,21 @@
               "target": "thiserror"
             }
           ],
-          "selects": {}
+          "selects": {
+            "cfg(not(windows))": [
+              {
+                "id": "libc 0.2.153",
+                "target": "libc"
+              },
+              {
+                "id": "rustix 0.38.32",
+                "target": "rustix"
+              }
+            ]
+          }
         },
         "edition": "2021",
-        "version": "0.24.0"
+        "version": "0.29.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8026,14 +7986,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-lock 9.0.0": {
+    "gix-lock 13.1.1": {
       "name": "gix-lock",
-      "version": "9.0.0",
+      "version": "13.1.1",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-lock/9.0.0/download",
-          "sha256": "1568c3d90594c60d52670f325f5db88c2d572e85c8dd45fabc23d91cadb0fd52"
+          "url": "https://static.crates.io/crates/gix-lock/13.1.1/download",
+          "sha256": "e7c359f81f01b8352063319bcb39789b7ea0887b406406381106e38c4a34d049"
         }
       },
       "targets": [
@@ -8058,11 +8018,11 @@
         "deps": {
           "common": [
             {
-              "id": "gix-tempfile 9.0.0",
+              "id": "gix-tempfile 13.1.1",
               "target": "gix_tempfile"
             },
             {
-              "id": "gix-utils 0.1.5",
+              "id": "gix-utils 0.1.11",
               "target": "gix_utils"
             },
             {
@@ -8073,7 +8033,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "9.0.0"
+        "version": "13.1.1"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8082,14 +8042,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-macros 0.1.0": {
+    "gix-macros 0.1.4": {
       "name": "gix-macros",
-      "version": "0.1.0",
+      "version": "0.1.4",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-macros/0.1.0/download",
-          "sha256": "9d8acb5ee668d55f0f2d19a320a3f9ef67a6999ad483e11135abcc2464ed18b6"
+          "url": "https://static.crates.io/crates/gix-macros/0.1.4/download",
+          "sha256": "1dff438f14e67e7713ab9332f5fd18c8f20eb7eb249494f6c2bf170522224032"
         }
       },
       "targets": [
@@ -8129,7 +8089,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.1.0"
+        "version": "0.1.4"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8138,14 +8098,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-negotiate 0.7.0": {
+    "gix-negotiate 0.12.0": {
       "name": "gix-negotiate",
-      "version": "0.7.0",
+      "version": "0.12.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-negotiate/0.7.0/download",
-          "sha256": "208b25af0e59d04e7313479fc949bd68e11a065b51718995139cefac498e24df"
+          "url": "https://static.crates.io/crates/gix-negotiate/0.12.0/download",
+          "sha256": "a163adb84149e522e991cbe27250a6e01de56f98cd05b174614ce3f8a4e8b140"
         }
       },
       "targets": [
@@ -8170,31 +8130,31 @@
         "deps": {
           "common": [
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             },
             {
-              "id": "gix-commitgraph 0.20.0",
+              "id": "gix-commitgraph 0.24.2",
               "target": "gix_commitgraph"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-revwalk 0.7.0",
+              "id": "gix-revwalk 0.12.0",
               "target": "gix_revwalk"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -8205,7 +8165,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.7.0"
+        "version": "0.12.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8214,14 +8174,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-object 0.36.0": {
+    "gix-object 0.41.0": {
       "name": "gix-object",
-      "version": "0.36.0",
+      "version": "0.41.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-object/0.36.0/download",
-          "sha256": "3e5528d5b2c984044d547e696e44a8c45fa122e83cd8c2ac1da69bd474336be8"
+          "url": "https://static.crates.io/crates/gix-object/0.41.0/download",
+          "sha256": "693ce9d30741506cb082ef2d8b797415b48e032cce0ab23eff894c19a7e4777b"
         }
       },
       "targets": [
@@ -8254,23 +8214,23 @@
               "target": "btoi"
             },
             {
-              "id": "gix-actor 0.26.0",
+              "id": "gix-actor 0.30.0",
               "target": "gix_actor"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-validate 0.8.0",
+              "id": "gix-validate 0.8.4",
               "target": "gix_validate"
             },
             {
@@ -8278,7 +8238,7 @@
               "target": "itoa"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -8286,14 +8246,14 @@
               "target": "thiserror"
             },
             {
-              "id": "winnow 0.5.15",
+              "id": "winnow 0.5.40",
               "target": "winnow"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.36.0"
+        "version": "0.41.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8302,14 +8262,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-odb 0.52.0": {
+    "gix-odb 0.57.0": {
       "name": "gix-odb",
-      "version": "0.52.0",
+      "version": "0.57.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-odb/0.52.0/download",
-          "sha256": "d0446eca295459deb3d6dd6ed7d44a631479f1b7381d8087166605c7a9f717c6"
+          "url": "https://static.crates.io/crates/gix-odb/0.57.0/download",
+          "sha256": "8ba2fa9e81f2461b78b4d81a807867667326c84cdab48e0aed7b73a593aa1be4"
         }
       },
       "targets": [
@@ -8338,31 +8298,35 @@
               "target": "arc_swap"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-fs 0.10.1",
+              "target": "gix_fs"
+            },
+            {
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-pack 0.42.0",
+              "id": "gix-pack 0.47.0",
               "target": "gix_pack"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-quote 0.4.7",
+              "id": "gix-quote 0.4.12",
               "target": "gix_quote"
             },
             {
@@ -8370,7 +8334,7 @@
               "target": "parking_lot"
             },
             {
-              "id": "tempfile 3.7.0",
+              "id": "tempfile 3.10.1",
               "target": "tempfile"
             },
             {
@@ -8381,7 +8345,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.52.0"
+        "version": "0.57.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8390,14 +8354,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-pack 0.42.0": {
+    "gix-pack 0.47.0": {
       "name": "gix-pack",
-      "version": "0.42.0",
+      "version": "0.47.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-pack/0.42.0/download",
-          "sha256": "be19ee650300d7cbac5829b637685ec44a8d921a7c2eaff8a245d8f2f008870c"
+          "url": "https://static.crates.io/crates/gix-pack/0.47.0/download",
+          "sha256": "8da5f3e78c96b76c4e6fe5e8e06b76221e4a0ee9a255aa935ed1fdf68988dfd8"
         }
       },
       "targets": [
@@ -8422,6 +8386,8 @@
         "crate_features": {
           "common": [
             "object-cache-dynamic",
+            "pack-cache-lru-dynamic",
+            "pack-cache-lru-static",
             "streaming-input"
           ],
           "selects": {}
@@ -8433,31 +8399,31 @@
               "target": "clru"
             },
             {
-              "id": "gix-chunk 0.4.4",
+              "id": "gix-chunk 0.4.8",
               "target": "gix_chunk"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-hashtable 0.4.0",
+              "id": "gix-hashtable 0.5.2",
               "target": "gix_hashtable"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "memmap2 0.7.1",
+              "id": "memmap2 0.9.4",
               "target": "memmap2"
             },
             {
@@ -8465,25 +8431,29 @@
               "target": "parking_lot"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
               "id": "thiserror 1.0.44",
               "target": "thiserror"
+            },
+            {
+              "id": "uluru 3.0.0",
+              "target": "uluru"
             }
           ],
           "selects": {
             "cfg(not(target_arch = \"wasm32\"))": [
               {
-                "id": "gix-tempfile 9.0.0",
+                "id": "gix-tempfile 13.1.1",
                 "target": "gix_tempfile"
               }
             ]
           }
         },
         "edition": "2021",
-        "version": "0.42.0"
+        "version": "0.47.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8492,14 +8462,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-packetline 0.16.6": {
+    "gix-packetline 0.17.5": {
       "name": "gix-packetline",
-      "version": "0.16.6",
+      "version": "0.17.5",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-packetline/0.16.6/download",
-          "sha256": "d6df0b75361353e7c0a6d72d49617a37379a7a22cba4569ae33a7720a4c8755a"
+          "url": "https://static.crates.io/crates/gix-packetline/0.17.5/download",
+          "sha256": "b70486beda0903b6d5b65dfa6e40585098cdf4e6365ca2dff4f74c387354a515"
         }
       },
       "targets": [
@@ -8535,8 +8505,12 @@
               "target": "bstr"
             },
             {
-              "id": "faster-hex 0.8.1",
+              "id": "faster-hex 0.9.0",
               "target": "faster_hex"
+            },
+            {
+              "id": "gix-trace 0.1.8",
+              "target": "gix_trace"
             },
             {
               "id": "thiserror 1.0.44",
@@ -8546,7 +8520,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.16.6"
+        "version": "0.17.5"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8555,14 +8529,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-packetline-blocking 0.16.6": {
+    "gix-packetline-blocking 0.17.3": {
       "name": "gix-packetline-blocking",
-      "version": "0.16.6",
+      "version": "0.17.3",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-packetline-blocking/0.16.6/download",
-          "sha256": "7d8395f7501c84d6a1fe902035fdfd8cd86d89e2dd6be0200ec1a72fd3c92d39"
+          "url": "https://static.crates.io/crates/gix-packetline-blocking/0.17.3/download",
+          "sha256": "ca8ef6dd3ea50e26f3bf572e90c034d033c804d340cd1eb386392f184a9ba2f7"
         }
       },
       "targets": [
@@ -8598,8 +8572,12 @@
               "target": "bstr"
             },
             {
-              "id": "faster-hex 0.8.1",
+              "id": "faster-hex 0.9.0",
               "target": "faster_hex"
+            },
+            {
+              "id": "gix-trace 0.1.8",
+              "target": "gix_trace"
             },
             {
               "id": "thiserror 1.0.44",
@@ -8609,7 +8587,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.16.6"
+        "version": "0.17.3"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8618,14 +8596,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-path 0.10.0": {
+    "gix-path 0.10.7": {
       "name": "gix-path",
-      "version": "0.10.0",
+      "version": "0.10.7",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-path/0.10.0/download",
-          "sha256": "6a1d370115171e3ae03c5c6d4f7d096f2981a40ddccb98dfd704c773530ba73b"
+          "url": "https://static.crates.io/crates/gix-path/0.10.7/download",
+          "sha256": "23623cf0f475691a6d943f898c4d0b89f5c1a2a64d0f92bce0e0322ee6528783"
         }
       },
       "targets": [
@@ -8654,7 +8632,7 @@
               "target": "bstr"
             },
             {
-              "id": "gix-trace 0.1.3",
+              "id": "gix-trace 0.1.8",
               "target": "gix_trace"
             },
             {
@@ -8676,7 +8654,7 @@
           }
         },
         "edition": "2021",
-        "version": "0.10.0"
+        "version": "0.10.7"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8685,14 +8663,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-pathspec 0.2.0": {
+    "gix-pathspec 0.6.0": {
       "name": "gix-pathspec",
-      "version": "0.2.0",
+      "version": "0.6.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-pathspec/0.2.0/download",
-          "sha256": "90a7885b4ccdc8c80740e465747bf961a8110043fdc1fda3ee80bc81885f42df"
+          "url": "https://static.crates.io/crates/gix-pathspec/0.6.0/download",
+          "sha256": "9cbd49750edb26b0a691e5246fc635fa554d344da825cd20fa9ee0da9c1b761f"
         }
       },
       "targets": [
@@ -8717,7 +8695,7 @@
         "deps": {
           "common": [
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             },
             {
@@ -8725,19 +8703,19 @@
               "target": "bstr"
             },
             {
-              "id": "gix-attributes 0.18.0",
+              "id": "gix-attributes 0.22.2",
               "target": "gix_attributes"
             },
             {
-              "id": "gix-config-value 0.14.0",
+              "id": "gix-config-value 0.14.6",
               "target": "gix_config_value"
             },
             {
-              "id": "gix-glob 0.12.0",
+              "id": "gix-glob 0.16.2",
               "target": "gix_glob"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
@@ -8748,7 +8726,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.2.0"
+        "version": "0.6.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8757,14 +8735,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-prompt 0.7.0": {
+    "gix-prompt 0.8.4": {
       "name": "gix-prompt",
-      "version": "0.7.0",
+      "version": "0.8.4",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-prompt/0.7.0/download",
-          "sha256": "5c9a913769516f5e9d937afac206fb76428e3d7238e538845842887fda584678"
+          "url": "https://static.crates.io/crates/gix-prompt/0.8.4/download",
+          "sha256": "f5325eb17ce7b5e5d25dec5c2315d642a09d55b9888b3bf46b7d72e1621a55d8"
         }
       },
       "targets": [
@@ -8789,11 +8767,11 @@
         "deps": {
           "common": [
             {
-              "id": "gix-command 0.2.9",
+              "id": "gix-command 0.3.6",
               "target": "gix_command"
             },
             {
-              "id": "gix-config-value 0.14.0",
+              "id": "gix-config-value 0.14.6",
               "target": "gix_config_value"
             },
             {
@@ -8808,14 +8786,14 @@
           "selects": {
             "cfg(unix)": [
               {
-                "id": "rustix 0.38.6",
+                "id": "rustix 0.38.32",
                 "target": "rustix"
               }
             ]
           }
         },
         "edition": "2021",
-        "version": "0.7.0"
+        "version": "0.8.4"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8824,14 +8802,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-protocol 0.39.0": {
+    "gix-protocol 0.44.2": {
       "name": "gix-protocol",
-      "version": "0.39.0",
+      "version": "0.44.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-protocol/0.39.0/download",
-          "sha256": "5d6ee7fc3f80140ea0651d483ecb9e680403be244849c16237fce45ac80163df"
+          "url": "https://static.crates.io/crates/gix-protocol/0.44.2/download",
+          "sha256": "a905cd00946ed8ed6f4f2281f98a889c5b3d38361cd94b8d5a5771d25ab33b99"
         }
       },
       "targets": [
@@ -8866,35 +8844,35 @@
               "target": "bstr"
             },
             {
-              "id": "btoi 0.4.3",
-              "target": "btoi"
-            },
-            {
-              "id": "gix-credentials 0.19.0",
+              "id": "gix-credentials 0.24.2",
               "target": "gix_credentials"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-transport 0.36.1",
+              "id": "gix-transport 0.41.2",
               "target": "gix_transport"
+            },
+            {
+              "id": "gix-utils 0.1.11",
+              "target": "gix_utils"
             },
             {
               "id": "thiserror 1.0.44",
               "target": "thiserror"
             },
             {
-              "id": "winnow 0.5.15",
+              "id": "winnow 0.6.5",
               "target": "winnow"
             }
           ],
@@ -8910,7 +8888,7 @@
           ],
           "selects": {}
         },
-        "version": "0.39.0"
+        "version": "0.44.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8919,14 +8897,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-quote 0.4.7": {
+    "gix-quote 0.4.12": {
       "name": "gix-quote",
-      "version": "0.4.7",
+      "version": "0.4.12",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-quote/0.4.7/download",
-          "sha256": "475c86a97dd0127ba4465fbb239abac9ea10e68301470c9791a6dd5351cdc905"
+          "url": "https://static.crates.io/crates/gix-quote/0.4.12/download",
+          "sha256": "cbff4f9b9ea3fa7a25a70ee62f545143abef624ac6aa5884344e70c8b0a1d9ff"
         }
       },
       "targets": [
@@ -8955,8 +8933,8 @@
               "target": "bstr"
             },
             {
-              "id": "btoi 0.4.3",
-              "target": "btoi"
+              "id": "gix-utils 0.1.11",
+              "target": "gix_utils"
             },
             {
               "id": "thiserror 1.0.44",
@@ -8966,7 +8944,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.4.7"
+        "version": "0.4.12"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -8975,14 +8953,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-ref 0.36.0": {
+    "gix-ref 0.41.0": {
       "name": "gix-ref",
-      "version": "0.36.0",
+      "version": "0.41.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-ref/0.36.0/download",
-          "sha256": "3cccbfa8d5cd9b86465f27a521e0c017de54b92d9fd37c143e49c658a2f04f3a"
+          "url": "https://static.crates.io/crates/gix-ref/0.41.0/download",
+          "sha256": "5818958994ad7879fa566f5441ebcc48f0926aa027b28948e6fbf6578894dc31"
         }
       },
       "targets": [
@@ -9007,47 +8985,51 @@
         "deps": {
           "common": [
             {
-              "id": "gix-actor 0.26.0",
+              "id": "gix-actor 0.30.0",
               "target": "gix_actor"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-fs 0.6.0",
+              "id": "gix-fs 0.10.1",
               "target": "gix_fs"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-lock 9.0.0",
+              "id": "gix-lock 13.1.1",
               "target": "gix_lock"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-tempfile 9.0.0",
+              "id": "gix-tempfile 13.1.1",
               "target": "gix_tempfile"
             },
             {
-              "id": "gix-validate 0.8.0",
+              "id": "gix-utils 0.1.11",
+              "target": "gix_utils"
+            },
+            {
+              "id": "gix-validate 0.8.4",
               "target": "gix_validate"
             },
             {
-              "id": "memmap2 0.7.1",
+              "id": "memmap2 0.9.4",
               "target": "memmap2"
             },
             {
@@ -9055,14 +9037,14 @@
               "target": "thiserror"
             },
             {
-              "id": "winnow 0.5.15",
+              "id": "winnow 0.5.40",
               "target": "winnow"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.36.0"
+        "version": "0.41.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9071,14 +9053,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-refspec 0.17.0": {
+    "gix-refspec 0.22.0": {
       "name": "gix-refspec",
-      "version": "0.17.0",
+      "version": "0.22.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-refspec/0.17.0/download",
-          "sha256": "678ba30d95baa5462df9875628ed40655d5f5b8aba7028de86ed57f36e762c6c"
+          "url": "https://static.crates.io/crates/gix-refspec/0.22.0/download",
+          "sha256": "613aa4d93034c5791d13bdc635e530f4ddab1412ddfb4a8215f76213177b61c7"
         }
       },
       "targets": [
@@ -9107,19 +9089,19 @@
               "target": "bstr"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-revision 0.21.0",
+              "id": "gix-revision 0.26.0",
               "target": "gix_revision"
             },
             {
-              "id": "gix-validate 0.8.0",
+              "id": "gix-validate 0.8.4",
               "target": "gix_validate"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -9130,7 +9112,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.17.0"
+        "version": "0.22.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9139,14 +9121,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-revision 0.21.0": {
+    "gix-revision 0.26.0": {
       "name": "gix-revision",
-      "version": "0.21.0",
+      "version": "0.26.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-revision/0.21.0/download",
-          "sha256": "b3e80a5992ae446fe1745dd26523b86084e3f1b6b3e35377fe09b4f35ac8f151"
+          "url": "https://static.crates.io/crates/gix-revision/0.26.0/download",
+          "sha256": "288f6549d7666db74dc3f169a9a333694fc28ecd2f5aa7b2c979c89eb556751a"
         }
       },
       "targets": [
@@ -9181,27 +9163,27 @@
               "target": "bstr"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-hashtable 0.4.0",
+              "id": "gix-hashtable 0.5.2",
               "target": "gix_hashtable"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-revwalk 0.7.0",
+              "id": "gix-revwalk 0.12.0",
               "target": "gix_revwalk"
             },
             {
-              "id": "gix-trace 0.1.3",
+              "id": "gix-trace 0.1.8",
               "target": "gix_trace"
             },
             {
@@ -9212,7 +9194,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.21.0"
+        "version": "0.26.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9221,14 +9203,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-revwalk 0.7.0": {
+    "gix-revwalk 0.12.0": {
       "name": "gix-revwalk",
-      "version": "0.7.0",
+      "version": "0.12.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-revwalk/0.7.0/download",
-          "sha256": "b806349bc1f668e09035800e07ac8045da4e39a8925a245d93142c4802224ec1"
+          "url": "https://static.crates.io/crates/gix-revwalk/0.12.0/download",
+          "sha256": "5b9b4d91dfc5c14fee61a28c65113ded720403b65a0f46169c0460f731a5d03c"
         }
       },
       "targets": [
@@ -9253,27 +9235,27 @@
         "deps": {
           "common": [
             {
-              "id": "gix-commitgraph 0.20.0",
+              "id": "gix-commitgraph 0.24.2",
               "target": "gix_commitgraph"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-hashtable 0.4.0",
+              "id": "gix-hashtable 0.5.2",
               "target": "gix_hashtable"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -9284,7 +9266,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.7.0"
+        "version": "0.12.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9293,14 +9275,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-sec 0.10.0": {
+    "gix-sec 0.10.6": {
       "name": "gix-sec",
-      "version": "0.10.0",
+      "version": "0.10.6",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-sec/0.10.0/download",
-          "sha256": "92b9542ac025a8c02ed5d17b3fc031a111a384e859d0be3532ec4d58c40a0f28"
+          "url": "https://static.crates.io/crates/gix-sec/0.10.6/download",
+          "sha256": "fddc27984a643b20dd03e97790555804f98cf07404e0e552c0ad8133266a79a1"
         }
       },
       "targets": [
@@ -9325,7 +9307,7 @@
         "deps": {
           "common": [
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             }
           ],
@@ -9338,18 +9320,18 @@
             ],
             "cfg(windows)": [
               {
-                "id": "gix-path 0.10.0",
+                "id": "gix-path 0.10.7",
                 "target": "gix_path"
               },
               {
-                "id": "windows 0.48.0",
-                "target": "windows"
+                "id": "windows-sys 0.52.0",
+                "target": "windows_sys"
               }
             ]
           }
         },
         "edition": "2021",
-        "version": "0.10.0"
+        "version": "0.10.6"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9358,14 +9340,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-submodule 0.3.0": {
+    "gix-submodule 0.8.0": {
       "name": "gix-submodule",
-      "version": "0.3.0",
+      "version": "0.8.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-submodule/0.3.0/download",
-          "sha256": "5ff6b99d735842a3a7fb162b660fa97acec39d576c0ca1700d9eff9344f8625d"
+          "url": "https://static.crates.io/crates/gix-submodule/0.8.0/download",
+          "sha256": "73182f6c1f5ed1ed94ba16581ac62593d5e29cd1c028b2af618f836283b8f8d4"
         }
       },
       "targets": [
@@ -9394,23 +9376,23 @@
               "target": "bstr"
             },
             {
-              "id": "gix-config 0.29.0",
+              "id": "gix-config 0.34.0",
               "target": "gix_config"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-pathspec 0.2.0",
+              "id": "gix-pathspec 0.6.0",
               "target": "gix_pathspec"
             },
             {
-              "id": "gix-refspec 0.17.0",
+              "id": "gix-refspec 0.22.0",
               "target": "gix_refspec"
             },
             {
-              "id": "gix-url 0.23.0",
+              "id": "gix-url 0.27.2",
               "target": "gix_url"
             },
             {
@@ -9421,7 +9403,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.3.0"
+        "version": "0.8.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9430,14 +9412,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-tempfile 9.0.0": {
+    "gix-tempfile 13.1.1": {
       "name": "gix-tempfile",
-      "version": "9.0.0",
+      "version": "13.1.1",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-tempfile/9.0.0/download",
-          "sha256": "2762b91ff95e27ff3ea95758c0d4efacd7435a1be3629622928b8276de0f72a8"
+          "url": "https://static.crates.io/crates/gix-tempfile/13.1.1/download",
+          "sha256": "a761d76594f4443b675e85928e4902dec333273836bd386906f01e7e346a0d11"
         }
       },
       "targets": [
@@ -9462,7 +9444,7 @@
         "deps": {
           "common": [
             {
-              "id": "gix-fs 0.6.0",
+              "id": "gix-fs 0.10.1",
               "target": "gix_fs"
             },
             {
@@ -9474,7 +9456,7 @@
               "target": "parking_lot"
             },
             {
-              "id": "tempfile 3.7.0",
+              "id": "tempfile 3.10.1",
               "target": "tempfile"
             }
           ],
@@ -9488,7 +9470,7 @@
           }
         },
         "edition": "2021",
-        "version": "9.0.0"
+        "version": "13.1.1"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9497,14 +9479,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-trace 0.1.3": {
+    "gix-trace 0.1.8": {
       "name": "gix-trace",
-      "version": "0.1.3",
+      "version": "0.1.8",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-trace/0.1.3/download",
-          "sha256": "96b6d623a1152c3facb79067d6e2ecdae48130030cf27d6eb21109f13bd7b836"
+          "url": "https://static.crates.io/crates/gix-trace/0.1.8/download",
+          "sha256": "9b838b2db8f62c9447d483a4c28d251b67fee32741a82cb4d35e9eb4e9fdc5ab"
         }
       },
       "targets": [
@@ -9533,7 +9515,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.1.3"
+        "version": "0.1.8"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9542,14 +9524,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-transport 0.36.1": {
+    "gix-transport 0.41.2": {
       "name": "gix-transport",
-      "version": "0.36.1",
+      "version": "0.41.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-transport/0.36.1/download",
-          "sha256": "95892eedefd65a6b4312aa5e166d2f740558adfb6854a2b7de73e82e54ef064c"
+          "url": "https://static.crates.io/crates/gix-transport/0.41.2/download",
+          "sha256": "cf8e5f72ec9cad9ee44714b9a4ec7427b540a2418b62111f5e3a715bebe1ed9d"
         }
       },
       "targets": [
@@ -9594,31 +9576,31 @@
               "target": "bstr"
             },
             {
-              "id": "gix-command 0.2.9",
+              "id": "gix-command 0.3.6",
               "target": "gix_command"
             },
             {
-              "id": "gix-credentials 0.19.0",
+              "id": "gix-credentials 0.24.2",
               "target": "gix_credentials"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-packetline 0.16.6",
+              "id": "gix-packetline 0.17.5",
               "target": "gix_packetline"
             },
             {
-              "id": "gix-quote 0.4.7",
+              "id": "gix-quote 0.4.12",
               "target": "gix_quote"
             },
             {
-              "id": "gix-sec 0.10.0",
+              "id": "gix-sec 0.10.6",
               "target": "gix_sec"
             },
             {
-              "id": "gix-url 0.23.0",
+              "id": "gix-url 0.27.2",
               "target": "gix_url"
             },
             {
@@ -9633,7 +9615,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.36.1"
+        "version": "0.41.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9642,14 +9624,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-traverse 0.32.0": {
+    "gix-traverse 0.37.0": {
       "name": "gix-traverse",
-      "version": "0.32.0",
+      "version": "0.37.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-traverse/0.32.0/download",
-          "sha256": "3ec6358f8373fb018af8fc96c9d2ec6a5b66999e2377dc40b7801351fec409ed"
+          "url": "https://static.crates.io/crates/gix-traverse/0.37.0/download",
+          "sha256": "bfc30c5b5e4e838683b59e1b0574ce6bc1c35916df9709aaab32bb7751daf08b"
         }
       },
       "targets": [
@@ -9674,31 +9656,31 @@
         "deps": {
           "common": [
             {
-              "id": "gix-commitgraph 0.20.0",
+              "id": "gix-commitgraph 0.24.2",
               "target": "gix_commitgraph"
             },
             {
-              "id": "gix-date 0.8.0",
+              "id": "gix-date 0.8.5",
               "target": "gix_date"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-hashtable 0.4.0",
+              "id": "gix-hashtable 0.5.2",
               "target": "gix_hashtable"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-revwalk 0.7.0",
+              "id": "gix-revwalk 0.12.0",
               "target": "gix_revwalk"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -9709,7 +9691,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.32.0"
+        "version": "0.37.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9718,14 +9700,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-url 0.23.0": {
+    "gix-url 0.27.2": {
       "name": "gix-url",
-      "version": "0.23.0",
+      "version": "0.27.2",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-url/0.23.0/download",
-          "sha256": "1c79d595b99a6c7ab274f3c991735a0c0f5a816a3da460f513c48edf1c7bf2cc"
+          "url": "https://static.crates.io/crates/gix-url/0.27.2/download",
+          "sha256": "8f0b24f3ecc79a5a53539de9c2e99425d0ef23feacdcf3faac983aa9a2f26849"
         }
       },
       "targets": [
@@ -9754,11 +9736,11 @@
               "target": "bstr"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
@@ -9770,14 +9752,14 @@
               "target": "thiserror"
             },
             {
-              "id": "url 2.4.0",
+              "id": "url 2.5.0",
               "target": "url"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.23.0"
+        "version": "0.27.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9786,14 +9768,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-utils 0.1.5": {
+    "gix-utils 0.1.11": {
       "name": "gix-utils",
-      "version": "0.1.5",
+      "version": "0.1.11",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-utils/0.1.5/download",
-          "sha256": "b85d89dc728613e26e0ed952a19583744e7f5240fcd4aa30d6c824ffd8b52f0f"
+          "url": "https://static.crates.io/crates/gix-utils/0.1.11/download",
+          "sha256": "0066432d4c277f9877f091279a597ea5331f68ca410efc874f0bdfb1cd348f92"
         }
       },
       "targets": [
@@ -9818,14 +9800,18 @@
         "deps": {
           "common": [
             {
-              "id": "fastrand 2.0.0",
+              "id": "fastrand 2.0.2",
               "target": "fastrand"
+            },
+            {
+              "id": "unicode-normalization 0.1.22",
+              "target": "unicode_normalization"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.1.5"
+        "version": "0.1.11"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9834,14 +9820,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-validate 0.8.0": {
+    "gix-validate 0.8.4": {
       "name": "gix-validate",
-      "version": "0.8.0",
+      "version": "0.8.4",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-validate/0.8.0/download",
-          "sha256": "e05cab2b03a45b866156e052aa38619f4ece4adcb2f79978bfc249bc3b21b8c5"
+          "url": "https://static.crates.io/crates/gix-validate/0.8.4/download",
+          "sha256": "e39fc6e06044985eac19dd34d474909e517307582e462b2eb4c8fa51b6241545"
         }
       },
       "targets": [
@@ -9877,7 +9863,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.8.0"
+        "version": "0.8.4"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9886,14 +9872,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-worktree 0.25.0": {
+    "gix-worktree 0.30.0": {
       "name": "gix-worktree",
-      "version": "0.25.0",
+      "version": "0.30.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-worktree/0.25.0/download",
-          "sha256": "addabd470ca4ce3ab893e32a5743971a530b8fc0eee5c23844849abf3c9ea6d6"
+          "url": "https://static.crates.io/crates/gix-worktree/0.30.0/download",
+          "sha256": "ca36bb3dc54038c66507dc75c4d8edbee2d6d5cc45227b4eb508ad13dd60a006"
         }
       },
       "targets": [
@@ -9928,46 +9914,46 @@
               "target": "bstr"
             },
             {
-              "id": "gix-attributes 0.18.0",
+              "id": "gix-attributes 0.22.2",
               "target": "gix_attributes"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-fs 0.6.0",
+              "id": "gix-fs 0.10.1",
               "target": "gix_fs"
             },
             {
-              "id": "gix-glob 0.12.0",
+              "id": "gix-glob 0.16.2",
               "target": "gix_glob"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-ignore 0.7.0",
+              "id": "gix-ignore 0.11.2",
               "target": "gix_ignore"
             },
             {
-              "id": "gix-index 0.24.0",
+              "id": "gix-index 0.29.0",
               "target": "gix_index"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.25.0"
+        "version": "0.30.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -9976,14 +9962,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "gix-worktree-state 0.2.0": {
+    "gix-worktree-state 0.7.0": {
       "name": "gix-worktree-state",
-      "version": "0.2.0",
+      "version": "0.7.0",
       "package_url": "https://github.com/Byron/gitoxide",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/gix-worktree-state/0.2.0/download",
-          "sha256": "02daf5a1d381280e3c5803a3745ee2abf09d2873118136aaadc0ed96ed438aeb"
+          "url": "https://static.crates.io/crates/gix-worktree-state/0.7.0/download",
+          "sha256": "8ae178614b70bdb0c7f6f21b8c9fb711ab78bd7e8e1866f565fcf28876747f1d"
         }
       },
       "targets": [
@@ -10012,39 +9998,39 @@
               "target": "bstr"
             },
             {
-              "id": "gix-features 0.34.0",
+              "id": "gix-features 0.38.1",
               "target": "gix_features"
             },
             {
-              "id": "gix-filter 0.4.0",
+              "id": "gix-filter 0.9.0",
               "target": "gix_filter"
             },
             {
-              "id": "gix-fs 0.6.0",
+              "id": "gix-fs 0.10.1",
               "target": "gix_fs"
             },
             {
-              "id": "gix-glob 0.12.0",
+              "id": "gix-glob 0.16.2",
               "target": "gix_glob"
             },
             {
-              "id": "gix-hash 0.13.0",
+              "id": "gix-hash 0.14.2",
               "target": "gix_hash"
             },
             {
-              "id": "gix-index 0.24.0",
+              "id": "gix-index 0.29.0",
               "target": "gix_index"
             },
             {
-              "id": "gix-object 0.36.0",
+              "id": "gix-object 0.41.0",
               "target": "gix_object"
             },
             {
-              "id": "gix-path 0.10.0",
+              "id": "gix-path 0.10.7",
               "target": "gix_path"
             },
             {
-              "id": "gix-worktree 0.25.0",
+              "id": "gix-worktree 0.30.0",
               "target": "gix_worktree"
             },
             {
@@ -10059,7 +10045,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.2.0"
+        "version": "0.7.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -10107,14 +10093,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "h2 0.3.25": {
+    "h2 0.3.26": {
       "name": "h2",
-      "version": "0.3.25",
+      "version": "0.3.26",
       "package_url": "https://github.com/hyperium/h2",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/h2/0.3.25/download",
-          "sha256": "4fbd2820c5e49886948654ab546d0688ff24530286bdcf8fca3cefb16d4618eb"
+          "url": "https://static.crates.io/crates/h2/0.3.26/download",
+          "sha256": "81fe527a889e1532da5c525686d96d4c2e74cdd345badf8dfef9f6b39dd5f5e8"
         }
       },
       "targets": [
@@ -10186,7 +10172,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "0.3.25"
+        "version": "0.3.26"
       },
       "license": "MIT",
       "license_ids": [
@@ -10846,7 +10832,7 @@
               "target": "futures_util"
             },
             {
-              "id": "h2 0.3.25",
+              "id": "h2 0.3.26",
               "target": "h2"
             },
             {
@@ -11073,14 +11059,14 @@
       ],
       "license_file": "LICENSE"
     },
-    "idna 0.4.0": {
+    "idna 0.5.0": {
       "name": "idna",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "package_url": "https://github.com/servo/rust-url/",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/idna/0.4.0/download",
-          "sha256": "7d20d6b07bfbc108882d88ed8e37d39636dcc260e15e30c45e6ba089610b917c"
+          "url": "https://static.crates.io/crates/idna/0.5.0/download",
+          "sha256": "634d9b1461af396cad843f47fdba5597a4f9e6ddd4bfb6ff5d85028c25cb12f6"
         }
       },
       "targets": [
@@ -11124,7 +11110,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "0.4.0"
+        "version": "0.5.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -11423,14 +11409,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "is-terminal 0.4.9": {
+    "is-terminal 0.4.12": {
       "name": "is-terminal",
-      "version": "0.4.9",
+      "version": "0.4.12",
       "package_url": "https://github.com/sunfishcode/is-terminal",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/is-terminal/0.4.9/download",
-          "sha256": "cb0889898416213fab133e1d33a0e5858a48177452750691bde3666d0fdbaf8b"
+          "url": "https://static.crates.io/crates/is-terminal/0.4.12/download",
+          "sha256": "f23ff5ef2b80d608d61efee834934d862cd92461afc0560dedf493e4c033738b"
         }
       },
       "targets": [
@@ -11455,10 +11441,10 @@
         "deps": {
           "common": [],
           "selects": {
-            "cfg(not(any(windows, target_os = \"hermit\", target_os = \"unknown\")))": [
+            "cfg(any(unix, target_os = \"wasi\"))": [
               {
-                "id": "rustix 0.38.6",
-                "target": "rustix"
+                "id": "libc 0.2.153",
+                "target": "libc"
               }
             ],
             "cfg(target_os = \"hermit\")": [
@@ -11469,14 +11455,14 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.48.0",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ]
           }
         },
         "edition": "2018",
-        "version": "0.4.9"
+        "version": "0.4.12"
       },
       "license": "MIT",
       "license_ids": [
@@ -11795,6 +11781,57 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
+    "jwalk 0.8.1": {
+      "name": "jwalk",
+      "version": "0.8.1",
+      "package_url": "https://github.com/byron/jwalk",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/jwalk/0.8.1/download",
+          "sha256": "2735847566356cd2179a2a38264839308f7079fa96e6bd5a42d740460e003c56"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "jwalk",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "jwalk",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "crossbeam 0.8.4",
+              "target": "crossbeam"
+            },
+            {
+              "id": "rayon 1.7.0",
+              "target": "rayon"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2018",
+        "version": "0.8.1"
+      },
+      "license": "MIT",
+      "license_ids": [
+        "MIT"
+      ],
+      "license_file": "LICENSE"
+    },
     "kstring 2.0.0": {
       "name": "kstring",
       "version": "2.0.0",
@@ -11983,6 +12020,9 @@
               "extra_traits"
             ],
             "thumbv8m.main-none-eabi": [
+              "extra_traits"
+            ],
+            "wasm32-unknown-unknown": [
               "extra_traits"
             ],
             "wasm32-wasi": [
@@ -12232,14 +12272,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "linux-raw-sys 0.4.5": {
+    "linux-raw-sys 0.4.13": {
       "name": "linux-raw-sys",
-      "version": "0.4.5",
+      "version": "0.4.13",
       "package_url": "https://github.com/sunfishcode/linux-raw-sys",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/linux-raw-sys/0.4.5/download",
-          "sha256": "57bcfdad1b858c2db7c38303a6d2ad4dfaf5eb53dfeb0910128b2c26d6158503"
+          "url": "https://static.crates.io/crates/linux-raw-sys/0.4.13/download",
+          "sha256": "01cda141df6706de531b6c46c3a33ecca755538219bd484262fa09410c13539c"
         }
       },
       "targets": [
@@ -12269,30 +12309,37 @@
           ],
           "selects": {
             "aarch64-unknown-linux-gnu": [
+              "elf",
               "errno"
             ],
             "aarch64-unknown-nixos-gnu": [
+              "elf",
               "errno"
             ],
             "arm-unknown-linux-gnueabi": [
+              "elf",
               "errno"
             ],
             "armv7-unknown-linux-gnueabi": [
+              "elf",
               "errno"
             ],
             "i686-unknown-linux-gnu": [
+              "elf",
               "errno"
             ],
             "x86_64-unknown-linux-gnu": [
+              "elf",
               "errno"
             ],
             "x86_64-unknown-nixos-gnu": [
+              "elf",
               "errno"
             ]
           }
         },
         "edition": "2021",
-        "version": "0.4.5"
+        "version": "0.4.13"
       },
       "license": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
       "license_ids": [
@@ -12679,14 +12726,14 @@
       ],
       "license_file": "LICENSE-MIT"
     },
-    "memmap2 0.7.1": {
+    "memmap2 0.9.4": {
       "name": "memmap2",
-      "version": "0.7.1",
+      "version": "0.9.4",
       "package_url": "https://github.com/RazrFalcon/memmap2-rs",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/memmap2/0.7.1/download",
-          "sha256": "f49388d20533534cd19360ad3d6a7dadc885944aa802ba3995040c5ec11288c6"
+          "url": "https://static.crates.io/crates/memmap2/0.9.4/download",
+          "sha256": "fe751422e4a8caa417e13c3ea66452215d7d63e19e604f4980461212f3ae1322"
         }
       },
       "targets": [
@@ -12720,7 +12767,7 @@
           }
         },
         "edition": "2018",
-        "version": "0.7.1"
+        "version": "0.9.4"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -12728,85 +12775,6 @@
         "MIT"
       ],
       "license_file": "LICENSE-APACHE"
-    },
-    "memoffset 0.9.0": {
-      "name": "memoffset",
-      "version": "0.9.0",
-      "package_url": "https://github.com/Gilnaa/memoffset",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/memoffset/0.9.0/download",
-          "sha256": "5a634b1c61a95585bd15607c6ab0c4e5b226e695ff2800ba0cdccddf208c406c"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "memoffset",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        },
-        {
-          "BuildScript": {
-            "crate_name": "build_script_build",
-            "crate_root": "build.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "memoffset",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "crate_features": {
-          "common": [
-            "default"
-          ],
-          "selects": {}
-        },
-        "deps": {
-          "common": [
-            {
-              "id": "memoffset 0.9.0",
-              "target": "build_script_build"
-            }
-          ],
-          "selects": {}
-        },
-        "edition": "2015",
-        "version": "0.9.0"
-      },
-      "build_script_attrs": {
-        "data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "autocfg 1.1.0",
-              "target": "autocfg"
-            }
-          ],
-          "selects": {}
-        }
-      },
-      "license": "MIT",
-      "license_ids": [
-        "MIT"
-      ],
-      "license_file": "LICENSE"
     },
     "mime 0.3.17": {
       "name": "mime",
@@ -13555,7 +13523,7 @@
         "deps": {
           "common": [
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             },
             {
@@ -13827,51 +13795,6 @@
       ],
       "license_file": "LICENSE-MIT"
     },
-    "os_str_bytes 6.5.1": {
-      "name": "os_str_bytes",
-      "version": "6.5.1",
-      "package_url": "https://github.com/dylni/os_str_bytes",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/os_str_bytes/6.5.1/download",
-          "sha256": "4d5d9eb14b174ee9aa2ef96dc2b94637a2d4b6e7cb873c7e171f0c20c6cf3eac"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "os_str_bytes",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "os_str_bytes",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "crate_features": {
-          "common": [
-            "raw_os_str"
-          ],
-          "selects": {}
-        },
-        "edition": "2021",
-        "version": "6.5.1"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
-      "license_file": "LICENSE-APACHE"
-    },
     "overload 0.1.1": {
       "name": "overload",
       "version": "0.1.1",
@@ -14058,7 +13981,7 @@
               "target": "build_script_build"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             }
           ],
@@ -14098,14 +14021,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "percent-encoding 2.3.0": {
+    "percent-encoding 2.3.1": {
       "name": "percent-encoding",
-      "version": "2.3.0",
+      "version": "2.3.1",
       "package_url": "https://github.com/servo/rust-url/",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/percent-encoding/2.3.0/download",
-          "sha256": "9b2a4787296e9989611394c33f193f676704af1686e70b8f8033ab5ba9a35a94"
+          "url": "https://static.crates.io/crates/percent-encoding/2.3.1/download",
+          "sha256": "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
         }
       },
       "targets": [
@@ -14136,7 +14059,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "2.3.0"
+        "version": "2.3.1"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -14698,191 +14621,6 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "proc-macro-error 1.0.4": {
-      "name": "proc-macro-error",
-      "version": "1.0.4",
-      "package_url": "https://gitlab.com/CreepySkeleton/proc-macro-error",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/proc-macro-error/1.0.4/download",
-          "sha256": "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "proc_macro_error",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        },
-        {
-          "BuildScript": {
-            "crate_name": "build_script_build",
-            "crate_root": "build.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "proc_macro_error",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "crate_features": {
-          "common": [
-            "default",
-            "syn",
-            "syn-error"
-          ],
-          "selects": {}
-        },
-        "deps": {
-          "common": [
-            {
-              "id": "proc-macro-error 1.0.4",
-              "target": "build_script_build"
-            },
-            {
-              "id": "proc-macro2 1.0.66",
-              "target": "proc_macro2"
-            },
-            {
-              "id": "quote 1.0.32",
-              "target": "quote"
-            },
-            {
-              "id": "syn 1.0.109",
-              "target": "syn"
-            }
-          ],
-          "selects": {}
-        },
-        "edition": "2018",
-        "proc_macro_deps": {
-          "common": [
-            {
-              "id": "proc-macro-error-attr 1.0.4",
-              "target": "proc_macro_error_attr"
-            }
-          ],
-          "selects": {}
-        },
-        "version": "1.0.4"
-      },
-      "build_script_attrs": {
-        "data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "version_check 0.9.4",
-              "target": "version_check"
-            }
-          ],
-          "selects": {}
-        }
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
-      "license_file": "LICENSE-APACHE"
-    },
-    "proc-macro-error-attr 1.0.4": {
-      "name": "proc-macro-error-attr",
-      "version": "1.0.4",
-      "package_url": "https://gitlab.com/CreepySkeleton/proc-macro-error",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/proc-macro-error-attr/1.0.4/download",
-          "sha256": "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
-        }
-      },
-      "targets": [
-        {
-          "ProcMacro": {
-            "crate_name": "proc_macro_error_attr",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        },
-        {
-          "BuildScript": {
-            "crate_name": "build_script_build",
-            "crate_root": "build.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "proc_macro_error_attr",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "proc-macro-error-attr 1.0.4",
-              "target": "build_script_build"
-            },
-            {
-              "id": "proc-macro2 1.0.66",
-              "target": "proc_macro2"
-            },
-            {
-              "id": "quote 1.0.32",
-              "target": "quote"
-            }
-          ],
-          "selects": {}
-        },
-        "edition": "2018",
-        "version": "1.0.4"
-      },
-      "build_script_attrs": {
-        "data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [
-            {
-              "id": "version_check 0.9.4",
-              "target": "version_check"
-            }
-          ],
-          "selects": {}
-        }
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
-      "license_file": "LICENSE-APACHE"
-    },
     "proc-macro2 1.0.66": {
       "name": "proc-macro2",
       "version": "1.0.66",
@@ -14959,14 +14697,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "prodash 26.2.2": {
+    "prodash 28.0.0": {
       "name": "prodash",
-      "version": "26.2.2",
+      "version": "28.0.0",
       "package_url": "https://github.com/Byron/prodash",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/prodash/26.2.2/download",
-          "sha256": "794b5bf8e2d19b53dcdcec3e4bba628e20f5b6062503ba89281fa7037dd7bbcf"
+          "url": "https://static.crates.io/crates/prodash/28.0.0/download",
+          "sha256": "744a264d26b88a6a7e37cbad97953fa233b94d585236310bcbc88474b4092d79"
         }
       },
       "targets": [
@@ -14989,7 +14727,7 @@
           "**"
         ],
         "edition": "2021",
-        "version": "26.2.2"
+        "version": "28.0.0"
       },
       "license": "MIT",
       "license_ids": [
@@ -15213,7 +14951,7 @@
               "target": "syn"
             },
             {
-              "id": "tempfile 3.7.0",
+              "id": "tempfile 3.10.1",
               "target": "tempfile"
             },
             {
@@ -16236,15 +15974,15 @@
         "deps": {
           "common": [
             {
-              "id": "crossbeam-channel 0.5.8",
+              "id": "crossbeam-channel 0.5.12",
               "target": "crossbeam_channel"
             },
             {
-              "id": "crossbeam-deque 0.8.3",
+              "id": "crossbeam-deque 0.8.5",
               "target": "crossbeam_deque"
             },
             {
-              "id": "crossbeam-utils 0.8.16",
+              "id": "crossbeam-utils 0.8.19",
               "target": "crossbeam_utils"
             },
             {
@@ -16833,7 +16571,7 @@
               "target": "tower_service"
             },
             {
-              "id": "url 2.4.0",
+              "id": "url 2.5.0",
               "target": "url"
             }
           ],
@@ -16848,7 +16586,7 @@
                 "target": "encoding_rs"
               },
               {
-                "id": "h2 0.3.25",
+                "id": "h2 0.3.26",
                 "target": "h2"
               },
               {
@@ -16880,7 +16618,7 @@
                 "target": "once_cell"
               },
               {
-                "id": "percent-encoding 2.3.0",
+                "id": "percent-encoding 2.3.1",
                 "target": "percent_encoding"
               },
               {
@@ -17157,14 +16895,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "rustix 0.38.6": {
+    "rustix 0.38.32": {
       "name": "rustix",
-      "version": "0.38.6",
+      "version": "0.38.32",
       "package_url": "https://github.com/bytecodealliance/rustix",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/rustix/0.38.6/download",
-          "sha256": "1ee020b1716f0a80e2ace9b03441a749e402e86712f15f16fe8a8f75afac732f"
+          "url": "https://static.crates.io/crates/rustix/0.38.32/download",
+          "sha256": "65e04861e65f21776e67888bfbea442b3642beaa0138fdb1dd7a84a52dffdb89"
         }
       },
       "targets": [
@@ -17200,116 +16938,164 @@
         ],
         "crate_features": {
           "common": [
-            "default",
-            "std",
-            "termios",
-            "use-libc-auxv"
+            "alloc",
+            "fs",
+            "std"
           ],
           "selects": {
             "aarch64-apple-darwin": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "aarch64-apple-ios": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "aarch64-apple-ios-sim": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "aarch64-fuchsia": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "aarch64-linux-android": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "aarch64-unknown-linux-gnu": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "aarch64-unknown-nixos-gnu": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "aarch64-unknown-nto-qnx710": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "arm-unknown-linux-gnueabi": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "armv7-linux-androideabi": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "armv7-unknown-linux-gnueabi": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "i686-apple-darwin": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "i686-linux-android": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "i686-unknown-freebsd": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "i686-unknown-linux-gnu": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "powerpc-unknown-linux-gnu": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "s390x-unknown-linux-gnu": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "wasm32-wasi": [
-              "fs"
+              "default",
+              "use-libc-auxv"
             ],
             "x86_64-apple-darwin": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "x86_64-apple-ios": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "x86_64-fuchsia": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "x86_64-linux-android": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "x86_64-unknown-freebsd": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "x86_64-unknown-linux-gnu": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ],
             "x86_64-unknown-nixos-gnu": [
-              "fs"
+              "default",
+              "termios",
+              "use-libc-auxv"
             ]
           }
         },
         "deps": {
           "common": [
             {
-              "id": "bitflags 2.3.3",
+              "id": "bitflags 2.5.0",
               "target": "bitflags"
             },
             {
-              "id": "rustix 0.38.6",
+              "id": "rustix 0.38.32",
               "target": "build_script_build"
             }
           ],
           "selects": {
             "cfg(all(any(target_os = \"android\", target_os = \"linux\"), any(rustix_use_libc, miri, not(all(target_os = \"linux\", target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))": [
               {
-                "id": "linux-raw-sys 0.4.5",
+                "id": "linux-raw-sys 0.4.13",
                 "target": "linux_raw_sys"
               }
             ],
             "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))": [
               {
-                "id": "linux-raw-sys 0.4.5",
+                "id": "linux-raw-sys 0.4.13",
                 "target": "linux_raw_sys"
               }
             ],
             "cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))": [
               {
-                "id": "errno 0.3.2",
+                "id": "errno 0.3.8",
                 "target": "errno",
                 "alias": "libc_errno"
               },
@@ -17320,19 +17106,19 @@
             ],
             "cfg(windows)": [
               {
-                "id": "errno 0.3.2",
+                "id": "errno 0.3.8",
                 "target": "errno",
                 "alias": "libc_errno"
               },
               {
-                "id": "windows-sys 0.48.0",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ]
           }
         },
         "edition": "2021",
-        "version": "0.38.6"
+        "version": "0.38.32"
       },
       "build_script_attrs": {
         "data_glob": [
@@ -17623,14 +17409,14 @@
       ],
       "license_file": "LICENSE"
     },
-    "rustsec 0.28.2": {
+    "rustsec 0.29.0": {
       "name": "rustsec",
-      "version": "0.28.2",
+      "version": "0.29.0",
       "package_url": "https://github.com/RustSec/rustsec/tree/main/rustsec",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/rustsec/0.28.2/download",
-          "sha256": "4f099fa0229b64392c5072719467f17f3f4e40c4e1baf9d45986692a6101c51a"
+          "url": "https://static.crates.io/crates/rustsec/0.29.0/download",
+          "sha256": "229441b3fb74fa677ffd9f3fd4488ab4dcc980552cdf4d66d96ce25d745c294e"
         }
       },
       "targets": [
@@ -17671,11 +17457,11 @@
               "target": "cvss"
             },
             {
-              "id": "fs-err 2.9.0",
+              "id": "fs-err 2.11.0",
               "target": "fs_err"
             },
             {
-              "id": "gix 0.53.1",
+              "id": "gix 0.58.0",
               "target": "gix"
             },
             {
@@ -17695,7 +17481,7 @@
               "target": "serde"
             },
             {
-              "id": "tame-index 0.6.0",
+              "id": "tame-index 0.9.7",
               "target": "tame_index"
             },
             {
@@ -17711,14 +17497,14 @@
               "target": "toml"
             },
             {
-              "id": "url 2.4.0",
+              "id": "url 2.5.0",
               "target": "url"
             }
           ],
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.28.2"
+        "version": "0.29.0"
       },
       "license": "Apache-2.0 OR MIT",
       "license_ids": [
@@ -18609,7 +18395,7 @@
         "deps": {
           "common": [
             {
-              "id": "form_urlencoded 1.2.0",
+              "id": "form_urlencoded 1.2.1",
               "target": "form_urlencoded"
             },
             {
@@ -18721,6 +18507,52 @@
         "MIT"
       ],
       "license_file": "LICENSE"
+    },
+    "shell-words 1.1.0": {
+      "name": "shell-words",
+      "version": "1.1.0",
+      "package_url": "https://github.com/tmiasko/shell-words",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/shell-words/1.1.0/download",
+          "sha256": "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "shell_words",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "shell_words",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "crate_features": {
+          "common": [
+            "default",
+            "std"
+          ],
+          "selects": {}
+        },
+        "edition": "2015",
+        "version": "1.1.0"
+      },
+      "license": "MIT/Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "license_file": "LICENSE-APACHE"
     },
     "signal-hook-registry 1.4.1": {
       "name": "signal-hook-registry",
@@ -18889,14 +18721,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "smallvec 1.11.0": {
+    "smallvec 1.13.2": {
       "name": "smallvec",
-      "version": "1.11.0",
+      "version": "1.13.2",
       "package_url": "https://github.com/servo/rust-smallvec",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/smallvec/1.11.0/download",
-          "sha256": "62bb4feee49fdd9f707ef802e22365a35de4b7b299de4763d44bfea899442ff9"
+          "url": "https://static.crates.io/crates/smallvec/1.13.2/download",
+          "sha256": "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
         }
       },
       "targets": [
@@ -18925,7 +18757,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "1.11.0"
+        "version": "1.13.2"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -19543,14 +19375,14 @@
       ],
       "license_file": "LICENSE"
     },
-    "tame-index 0.6.0": {
+    "tame-index 0.9.7": {
       "name": "tame-index",
-      "version": "0.6.0",
+      "version": "0.9.7",
       "package_url": "https://github.com/EmbarkStudios/tame-index",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/tame-index/0.6.0/download",
-          "sha256": "e6b3fea0e225ef36939de3613334dbbc02da041c1830e4a84260b0137b3bc0c7"
+          "url": "https://static.crates.io/crates/tame-index/0.9.7/download",
+          "sha256": "47588d61e9c8df4f0a20369b9a4206f7a0dae8dd6366c94da9b18c00be25f305"
         }
       },
       "targets": [
@@ -19587,11 +19419,11 @@
               "target": "camino"
             },
             {
-              "id": "crossbeam-channel 0.5.8",
+              "id": "crossbeam-channel 0.5.12",
               "target": "crossbeam_channel"
             },
             {
-              "id": "gix 0.53.1",
+              "id": "gix 0.58.0",
               "target": "gix"
             },
             {
@@ -19639,18 +19471,25 @@
               "target": "tokio"
             },
             {
-              "id": "toml 0.7.6",
-              "target": "toml"
+              "id": "toml-span 0.2.0",
+              "target": "toml_span"
             },
             {
               "id": "twox-hash 1.6.3",
               "target": "twox_hash"
             }
           ],
-          "selects": {}
+          "selects": {
+            "cfg(unix)": [
+              {
+                "id": "libc 0.2.153",
+                "target": "libc"
+              }
+            ]
+          }
         },
         "edition": "2021",
-        "version": "0.6.0"
+        "version": "0.9.7"
       },
       "license": "Apache-2.0 OR MIT",
       "license_ids": [
@@ -19659,14 +19498,14 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
-    "tempfile 3.7.0": {
+    "tempfile 3.10.1": {
       "name": "tempfile",
-      "version": "3.7.0",
+      "version": "3.10.1",
       "package_url": "https://github.com/Stebalien/tempfile",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/tempfile/3.7.0/download",
-          "sha256": "5486094ee78b2e5038a6382ed7645bc084dc2ec433426ca4c3cb61e2007b8998"
+          "url": "https://static.crates.io/crates/tempfile/3.10.1/download",
+          "sha256": "85b77fafb263dd9d05cbeac119526425676db3784113aa9295c88498cbf8bff1"
         }
       },
       "targets": [
@@ -19695,33 +19534,27 @@
               "target": "cfg_if"
             },
             {
-              "id": "fastrand 2.0.0",
+              "id": "fastrand 2.0.2",
               "target": "fastrand"
             }
           ],
           "selects": {
             "cfg(any(unix, target_os = \"wasi\"))": [
               {
-                "id": "rustix 0.38.6",
+                "id": "rustix 0.38.32",
                 "target": "rustix"
-              }
-            ],
-            "cfg(target_os = \"redox\")": [
-              {
-                "id": "redox_syscall 0.3.5",
-                "target": "syscall"
               }
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.48.0",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ]
           }
         },
-        "edition": "2018",
-        "version": "3.7.0"
+        "edition": "2021",
+        "version": "3.10.1"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -19820,44 +19653,6 @@
         },
         "edition": "2015",
         "version": "0.11.0"
-      },
-      "license": "MIT",
-      "license_ids": [
-        "MIT"
-      ],
-      "license_file": "LICENSE"
-    },
-    "textwrap 0.16.0": {
-      "name": "textwrap",
-      "version": "0.16.0",
-      "package_url": "https://github.com/mgeisler/textwrap",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/textwrap/0.16.0/download",
-          "sha256": "222a222a5bfe1bba4a77b45ec488a741b3cb8872e5e499451fd7d0129c9c7c3d"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "textwrap",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "textwrap",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "edition": "2021",
-        "version": "0.16.0"
       },
       "license": "MIT",
       "license_ids": [
@@ -20962,6 +20757,54 @@
       ],
       "license_file": "LICENSE-APACHE"
     },
+    "toml-span 0.2.0": {
+      "name": "toml-span",
+      "version": "0.2.0",
+      "package_url": "https://github.com/EmbarkStudios/toml-span",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/toml-span/0.2.0/download",
+          "sha256": "369db38ce6d1fc320a54ea3f032d07c07a232ca19c40e287246aff06d57c2abe"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "toml_span",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "toml_span",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "smallvec 1.13.2",
+              "target": "smallvec"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2021",
+        "version": "0.2.0"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "license_file": null
+    },
     "toml_datetime 0.6.3": {
       "name": "toml_datetime",
       "version": "0.6.3",
@@ -21071,7 +20914,7 @@
               "target": "toml_datetime"
             },
             {
-              "id": "winnow 0.5.15",
+              "id": "winnow 0.5.40",
               "target": "winnow"
             }
           ],
@@ -21145,7 +20988,7 @@
               "target": "bytes"
             },
             {
-              "id": "h2 0.3.25",
+              "id": "h2 0.3.26",
               "target": "h2"
             },
             {
@@ -21165,7 +21008,7 @@
               "target": "hyper_timeout"
             },
             {
-              "id": "percent-encoding 2.3.0",
+              "id": "percent-encoding 2.3.1",
               "target": "percent_encoding"
             },
             {
@@ -22047,7 +21890,7 @@
               "target": "sharded_slab"
             },
             {
-              "id": "smallvec 1.11.0",
+              "id": "smallvec 1.13.2",
               "target": "smallvec"
             },
             {
@@ -22795,6 +22638,53 @@
       ],
       "license_file": "LICENSE.txt"
     },
+    "uluru 3.0.0": {
+      "name": "uluru",
+      "version": "3.0.0",
+      "package_url": "https://github.com/servo/uluru",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/uluru/3.0.0/download",
+          "sha256": "794a32261a1f5eb6a4462c81b59cec87b5c27d5deea7dd1ac8fc781c41d226db"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "uluru",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "uluru",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "arrayvec 0.7.4",
+              "target": "arrayvec"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2018",
+        "version": "3.0.0"
+      },
+      "license": "MPL-2.0",
+      "license_ids": [
+        "MPL-2.0"
+      ],
+      "license_file": "LICENSE"
+    },
     "unicode-bidi 0.3.13": {
       "name": "unicode-bidi",
       "version": "0.3.13",
@@ -23101,14 +22991,14 @@
       ],
       "license_file": "LICENSE.txt"
     },
-    "url 2.4.0": {
+    "url 2.5.0": {
       "name": "url",
-      "version": "2.4.0",
+      "version": "2.5.0",
       "package_url": "https://github.com/servo/rust-url",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/url/2.4.0/download",
-          "sha256": "50bff7831e19200a85b17131d085c25d7811bc4e186efdaf54bbd132994a88cb"
+          "url": "https://static.crates.io/crates/url/2.5.0/download",
+          "sha256": "31e6302e3bb753d46e83516cae55ae196fc0c309407cf11ab35cc51a4c2a4633"
         }
       },
       "targets": [
@@ -23140,15 +23030,15 @@
         "deps": {
           "common": [
             {
-              "id": "form_urlencoded 1.2.0",
+              "id": "form_urlencoded 1.2.1",
               "target": "form_urlencoded"
             },
             {
-              "id": "idna 0.4.0",
+              "id": "idna 0.5.0",
               "target": "idna"
             },
             {
-              "id": "percent-encoding 2.3.0",
+              "id": "percent-encoding 2.3.1",
               "target": "percent_encoding"
             },
             {
@@ -23159,7 +23049,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "2.4.0"
+        "version": "2.5.0"
       },
       "license": "MIT OR Apache-2.0",
       "license_ids": [
@@ -23385,45 +23275,6 @@
         ],
         "edition": "2015",
         "version": "0.8.2"
-      },
-      "license": "MIT/Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
-      "license_file": "LICENSE-APACHE"
-    },
-    "version_check 0.9.4": {
-      "name": "version_check",
-      "version": "0.9.4",
-      "package_url": "https://github.com/SergioBenitez/version_check",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/version_check/0.9.4/download",
-          "sha256": "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "version_check",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "version_check",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "edition": "2015",
-        "version": "0.9.4"
       },
       "license": "MIT/Apache-2.0",
       "license_ids": [
@@ -24161,7 +24012,7 @@
               "target": "log"
             },
             {
-              "id": "url 2.4.0",
+              "id": "url 2.5.0",
               "target": "url"
             }
           ],
@@ -24558,69 +24409,6 @@
       ],
       "license_file": null
     },
-    "windows 0.48.0": {
-      "name": "windows",
-      "version": "0.48.0",
-      "package_url": "https://github.com/microsoft/windows-rs",
-      "repository": {
-        "Http": {
-          "url": "https://static.crates.io/crates/windows/0.48.0/download",
-          "sha256": "e686886bc078bc1b0b600cac0147aadb815089b6e4da64016cbd754b6342700f"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "windows",
-            "crate_root": "src/lib.rs",
-            "srcs": {
-              "allow_empty": false,
-              "include": [
-                "**/*.rs"
-              ]
-            }
-          }
-        }
-      ],
-      "library_target_name": "windows",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "crate_features": {
-          "common": [
-            "Win32",
-            "Win32_Foundation",
-            "Win32_Security",
-            "Win32_Security_Authorization",
-            "Win32_Storage",
-            "Win32_Storage_FileSystem",
-            "Win32_System",
-            "Win32_System_Memory",
-            "Win32_System_Threading",
-            "default"
-          ],
-          "selects": {}
-        },
-        "deps": {
-          "common": [
-            {
-              "id": "windows-targets 0.48.1",
-              "target": "windows_targets"
-            }
-          ],
-          "selects": {}
-        },
-        "edition": "2018",
-        "version": "0.48.0"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
-      "license_file": "license-apache-2.0"
-    },
     "windows-sys 0.45.0": {
       "name": "windows-sys",
       "version": "0.45.0",
@@ -24785,8 +24573,14 @@
             "Win32_Foundation",
             "Win32_Networking",
             "Win32_Networking_WinSock",
+            "Win32_Security",
+            "Win32_Security_Authorization",
+            "Win32_Storage",
+            "Win32_Storage_FileSystem",
             "Win32_System",
+            "Win32_System_Console",
             "Win32_System_IO",
+            "Win32_System_Memory",
             "Win32_System_Threading",
             "Win32_System_WindowsProgramming",
             "default"
@@ -26465,14 +26259,14 @@
       ],
       "license_file": "license-apache-2.0"
     },
-    "winnow 0.5.15": {
+    "winnow 0.5.40": {
       "name": "winnow",
-      "version": "0.5.15",
+      "version": "0.5.40",
       "package_url": "https://github.com/winnow-rs/winnow",
       "repository": {
         "Http": {
-          "url": "https://static.crates.io/crates/winnow/0.5.15/download",
-          "sha256": "7c2e3184b9c4e92ad5167ca73039d0c42476302ab603e2fec4487511f38ccefc"
+          "url": "https://static.crates.io/crates/winnow/0.5.40/download",
+          "sha256": "f593a95398737aeed53e489c785df13f3618e41dbcd6718c6addbf1395aa6876"
         }
       },
       "targets": [
@@ -26513,7 +26307,63 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.5.15"
+        "version": "0.5.40"
+      },
+      "license": "MIT",
+      "license_ids": [
+        "MIT"
+      ],
+      "license_file": "LICENSE-MIT"
+    },
+    "winnow 0.6.5": {
+      "name": "winnow",
+      "version": "0.6.5",
+      "package_url": "https://github.com/winnow-rs/winnow",
+      "repository": {
+        "Http": {
+          "url": "https://static.crates.io/crates/winnow/0.6.5/download",
+          "sha256": "dffa400e67ed5a4dd237983829e66475f0a4a26938c4b04c21baede6262215b8"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "winnow",
+            "crate_root": "src/lib.rs",
+            "srcs": {
+              "allow_empty": false,
+              "include": [
+                "**/*.rs"
+              ]
+            }
+          }
+        }
+      ],
+      "library_target_name": "winnow",
+      "common_attrs": {
+        "compile_data_glob": [
+          "**"
+        ],
+        "crate_features": {
+          "common": [
+            "alloc",
+            "default",
+            "simd",
+            "std"
+          ],
+          "selects": {}
+        },
+        "deps": {
+          "common": [
+            {
+              "id": "memchr 2.6.3",
+              "target": "memchr"
+            }
+          ],
+          "selects": {}
+        },
+        "edition": "2021",
+        "version": "0.6.5"
       },
       "license": "MIT",
       "license_ids": [
@@ -26619,7 +26469,7 @@
     }
   },
   "binary_crates": [
-    "cargo-audit 0.18.2",
+    "cargo-audit 0.20.0",
     "protoc-gen-prost 0.2.3",
     "protoc-gen-tonic 0.3.0",
     "tree-sitter-cli 0.20.8"
@@ -26843,38 +26693,6 @@
       "x86_64-unknown-linux-gnu",
       "x86_64-unknown-nixos-gnu"
     ],
-    "cfg(not(any(windows, target_os = \"hermit\", target_os = \"unknown\")))": [
-      "aarch64-apple-darwin",
-      "aarch64-apple-ios",
-      "aarch64-apple-ios-sim",
-      "aarch64-fuchsia",
-      "aarch64-linux-android",
-      "aarch64-unknown-linux-gnu",
-      "aarch64-unknown-nixos-gnu",
-      "aarch64-unknown-nto-qnx710",
-      "arm-unknown-linux-gnueabi",
-      "armv7-linux-androideabi",
-      "armv7-unknown-linux-gnueabi",
-      "i686-apple-darwin",
-      "i686-linux-android",
-      "i686-unknown-freebsd",
-      "i686-unknown-linux-gnu",
-      "powerpc-unknown-linux-gnu",
-      "riscv32imc-unknown-none-elf",
-      "riscv64gc-unknown-none-elf",
-      "s390x-unknown-linux-gnu",
-      "thumbv7em-none-eabi",
-      "thumbv8m.main-none-eabi",
-      "wasm32-wasi",
-      "x86_64-apple-darwin",
-      "x86_64-apple-ios",
-      "x86_64-fuchsia",
-      "x86_64-linux-android",
-      "x86_64-unknown-freebsd",
-      "x86_64-unknown-linux-gnu",
-      "x86_64-unknown-nixos-gnu",
-      "x86_64-unknown-none"
-    ],
     "cfg(not(target_arch = \"wasm32\"))": [
       "aarch64-apple-darwin",
       "aarch64-apple-ios",
@@ -27049,7 +26867,6 @@
       "i686-linux-android",
       "x86_64-linux-android"
     ],
-    "cfg(target_os = \"dragonfly\")": [],
     "cfg(target_os = \"hermit\")": [],
     "cfg(target_os = \"ios\")": [
       "aarch64-apple-ios",
@@ -27069,14 +26886,6 @@
       "aarch64-pc-windows-msvc",
       "i686-pc-windows-msvc",
       "x86_64-pc-windows-msvc"
-    ],
-    "cfg(target_vendor = \"apple\")": [
-      "aarch64-apple-darwin",
-      "aarch64-apple-ios",
-      "aarch64-apple-ios-sim",
-      "i686-apple-darwin",
-      "x86_64-apple-darwin",
-      "x86_64-apple-ios"
     ],
     "cfg(tokio_taskdump)": [],
     "cfg(tracing_unstable)": [],
@@ -27189,10 +26998,11 @@
     "anyhow 1.0.72",
     "arbitrary 1.3.0",
     "async-trait 0.1.72",
-    "bitflags 2.3.3",
-    "cargo-audit 0.18.2",
+    "bitflags 2.5.0",
+    "cargo-audit 0.20.0",
     "clap 4.3.19",
     "futures 0.3.28",
+    "h2 0.3.26",
     "humantime 2.1.0",
     "libc 0.2.153",
     "libfuzzer-sys 0.4.6",
@@ -27208,7 +27018,7 @@
     "quickcheck 1.0.3",
     "quickcheck_macros 1.0.0",
     "serde 1.0.188",
-    "tempfile 3.7.0",
+    "tempfile 3.10.1",
     "thiserror 1.0.44",
     "tokio 1.36.0",
     "tonic 0.11.0",
