@@ -8,12 +8,14 @@
       "command": "bazel",
       "args": [
         "run",
-        "@rules_rust//tools/rust_analyzer:gen_rust_project"
+        "@rules_rust//tools/rust_analyzer:gen_rust_project",
       ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "group": "build",
+      "group": {
+        "kind": "build",
+      },
       "problemMatcher": [],
       "presentation": {
         "reveal": "never",
@@ -22,6 +24,25 @@
       "runOptions": {
         "runOn": "folderOpen"
       }
+    },
+    {
+      "label": "Build a devcontainer image",
+      "command": "bazel",
+      "args": [
+        "run",
+        "//tools/devcontainer:debian_bullseye_slim",
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "dedicated",
+      },
     },
   ]
 }
