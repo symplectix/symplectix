@@ -15,18 +15,27 @@ jobs:
   bazel:
     runs-on: ubuntu-20.04
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout
-        uses: actions/checkout@v3
+      # Caches and restores the bazelisk binary downloaded before
+      - uses: actions/cache@v3
+        env:
+          cache-name: bazelisk-cache
+        with:
+          path: ~/.cache/bazelisk
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
-      - name: Setup cache
-        uses: actions/cache@v2.1.4
+      # Caches and restores the artifacts built before
+      - uses: actions/cache@v3
         env:
           cache-name: bazel-cache
         with:
           path: ~/.cache/bazel
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
+
+
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Run buildifier
         run: |
