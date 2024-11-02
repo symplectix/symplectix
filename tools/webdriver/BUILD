@@ -7,7 +7,6 @@ rust_binary(
         "@geckodriver",
     ],
     deps = [
-        "//process",
         "//process/entrypoint",
         "@crates//:anyhow",
         "@crates//:tokio",

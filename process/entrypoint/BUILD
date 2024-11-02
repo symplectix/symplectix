@@ -2,16 +2,20 @@ load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_doc_test", "rust_library
 
 rust_library(
     name = "entrypoint",
-    srcs = glob(
-        ["src/**/*.rs"],
-        exclude = [
-            "src/main.rs",
-            "src/bin/**/*",
-        ],
-    ),
+    srcs = glob(["src/**/*.rs"]),
+    # will not work as expected on windows
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     visibility = ["//visibility:public"],
     deps = [
-        "//process",
+        "//process/fsutil",
+        "@crates//:anyhow",
+        "@crates//:clap",
+        "@crates//:humantime",
+        "@crates//:libc",
         "@crates//:thiserror",
         "@crates//:tokio",
         "@crates//:tracing",
@@ -33,12 +37,21 @@ rust_doc_test(
     crate = ":entrypoint",
 )
 
+cc_binary(
+    name = "orphan",
+    srcs = ["orphan.c"],
+)
+
+cc_binary(
+    name = "zombie",
+    srcs = ["zombie.c"],
+)
+
 rust_binary(
     name = "coordinator",
-    srcs = ["src/bin/coordinator.rs"],
+    srcs = ["bin/coordinator.rs"],
     deps = [
         ":entrypoint",
-        "//process",
         "//process/fsutil",
         "@crates//:anyhow",
         "@crates//:clap",

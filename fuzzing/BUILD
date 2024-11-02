@@ -5,7 +5,6 @@ rust_binary(
     srcs = ["main.rs"] + glob(["cmd/*.rs"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//process",
         "//process/entrypoint",
         "@crates//:anyhow",
         "@crates//:clap",

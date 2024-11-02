@@ -2,9 +2,9 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use clap::Parser;
+use entrypoint::Entrypoint;
 use futures::future;
 use futures::prelude::*;
-use process::Command;
 use tokio::time;
 
 #[tokio::main]
@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
 
     let this = Coordinator::parse();
     wait(&this.wait_files).await?;
-    let result = entrypoint::run(&this.command).await;
+    let result = entrypoint::run(&this.entrypoint).await;
     post(&this.post_file, result).await
 }
 
@@ -36,7 +36,7 @@ pub struct Coordinator {
     post_file: Option<PathBuf>,
 
     #[command(flatten)]
-    command: Command,
+    entrypoint: Entrypoint,
 }
 
 #[tracing::instrument]
