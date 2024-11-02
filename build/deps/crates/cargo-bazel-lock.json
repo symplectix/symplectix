@@ -1,5 +1,5 @@
 {
-  "checksum": "7512ad9215498d677f228ba9c09d224a317ae1fc04c6c911c2cc8f02f2ebe216",
+  "checksum": "dec7fdc414f771a405441be7a64c6fedd4ece553847c3b308e61bf7333f1d89f",
   "crates": {
     "abscissa_core 0.6.0": {
       "name": "abscissa_core",
@@ -4357,6 +4357,9 @@
             "aarch64-apple-ios-sim": [
               "extra_traits"
             ],
+            "aarch64-fuchsia": [
+              "extra_traits"
+            ],
             "aarch64-linux-android": [
               "extra_traits"
             ],
@@ -4403,6 +4406,9 @@
               "extra_traits"
             ],
             "x86_64-apple-ios": [
+              "extra_traits"
+            ],
+            "x86_64-fuchsia": [
               "extra_traits"
             ],
             "x86_64-linux-android": [
@@ -7184,6 +7190,9 @@
             "aarch64-apple-ios-sim": [
               "fs"
             ],
+            "aarch64-fuchsia": [
+              "fs"
+            ],
             "aarch64-linux-android": [
               "fs"
             ],
@@ -7224,6 +7233,9 @@
               "fs"
             ],
             "x86_64-apple-ios": [
+              "fs"
+            ],
+            "x86_64-fuchsia": [
               "fs"
             ],
             "x86_64-linux-android": [
@@ -10514,6 +10526,7 @@
     "cfg(all(unix, not(target_os = \"macos\")))": [
       "aarch64-apple-ios",
       "aarch64-apple-ios-sim",
+      "aarch64-fuchsia",
       "aarch64-linux-android",
       "aarch64-unknown-linux-gnu",
       "arm-unknown-linux-gnueabi",
@@ -10525,6 +10538,7 @@
       "powerpc-unknown-linux-gnu",
       "s390x-unknown-linux-gnu",
       "x86_64-apple-ios",
+      "x86_64-fuchsia",
       "x86_64-linux-android",
       "x86_64-unknown-freebsd",
       "x86_64-unknown-linux-gnu"
@@ -10533,6 +10547,7 @@
       "aarch64-apple-darwin",
       "aarch64-apple-ios",
       "aarch64-apple-ios-sim",
+      "aarch64-fuchsia",
       "aarch64-linux-android",
       "aarch64-pc-windows-msvc",
       "armv7-linux-androideabi",
@@ -10548,6 +10563,7 @@
       "wasm32-wasi",
       "x86_64-apple-darwin",
       "x86_64-apple-ios",
+      "x86_64-fuchsia",
       "x86_64-linux-android",
       "x86_64-pc-windows-msvc",
       "x86_64-unknown-freebsd"
@@ -10556,6 +10572,7 @@
       "aarch64-apple-darwin",
       "aarch64-apple-ios",
       "aarch64-apple-ios-sim",
+      "aarch64-fuchsia",
       "aarch64-linux-android",
       "aarch64-unknown-linux-gnu",
       "arm-unknown-linux-gnueabi",
@@ -10570,6 +10587,7 @@
       "wasm32-wasi",
       "x86_64-apple-darwin",
       "x86_64-apple-ios",
+      "x86_64-fuchsia",
       "x86_64-linux-android",
       "x86_64-unknown-freebsd",
       "x86_64-unknown-linux-gnu"
@@ -10579,6 +10597,7 @@
       "aarch64-apple-darwin",
       "aarch64-apple-ios",
       "aarch64-apple-ios-sim",
+      "aarch64-fuchsia",
       "aarch64-linux-android",
       "aarch64-pc-windows-msvc",
       "aarch64-unknown-linux-gnu",
@@ -10596,6 +10615,7 @@
       "s390x-unknown-linux-gnu",
       "x86_64-apple-darwin",
       "x86_64-apple-ios",
+      "x86_64-fuchsia",
       "x86_64-linux-android",
       "x86_64-pc-windows-msvc",
       "x86_64-unknown-freebsd",
@@ -10605,6 +10625,7 @@
       "aarch64-apple-darwin",
       "aarch64-apple-ios",
       "aarch64-apple-ios-sim",
+      "aarch64-fuchsia",
       "aarch64-linux-android",
       "aarch64-unknown-linux-gnu",
       "arm-unknown-linux-gnueabi",
@@ -10621,6 +10642,7 @@
       "wasm32-wasi",
       "x86_64-apple-darwin",
       "x86_64-apple-ios",
+      "x86_64-fuchsia",
       "x86_64-linux-android",
       "x86_64-unknown-freebsd",
       "x86_64-unknown-linux-gnu"
@@ -10629,6 +10651,7 @@
       "aarch64-apple-darwin",
       "aarch64-apple-ios",
       "aarch64-apple-ios-sim",
+      "aarch64-fuchsia",
       "aarch64-linux-android",
       "aarch64-unknown-linux-gnu",
       "arm-unknown-linux-gnueabi",
@@ -10646,6 +10669,7 @@
       "wasm32-wasi",
       "x86_64-apple-darwin",
       "x86_64-apple-ios",
+      "x86_64-fuchsia",
       "x86_64-linux-android",
       "x86_64-unknown-freebsd",
       "x86_64-unknown-linux-gnu"
@@ -10675,6 +10699,7 @@
       "aarch64-apple-darwin",
       "aarch64-apple-ios",
       "aarch64-apple-ios-sim",
+      "aarch64-fuchsia",
       "aarch64-linux-android",
       "aarch64-unknown-linux-gnu",
       "arm-unknown-linux-gnueabi",
@@ -10688,6 +10713,7 @@
       "s390x-unknown-linux-gnu",
       "x86_64-apple-darwin",
       "x86_64-apple-ios",
+      "x86_64-fuchsia",
       "x86_64-linux-android",
       "x86_64-unknown-freebsd",
       "x86_64-unknown-linux-gnu"
