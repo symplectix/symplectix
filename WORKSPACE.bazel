@@ -124,8 +124,8 @@ load("@rules_rust//crate_universe:defs.bzl", "crates_repository", "splicing_conf
 crates_repository(
     name = "crates",
     annotations = crates.annotations,
-    cargo_lockfile = "//build/deps/crates:cargo.lock",
-    lockfile = "//build/deps/crates:cargo.bazel.lock",
+    cargo_lockfile = "//build/deps/crates:Cargo.lock",
+    lockfile = "//build/deps/crates:Cargo.Bazel.lock",
     packages = crates.packages,
     # The version of Rust the currently registered toolchain is using.
     rust_version = RUST_STABLE_VERSION,

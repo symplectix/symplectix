@@ -144,7 +144,7 @@ _packages = {
 
     # Arguments parsing
     "clap": crate.spec(
-        version = "4.2.1",
+        version = "4.3",
         features = ["derive"],
     ),
 
@@ -155,16 +155,16 @@ _packages = {
 
     # Provides a macro to generate structures which behave like a set of bitflags
     "bitflags": crate.spec(
-        version = "2.1.0",
+        version = "2",
     ),
 
     # TODO: Use std::cell::OnceCell
     # https://doc.rust-lang.org/std/cell/struct.OnceCell.html
     "once_cell": crate.spec(
-        version = "1.17",
+        version = "1.18",
     ),
     "tempfile": crate.spec(
-        version = "3.5",
+        version = "3",
     ),
 
     # "rand": crate.spec(
