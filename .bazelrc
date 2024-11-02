@@ -1,3 +1,15 @@
+# Do not create convenience symlinks.
+common --experimental_convenience_symlinks=ignore
+
+# Bazel picks up host-OS-specific config lines from bazelrc files.
+# https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
+common --enable_platform_specific_config
+
+# If set to true, tags will be propagated from a target to the actions' execution requirements;
+# otherwise tags are not propagated. See https://github.com/bazelbuild/bazel/issues/8830 for details.
+# https://bazel.build/reference/command-line-reference#flag--experimental_allow_tags_propagation
+common --experimental_allow_tags_propagation
+
 # Whether to announce rc options.
 # https://bazel.build/reference/command-line-reference#flag--announce_rc
 common:verbose --announce_rc
@@ -16,15 +28,6 @@ test:verbose --test_output=errors
 
 # https://bazel.build/docs/user-manual#workspace_status
 common:stamp --stamp --workspace_status_command=stamp/buildinfo.sh
-
-# Bazel picks up host-OS-specific config lines from bazelrc files.
-# https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
-common --enable_platform_specific_config
-
-# If set to true, tags will be propagated from a target to the actions' execution requirements;
-# otherwise tags are not propagated. See https://github.com/bazelbuild/bazel/issues/8830 for details.
-# https://bazel.build/reference/command-line-reference#flag--experimental_allow_tags_propagation
-common --experimental_allow_tags_propagation
 
 # Force the use of Clang for C++ builds.
 build --action_env=CC=clang
@@ -90,9 +93,15 @@ build:dbg --@rules_rust//:extra_rustc_flag=-Ccodegen-units=32
 # Controls whether Bazel will strip debugging information from all binaries and shared libraries,
 # by invoking the linker with the -Wl,--strip-debug option.
 build:strip --strip=always
+
 # Controls stripping of debuginfo and similar auxiliary data from binaries during linking.
-# * debuginfo - debuginfo sections and debuginfo symbols from the symbol table section are stripped at link time and are not copied to the produced binary or separate files.
-# * symbols   - same as debuginfo, but the rest of the symbol table section is stripped as well if the linker supports it.
+# * debuginfo
+#   debuginfo sections and debuginfo symbols from the symbol table section are stripped at link time
+#   and are not copied to the produced binary or separate files.
+#
+# * symbols
+#   same as debuginfo, but the rest of the symbol table section is stripped
+#   as well if the linker supports it.
 build:strip --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
 
 # clippy

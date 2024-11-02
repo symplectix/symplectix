@@ -1,3 +1,4 @@
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 
 filegroup(
@@ -6,6 +7,25 @@ filegroup(
         include = ["**"],
         exclude = ["*.bazel"],
     ),
+)
+
+string_flag(
+    name = "out_lib_dir",
+    build_setting_default = "lib",
+)
+
+config_setting(
+    name = "out_lib_dir_lib64",
+    flag_values = {
+        ":out_lib_dir": "lib64",
+    },
+)
+
+config_setting(
+    name = "out_lib_dir_lib",
+    flag_values = {
+        ":out_lib_dir": "lib",
+    },
 )
 
 configure_make(
@@ -31,9 +51,9 @@ configure_make(
     lib_source = ":src",
     out_binaries = ["openssl"],
     out_lib_dir = select({
-        "@platforms//os:linux": "lib64",
-        "@platforms//os:macos": "lib",
-        "//conditions:default": "@platforms//:incompatible",
+        ":out_lib_dir_lib64": "lib64",
+        ":out_lib_dir_lib": "lib",
+        "//conditions:default": "lib",
     }),
     out_static_libs = [
         "libssl.a",

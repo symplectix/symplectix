@@ -1,0 +1,63 @@
+// https://containers.dev/implementors/json_reference/
+{
+  "name": "trunk",
+  "workspaceFolder": "/home/nonroot/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/nonroot/workspace,type=bind,consistency=cached",
+  "build": {
+    "dockerfile": "Dockerfile",
+  },
+  "remoteUser": "nonroot",
+  "remoteEnv": {
+    "USER": "nonroot",
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+  },
+  "mounts": [
+    { "source": "cache",  "target": "/home/nonroot/.cache",  "type": "volume" },
+    { "source": "config", "target": "/home/nonroot/.config", "type": "volume" },
+    { "source": "local",  "target": "/home/nonroot/.local",  "type": "volume" }
+  ],
+  "init": true,
+  "capAdd": [
+    "SYS_PTRACE"
+  ],
+  "securityOpt": [
+    "seccomp:unconfined"
+  ],
+  // An object of Dev Container Feature IDs
+  // and related options to be added into your primary container.
+  //
+  // https://containers.dev/features
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "version": "latest"
+    }
+  },
+  "postCreateCommand": ".devcontainer/post-create.sh",
+  "postAttachCommand": ".devcontainer/post-attach.sh",
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // An array of port numbers or "host:port" values (e.g. [3000, "db:5432"])
+  // that should always be forwarded from inside the primary container to the local machine (including on the web).
+  // The property is most useful for forwarding ports that cannot be auto-forwarded
+  // because the related process that starts before the devcontainer.json supporting service/tool connects
+  // or for forwarding a service not in the primary container in docker-compose scenarios (e.g. "mysql:3306").
+  "forwardPorts": [
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.exclude": {
+          "**/.git": true,
+          "bazel-*": true,
+        },
+        "search.exclude": {
+          "**/.git": true,
+          "bazel-*": true,
+        },
+      },
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "EditorConfig.EditorConfig",
+      ]
+    }
+  }
+}

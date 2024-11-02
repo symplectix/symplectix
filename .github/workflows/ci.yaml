@@ -27,9 +27,6 @@ jobs:
         os: [ubuntu-22.04, macos-14]
 
     runs-on: ${{ matrix.os }}
-    env:
-      BAZEL: bazel --output_user_root=/tmp/testing/
-      BAZEL_COMMAND_ARGS: --config=testing
 
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +41,18 @@ jobs:
             ~/Library/Caches/bazelisk
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
+
+      # The openssl out_lib_dir should be lib64 on a ubuntu-22.04 instance.
+      # The default value is 'lib'.
+      - name: Set environment variables
+        run: |
+          echo "BAZEL=bazel --output_user_root=/tmp/testing/" >> $GITHUB_ENV
+
+          if [[ ${{ matrix.os }} == "ubuntu-22.04" ]]; then
+            echo "BAZEL_COMMAND_ARGS=--config=testing --@openssl//:out_lib_dir=lib64" >> $GITHUB_ENV
+          else
+            echo "BAZEL_COMMAND_ARGS=--config=testing --@openssl//:out_lib_dir=lib" >> $GITHUB_ENV
+          fi
 
       - name: Create .bazelrc for actions
         run: cp .github/bazelrc .bazelrc.local
@@ -64,14 +73,9 @@ jobs:
         os: [ubuntu-22.04]
 
     runs-on: ${{ matrix.os }}
-    env:
-      BAZEL: bazel --output_user_root=/tmp/fuzzing/
-      BAZEL_COMMAND_ARGS: --config=fuzzing
+
     steps:
       - uses: actions/checkout@v4
-
-      - name: Create .bazelrc for actions
-        run: cp .github/bazelrc .bazelrc.local
 
       - uses: actions/cache@v4
         env:
@@ -83,6 +87,21 @@ jobs:
             ~/Library/Caches/bazelisk
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
+
+      # The openssl out_lib_dir should be lib64 on a ubuntu-22.04 instance.
+      # The default value is 'lib'.
+      - name: Set environment variables
+        run: |
+          echo "BAZEL=bazel --output_user_root=/tmp/fuzzing/" >> $GITHUB_ENV
+
+          if [[ ${{ matrix.os }} == "ubuntu-22.04" ]]; then
+            echo "BAZEL_COMMAND_ARGS=--config=testing --@openssl//:out_lib_dir=lib64" >> $GITHUB_ENV
+          else
+            echo "BAZEL_COMMAND_ARGS=--config=testing --@openssl//:out_lib_dir=lib" >> $GITHUB_ENV
+          fi
+
+      - name: Create .bazelrc for actions
+        run: cp .github/bazelrc .bazelrc.local
 
       # TODO: Test fuzzing targets
       - name: Build
