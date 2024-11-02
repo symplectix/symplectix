@@ -1,4 +1,4 @@
-name: postsubmit
+name: Postsubmit
 
 on:
   push:
@@ -6,10 +6,11 @@ on:
       - main
 
 jobs:
-  bazel:
+  testing:
+    name: Testing
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-12]
-    uses: ./.github/workflows/bazel.yml
+    uses: ./.github/workflows/testing.yaml
     with:
       os: ${{ matrix.os }}

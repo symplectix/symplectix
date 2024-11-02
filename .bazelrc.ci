@@ -1,0 +1,22 @@
+startup --output_user_root=/tmp/trunk/
+
+common --announce_rc
+
+build --verbose_failures
+test --test_output=errors
+
+build --config=rustfmt
+build --config=clippy
+
+# compilation_mode to rustc codegen options
+# fastbuild: -Copt-level=0 -Cdebuginfo=0
+# dbg:       -Copt-level=0 -Cdebuginfo=2
+# opt:       -Copt-level=3 -Cdebuginfo=0
+build --compilation_mode=opt
+
+build --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
+build --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
+build --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
+build --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
+build --@rules_rust//:extra_rustc_flag=-Clto=fat
+build --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1

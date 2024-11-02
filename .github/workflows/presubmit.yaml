@@ -1,4 +1,4 @@
-name: presubmit
+name: Presubmit
 
 on:
   pull_request:
@@ -6,7 +6,8 @@ on:
       - main
 
 jobs:
-  bazel:
-    uses: ./.github/workflows/bazel.yml
+  testing:
+    name: Testing
+    uses: ./.github/workflows/testing.yaml
     with:
       os: ubuntu-22.04
