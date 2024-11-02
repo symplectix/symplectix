@@ -72,11 +72,11 @@ crate_universe_dependencies(
 )
 
 load("@rules_rust//crate_universe:defs.bzl", "crates_repository", "splicing_config")
-load("//:crates.bzl", "crates")
+load("//:Cargo.Bazel.bzl", "crates")
 
 crates_repository(
     name = "crates",
-    lockfile = "//:crates.lock",
+    lockfile = "//:Cargo.Bazel.lock",
     packages = crates,
     rust_version = _RUST_VERSION,
     splicing_config = splicing_config(
