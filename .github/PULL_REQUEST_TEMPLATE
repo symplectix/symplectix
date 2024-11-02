@@ -4,6 +4,7 @@ For the PR title:
 * the verb after the colon is lowercase
 * there is no trailing period
 * should keep the text short as much as possible
+*
 For the PR body:
 * Write in complete sentences with correct punctuation
 * No HTML, Markdown, or any other markup language
