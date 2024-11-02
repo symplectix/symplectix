@@ -1,65 +1,65 @@
-use crate::{Bits, Container, ContainerMut};
+use bits::{Bits, Container, ContainerMut};
 
 /// # Examples
 ///
 /// ```
-/// # use bits::Varint;
+/// # use bitpacking::Unpack;
 /// let bits: &[u16] = &[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001];
 /// let len = 4;
-/// assert_eq!(bits.varint::<u8>(0, len), 0b0011);
-/// assert_eq!(bits.varint::<u8>(8, len), 0b0001);
-/// assert_eq!(bits.varint::<u8>(14, len), 0b0111);
-/// assert_eq!(bits.varint::<u8>(30, len), 0b0010);
+/// assert_eq!(bits.unpack::<u8>(0, len), 0b0011);
+/// assert_eq!(bits.unpack::<u8>(8, len), 0b0001);
+/// assert_eq!(bits.unpack::<u8>(14, len), 0b0111);
+/// assert_eq!(bits.unpack::<u8>(30, len), 0b0010);
 /// ```
 #[doc(hidden)]
-pub trait Varint: Container {
+pub trait Unpack: Container {
     /// Reads `n` bits from `i`, and returns it as the lowest `n` bits of `Int`.
     #[doc(hidden)]
-    fn varint<T: Bits>(&self, i: usize, n: usize) -> T {
+    fn unpack<T: Bits>(&self, i: usize, n: usize) -> T {
         debug_assert!(i < self.bits() && n <= T::BITS);
 
-        let mut block = T::empty();
+        let mut bits = T::empty();
         for b in i..i + n {
             if self.bit(b).unwrap_or_default() {
-                block.set_bit(b - i);
+                bits.set_bit(b - i);
             }
         }
-        block
+        bits
     }
 }
 
 #[doc(hidden)]
-pub trait PutVarint: ContainerMut + Varint {
+pub trait Pack: Unpack + ContainerMut {
     /// Writes `N` bits in `[i, i+N)`.
     #[doc(hidden)]
-    fn put_varint<T: Bits>(&mut self, i: usize, n: usize, int: T) {
+    fn pack<T: Bits>(&mut self, i: usize, n: usize, bits: T) {
         debug_assert!(i < self.bits() && n <= T::BITS);
 
         for b in i..i + n {
-            if int.bit(b - i).unwrap_or_default() {
+            if bits.bit(b - i).unwrap_or_default() {
                 self.set_bit(b);
             }
         }
     }
 }
 
-macro_rules! ints_impl_varint {
+macro_rules! ints_impl_packing {
     ($( $Int:ty )*) => ($(
-        impl Varint for $Int {
+        impl Unpack for $Int {
             // #[inline]
             // fn varint<T: Block>(&self, i: usize, n: usize) -> T {
             //     num::cast((*self >> i) & <$Int>::mask(0, n))
             // }
         }
 
-        impl PutVarint for $Int {
+        impl Pack for $Int {
         }
     )*)
 }
-ints_impl_varint!(u8 u16 u32 u64 u128 usize);
-ints_impl_varint!(i8 i16 i32 i64 i128 isize);
+ints_impl_packing!(u8 u16 u32 u64 u128 usize);
+ints_impl_packing!(i8 i16 i32 i64 i128 isize);
 
-impl<B: Bits + Varint> Varint for [B] {
+impl<B: Bits + Unpack> Unpack for [B] {
     // #[doc(hidden)]
     // fn varint<T: Block>(&self, i: usize, n: usize) -> T {
     //     use crate::index;
@@ -77,7 +77,7 @@ impl<B: Bits + Varint> Varint for [B] {
     // }
 }
 
-impl<B: Bits + PutVarint> PutVarint for [B] {
+impl<B: Bits + Pack> Pack for [B] {
     // #[doc(hidden)]
     // fn put_varint<T: Block>(&mut self, i: usize, n: usize, int: T) {
     //     use crate::index;
@@ -93,39 +93,39 @@ impl<B: Bits + PutVarint> PutVarint for [B] {
     // }
 }
 
-macro_rules! impl_varint {
+macro_rules! impl_unpack {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn varint<I: Bits>(&self, i: usize, n: usize) -> I {
-            <$X as Varint>::varint(self$(.$method())?, i, n)
+        fn unpack<I: Bits>(&self, i: usize, n: usize) -> I {
+            <$X as Unpack>::unpack(self$(.$method())?, i, n)
         }
     }
 }
 
-macro_rules! impl_put_varint {
+macro_rules! impl_pack {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn put_varint<I: Bits>(&mut self, i: usize, n: usize, int: I) {
-            <$X as PutVarint>::put_varint(self$(.$method())?, i, n, int)
+        fn pack<I: Bits>(&mut self, i: usize, n: usize, int: I) {
+            <$X as Pack>::pack(self$(.$method())?, i, n, int)
         }
     }
 }
 
-impl<'a, T: ?Sized + Varint> Varint for &'a T {
-    impl_varint!(T);
+impl<'a, T: ?Sized + Unpack> Unpack for &'a T {
+    impl_unpack!(T);
 }
 
-impl<B, const N: usize> Varint for [B; N]
+impl<B, const N: usize> Unpack for [B; N]
 where
-    [B]: Varint,
+    [B]: Unpack,
 {
-    impl_varint!([B]);
+    impl_unpack!([B]);
 }
-impl<B, const N: usize> PutVarint for [B; N]
+impl<B, const N: usize> Pack for [B; N]
 where
-    [B]: PutVarint,
+    [B]: Pack,
 {
-    impl_put_varint!([B]);
+    impl_pack!([B]);
 }
 
 mod impl_alloc {
@@ -134,38 +134,38 @@ mod impl_alloc {
     use std::boxed::Box;
     use std::vec::Vec;
 
-    impl<T: ?Sized + Varint> Varint for Box<T> {
-        impl_varint!(T);
+    impl<T: ?Sized + Unpack> Unpack for Box<T> {
+        impl_unpack!(T);
     }
-    impl<T: ?Sized + PutVarint> PutVarint for Box<T> {
-        impl_put_varint!(T);
-    }
-
-    impl<T> Varint for Vec<T>
-    where
-        [T]: Varint,
-    {
-        impl_varint!([T]);
-    }
-    impl<T> PutVarint for Vec<T>
-    where
-        [T]: PutVarint,
-    {
-        impl_put_varint!([T]);
+    impl<T: ?Sized + Pack> Pack for Box<T> {
+        impl_pack!(T);
     }
 
-    impl<'a, T> Varint for Cow<'a, T>
+    impl<T> Unpack for Vec<T>
     where
-        T: ?Sized + ToOwned + Varint,
+        [T]: Unpack,
     {
-        impl_varint!(T, as_ref);
+        impl_unpack!([T]);
+    }
+    impl<T> Pack for Vec<T>
+    where
+        [T]: Pack,
+    {
+        impl_pack!([T]);
     }
 
-    impl<'a, T> PutVarint for Cow<'a, T>
+    impl<'a, T> Unpack for Cow<'a, T>
     where
-        T: ?Sized + ToOwned + Varint,
-        T::Owned: PutVarint,
+        T: ?Sized + ToOwned + Unpack,
     {
-        impl_put_varint!(T::Owned, to_mut);
+        impl_unpack!(T, as_ref);
+    }
+
+    impl<'a, T> Pack for Cow<'a, T>
+    where
+        T: ?Sized + ToOwned + Unpack,
+        T::Owned: Pack,
+    {
+        impl_pack!(T::Owned, to_mut);
     }
 }

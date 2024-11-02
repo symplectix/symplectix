@@ -9,6 +9,7 @@ rust_library(
     deps = [
         "//bits",
         "//bits/bitaddr",
+        "//bits/bitpacking",
         "//fenwicktree",
         "//num",
     ],

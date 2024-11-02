@@ -1,7 +1,8 @@
 use super::empty;
 use crate::blocks;
 use crate::L1L2;
-use bits::{Bits, Container, Count, Rank, Select, Varint};
+use bitpacking::Unpack;
+use bits::{Bits, Container, Count, Rank, Select};
 use fenwicktree::{LowerBound, Nodes, Prefix};
 use std::cmp;
 use std::fmt::{self, Debug, Formatter};
@@ -441,7 +442,7 @@ impl<T: Rank> Rank for Rho<T> {
 //     }
 // }
 
-impl<T: Varint + Select> Select for Rho<T> {
+impl<T: Unpack + Select> Select for Rho<T> {
     fn select1(&self, n: usize) -> Option<usize> {
         let Rho(imp) = self;
         let mut r = num::cast(n);
@@ -468,7 +469,7 @@ impl<T: Varint + Select> Select for Rho<T> {
 
         const BITS: usize = <u128 as Bits>::BITS;
         for i in (s..e).step_by(BITS) {
-            let b = imp.bit_vec.varint::<u128>(i, BITS);
+            let b = imp.bit_vec.unpack::<u128>(i, BITS);
             let c = b.count1();
             if r < c {
                 // #[cfg(test)]
@@ -513,7 +514,7 @@ impl<T: Varint + Select> Select for Rho<T> {
 
         const BITS: usize = <u128 as Bits>::BITS;
         for i in (s..e).step_by(BITS) {
-            let b = imp.bit_vec.varint::<u128>(i, BITS);
+            let b = imp.bit_vec.unpack::<u128>(i, BITS);
             let c = b.count0();
             if r < c {
                 return Some(i + b.select0(r).unwrap());

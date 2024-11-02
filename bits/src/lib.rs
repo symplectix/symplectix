@@ -33,9 +33,3 @@ pub mod mask;
 
 #[doc(inline)]
 pub use self::mask::Mask;
-
-#[doc(hidden)]
-pub mod varint;
-
-#[doc(hidden)]
-pub use self::varint::{PutVarint, Varint};

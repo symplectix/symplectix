@@ -1,10 +1,9 @@
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
 
+use bits::{Container, Count, Lsb, Rank, Select};
 use std::borrow::Cow;
 use std::iter::successors;
-
-use bits::{Container, Count, Lsb, PutVarint, Rank, Select, Varint};
 
 #[test]
 fn bits_is_implemented() {
@@ -26,17 +25,6 @@ fn bits_is_implemented() {
     _test::<&Box<[u8; 4]>>();
     _test::<Cow<[u8; 1000]>>();
     _test::<Cow<Box<[u8; 2000]>>>();
-}
-
-#[quickcheck]
-fn varint(mut data: Vec<u32>) -> bool {
-    let orig = data.clone();
-    let len = 7;
-    (0..data.bits()).all(|n| {
-        data.put_varint(n, len, data.varint::<u8>(n, len));
-        data.put_varint(n, len, data.varint::<i8>(n, len));
-        orig == data
-    })
 }
 
 #[quickcheck]
