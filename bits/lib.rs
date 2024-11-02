@@ -20,16 +20,19 @@ mod msb;
 mod rank;
 mod select;
 
+mod mask;
+
+pub mod and;
+pub mod not;
+pub mod or;
+pub mod xor;
+
 pub use self::bits::Bits;
 pub use self::container::Container;
 pub use self::container_mut::ContainerMut;
 pub use self::count::Count;
 pub use self::excess::Excess;
+pub use self::mask::Mask;
 pub use self::rank::Rank;
 pub use self::select::Select;
 pub use self::{lsb::Lsb, msb::Msb};
-
-pub mod mask;
-
-#[doc(inline)]
-pub use self::mask::Mask;

@@ -1,18 +1,6 @@
 use core::cmp::Ordering;
 
-mod and;
-mod not;
-mod or;
-mod xor;
-
-pub use self::{
-    and::{And, AndAssign},
-    not::{Not, NotAssign},
-    or::{Or, OrAssign},
-    xor::{Xor, XorAssign},
-};
-
-pub use self::{and::Intersection, not::Difference, or::Union, xor::SymmetricDifference};
+pub use crate::{and::And, not::Not, or::Or, xor::Xor};
 
 pub trait Mask: Sized {
     type Bits;

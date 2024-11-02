@@ -4,7 +4,10 @@ package(default_visibility = ["//visibility:private"])
 
 rust_library(
     name = "num",
-    srcs = glob(["src/**/*.rs"]),
+    srcs = glob(
+        ["*.rs"],
+        exclude = ["*_test.rs"],
+    ),
     visibility = ["//visibility:public"],
 )
 
