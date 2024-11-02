@@ -36,16 +36,13 @@ rules_foreign_cc_dependencies()
 
 http_archive(
     name = "rules_rust",
-    sha256 = "05e15e536cc1e5fd7b395d044fc2dabf73d2b27622fbc10504b7e48219bb09bc",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.8.1/rules_rust-v0.8.1.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/releases/download/0.8.1/rules_rust-v0.8.1.tar.gz",
-    ],
+    sha256 = "5c2b6745236f8ce547f82eeacbbcc81d736734cc8bd92e60d3e3cdfa6e167bb5",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.15.0/rules_rust-v0.15.0.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
 
-_RUST_VERSION = "1.62.0"
+_RUST_VERSION = "1.66.0"
 
 _RUST_EDITION = "2021"
 
@@ -53,7 +50,6 @@ rules_rust_dependencies()
 
 rust_register_toolchains(
     edition = _RUST_EDITION,
-    include_rustc_srcs = True,
     version = _RUST_VERSION,
 )
 
@@ -63,27 +59,30 @@ rust_register_toolchains(
 # load("@rules_rust//wasm_bindgen:repositories.bzl", "rust_wasm_bindgen_repositories")
 # rust_wasm_bindgen_repositories()
 
-load("@rules_rust//crate_universe:defs.bzl", "crates_repository", "splicing_config")
+load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
+
+crate_universe_dependencies(
+    rust_version = _RUST_VERSION,
+)
+
+load("@rules_rust//crate_universe:defs.bzl", "crates_repository")
 load("//build/rust:crates.bzl", "crates")
 
 crates_repository(
     name = "crates",
-    cargo_lockfile = "//build/rust:Cargo.Bazel.lock",
-    lockfile = "//build/rust:crates.lock",
+    cargo_lockfile = "//build/rust:Cargo.lock",
+    lockfile = "//build/rust:Cargo.Bazel.lock",
     packages = crates,
     rust_version = _RUST_VERSION,
-    splicing_config = splicing_config(
-        resolver_version = "2",
-    ),
 )
 
 load("@crates//:defs.bzl", "crate_repositories")
 
 crate_repositories()
 
-load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_deps")
+load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
 
-rust_analyzer_deps()
+rust_analyzer_dependencies()
 
 # Go
 
