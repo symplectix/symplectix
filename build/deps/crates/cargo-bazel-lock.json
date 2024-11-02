@@ -1,5 +1,5 @@
 {
-  "checksum": "d0abe8d741951b3adc5fe001b8ad1ac3a5801480127449e7e99333c21e7ffc7e",
+  "checksum": "492b8c1958cabb62184b075ccc8c0a4932b9378e9da18bc7962df4050431d103",
   "crates": {
     "abscissa_core 0.6.0": {
       "name": "abscissa_core",
@@ -2218,7 +2218,7 @@
               "target": "ssh2"
             },
             {
-              "id": "tempfile 3.3.0",
+              "id": "tempfile 3.4.0",
               "target": "tempfile"
             },
             {
@@ -7064,47 +7064,6 @@
       },
       "license": "MIT OR Apache-2.0"
     },
-    "remove_dir_all 0.5.3": {
-      "name": "remove_dir_all",
-      "version": "0.5.3",
-      "repository": {
-        "Http": {
-          "url": "https://crates.io/api/v1/crates/remove_dir_all/0.5.3/download",
-          "sha256": "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
-        }
-      },
-      "targets": [
-        {
-          "Library": {
-            "crate_name": "remove_dir_all",
-            "crate_root": "src/lib.rs",
-            "srcs": [
-              "**/*.rs"
-            ]
-          }
-        }
-      ],
-      "library_target_name": "remove_dir_all",
-      "common_attrs": {
-        "compile_data_glob": [
-          "**"
-        ],
-        "deps": {
-          "common": [],
-          "selects": {
-            "cfg(windows)": [
-              {
-                "id": "winapi 0.3.9",
-                "target": "winapi"
-              }
-            ]
-          }
-        },
-        "edition": "2015",
-        "version": "0.5.3"
-      },
-      "license": "MIT/Apache-2.0"
-    },
     "rustc-demangle 0.1.21": {
       "name": "rustc-demangle",
       "version": "0.1.21",
@@ -7215,7 +7174,68 @@
             "termios",
             "use-libc-auxv"
           ],
-          "selects": {}
+          "selects": {
+            "aarch64-apple-darwin": [
+              "fs"
+            ],
+            "aarch64-apple-ios": [
+              "fs"
+            ],
+            "aarch64-apple-ios-sim": [
+              "fs"
+            ],
+            "aarch64-linux-android": [
+              "fs"
+            ],
+            "aarch64-unknown-linux-gnu": [
+              "fs"
+            ],
+            "arm-unknown-linux-gnueabi": [
+              "fs"
+            ],
+            "armv7-linux-androideabi": [
+              "fs"
+            ],
+            "armv7-unknown-linux-gnueabi": [
+              "fs"
+            ],
+            "i686-apple-darwin": [
+              "fs"
+            ],
+            "i686-linux-android": [
+              "fs"
+            ],
+            "i686-unknown-freebsd": [
+              "fs"
+            ],
+            "i686-unknown-linux-gnu": [
+              "fs"
+            ],
+            "powerpc-unknown-linux-gnu": [
+              "fs"
+            ],
+            "s390x-unknown-linux-gnu": [
+              "fs"
+            ],
+            "wasm32-wasi": [
+              "fs"
+            ],
+            "x86_64-apple-darwin": [
+              "fs"
+            ],
+            "x86_64-apple-ios": [
+              "fs"
+            ],
+            "x86_64-linux-android": [
+              "fs"
+            ],
+            "x86_64-unknown-freebsd": [
+              "fs"
+            ],
+            "x86_64-unknown-linux-gnu": [
+              "fs"
+            ]
+          }
         },
         "deps": {
           "common": [
@@ -8335,13 +8355,13 @@
       },
       "license": "MIT"
     },
-    "tempfile 3.3.0": {
+    "tempfile 3.4.0": {
       "name": "tempfile",
-      "version": "3.3.0",
+      "version": "3.4.0",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/tempfile/3.3.0/download",
-          "sha256": "5cdb1ef4eaeeaddc8fbd371e5017057064af0911902ef36b39801f67cc6d79e4"
+          "url": "https://crates.io/api/v1/crates/tempfile/3.4.0/download",
+          "sha256": "af18f7ae1acd354b992402e9ec5864359d693cd8a79dcbef59f76891701c1e95"
         }
       },
       "targets": [
@@ -8369,17 +8389,13 @@
             {
               "id": "fastrand 1.8.0",
               "target": "fastrand"
-            },
-            {
-              "id": "remove_dir_all 0.5.3",
-              "target": "remove_dir_all"
             }
           ],
           "selects": {
             "cfg(any(unix, target_os = \"wasi\"))": [
               {
-                "id": "libc 0.2.139",
-                "target": "libc"
+                "id": "rustix 0.36.7",
+                "target": "rustix"
               }
             ],
             "cfg(target_os = \"redox\")": [
@@ -8390,14 +8406,14 @@
             ],
             "cfg(windows)": [
               {
-                "id": "winapi 0.3.9",
-                "target": "winapi"
+                "id": "windows-sys 0.42.0",
+                "target": "windows_sys"
               }
             ]
           }
         },
         "edition": "2018",
-        "version": "3.3.0"
+        "version": "3.4.0"
       },
       "license": "MIT OR Apache-2.0"
     },

@@ -122,7 +122,7 @@ _packages = {
         version = "1.17",
     ),
     "tempfile": crate.spec(
-        version = "3",
+        version = "3.4",
     ),
 
     # "rand": crate.spec(
