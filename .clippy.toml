@@ -1,6 +1,6 @@
 # https://rust-lang.github.io/rust-clippy/master/index.html
 
 disallowed-methods = [
-    "std::env::temp_dir", # use the `tempdir` crate instead
+    "std::env::temp_dir", # use the `tempfile` crate instead
     "std::env::home_dir", # deprecated
 ]

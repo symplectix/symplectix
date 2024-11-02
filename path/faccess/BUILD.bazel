@@ -1,0 +1,41 @@
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "faccess",
+    srcs = ["faccess_unix.rs"],
+    # not compatible with windows
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    deps = [
+        "@crates//:bitflags",
+        "@crates//:libc",
+    ],
+)
+
+rust_test(
+    name = "faccess_test",
+    crate = ":faccess",
+    data = [
+        "faccess_unix.rs",
+        "//:.clippy.toml",
+        "//:.rustfmt.toml",
+    ],
+    deps = [
+        "@rules_rust//tools/runfiles",
+    ],
+)
+
+rust_doc_test(
+    name = "faccess_doc_test",
+    crate = ":faccess",
+)
+
+rust_doc(
+    name = "faccess_doc",
+    crate = ":faccess",
+)

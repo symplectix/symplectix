@@ -1,0 +1,47 @@
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "process_wrapper",
+    srcs = glob([
+        "*.rs",
+        "tests/*.rs",
+    ]),
+    # will not work as expected on windows
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    deps = [
+        "@crates//:anyhow",
+        "@crates//:clap",
+        "@crates//:futures",
+        "@crates//:humantime",
+        "@crates//:libc",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tracing",
+    ],
+)
+
+rust_test(
+    name = "process_wrapper_test",
+    size = "small",
+    crate = ":process_wrapper",
+    deps = [
+        "//testing",
+    ],
+)
+
+rust_doc_test(
+    name = "process_wrapper_doc_test",
+    size = "small",
+    crate = ":process_wrapper",
+)
+
+rust_doc(
+    name = "process_wrapper_doc",
+    crate = ":process_wrapper",
+)
