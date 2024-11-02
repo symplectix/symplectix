@@ -83,35 +83,21 @@ mod int_select_helper {
     }
 
     impl IntSelectHelper for u64 {
-        // Need the `std` crate to use `is_x86_feature_detected`.
-        //
-        // ```
-        // #[cfg(all(feature = "std", any(target_arch = "x86", target_arch = "x86_64")))]
-        // if is_x86_feature_detected!("bmi2") {
-        //     use std::arch::x86_64::{_pdep_u64, _tzcnt_u64};
-        //     return unsafe { _tzcnt_u64(_pdep_u64(1 << n, self)) as usize };
-        // }
-        // ```
-
-        #[cfg(target_feature = "bmi2")]
         #[inline]
         fn select1(self, n: usize) -> Option<usize> {
             (n < self.count1()).then(|| {
-                use core::arch::x86_64::{_pdep_u64, _tzcnt_u64};
-                unsafe { _tzcnt_u64(_pdep_u64(1 << n, self)) as usize }
+                #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+                if is_x86_feature_detected!("bmi2") {
+                    use std::arch::x86_64::{_pdep_u64, _tzcnt_u64};
+                    return unsafe { _tzcnt_u64(_pdep_u64(1 << n, self)) as usize };
+                }
+                broadword(self, n as u64)
             })
-        }
-
-        #[cfg(not(target_feature = "bmi2"))]
-        #[inline]
-        fn select1(self, n: usize) -> Option<usize> {
-            (n < self.count1()).then(|| broadword(self, n as u64))
         }
     }
 
     // Sebastiano Vigna, “Broadword Implementation of Rank/Select Queries”
     // Returns 72 when not found.
-    #[cfg(not(target_feature = "bmi2"))]
     #[allow(clippy::many_single_char_names)]
     fn broadword(x: u64, n: u64) -> usize {
         const L8: u64 = 0x0101_0101_0101_0101; // has the lowest bit of every bytes
