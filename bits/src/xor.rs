@@ -124,12 +124,11 @@ where
     }
 }
 
-#[cfg(feature = "alloc")]
 mod impl_alloc {
     use super::*;
-    use alloc::borrow::{Cow, ToOwned};
-    use alloc::boxed::Box;
-    use alloc::vec::Vec;
+    use std::borrow::{Cow, ToOwned};
+    use std::boxed::Box;
+    use std::vec::Vec;
 
     impl<A, B: ?Sized> XorAssign<B> for Vec<A>
     where

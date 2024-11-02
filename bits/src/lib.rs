@@ -1,9 +1,4 @@
-#![no_std]
-
 //! `bits`
-
-#[cfg(feature = "alloc")]
-extern crate alloc;
 
 mod int;
 mod lsb;
