@@ -3,7 +3,7 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//:__subpackages__"])
 
 rust_binary(
-    name = "fuzzing",
+    name = "fuzz",
     srcs = glob([
         "main.rs",
         "cmd/*.rs",

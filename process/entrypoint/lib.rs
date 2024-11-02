@@ -49,10 +49,8 @@ pub struct Entrypoint {
     timeout: Option<humantime::Duration>,
 
     /// The entrypoint of the child process.
-    command: String,
-
-    /// The arguments used to run the child process.
-    command_args: Vec<String>,
+    #[arg(last = true)]
+    command: Vec<String>,
 }
 
 /// ProcessWrapper errors.
@@ -86,7 +84,7 @@ impl Entrypoint {
     #[tracing::instrument(
         skip(self),
         fields(
-            command = %self.command,
+            command = %self.command[0],
         )
     )]
     pub async fn run(&self) -> Result {
@@ -190,9 +188,9 @@ async fn post(opts: &Entrypoint, result: Result) -> Result {
 }
 
 async fn spawn(opts: &Entrypoint) -> Result<Child> {
-    let mut cmd = StdCommand::new(opts.command.as_str());
+    let mut cmd = StdCommand::new(opts.command[0].as_str());
 
-    cmd.args(&opts.command_args);
+    cmd.args(&opts.command[1..]);
 
     cmd.stdout(if let Some(path) = opts.stdout.as_ref() {
         fsutil::stdio_from(path, false).map_err(Error::Io).await?

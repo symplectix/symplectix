@@ -5,7 +5,7 @@ use tokio::task;
 
 use crate::Entrypoint;
 
-fn sleep<S: Into<String>>(duration: S) -> Entrypoint {
+fn entrypoint<S: Into<String>>(command: Vec<S>) -> Entrypoint {
     Entrypoint {
         wait_files: vec![],
         post_file: None,
@@ -13,14 +13,24 @@ fn sleep<S: Into<String>>(duration: S) -> Entrypoint {
         stderr: None,
         envs: vec![],
         timeout: None,
-        command: "sleep".into(),
-        command_args: vec![duration.into()],
+        command: command.into_iter().map(|s| s.into()).collect(),
     }
+}
+
+fn sleep<S: Into<String>>(duration: S) -> Entrypoint {
+    entrypoint(vec!["sleep".to_owned(), duration.into()])
+}
+
+#[tokio::test]
+async fn run_entrypoints() {
+    assert!(entrypoint(vec!["date"]).run().await.is_ok());
+    assert!(entrypoint(vec!["unknown_command"]).run().await.is_err());
+    assert!(sleep("0.1").run().await.is_ok());
 }
 
 #[tokio::test]
 async fn wait_for_nothing() {
-    let opts = sleep("1s");
+    let opts = sleep("0.1");
     crate::wait(&opts).await.expect("wait for nothing");
 }
 
@@ -41,7 +51,7 @@ where
 }
 
 async fn wait(paths: Vec<PathBuf>) -> crate::Result<()> {
-    let mut opts = sleep("1s");
+    let mut opts = sleep("0.1");
     opts.wait_files = paths;
     crate::wait(&opts).await
 }

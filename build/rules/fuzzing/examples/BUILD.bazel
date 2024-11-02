@@ -2,9 +2,21 @@ load("//build/rules/fuzzing:defs.bzl", "rust_fuzz_binary")
 
 package(default_visibility = ["//:__subpackages__"])
 
+filegroup(
+    name = "corpus_filegroup",
+    srcs = glob([
+        "corpus/corpus_0",
+        "corpus/**",
+    ]),
+)
+
 rust_fuzz_binary(
     name = "buffer_overflow",
     srcs = ["buffer_overflow.rs"],
+    corpus = glob(
+        ["corpus/**/*"],
+        allow_empty = False,
+    ),
     sanitizer = "address",
     deps = [
         "@crates//:arbitrary",
@@ -25,6 +37,10 @@ rust_fuzz_binary(
 rust_fuzz_binary(
     name = "memory_leaks",
     srcs = ["memory_leaks.rs"],
+    corpus = glob(
+        ["corpus/**/*"],
+        allow_empty = False,
+    ),
     envs = {
         "ASAN_OPTIONS": ":".join([
             "detect_leaks=1",
@@ -41,6 +57,10 @@ rust_fuzz_binary(
 rust_fuzz_binary(
     name = "data_race",
     srcs = ["data_race.rs"],
+    corpus = glob(
+        ["corpus/**/*"],
+        allow_empty = False,
+    ),
     sanitizer = "thread",
     deps = [
         "@crates//:arbitrary",
