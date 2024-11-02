@@ -1,5 +1,5 @@
 {
-  "checksum": "2303b7841dbc7bdca808890026f16d2aa942a378d92308f0e315c1bc360c030e",
+  "checksum": "2dcfc5dd86c62079b751f553769b66303886fae20dd94fd93b933f7e82d6e563",
   "crates": {
     "aho-corasick 0.7.18": {
       "name": "aho-corasick",
@@ -418,13 +418,13 @@
       },
       "license": "Unlicense/MIT"
     },
-    "proc-macro2 1.0.40": {
+    "proc-macro2 1.0.42": {
       "name": "proc-macro2",
-      "version": "1.0.40",
+      "version": "1.0.42",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/proc-macro2/1.0.40/download",
-          "sha256": "dd96a1e8ed2596c337f8eae5f24924ec83f5ad5ab21ea8e455d3566c69fbcaf7"
+          "url": "https://crates.io/api/v1/crates/proc-macro2/1.0.42/download",
+          "sha256": "c278e965f1d8cf32d6e0e96de3d3e79712178ae67986d9cf9151f51e95aac89b"
         }
       },
       "targets": [
@@ -465,18 +465,18 @@
         "deps": {
           "common": [
             {
-              "id": "proc-macro2 1.0.40",
+              "id": "proc-macro2 1.0.42",
               "target": "build_script_build"
             },
             {
-              "id": "unicode-ident 1.0.1",
+              "id": "unicode-ident 1.0.2",
               "target": "unicode_ident"
             }
           ],
           "selects": {}
         },
         "edition": "2018",
-        "version": "1.0.40"
+        "version": "1.0.42"
       },
       "build_script_attrs": {
         "data_glob": [
@@ -573,7 +573,7 @@
         "deps": {
           "common": [
             {
-              "id": "proc-macro2 1.0.40",
+              "id": "proc-macro2 1.0.42",
               "target": "proc_macro2"
             },
             {
@@ -639,7 +639,7 @@
         "deps": {
           "common": [
             {
-              "id": "proc-macro2 1.0.40",
+              "id": "proc-macro2 1.0.42",
               "target": "proc_macro2"
             },
             {
@@ -896,7 +896,7 @@
         "deps": {
           "common": [
             {
-              "id": "proc-macro2 1.0.40",
+              "id": "proc-macro2 1.0.42",
               "target": "proc_macro2"
             },
             {
@@ -908,7 +908,7 @@
               "target": "build_script_build"
             },
             {
-              "id": "unicode-ident 1.0.1",
+              "id": "unicode-ident 1.0.2",
               "target": "unicode_ident"
             }
           ],
@@ -924,13 +924,13 @@
       },
       "license": "MIT OR Apache-2.0"
     },
-    "unicode-ident 1.0.1": {
+    "unicode-ident 1.0.2": {
       "name": "unicode-ident",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/unicode-ident/1.0.1/download",
-          "sha256": "5bd2fe26506023ed7b5e1e315add59d6f584c621d037f9368fea9cfb988f368c"
+          "url": "https://crates.io/api/v1/crates/unicode-ident/1.0.2/download",
+          "sha256": "15c61ba63f9235225a22310255a29b806b907c9b8c964bcbd0a2c70f3f2deea7"
         }
       },
       "targets": [
@@ -953,9 +953,9 @@
           "**"
         ],
         "edition": "2018",
-        "version": "1.0.1"
+        "version": "1.0.2"
       },
-      "license": "MIT OR Apache-2.0"
+      "license": "(MIT OR Apache-2.0) AND Unicode-DFS-2016"
     },
     "wasi 0.11.0+wasi-snapshot-preview1": {
       "name": "wasi",

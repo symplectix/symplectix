@@ -5,7 +5,7 @@
 test --test_output=errors
 
 # Make Bazel print out all options from rc files.
-common --announce_rc
+common:ci --announce_rc
 
 # Bazel picks up host-OS-specific config lines from bazelrc files.
 # https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
@@ -50,9 +50,17 @@ build --repo_env=RULES_RUST_TOOLCHAIN_INCLUDE_RUSTC_SRCS=true
 # rustc flags for proc-macros, cargo_build_script, etc.
 build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
 
-build:debug --compilation_mode=dbg # implies -Copt-level=0 -Cdebuginfo=2
+# compilation_mode to rustc codegen options
+# fastbuild: -Copt-level=0 -Cdebuginfo=0
+# dbg:       -Copt-level=0 -Cdebuginfo=2
+# opt:       -Copt-level=3 -Cdebuginfo=0
 
-build:release --compilation_mode=opt # implies -Copt-level=3 -Cdebuginfo=0
-build:release --@rules_rust//:extra_rustc_flags=-Clto,-Ccodegen-units=1
+build:release --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
+build:release --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
+build:release --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
+build:release --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
+build:release --@rules_rust//:extra_rustc_flag=-Clto=fat
+build:release --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1
 
+build:ci --compilation_mode=opt
 build:ci --config=release
