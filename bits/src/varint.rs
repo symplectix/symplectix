@@ -109,6 +109,10 @@ macro_rules! impl_put_varint {
     }
 }
 
+impl<'a, T: ?Sized + Varint> Varint for &'a T {
+    impl_varint!(T);
+}
+
 impl<B, const N: usize> Varint for [B; N]
 where
     [B]: Varint,

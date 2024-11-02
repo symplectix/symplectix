@@ -124,11 +124,11 @@ fn lower_bound() {
 
         assert_eq!(4, bit.nodes());
 
-        assert_eq!(0, bit.sum::<u32>(0));
-        assert_eq!(1, bit.sum::<u32>(1));
-        assert_eq!(1, bit.sum::<u32>(2));
-        assert_eq!(4, bit.sum::<u32>(3));
-        assert_eq!(9, bit.sum::<u32>(4));
+        assert_eq!(0u32, bit.sum(0));
+        assert_eq!(1u32, bit.sum(1));
+        assert_eq!(1u32, bit.sum(2));
+        assert_eq!(4u32, bit.sum(3));
+        assert_eq!(9u32, bit.sum(4));
 
         // assert_eq!(1, bit.range_sum::<u32, _>(1..3));
         // assert_eq!(4, bit.range_sum::<u32, _>(1..4));
@@ -183,13 +183,17 @@ fn tree_by_incr(vec: Vec<u64>) -> bool {
 #[quickcheck]
 fn sum_0_is_always_zero(vec: Vec<u64>) -> bool {
     let bit = build(vec, 0);
-    bit.sum::<u64>(0) == 0
+    let sum: u64 = bit.sum(0);
+    sum == 0
 }
 
 #[quickcheck]
 fn sum_x_eq_vec_sum(vec: Vec<u64>) -> bool {
     let bit = build(vec.clone(), 0);
-    (0..=bit.nodes()).all(|i| bit.sum::<u64>(i) == vec[..i].iter().sum())
+    (0..=bit.nodes()).all(|i| {
+        let sum: u64 = bit.sum(i);
+        sum == vec[..i].iter().sum()
+    })
 }
 
 // It takes too long to complete the test when using `Vec<u64>`.
@@ -198,7 +202,8 @@ fn lower_bound_sum(vec: Vec<u16>) -> bool {
     let bit = build(vec.clone(), 0);
     (0..=vec.iter().sum::<u16>()).map(Into::into).all(|w| {
         let i = bit.lower_bound(w);
-        bit.prefix(i).map(Into::<u64>::into).sum::<u64>() >= w.into()
+        let sum: u64 = fenwicktree::prefix(i).map(|i| Into::<u64>::into(bit[i])).sum();
+        sum >= w.into()
     })
 }
 

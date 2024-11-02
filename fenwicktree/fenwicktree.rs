@@ -2,12 +2,12 @@
 
 use num::Int;
 use std::iter::Sum;
-use std::ops::{AddAssign, SubAssign};
+use std::ops::{AddAssign, Sub, SubAssign};
 
 pub use iter::{children, prefix, search, update};
 
 /// Build a fenwick tree.
-pub fn build<T: Int + AddAssign>(bit: &mut [T]) {
+pub fn build<T: Node + AddAssign>(bit: &mut [T]) {
     assert!(!bit.is_empty());
 
     for i in 1..bit.len() {
@@ -18,7 +18,7 @@ pub fn build<T: Int + AddAssign>(bit: &mut [T]) {
     }
 }
 
-pub fn unbuild<T: Int + SubAssign>(bit: &mut [T]) {
+pub fn unbuild<T: Node + SubAssign>(bit: &mut [T]) {
     assert!(!bit.is_empty());
 
     for i in (1..bit.len()).rev() {
@@ -29,7 +29,7 @@ pub fn unbuild<T: Int + SubAssign>(bit: &mut [T]) {
     }
 }
 
-pub fn push<T: Int + AddAssign>(bit: &mut Vec<T>, mut x: T) {
+pub fn push<T: Node + AddAssign>(bit: &mut Vec<T>, mut x: T) {
     assert!(!bit.is_empty());
 
     // `bit.nodes()+1` points to the index to which `x` belongs when pushed
@@ -39,7 +39,7 @@ pub fn push<T: Int + AddAssign>(bit: &mut Vec<T>, mut x: T) {
     bit.push(x);
 }
 
-pub fn pop<T: Int + SubAssign>(bit: &mut Vec<T>) -> Option<T> {
+pub fn pop<T: Node + SubAssign>(bit: &mut Vec<T>) -> Option<T> {
     // tree[0] is dummy value, popping it doesn't make sense.
     (bit.len() > 1).then(|| {
         let mut x = bit.pop().expect("len > 1");
@@ -66,11 +66,6 @@ mod iter {
     #[inline]
     pub(crate) fn next_index_for_prefix<T: Int + Sub + Lsb>(i: T) -> <T as Sub>::Output {
         i - i.lsb()
-    }
-
-    pub struct Prefix<T> {
-        pub(crate) index: Successors<usize, fn(&usize) -> Option<usize>>,
-        pub(crate) data: T,
     }
 
     /// # Examples
@@ -137,47 +132,26 @@ mod iter {
     }
 }
 
+pub trait Node: Sized + Copy {}
+
+impl<T> Node for T where T: Sized + Copy {}
+
 pub trait Nodes {
+    type Node: Node;
+
     /// The size of fenwick tree.
     fn nodes(&self) -> usize;
 }
 
 impl<'a, T: ?Sized + Nodes> Nodes for &'a T {
+    type Node = <T as Nodes>::Node;
     fn nodes(&self) -> usize {
         <T as Nodes>::nodes(self)
     }
 }
 
-pub trait Prefix: Nodes {
-    type Item;
-    type Iter: Iterator<Item = Self::Item>;
-
-    fn prefix(self, index: usize) -> Self::Iter;
-
-    #[inline]
-    fn sum<S: Sum<Self::Item>>(self, index: usize) -> S
-    where
-        S: Sum<Self::Item>,
-        Self: Sized,
-    {
-        self.prefix(index).sum::<S>()
-    }
-
-    // #[inline]
-    // fn range_sum<S, R>(self, index: R) -> S
-    // where
-    //     S: Sum<Self::Item> + Sub<Output = S>,
-    //     R: RangeBounds<usize>,
-    //     Self: Copy + Sized,
-    // {
-    //     match (
-    //         indexutil::min_index_inclusive(index.start_bound(), 0),
-    //         indexutil::max_index_inclusive(index.end_bound(), self.nodes()),
-    //     ) {
-    //         (0, i) => self.sum::<S>(i),
-    //         (i, j) => self.sum::<S>(j) - self.sum::<S>(i - 1),
-    //     }
-    // }
+pub trait Prefix<S>: Nodes {
+    fn sum(&self, index: usize) -> S;
 }
 
 pub trait Incr<N>: Nodes {
@@ -195,34 +169,24 @@ pub trait LowerBound<S>: Nodes {
     fn lower_bound(&self, threshold: S) -> usize;
 }
 
-impl<T> Nodes for [T] {
+impl<T: Node> Nodes for [T] {
+    type Node = T;
     #[inline]
     fn nodes(&self) -> usize {
         self.len() - 1 // self[0] is a dummy node
     }
 }
 
-impl<'a, T: Int> Prefix for &'a [T] {
-    type Item = T;
-    type Iter = iter::Prefix<&'a [T]>;
-
+impl<T: Node, S: Sum<Self::Node>> Prefix<S> for [T] {
     #[inline]
-    fn prefix(self, index: usize) -> Self::Iter {
-        iter::Prefix { index: prefix(index), data: self }
-    }
-}
-
-impl<'a, T: Int> Iterator for iter::Prefix<&'a [T]> {
-    type Item = T;
-    #[inline]
-    fn next(&mut self) -> Option<Self::Item> {
-        self.index.next().map(|i| self.data[i])
+    fn sum(&self, index: usize) -> S {
+        prefix(index).map(|i| self[i]).sum()
     }
 }
 
 impl<T, U> LowerBound<U> for [T]
 where
-    T: Int + PartialOrd<U>,
+    T: Node + PartialOrd<U>,
     U: Int + SubAssign<T>,
 {
     fn lower_bound(&self, mut w: U) -> usize {
@@ -248,7 +212,7 @@ where
 
 impl<T, U> Incr<U> for [T]
 where
-    T: Int + AddAssign<U>,
+    T: Node + AddAssign<U>,
     U: Copy,
 {
     #[inline]
@@ -259,7 +223,7 @@ where
 
 impl<T, U> Decr<U> for [T]
 where
-    T: Int + SubAssign<U>,
+    T: Node + SubAssign<U>,
     U: Copy,
 {
     #[inline]
@@ -275,29 +239,27 @@ pub struct Complement<'a, T: ?Sized, U = u64> {
 }
 
 #[inline]
-pub fn complement<T, U>(inner: &T, max_bound: U) -> Complement<'_, T, U> {
+pub fn complement<T: ?Sized, U>(inner: &T, max_bound: U) -> Complement<'_, T, U> {
     Complement { inner, max_bound }
 }
 
-impl<'a, T> Nodes for Complement<'a, [T]>
-where
-    T: Copy + Into<u64>,
-{
+impl<'a, T: Node, U> Nodes for Complement<'a, [T], U> {
+    type Node = T;
     #[inline]
     fn nodes(&self) -> usize {
         self.inner.nodes()
     }
 }
 
-// impl<'a, T> Sum for Complemented<'a, [T]>
-// where
-//     T: Copy + Into<u64>,
-// {
-//     #[inline]
-//     fn sum(&self, i: usize) -> u64 {
-//         (self.bound * i as u64) - self.tree.sum(i)
-//     }
-// }
+impl<'a, T: Node> Prefix<u64> for Complement<'a, [T], u64>
+where
+    [T]: Prefix<u64>,
+{
+    #[inline]
+    fn sum(&self, i: usize) -> u64 {
+        (self.max_bound * i as u64) - self.inner.sum(i)
+    }
+}
 
 // impl<'a, T> Iterator for iter::Prefix<Complement<'a, [T]>>
 // where
@@ -310,9 +272,10 @@ where
 //     }
 // }
 
-impl<'a, T> LowerBound<u64> for Complement<'a, [T]>
+impl<'a, T> LowerBound<u64> for Complement<'a, [T], u64>
 where
-    T: Copy + Into<u64>,
+    T: Node,
+    u64: Sub<T, Output = u64>,
 {
     fn lower_bound(&self, mut w: u64) -> usize {
         let bit = self.inner;
@@ -326,7 +289,7 @@ where
         // The size of the segment is halved for each step.
         for d in search(bit.nodes()) {
             if let Some(&v) = bit.get(i + d) {
-                let v: u64 = max * (d as u64) - v.into();
+                let v: u64 = max * (d as u64) - v;
                 if v < w {
                     w -= v;
                     i += d; // move to right

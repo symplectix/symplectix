@@ -41,7 +41,8 @@ pub(crate) fn between<B: Block>(s: usize, e: usize) -> impl Iterator<Item = (usi
 
 /// A utility to clamp the given range into a valid one.
 /// Panics if debug is enabled and `min <= i && i <= j && j <= max`.
-pub(crate) fn to_range<R>(r: &R, min: usize, max: usize) -> Range<usize>
+pub fn to_range<R>(r: &R, min: usize, max: usize) -> Range<usize>
+// TODO: pub(crate) instead of pub
 where
     R: RangeBounds<usize>,
 {
