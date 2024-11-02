@@ -3,7 +3,7 @@
 #
 # https://bazel.build/external/module
 # https://registry.bazel.build/
-module(name = "trunk")
+module(name = "symplectix")
 
 # Constraint values for specifying platforms and toolchains.
 bazel_dep(name = "platforms", version = "0.0.10")

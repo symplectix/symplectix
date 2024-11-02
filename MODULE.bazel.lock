@@ -1,6 +1,6 @@
 {
   "lockFileVersion": 6,
-  "moduleFileHash": "7dc4ee3dc5471fe5c0dcf5ba582a336eafa930723139f9c5f59c04f9c2bd3f01",
+  "moduleFileHash": "1747e30ef234193818c184aa96a292ae5a0dbe7a114ccf25b440ab3ff72d6cd4",
   "flags": {
     "cmdRegistries": [
       "https://bcr.bazel.build/"
@@ -17,10 +17,10 @@
   },
   "moduleDepGraph": {
     "<root>": {
-      "name": "trunk",
+      "name": "symplectix",
       "version": "",
       "key": "<root>",
-      "repoName": "trunk",
+      "repoName": "symplectix",
       "executionPlatformsToRegister": [],
       "toolchainsToRegister": [],
       "extensionUsages": [
