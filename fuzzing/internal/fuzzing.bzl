@@ -4,9 +4,10 @@ def _fuzz_test_impl(ctx):
     entrypoint_template = """\
 {exports}
 RUNFILES_DIR="$0.runfiles" \
-exec "{fuzz_test}" \
-{time_to_run} \
+exec "{run}" \
 {envs} \
+--kill-after {time_to_run} \
+--timeout-is-ok \
 -- \
 "{executable}" \
 "{corpus}" \
@@ -14,7 +15,7 @@ exec "{fuzz_test}" \
 """
 
     if hasattr(ctx.attr, "time_to_run") and ctx.attr.time_to_run != "":
-        time_to_run = "--timeout {}".format(ctx.attr.time_to_run)
+        time_to_run = "{}".format(ctx.attr.time_to_run)
     else:
         time_to_run = ""
 
@@ -23,15 +24,14 @@ exec "{fuzz_test}" \
             "export %s='%s'" % (key, val)
             for key, val in ctx.attr.envs.items()
         ]),
-        fuzz_test = ctx.executable._fuzz_test.short_path,
-        command = ctx.attr.command,
-        corpus = ctx.file.corpus.short_path,
-        time_to_run = time_to_run,
+        run = ctx.executable._run.short_path,
         envs = " ".join([
             "\"--env\" '%s'" % key
             for key in ctx.attr.envs.keys()
         ]),
+        time_to_run = time_to_run,
         executable = ctx.executable.executable.short_path,
+        corpus = ctx.file.corpus.short_path,
     )
 
     ctx.actions.write(
@@ -41,8 +41,8 @@ exec "{fuzz_test}" \
     )
 
     runfiles = ctx.runfiles(files = [ctx.file.corpus]) \
-        .merge(ctx.attr._fuzz_test[DefaultInfo].default_runfiles) \
-        .merge(ctx.attr._fuzz_test[DefaultInfo].data_runfiles) \
+        .merge(ctx.attr._run[DefaultInfo].default_runfiles) \
+        .merge(ctx.attr._run[DefaultInfo].data_runfiles) \
         .merge(ctx.attr.executable[DefaultInfo].default_runfiles) \
         .merge(ctx.attr.executable[DefaultInfo].data_runfiles)
 
@@ -57,25 +57,18 @@ _fuzz_test = rule(
     implementation = _fuzz_test_impl,
     test = True,
     attrs = {
-        "_fuzz_test": attr.label(
-            default = Label("@//fuzzing:fuzz_test"),
+        "_run": attr.label(
+            default = Label("@//process/run/cmd:run"),
             executable = True,
             cfg = "exec",
-        ),
-        "time_to_run": attr.string(
-            default = "",
-            mandatory = True,
-        ),
-        "command": attr.string(
-            mandatory = True,
-        ),
-        "corpus": attr.label(
-            mandatory = True,
-            allow_single_file = True,
         ),
         "envs": attr.string_dict(
             default = {},
             mandatory = False,
+        ),
+        "time_to_run": attr.string(
+            default = "",
+            mandatory = True,
         ),
         "executable": attr.label(
             doc = "The executable of the fuzz test to run.",
@@ -84,12 +77,15 @@ _fuzz_test = rule(
             cfg = "target",
             mandatory = True,
         ),
+        "corpus": attr.label(
+            mandatory = True,
+            allow_single_file = True,
+        ),
     },
 )
 
 def fuzz_test(**kwargs):
     _fuzz_test(
-        command = "test",
         time_to_run = "30s",
         **kwargs
     )

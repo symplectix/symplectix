@@ -15,19 +15,6 @@ rust_library(
 )
 
 rust_binary(
-    name = "fuzz_test",
-    srcs = ["cmd/fuzz_test.rs"],
-    visibility = ["//fuzzing:__subpackages__"],
-    deps = [
-        ":fuzzing_rs",
-        "//process/entrypoint:entrypoint_rs",
-        "@crates//:anyhow",
-        "@crates//:clap",
-        "@crates//:tokio",
-    ],
-)
-
-rust_binary(
     name = "fuzz_corpus",
     srcs = ["cmd/fuzz_corpus.rs"],
     visibility = ["//fuzzing:__subpackages__"],

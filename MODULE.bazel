@@ -193,6 +193,7 @@ crate.spec(
     version = "0.1",
 )
 crate.spec(
+    features = ["env-filter"],
     package = "tracing-subscriber",
     version = "0.3",
 )
@@ -369,10 +370,16 @@ go_sdk.download(version = GO_VERSION)
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
 
+# All *direct* Go dependencies of the module have to be listed explicitly.
+use_repo(
+    go_deps,
+    "org_golang_x_exp",
+)
+
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 oci.pull(
     name = "distroless_base_debian12_nonroot",
-    digest = "sha256:e5260be292def77bc70d03003f788f3d32c0796972ea1412d72cc0c843ab139a",
+    digest = "sha256:c3584d9160af7bbc6a0a6089dc954d0938bb7f755465bb4ef4265aad0221343e",
     image = "gcr.io/distroless/base-debian12",
     platforms = [
         "linux/amd64",
@@ -381,7 +388,7 @@ oci.pull(
 )
 oci.pull(
     name = "distroless_cc_debian12_nonroot",
-    digest = "sha256:880bcf2ca034ab5e8ae76df0bd50d700e54eb44e948877244b130e3fcd5a1d66",
+    digest = "sha256:fe61a509ada74719dbab670d4c0d127bd9b2e0114d18d4bb0a3b25c5d6695a49",
     image = "gcr.io/distroless/cc-debian12",
     platforms = [
         "linux/amd64",

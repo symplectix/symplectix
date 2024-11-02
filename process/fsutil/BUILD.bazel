@@ -7,7 +7,6 @@ rust_library(
     srcs = ["fsutil.rs"],
     crate_name = "fsutil",
     deps = [
-        "@crates//:futures",
         "@crates//:tokio",
     ],
 )
