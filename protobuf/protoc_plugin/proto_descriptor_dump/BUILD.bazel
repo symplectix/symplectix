@@ -6,9 +6,9 @@ rust_library(
     srcs = ["lib.rs"],
     deps = [
         "//protobuf/protoc_plugin",
-        "@lib_crates//:prost",
-        "@lib_crates//:prost-reflect",
-        "@lib_crates//:prost-types",
+        "@crates//:prost",
+        "@crates//:prost-reflect",
+        "@crates//:prost-types",
     ],
 )
 
@@ -22,7 +22,7 @@ rust_binary(
     deps = [
         ":proto_descriptor_dump",
         "//protobuf/protoc_plugin",
-        "@lib_crates//:anyhow",
+        "@crates//:anyhow",
     ],
 )
 

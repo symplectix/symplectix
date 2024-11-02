@@ -15,7 +15,7 @@ rust_test_suite(
     name = "tests",
     srcs = glob(["*_test.rs"]),
     proc_macro_deps = [
-        "@lib_crates//:quickcheck_macros",
+        "@crates//:quickcheck_macros",
     ],
     rustc_flags = [
         "-Coverflow-checks=off",
@@ -23,7 +23,7 @@ rust_test_suite(
     deps = [
         ":fenwicktree",
         "//num",
-        "@lib_crates//:quickcheck",
+        "@crates//:quickcheck",
     ],
 )
 

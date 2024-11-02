@@ -11,7 +11,7 @@ load("@rules_rust//proto/prost:transitive_repositories.bzl", "rust_prost_transit
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
 load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
 load("//build/deps:versions.bzl", "GO_VERSION", "RUST_EDITION", "RUST_VERSIONS")
-load("//build/deps/crates:defs.bzl", "bin_crates", "lib_crates")
+load("//build/deps/crates:defs.bzl", "bin_crates", "crates")
 
 def build_dependencies():
     bazel_skylib_workspace()
@@ -48,13 +48,11 @@ def build_dependencies():
     # you may need to set additional flags such as bootstrap = True.
     crate_universe_dependencies()
 
-    bin_crates.dependencies()
-
-    # CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=bin_crates bazel sync --only=bin_crates
-    bin_crates.repository()
-
-    # CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=lib_crates bazel sync --only=lib_crates
-    lib_crates.repository(
+    # Cargo packages that contain a library. To generate Bazel targets for binaries,
+    # you must annotate on the package. See defs.bzl for working examples.
+    #
+    # CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=crates bazel sync --only=crates
+    crates.repository(
         splicing_config = splicing_config(
             # The resolver version to use in generated Cargo manifests.
             # This flag is only used when splicing a manifest from direct package definitions.
@@ -62,6 +60,12 @@ def build_dependencies():
             resolver_version = "2",
         ),
     )
+
+    # The bin_crates repository is for cargo packages that contain binaries but no library.
+    # https://bazelbuild.github.io/rules_rust/crate_universe.html#binary-dependencies
+    #
+    # CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=bin_crates bazel sync --only=bin_crates
+    bin_crates.repository()
 
     go_rules_dependencies()
     go_register_toolchains(version = GO_VERSION)

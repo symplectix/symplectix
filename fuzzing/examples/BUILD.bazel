@@ -20,8 +20,8 @@ rust_fuzz_test(
         "manual",
     ],
     deps = [
-        "@lib_crates//:arbitrary",
-        "@lib_crates//:libfuzzer-sys",
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
     ],
 )
 
@@ -37,8 +37,8 @@ rust_fuzz_test(
         "manual",
     ],
     deps = [
-        "@lib_crates//:arbitrary",
-        "@lib_crates//:libfuzzer-sys",
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
     ],
 )
 
@@ -54,8 +54,8 @@ rust_fuzz_test(
         "manual",
     ],
     deps = [
-        "@lib_crates//:arbitrary",
-        "@lib_crates//:libfuzzer-sys",
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
     ],
 )
 
@@ -77,7 +77,7 @@ rust_fuzz_test(
         "manual",
     ],
     deps = [
-        "@lib_crates//:arbitrary",
-        "@lib_crates//:libfuzzer-sys",
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
     ],
 )

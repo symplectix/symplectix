@@ -1,7 +1,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
 
-_lib_crates = {
+_crates = {
     "libc": struct(
         spec = crate.spec(
             version = "0.2",
@@ -249,39 +249,33 @@ _lib_crates = {
     ),
 }
 
-def _lib_crates_repository(**kwargs):
-    _lib_crates_annotations = {
+def _crates_repository(**kwargs):
+    _crates_annotations = {
         name: c.annotations
-        for (name, c) in _lib_crates.items()
+        for (name, c) in _crates.items()
         if hasattr(c, "annotations")
     }
 
-    _lib_crates_packages = {
+    _crates_packages = {
         name: c.spec
-        for (name, c) in _lib_crates.items()
+        for (name, c) in _crates.items()
         if hasattr(c, "spec")
     }
 
     crates_repository(
-        name = "lib_crates",
-        annotations = _lib_crates_annotations,
-        cargo_lockfile = "//build/deps/crates/lib_crates:Cargo.lock",
-        lockfile = "//build/deps/crates/lib_crates:Cargo.Bazel.lock",
-        packages = _lib_crates_packages,
+        name = "crates",
+        annotations = _crates_annotations,
+        cargo_lockfile = "//build/deps/crates:Cargo.lock",
+        lockfile = "//build/deps/crates:Cargo.Bazel.lock",
+        packages = _crates_packages,
         **kwargs
     )
 
-lib_crates = struct(
-    repository = _lib_crates_repository,
+crates = struct(
+    repository = _crates_repository,
 )
 
-# In order to depend on a Cargo package that contains binaries but no library:
-# * use http_archive to import its source code,
-# * use crates_repository to make build targets for its dependencies
-# * create build targets for the binary
-#
-# https://bazelbuild.github.io/rules_rust/crate_universe.html#binary-dependencies
-def _bin_crates_dependencies():
+def _bin_crates_repository(**kwargs):
     http_archive(
         name = "geckodriver",
         build_file = "//build/deps/crates/bin_crates:BUILD.geckodriver.bazel",
@@ -291,7 +285,6 @@ def _bin_crates_dependencies():
         urls = ["https://crates.io/api/v1/crates/geckodriver/0.33.0/download"],
     )
 
-def _bin_crates_repository(**kwargs):
     crates_repository(
         name = "bin_crates",
         cargo_lockfile = "//build/deps/crates/bin_crates:Cargo.lock",
@@ -303,6 +296,5 @@ def _bin_crates_repository(**kwargs):
     )
 
 bin_crates = struct(
-    dependencies = _bin_crates_dependencies,
     repository = _bin_crates_repository,
 )

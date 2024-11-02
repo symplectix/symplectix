@@ -4,7 +4,7 @@ rust_binary(
     name = "semantic_test",
     srcs = ["main.rs"],
     deps = [
-        "@lib_crates//:tree-sitter",
-        "@lib_crates//:tree-sitter-rust",
+        "@crates//:tree-sitter",
+        "@crates//:tree-sitter-rust",
     ],
 )

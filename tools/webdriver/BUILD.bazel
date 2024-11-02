@@ -9,10 +9,10 @@ rust_binary(
     deps = [
         "//process",
         "//process/entrypoint",
-        "@lib_crates//:anyhow",
-        "@lib_crates//:tokio",
-        "@lib_crates//:tracing",
-        "@lib_crates//:tracing-subscriber",
+        "@crates//:anyhow",
+        "@crates//:tokio",
+        "@crates//:tracing",
+        "@crates//:tracing-subscriber",
         "@rules_rust//tools/runfiles",
     ],
 )

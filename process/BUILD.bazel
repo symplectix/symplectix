@@ -18,13 +18,13 @@ rust_library(
     visibility = ["//visibility:public"],
     deps = [
         "//process/fsutil",
-        "@lib_crates//:anyhow",
-        "@lib_crates//:clap",
-        "@lib_crates//:humantime",
-        "@lib_crates//:libc",
-        "@lib_crates//:thiserror",
-        "@lib_crates//:tokio",
-        "@lib_crates//:tracing",
+        "@crates//:anyhow",
+        "@crates//:clap",
+        "@crates//:humantime",
+        "@crates//:libc",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tracing",
     ],
 )
 
