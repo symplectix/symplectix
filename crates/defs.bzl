@@ -183,6 +183,11 @@ _crates = {
             version = "2",
         ),
     ),
+    "time": struct(
+        spec = crate.spec(
+            version = ">=0.3.35",
+        ),
+    ),
 
     # Result/Error helpers.
     "anyhow": struct(

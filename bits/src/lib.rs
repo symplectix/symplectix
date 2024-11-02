@@ -576,7 +576,7 @@ mod impl_bits {
     }
     impl<'a, T> Block for Cow<'a, T>
     where
-        T: ?Sized + Block,
+        T: Block,
     {
         const BITS: usize = T::BITS;
         #[inline]

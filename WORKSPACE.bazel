@@ -16,9 +16,9 @@ http_archive(
 http_archive(
     name = "openssl",
     build_file = "//crypto/openssl:BUILD.openssl.bazel",
-    sha256 = "53e66b043322a606abf0087e7699a0e033a37fa13feb9742df35c3a33b18fb02",
-    strip_prefix = "openssl-3.3.0",
-    urls = ["https://www.openssl.org/source/openssl-3.3.0.tar.gz"],
+    integrity = "sha256-LopAsBl5r+i+C7+z3l3BxnCf7bRtbInBDaEUq1/D0oE=",
+    strip_prefix = "openssl-3.3.2",
+    urls = ["https://www.openssl.org/source/openssl-3.3.2.tar.gz"],
 )
 
 http_archive(
@@ -30,15 +30,15 @@ http_archive(
 
 http_archive(
     name = "rules_rust",
-    integrity = "sha256-JLN47ZcAbx9wEr5Jiib4HduZATGLiDgK7oUi/fvotzU=",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.42.1/rules_rust-v0.42.1.tar.gz"],
+    integrity = "sha256-eTHntUQQe2ICm/L8cuefnXdSOtZQ1ELZPD/M6a1ewes=",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.52.0/rules_rust-v0.52.0.tar.gz"],
 )
 
 http_archive(
     name = "rules_proto",
-    sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
-    strip_prefix = "rules_proto-5.3.0-21.7",
-    urls = ["https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz"],
+    sha256 = "6fb6767d1bef535310547e03247f7518b03487740c11b6c6adb7952033fe1295",
+    strip_prefix = "rules_proto-6.0.2",
+    url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.2/rules_proto-6.0.2.tar.gz",
 )
 
 http_archive(
@@ -52,10 +52,10 @@ register_toolchains("//protobuf/prost:prost_toolchain")
 
 _RUST_EDITION = "2021"
 
-_RUST_STABLE_VERSION = "1.77.2"
+_RUST_STABLE_VERSION = "1.81.0"
 
 # https://github.com/oxalica/rust-overlay/tree/master/manifests/nightly
-_RUST_NIGHTLY_VERSION = "nightly/2024-04-14"
+_RUST_NIGHTLY_VERSION = "nightly/2024-10-01"
 
 # Build rules for interfacing with "foreign" (non-Bazel) build systems
 # (CMake, configure-make, GNU Make, boost, ninja, Meson).
@@ -82,9 +82,15 @@ load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
 #   bazel run @rules_rust//tools/rust_analyzer:gen_rust_project
 rust_analyzer_dependencies()
 
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies")
 
 rules_proto_dependencies()
+
+load("@rules_proto//proto:setup.bzl", "rules_proto_setup")
+
+rules_proto_setup()
+
+load("@rules_proto//proto:toolchains.bzl", "rules_proto_toolchains")
 
 rules_proto_toolchains()
 

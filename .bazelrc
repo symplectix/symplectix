@@ -62,7 +62,7 @@ build:macos --action_env=CXXFLAGS=-Wno-int-conversion
 build:macos --action_env=CFLAGS=-Wno-int-conversion
 
 # rustc flags for proc-macros, cargo_build_script, etc.
-build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
+build --@rules_rust//rust/settings:extra_exec_rustc_flags=-Copt-level=3
 
 # * The platfrom `stable` should be the default target.
 #
@@ -78,18 +78,18 @@ build:nightly --@rules_rust//rust/toolchain/channel=nightly
 # dbg:       -Copt-level=0 -Cdebuginfo=2
 # opt:       -Copt-level=3 -Cdebuginfo=0
 build:opt --compilation_mode=opt
-build:opt --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
-build:opt --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
-build:opt --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
-build:opt --@rules_rust//:extra_rustc_flag=-Clto=fat
-build:opt --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1
+build:opt --@rules_rust//rust/settings:extra_rustc_flag=-Cdebug-assertions=off
+build:opt --@rules_rust//rust/settings:extra_rustc_flag=-Coverflow-checks=off
+build:opt --@rules_rust//rust/settings:extra_rustc_flag=-Cpanic=unwind
+build:opt --@rules_rust//rust/settings:extra_rustc_flag=-Clto=fat
+build:opt --@rules_rust//rust/settings:extra_rustc_flag=-Ccodegen-units=1
 
 build:dbg --compilation_mode=dbg
-build:dbg --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=on
-build:dbg --@rules_rust//:extra_rustc_flag=-Coverflow-checks=on
-build:dbg --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
-build:dbg --@rules_rust//:extra_rustc_flag=-Clto=fat
-build:dbg --@rules_rust//:extra_rustc_flag=-Ccodegen-units=32
+build:dbg --@rules_rust//rust/settings:extra_rustc_flag=-Cdebug-assertions=on
+build:dbg --@rules_rust//rust/settings:extra_rustc_flag=-Coverflow-checks=on
+build:dbg --@rules_rust//rust/settings:extra_rustc_flag=-Cpanic=unwind
+build:dbg --@rules_rust//rust/settings:extra_rustc_flag=-Clto=fat
+build:dbg --@rules_rust//rust/settings:extra_rustc_flag=-Ccodegen-units=32
 
 # Controls whether Bazel will strip debugging information from all binaries and shared libraries,
 # by invoking the linker with the -Wl,--strip-debug option.
@@ -103,17 +103,17 @@ build:strip --strip=always
 # * symbols
 #   same as debuginfo, but the rest of the symbol table section is stripped
 #   as well if the linker supports it.
-build:strip --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
+build:strip --@rules_rust//rust/settings:extra_rustc_flag=-Cstrip=debuginfo
 
 # clippy
 build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build:clippy --output_groups=+clippy_checks
-build --@rules_rust//:clippy.toml=//:.clippy.toml
+build --@rules_rust//rust/settings:clippy.toml=//:.clippy.toml
 
 # rustfmt
 build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
 build:rustfmt --output_groups=+rustfmt_checks
-build --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
+build --@rules_rust//rust/settings:rustfmt.toml=//:.rustfmt.toml
 
 # Load extra bazel settings if any.
 try-import %workspace%/.bazelrc.local

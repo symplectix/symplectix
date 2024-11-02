@@ -36,7 +36,7 @@ fn in_bazel_test() -> bool {
 
 /// Returns the runtime path of a runfile, assuming the path is from the workspace root.
 pub fn rlocation(path: impl AsRef<Path>) -> PathBuf {
-    RUNFILES.rlocation(Path::new(WORKSPACE.as_str()).join(path))
+    runfiles::rlocation!(RUNFILES, path).unwrap()
 }
 
 /// Create a new temporary directory in [`TMPDIR`].
@@ -109,6 +109,17 @@ mod tests {
 
     #[test]
     fn worspace() {
-        assert_eq!(RUNFILES.current_repository(), *WORKSPACE);
+        assert_eq!(
+            rlocation("symplectix").join(".rustfmt.toml"),
+            rlocation("symplectix/.rustfmt.toml"),
+        );
+        assert_eq!(
+            rlocation("rules_rust").join(".rustfmt.toml"),
+            rlocation("rules_rust/.rustfmt.toml"),
+        );
+        assert_eq!(
+            rlocation("rules_rust").join(".clippy.toml"),
+            rlocation("rules_rust/.clippy.toml"),
+        );
     }
 }
