@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	runRloc    = must(runfiles.Rlocation("trunk/process/run/cmd/run"))
-	orphanRloc = must(runfiles.Rlocation("trunk/process/run/cmd/orphan"))
+	runRloc    = must(runfiles.Rlocation("symplectix/process/run/cmd/run"))
+	orphanRloc = must(runfiles.Rlocation("symplectix/process/run/cmd/orphan"))
 )
 
 var run = &runCmd{

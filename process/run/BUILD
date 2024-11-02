@@ -52,7 +52,6 @@ go_test(
         "//process/run/cmd:run",
     ],
     deps = [
-        "@org_golang_x_exp//constraints",
         "@rules_go//go/runfiles:go_default_library",
     ],
 )
