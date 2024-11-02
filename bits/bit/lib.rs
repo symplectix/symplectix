@@ -10,19 +10,25 @@ use core::ops::{Bound, Range, RangeBounds};
 // }
 
 #[inline]
-pub const fn address(i: usize, b: usize) -> (usize, usize) {
+pub const fn addr(i: usize, b: usize) -> (usize, usize) {
     (i / b, i % b)
 }
 
+/// Calculates the minimum number of blocks to store `n` bits.
+#[inline]
+pub const fn blocks(n: usize, b: usize) -> usize {
+    n / b + (n % b > 0) as usize
+}
+
 /// A utility to clamp the given range, which is possibly unbounded, into a bounded one.
-/// Panics when debug is enabled and if `min <= i && i <= j && j <= max`.
+/// Panics when debug is enabled and if `!(min <= i && i <= j && j <= max)`.
 pub fn bounded<R>(r: &R, min: usize, max: usize) -> Range<usize>
 where
     R: RangeBounds<usize>,
 {
     let i = min_index_inclusive(r.start_bound(), min);
     let j = max_index_exclusive(r.end_bound(), max);
-    assert!(min <= i && i <= j && j <= max);
+    debug_assert!(min <= i && i <= j && j <= max);
     i..j
 }
 
@@ -50,31 +56,31 @@ const fn max_index_exclusive(bound: Bound<&usize>, max: usize) -> usize {
 /// # Examples
 ///
 /// ```
-/// let mut it = bitaddr::chunks_aligned(10, 0, 3);
+/// let mut it = bit::chunks(10, 0, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitaddr::chunks_aligned(10, 10, 3);
+/// let mut it = bit::chunks(10, 10, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitaddr::chunks_aligned(10, 12, 3);
+/// let mut it = bit::chunks(10, 12, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitaddr::chunks_aligned(10, 20, 3);
+/// let mut it = bit::chunks(10, 20, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));
 /// assert_eq!(it.next(), Some((18, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitaddr::chunks_aligned(10, 21, 3);
+/// let mut it = bit::chunks(10, 21, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));
 /// assert_eq!(it.next(), Some((18, 3)));
 /// assert_eq!(it.next(), None);
 /// ```
-pub fn chunks_aligned(start: usize, end: usize, n: usize) -> impl Iterator<Item = (usize, usize)> {
+pub fn chunks(start: usize, end: usize, n: usize) -> impl Iterator<Item = (usize, usize)> {
     let step = move |i| (i < end).then(|| (i, next_multiple_of(i, n).min(end) - i));
     successors(step(start), move |&(index, len)| step(index + len))
 }

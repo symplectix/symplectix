@@ -11,11 +11,6 @@ use l1l2::L1L2;
 
 pub use rank_aux::Rho;
 
-/// Calculates the minimum number of blocks to store `n` bits.
-const fn blocks(n: usize, b: usize) -> usize {
-    n / b + (n % b > 0) as usize
-}
-
 /// Returns an empty `Vec<T>` with the at least specified capacity in bits.
 ///
 /// # Examples
@@ -28,7 +23,7 @@ const fn blocks(n: usize, b: usize) -> usize {
 /// assert_eq!(v.capacity(), 10);
 /// ```
 pub fn with_capacity<T: bits::Bits>(capacity: usize) -> Vec<T> {
-    Vec::with_capacity(blocks(capacity, T::BITS))
+    Vec::with_capacity(bit::blocks(capacity, T::BITS))
 }
 
 /// # Examples
@@ -41,7 +36,7 @@ pub fn with_capacity<T: bits::Bits>(capacity: usize) -> Vec<T> {
 /// ```
 pub fn empty<T: bits::Bits>(n: usize) -> Vec<T> {
     use std::iter::from_fn;
-    from_fn(|| Some(T::empty())).take(blocks(n, T::BITS)).collect::<Vec<T>>()
+    from_fn(|| Some(T::empty())).take(bit::blocks(n, T::BITS)).collect::<Vec<T>>()
 }
 
 // // impl<T: Container, S> From<Imp<Box<[T]>, S>> for Imp<Vec<T>, S> {

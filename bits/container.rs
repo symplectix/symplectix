@@ -56,7 +56,7 @@ impl<B: Bits> Container for [B] {
 
     #[inline]
     fn bit(&self, i: usize) -> Option<bool> {
-        let (i, o) = bitaddr::address(i, B::BITS);
+        let (i, o) = bit::addr(i, B::BITS);
         self.get(i).map(|b| b.bit(o).expect("index out of bounds"))
     }
 }

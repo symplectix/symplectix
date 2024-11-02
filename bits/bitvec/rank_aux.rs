@@ -1,5 +1,4 @@
 use super::empty;
-use crate::blocks;
 use crate::L1L2;
 use bitpacking::Unpack;
 use bits::{Bits, Container, Count, Rank, Select};
@@ -208,7 +207,7 @@ impl From<Buckets<layout::Uninit>> for Buckets<layout::Pop> {
 
 #[inline]
 fn hilen(n: usize) -> usize {
-    blocks(n, UPPER) + 1
+    bit::blocks(n, UPPER) + 1
 }
 
 #[inline]
@@ -217,7 +216,7 @@ fn lolen(n: usize) -> usize {
         1
     } else {
         // A minimum and a *logical* length of a vector to store `LL`.
-        let supers = blocks(n, SUPER);
+        let supers = bit::blocks(n, SUPER);
         // Computes how many fenwicks do we need actually.
         // Remenber that fenwicks for L1 and L2 is logically `Vec<Vec<LL>>` but flattened.
         let (q, r) = num::divrem(supers, MAXL1);
@@ -256,7 +255,7 @@ impl<S> Buckets<S> {
         // } else {
         //     blocks(self.low.len(), MAXL1 + 1)
         // }
-        blocks(self.lo.len(), MAXL1 + 1)
+        bit::blocks(self.lo.len(), MAXL1 + 1)
     }
 }
 
@@ -430,7 +429,7 @@ impl<T: Rank> Rank for Rho<T> {
             }
         }
         use std::ops::Range;
-        let Range { start: i, end: j } = bitaddr::bounded(&index, 0, self.bits());
+        let Range { start: i, end: j } = bit::bounded(&index, 0, self.bits());
         rank1_impl(self, j) - rank1_impl(self, i)
     }
 }

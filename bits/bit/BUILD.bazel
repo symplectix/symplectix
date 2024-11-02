@@ -3,22 +3,22 @@ load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", 
 package(default_visibility = ["//visibility:private"])
 
 rust_library(
-    name = "bitaddr",
-    srcs = ["bitaddr.rs"],
+    name = "bit",
+    srcs = ["lib.rs"],
     visibility = ["//bits:__subpackages__"],
 )
 
 rust_test(
     name = "cfg_test",
-    crate = ":bitaddr",
+    crate = ":bit",
 )
 
 rust_doc_test(
     name = "doc_test",
-    crate = ":bitaddr",
+    crate = ":bit",
 )
 
 rust_doc(
     name = "doc",
-    crate = ":bitaddr",
+    crate = ":bit",
 )
