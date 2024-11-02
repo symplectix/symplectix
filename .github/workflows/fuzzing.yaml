@@ -10,7 +10,7 @@ jobs:
       BAZEL_ARGS: --config=fuzz
       BUILD_TAG_FILTERS: --build_tag_filters=+fuzzing
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/cache@v3
         env:
