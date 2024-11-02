@@ -10,6 +10,9 @@ def crates_repositories():
     crates_repository(
         name = "crates",
         annotations = {
+            "cargo-audit": [crate.annotation(
+                gen_binaries = ["cargo-audit"],
+            )],
             "openssl-sys": [crate.annotation(
                 build_script_data = [
                     "@openssl//:openssl_dir",
@@ -45,7 +48,6 @@ def crates_repositories():
         packages = {
             "cargo-audit": crate.spec(
                 version = "0.17",
-                # gen_binaries = True,
             ),
             "openssl": crate.spec(
                 version = "0.10",

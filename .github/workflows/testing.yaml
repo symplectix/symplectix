@@ -30,16 +30,6 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
-      - name: Format (buildifier)
-        if: runner.os == 'Linux'
-        run: $BAZEL run $BAZEL_ARGS //:buildifier/check
-
-      - name: Build
-        run: $BAZEL build $BAZEL_ARGS //...
-
-      - name: Test
-        run: $BAZEL test $BAZEL_ARGS //...
-
       - uses: actions/cache@v3
         if: runner.os == 'Linux'
         env:
@@ -49,8 +39,16 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
-      - name: Run cargo-audit
+      - name: Run //tool/buildifier
         if: runner.os == 'Linux'
-        run: |
-          $BAZEL run $BAZEL_ARGS //:cargo_audit -- \
-            audit --file $(realpath thirdparty/crates/cargo.lock)
+        run: $BAZEL run $BAZEL_ARGS //tool/buildifier
+
+      - name: Run //tool/audit
+        if: runner.os == 'Linux'
+        run: $BAZEL run $BAZEL_ARGS //tool/audit
+
+      - name: Build
+        run: $BAZEL build $BAZEL_ARGS //...
+
+      - name: Test
+        run: $BAZEL test $BAZEL_ARGS //...

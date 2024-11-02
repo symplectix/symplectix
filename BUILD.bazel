@@ -1,40 +1,6 @@
-load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
-
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
     ".clippy.toml",
     ".rustfmt.toml",
 ])
-
-alias(
-    name = "cargo_audit",
-    actual = "@crates//:cargo-audit__cargo-audit",
-)
-
-buildifier(
-    name = "buildifier",
-    exclude_patterns = [
-        "./tmp/**/*",
-    ],
-    lint_mode = "fix",
-    lint_warnings = [
-        "+out-of-order-load",
-    ],
-)
-
-# `mode = "check"` is deprecated.
-# https://github.com/bazelbuild/buildtools/issues/1005
-buildifier(
-    name = "buildifier/check",
-    exclude_patterns = [
-        "./tmp/**/*",
-    ],
-    lint_mode = "warn",
-    lint_warnings = [
-        "+out-of-order-load",
-        "-function-docstring",
-        "-module-docstring",
-    ],
-    mode = "check",
-)
