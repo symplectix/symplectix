@@ -4,16 +4,12 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Skylib
 
-_SKYLIB_VERSION = "1.2.1"
-
-_SKYLIB_SHA256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728"
-
 http_archive(
     name = "bazel_skylib",
-    sha256 = _SKYLIB_SHA256,
+    sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
     urls = [
-        "https://github.com/bazelbuild/bazel-skylib/releases/download/{ver}/bazel-skylib-{ver}.tar.gz".format(ver = _SKYLIB_VERSION),
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/{ver}/bazel-skylib-{ver}.tar.gz".format(ver = _SKYLIB_VERSION),
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
     ],
 )
 
@@ -23,26 +19,20 @@ bazel_skylib_workspace()
 
 # CC
 
-_RULES_FOREIGN_CC_VERSION = "0.7.1"
-
-_RULES_FOREIGN_CC_SHA256 = "bcd0c5f46a49b85b384906daae41d277b3dc0ff27c7c752cc51e43048a58ec83"
-
 http_archive(
     name = "rules_foreign_cc",
-    sha256 = _RULES_FOREIGN_CC_SHA256,
-    strip_prefix = "rules_foreign_cc-{}".format(_RULES_FOREIGN_CC_VERSION),
-    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/{}.tar.gz".format(_RULES_FOREIGN_CC_VERSION),
+    sha256 = "6041f1374ff32ba711564374ad8e007aef77f71561a7ce784123b9b4b88614fc",
+    strip_prefix = "rules_foreign_cc-0.8.0",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.8.0.tar.gz",
 )
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
 
+# This sets up some common toolchains for building targets. For more details, please see
+# https://bazelbuild.github.io/rules_foreign_cc/0.8.0/flatten.html#rules_foreign_cc_dependencies
 rules_foreign_cc_dependencies()
 
 # Rust
-
-_RUST_VERSION = "1.61.0"
-
-_RUST_EDITION = "2021"
 
 http_archive(
     name = "rules_rust",
@@ -55,6 +45,10 @@ http_archive(
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
 
+_RUST_VERSION = "1.61.0"
+
+_RUST_EDITION = "2021"
+
 rules_rust_dependencies()
 
 rust_register_toolchains(
@@ -63,12 +57,10 @@ rust_register_toolchains(
     version = _RUST_VERSION,
 )
 
-load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_repositories")
-
-rust_bindgen_repositories()
+# load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_repositories")
+# rust_bindgen_repositories()
 
 # load("@rules_rust//wasm_bindgen:repositories.bzl", "rust_wasm_bindgen_repositories")
-
 # rust_wasm_bindgen_repositories()
 
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
@@ -80,12 +72,12 @@ crate_universe_dependencies(
 )
 
 load("@rules_rust//crate_universe:defs.bzl", "crates_repository", "splicing_config")
-load("//:crates.bzl", packages = "crates")
+load("//:crates.bzl", "crates")
 
 crates_repository(
     name = "crates",
     lockfile = "//:crates.lock",
-    packages = packages,
+    packages = crates,
     rust_version = _RUST_VERSION,
     splicing_config = splicing_config(
         resolver_version = "2",
@@ -102,31 +94,21 @@ rust_analyzer_deps()
 
 # Go
 
-_GO_VERSION = "1.18.1"
-
-_RULES_GO_VERSION = "0.31.0"
-
-_RULES_GO_SHA256 = "f2dcd210c7095febe54b804bb1cd3a58fe8435a909db2ec04e31542631cf715c"
-
-_GAZELLE_VERSION = "0.24.0"
-
-_GAZELLE_SHA256 = "de69a09dc70417580aabf20a28619bb3ef60d038470c7cf8442fafcf627c21cb"
-
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = _RULES_GO_SHA256,
+    sha256 = "685052b498b6ddfe562ca7a97736741d87916fe536623afb7da2824c0211c369",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v{ver}/rules_go-v{ver}.zip".format(ver = _RULES_GO_VERSION),
-        "https://github.com/bazelbuild/rules_go/releases/download/v{ver}/rules_go-v{ver}.zip".format(ver = _RULES_GO_VERSION),
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.33.0/rules_go-v0.33.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.33.0/rules_go-v0.33.0.zip",
     ],
 )
 
 http_archive(
     name = "bazel_gazelle",
-    sha256 = _GAZELLE_SHA256,
+    sha256 = "5982e5463f171da99e3bdaeff8c0f48283a7a5f396ec5282910b9e8a49c0dd7e",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v{ver}/bazel-gazelle-v{ver}.tar.gz".format(ver = _GAZELLE_VERSION),
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v{ver}/bazel-gazelle-v{ver}.tar.gz".format(ver = _GAZELLE_VERSION),
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.25.0/bazel-gazelle-v0.25.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.25.0/bazel-gazelle-v0.25.0.tar.gz",
     ],
 )
 
@@ -135,24 +117,18 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 
 go_rules_dependencies()
 
-go_register_toolchains(version = _GO_VERSION)
+go_register_toolchains(version = "1.18.3")
 
 gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
 
 # Protocol Buffers
 
-_PROTOBUF_VERSION = "3.20.0"
-
-_RULES_PROTO_VERSION = "4.0.0"
-
-_RULES_PROTO_SHA256 = "e017528fd1c91c5a33f15493e3a398181a9e821a804eb7ff5acdd1d2d6c2b18d"
-
 http_archive(
     name = "rules_proto",
-    sha256 = _RULES_PROTO_SHA256,
-    strip_prefix = "rules_proto-{}-{}".format(_RULES_PROTO_VERSION, _PROTOBUF_VERSION),
+    sha256 = "e017528fd1c91c5a33f15493e3a398181a9e821a804eb7ff5acdd1d2d6c2b18d",
+    strip_prefix = "rules_proto-4.0.0-3.20.0",
     urls = [
-        "https://github.com/bazelbuild/rules_proto/archive/{}-{}.tar.gz".format(_RULES_PROTO_VERSION, _PROTOBUF_VERSION),
+        "https://github.com/bazelbuild/rules_proto/archive/refs/tags/4.0.0-3.20.0.tar.gz",
     ],
 )
 
@@ -164,19 +140,11 @@ rules_proto_toolchains()
 
 # Docker
 
-# https://github.com/bazelbuild/rules_docker/issues/2052
-# http_archive(
-#     name = "io_bazel_rules_docker",
-#     sha256 = "85ffff62a4c22a74dbd98d05da6cf40f497344b3dbf1e1ab0a37ab2a1a6ca014",
-#     strip_prefix = "rules_docker-0.23.0",
-#     urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.23.0/rules_docker-v0.23.0.tar.gz"],
-# )
-
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "59536e6ae64359b716ba9c46c39183403b01eabfbd57578e84398b4829ca499a",
-    strip_prefix = "rules_docker-0.22.0",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.22.0/rules_docker-v0.22.0.tar.gz"],
+    sha256 = "27d53c1d646fc9537a70427ad7b034734d08a9c38924cc6357cc973fed300820",
+    strip_prefix = "rules_docker-0.24.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.24.0/rules_docker-v0.24.0.tar.gz"],
 )
 
 load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
@@ -196,8 +164,8 @@ _rust_image_repos()
 http_archive(
     name = "com_github_bazelbuild_buildtools",
     sha256 = "ae34c344514e08c23e90da0e2d6cb700fcd28e80c02e23e4d5715dddcb42f7b3",
-    strip_prefix = "buildtools-4.2.2",
+    strip_prefix = "buildtools-5.1.0",
     urls = [
-        "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.2.tar.gz",
+        "https://github.com/bazelbuild/buildtools/archive/refs/tags/5.1.0.tar.gz",
     ],
 )
