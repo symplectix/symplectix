@@ -43,8 +43,6 @@ pub use self::not::Not;
 pub use self::or::Or;
 pub use self::xor::Xor;
 
-pub mod index; // pub(crate) instead of pub
-
 // /// `Fold` is an iterator built from `Mask`s.
 // pub struct Fold<'a, B>(Box<dyn Iterator<Item = (usize, B)> + 'a>);
 

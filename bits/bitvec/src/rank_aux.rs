@@ -1,7 +1,7 @@
 use super::empty;
 use crate::blocks;
 use crate::L1L2;
-use bits::{index, Bits, Container, Count, Rank, Select, Varint};
+use bits::{Bits, Container, Count, Rank, Select, Varint};
 use fenwicktree::{LowerBound, Nodes, Prefix};
 use std::cmp;
 use std::fmt::{self, Debug, Formatter};
@@ -429,7 +429,7 @@ impl<T: Rank> Rank for Rho<T> {
             }
         }
         use std::ops::Range;
-        let Range { start: i, end: j } = index::to_range(&index, 0, self.bits());
+        let Range { start: i, end: j } = bitaddr::bounded(&index, 0, self.bits());
         rank1_impl(self, j) - rank1_impl(self, i)
     }
 }

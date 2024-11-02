@@ -1,4 +1,4 @@
-use crate::{index, Bits};
+use crate::Bits;
 
 pub trait Container {
     /// Returns the number of binary digits.
@@ -56,7 +56,7 @@ impl<B: Bits> Container for [B] {
 
     #[inline]
     fn bit(&self, i: usize) -> Option<bool> {
-        let (i, o) = index::address::<B>(i);
+        let (i, o) = bitaddr::address(i, B::BITS);
         self.get(i).map(|b| b.bit(o).expect("index out of bounds"))
     }
 }

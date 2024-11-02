@@ -1,4 +1,4 @@
-use crate::{index, mask::Mask};
+use crate::mask::Mask;
 use core::{
     cmp::Ordering::*,
     iter::{Fuse, Peekable},
@@ -109,7 +109,7 @@ where
         let a = &mut self.a;
         let b = &mut self.b;
         loop {
-            match index::compare(a.peek(), b.peek(), Less, Less) {
+            match crate::mask::compare(a.peek(), b.peek(), Less, Less) {
                 Less => return a.next(),
                 Equal => {
                     let (i, mut s1) = a.next().expect("unreachable");

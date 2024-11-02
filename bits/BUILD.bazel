@@ -6,6 +6,7 @@ rust_library(
     name = "bits",
     srcs = glob(["src/**/*.rs"]),
     visibility = ["//visibility:public"],
+    deps = ["//bits/bitaddr"],
 )
 
 rust_test_suite(

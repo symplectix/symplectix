@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 pub trait Mask {
     type Bits;
 
@@ -27,6 +29,19 @@ where
     #[inline]
     fn into_mask(self) -> Self::Iter {
         self.as_ref().into_mask()
+    }
+}
+
+pub(crate) fn compare<X, Y>(
+    x: Option<&(usize, X)>,
+    y: Option<&(usize, Y)>,
+    when_x_is_none: Ordering,
+    when_y_is_none: Ordering,
+) -> Ordering {
+    match (x, y) {
+        (None, _) => when_x_is_none,
+        (_, None) => when_y_is_none,
+        (Some((i, _x)), Some((j, _y))) => i.cmp(j),
     }
 }
 

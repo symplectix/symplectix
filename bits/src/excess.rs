@@ -1,4 +1,3 @@
-use crate::index;
 use crate::Rank;
 use core::ops::RangeBounds;
 
@@ -48,7 +47,7 @@ where
     T: ?Sized + Rank,
     Index: RangeBounds<usize>,
 {
-    let r = index::to_range(&index, 0, bits.bits());
+    let r = bitaddr::bounded(&index, 0, bits.bits());
     let len = r.len();
     let rank1 = bits.rank1(r);
     let rank0 = len - rank1;
