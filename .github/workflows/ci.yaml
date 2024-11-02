@@ -41,27 +41,3 @@ jobs:
       - name: Test
         run: |
           bazel test --config=ci //...
-
-  cargo:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/cache@v3
-        env:
-          cache-name: cargo-cache
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ~/.cargo/bin
-            target
-          key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --all-features

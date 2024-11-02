@@ -2,6 +2,11 @@ load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files([
+    ".clippy.toml",
+    ".rustfmt.toml",
+])
+
 buildifier(
     name = "buildifier",
     exclude_patterns = [
@@ -28,8 +33,3 @@ buildifier(
     ],
     mode = "check",
 )
-
-exports_files([
-    "clippy.toml",
-    "rustfmt.toml",
-])

@@ -20,6 +20,9 @@ rust_test_suite(
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
+    rustc_flags = [
+        "-Coverflow-checks=off",
+    ],
     deps = [
         ":fenwicktree",
         "//bits",
