@@ -19,6 +19,7 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
 # Protocol Buffers
+# For tonic/prost: https://github.com/rules-proto-grpc/rules_proto_grpc/pull/202
 
 http_archive(
     name = "rules_proto",

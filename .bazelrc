@@ -53,13 +53,27 @@ build --incompatible_sandbox_hermetic_tmp
 # rustc flags for proc-macros, cargo_build_script, etc.
 build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
 
+# compilation_mode to rustc codegen options
+# fastbuild: -Copt-level=0 -Cdebuginfo=0
+# dbg:       -Copt-level=0 -Cdebuginfo=2
+# opt:       -Copt-level=3 -Cdebuginfo=0
+build:release --compilation_mode=opt
+
+build:release --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
+build:release --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
+build:release --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
+build:release --@rules_rust//:extra_rustc_flag=-Clto=fat
+build:release --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1
+
+# Controls whether Bazel will strip debugging information from all binaries and shared libraries,
+# by invoking the linker with the -Wl,--strip-debug option.
+build:strip --strip=always
 # Controls stripping of debuginfo and similar auxiliary data from binaries during linking.
 # * debuginfo - debuginfo sections and debuginfo symbols from the symbol table section are stripped at link time and are not copied to the produced binary or separate files.
 # * symbols   - same as debuginfo, but the rest of the symbol table section is stripped as well if the linker supports it.
-build:strip --@rules_rust//:extra_rustc_flag=-Cstrip=symbols
+build:strip --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
 
 # rustfmt
-# Run `bazel run @rules_rust//tools/rustfmt` to format.
 build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
 build:rustfmt --output_groups=+rustfmt_checks
 build:rustfmt --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
@@ -69,20 +83,10 @@ build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build:clippy --output_groups=+clippy_checks
 build:clippy --@rules_rust//:clippy.toml=//:.clippy.toml
 
-# compilation_mode to rustc codegen options
-# fastbuild: -Copt-level=0 -Cdebuginfo=0
-# dbg:       -Copt-level=0 -Cdebuginfo=2
-# opt:       -Copt-level=3 -Cdebuginfo=0
-build:release --compilation_mode=opt
-build:release --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
-build:release --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
-build:release --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
-build:release --@rules_rust//:extra_rustc_flag=-Clto=fat
-build:release --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1
-
 build:ci --config=verbose
+build:ci --config=release
+build:ci --config=strip
 build:ci --config=rustfmt
 build:ci --config=clippy
-build:ci --config=release
 
 try-import %workspace%/.bazelrc.user
