@@ -248,7 +248,7 @@ _crates = {
     ),
 }
 
-def _crates_repository(**kwargs):
+def _crates_repository(name, **kwargs):
     _crates_annotations = {
         name: c.annotations
         for (name, c) in _crates.items()
@@ -262,10 +262,8 @@ def _crates_repository(**kwargs):
     }
 
     crates_repository(
-        name = "crates",
+        name = name,
         annotations = _crates_annotations,
-        cargo_lockfile = "//x/crates:Cargo.lock",
-        lockfile = "//x/crates:Cargo.Bazel.lock",
         packages = _crates_packages,
         **kwargs
     )
