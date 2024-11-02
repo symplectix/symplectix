@@ -1,6 +1,6 @@
-use tree_sitter::{Language, Parser, TreeCursor};
+use tree_sitter::{Parser, TreeCursor};
 
-static RUST: &str = r#"
+static RUST_SRC: &str = r#"
 use std::env;
 
 fn main() {
@@ -16,18 +16,19 @@ fn something<T: AsRef<str>>(v: T) {
 
 fn main() {
     let mut parser = Parser::new();
-    parse(&mut parser, tree_sitter_rust::language(), RUST);
+    parse_rust(&mut parser, RUST_SRC);
 }
 
-fn parse<T: AsRef<[u8]>>(parser: &mut Parser, lang: Language, src: T) {
+fn parse_rust<T: AsRef<[u8]>>(parser: &mut Parser, rust_src: T) {
+    let lang = &tree_sitter_rust::LANGUAGE.into();
     parser.set_language(lang).expect("error loading a grammar");
 
-    let cst = parser.parse(&src, None).unwrap();
+    let cst = parser.parse(&rust_src, None).unwrap();
     let root = cst.root_node();
     println!("{:?}", root);
 
     let mut cur = root.walk();
-    visit(&mut cur, 0, &src);
+    visit(&mut cur, 0, &rust_src);
 }
 
 fn visit<T: AsRef<[u8]>>(cursor: &mut TreeCursor, depth: usize, src: &T) {

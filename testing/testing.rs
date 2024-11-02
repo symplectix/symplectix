@@ -3,8 +3,8 @@ use std::fs;
 use std::fs::File;
 use std::io;
 use std::path::{Path, PathBuf};
+use std::sync::LazyLock as Lazy;
 
-use once_cell::sync::Lazy;
 use runfiles::Runfiles;
 
 pub use tempfile::TempDir;

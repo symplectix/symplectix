@@ -1,4 +1,4 @@
-# TODO: Migrate external dependencies from WORKSPACE to MODULE.bazel.
+# TODO: Migrate external dependencies from WORKSPACE to MODULE.bazel
 # Bazel now uses Bzlmod by default to manage external dependencies.
 #
 # https://bazel.build/external/module
@@ -26,14 +26,13 @@ http_archive(
     urls = ["https://www.openssl.org/source/openssl-3.3.2.tar.gz"],
 )
 
-# Constraint values for specifying platforms and toolchains.
+# Constraint values for specifying platforms and toolchains
 bazel_dep(name = "platforms", version = "0.0.10")
 
-# Common useful functions and rules for Bazel.
+# Common functions and rules for Bazel
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 
-# Starlark libraries and rules which are useful for
-# constructing rulesets and BUILD files.
+# Libraries and rules for constructing rules and BUILD files
 bazel_dep(name = "aspect_bazel_lib", version = "2.9.1")
 
 bazel_lib = use_extension("@aspect_bazel_lib//lib:extensions.bzl", "toolchains")
@@ -45,17 +44,18 @@ use_repo(
     "yq_toolchains",
 )
 
-# Prebuilt binaries for buildifier and buildozer.
+# Prebuilt binaries for buildifier and buildozer
 bazel_dep(name = "buildifier_prebuilt", version = "7.3.1", dev_dependency = True)
 
-# Protocol Buffers - Google's data interchange format.
+# Protocol Buffers - Google's data interchange format
 bazel_dep(name = "protobuf", version = "28.2")
 
-# Pre-built protoc binary toolchain for Bazel, fetched from official protobuf releases.
+# Pre-built protoc binary toolchain for Bazel
+#
 # https://github.com/aspect-build/toolchains_protoc/releases
 bazel_dep(name = "toolchains_protoc", version = "0.3.3")
 
-# Bazel rules for building Protobuf and gRPC code and libraries from proto_library targets.
+# Build Protobuf and gRPC code from proto_library
 bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
 # bazel_dep(name = "rules_proto_grpc_doc", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_grpcgateway", version = "<version number here>")
@@ -63,56 +63,69 @@ bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
 # bazel_dep(name = "rules_proto_grpc_cc", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_go", version = "<version number here>")
 
-# Non-hermetic C++ rules, contains an auto-detecting toolchain that
-# expects to find tools installed on the host machine.
+# Non-hermetic C++ rules
+#
+# An auto-detecting toolchain that expects to find tools installed on the host machine.
 # bazel_dep(name = "rules_cc", version = "0.0.9")
 
 # Build rules for interfacing with "foreign" (non-Bazel) build systems
 # (CMake, configure-make, GNU Make, boost, ninja, Meson).
 bazel_dep(name = "rules_foreign_cc", version = "0.12.0")
 
-# Perl rules, to build openssl.
+# Perl rules, to build OpenSSL
 bazel_dep(name = "rules_perl", version = "0.2.3.bcr.1")
 
-# Rules for creating packages (zip, tar, deb, rpm, ...).
+# Rules for creating packages (zip, tar, deb, rpm, ...)
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 
-# Rust rules for Bazel.
+# Rust rules for Bazel
 bazel_dep(name = "rules_rust", version = "0.52.0")
 
-# Go rules for Bazel.
+# Go rules for Bazel
 bazel_dep(name = "rules_go", version = "0.50.1")
 
-# Bazel build file generator for Bazel projects.
-# It natively supports Go and protobuf, and it may be extended to support new languages and custom rule sets.
+# Generate BUILD.bazel for Bazel
+#
+# It natively supports Go and protobuf, and it may be extended
+# to support new languages and custom rule sets.
 bazel_dep(name = "gazelle", version = "0.39.1")
+
+# Rules for building OCI containers
+bazel_dep(name = "rules_oci", version = "2.0.0")
+
+# Validate the structure of container images
+bazel_dep(name = "container_structure_test", version = "1.19.1")
 
 RUST_EDITION = "2021"
 
-RUST_STABLE_VERSION = "1.81.0"
-
-# https://github.com/oxalica/rust-overlay/tree/master/manifests/nightly
-RUST_NIGHTLY_VERSION = "nightly/2024-09-01"
+RUST_VERSION = "1.81.0"
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(
     edition = RUST_EDITION,
     versions = [
-        RUST_STABLE_VERSION,
-        RUST_NIGHTLY_VERSION,
+        # No idea why but mixing versions confuses rust-analyzer.
+        RUST_VERSION,
+        # https://github.com/oxalica/rust-overlay/tree/master/manifests/nightly
+        # "nightly/2024-09-01"
     ],
 )
 use_repo(rust, "rust_toolchains")
 
-register_toolchains("@rust_toolchains//:all")
-
-register_toolchains("@//protobuf/prost:prost_toolchain")
+register_toolchains(
+    "@rust_toolchains//:all",
+    "//protobuf/prost:prost_toolchain",
+)
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", isolate = True)
+
+# Raw bindings to platform APIs
 crate.spec(
     package = "libc",
     version = "0.2",
 )
+
+# Link to a libz (zlib)
 crate.spec(
     features = ["libc"],
     package = "libz-sys",
@@ -123,6 +136,8 @@ crate.annotation(
     gen_build_script = "off",
     deps = ["@zlib"],
 )
+
+# OpenSSL bindings for Rust
 crate.spec(
     package = "openssl",
     version = "0.10.64",
@@ -147,7 +162,7 @@ crate.annotation(
     deps = ["@openssl"],
 )
 
-# A framework for serializing and deserializing Rust data structures.
+# Serializing and Deserializing data structures
 crate.spec(
     features = ["derive"],
     package = "serde",
@@ -161,17 +176,15 @@ crate.spec(
 )
 
 # Async runtime
+# crate.spec(
+#     features = ["full", "tracing"],
+#     package = "tokio",
+#     version = "1.40",
+# )
 crate.spec(
     features = ["full"],
     package = "tokio",
-    version = "1.36",
-)
-
-# Async fn in traits
-# https://blog.rust-lang.org/inside-rust/2022/11/17/async-fn-in-trait-nightly.html
-crate.spec(
-    package = "async-trait",
-    version = "0.1",
+    version = "1.40",
 )
 
 # Tracing
@@ -183,8 +196,12 @@ crate.spec(
     package = "tracing-subscriber",
     version = "0.3",
 )
+# crate.spec(
+#     package = "console-subscriber",
+#     version = "0.4",
+# )
 
-# Protobuf support for Rust.
+# Protobuf support for Rust
 crate.spec(
     package = "prost",
     version = "0.13",
@@ -218,7 +235,7 @@ crate.spec(
     version = "0.12",
 )
 
-# Proroc plugins for prost/tonic.
+# Proroc plugins for Prost/Tonic
 crate.spec(
     package = "protoc-gen-prost",
     version = "0.4",
@@ -236,53 +253,58 @@ crate.annotation(
     gen_binaries = ["protoc-gen-tonic"],
 )
 
-# A tree-sitter binding.
-# Tree-sitter is a parser generator tool and an incremental parsing library.
+# A tree-sitter binding
 #
 # https://tree-sitter.github.io/tree-sitter/
 crate.spec(
     package = "tree-sitter",
-    version = "0.20",
+    version = "0.24",
 )
 crate.spec(
     package = "tree-sitter-cli",
-    version = "0.20",
+    version = "0.24",
 )
 crate.annotation(
     crate = "tree-sitter-cli",
     gen_binaries = ["tree-sitter"],
 )
 
-# Rust grammar for tree-sitter.
+# Rust grammar for tree-sitter
 crate.spec(
     package = "tree-sitter-rust",
-    version = "0.20",
+    version = "0.23",
 )
 
-# Arguments parsing.
+# Arguments parsing
 crate.spec(
     features = ["derive"],
     package = "clap",
-    version = "4.3",
+    version = "4.5",
 )
 
-# A collection of numeric types and traits.
+# A collection of numeric types and traits
 crate.spec(
     package = "num",
     version = "0.4",
 )
 
-# Includes formatters and parsers for std::time::SystemTime and std::time::Duration.
+# Includes formatters and parsers for std::time::SystemTime and std::time::Duration
 crate.spec(
     package = "humantime",
     version = "2",
 )
+
+# Handling date and time
 crate.spec(
     package = "time",
     version = ">=0.3.35",
 )
+# crate.spec(
+#     package = "chrono",
+#     version = "0.4",
+# )
 
-# Result/Error helpers.
+# Result/Error helpers
 crate.spec(
     package = "anyhow",
     version = "1",
@@ -292,29 +314,19 @@ crate.spec(
     version = "1",
 )
 
-# Provides a macro to generate structures which behave like a set of bitflags
+# Generate structures which behave like a set of bitflags
 crate.spec(
     package = "bitflags",
     version = "2",
 )
 
-# Temporary files and directories.
+# Temporary files and directories
 crate.spec(
     package = "tempfile",
     version = "3",
 )
 
-# Single assignment cells and lazy statics without macros.
-#
-# TODO: Use std::cell::OnceCell
-# Parts of once_cell API are included into std as of Rust 1.70.0.
-# https://doc.rust-lang.org/std/cell/struct.OnceCell.html
-crate.spec(
-    package = "once_cell",
-    version = "1.18",
-)
-
-# For testing.
+# For testing
 crate.spec(
     package = "quickcheck",
     version = "1",
@@ -332,14 +344,14 @@ crate.spec(
     package = "libfuzzer-sys",
     version = "0.4.0",
 )
+
+# Generates a repo @crates from the defined spec tags.
 crate.from_specs()
 use_repo(crate, "crates")
 
 GO_VERSION = "1.23.2"
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
-
-# Download an SDK for the host OS & architecture as well as common remote execution platforms.
 go_sdk.download(version = GO_VERSION)
 
 # TODO: Setup nogo
@@ -355,21 +367,22 @@ go_sdk.download(version = GO_VERSION)
 # )
 
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
-
-# Manage Go dependencies via go.mod.
 go_deps.from_file(go_mod = "//:go.mod")
-
-# Rules for building OCI containers.
-bazel_dep(name = "rules_oci", version = "2.0.0")
-
-# Validate the structure of container images.
-bazel_dep(name = "container_structure_test", version = "1.19.1")
 
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 oci.pull(
-    name = "distroless_cc_nonroot",
+    name = "distroless_base_debian12_nonroot",
+    digest = "sha256:e5260be292def77bc70d03003f788f3d32c0796972ea1412d72cc0c843ab139a",
+    image = "gcr.io/distroless/base-debian12",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+    ],
+)
+oci.pull(
+    name = "distroless_cc_debian12_nonroot",
     digest = "sha256:880bcf2ca034ab5e8ae76df0bd50d700e54eb44e948877244b130e3fcd5a1d66",
-    image = "gcr.io/distroless/cc",
+    image = "gcr.io/distroless/cc-debian12",
     platforms = [
         "linux/amd64",
         "linux/arm64",
@@ -379,7 +392,10 @@ oci.pull(
 # For each oci.pull call, repeat the "name" here to expose them as dependencies.
 use_repo(
     oci,
-    "distroless_cc_nonroot",
-    "distroless_cc_nonroot_linux_amd64",
-    "distroless_cc_nonroot_linux_arm64",
+    "distroless_base_debian12_nonroot",
+    "distroless_base_debian12_nonroot_linux_amd64",
+    "distroless_base_debian12_nonroot_linux_arm64",
+    "distroless_cc_debian12_nonroot",
+    "distroless_cc_debian12_nonroot_linux_amd64",
+    "distroless_cc_debian12_nonroot_linux_arm64",
 )

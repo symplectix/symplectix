@@ -81,7 +81,7 @@ pkg_tar(
 
 oci_image(
     name = "coordinator_image",
-    base = "@distroless_cc_nonroot",
+    base = "@distroless_cc_debian12_nonroot",
     entrypoint = ["/coordinator"],
     target_compatible_with = [
         "@platforms//os:linux",
