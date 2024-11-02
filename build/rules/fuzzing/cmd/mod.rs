@@ -1,5 +1,5 @@
-mod prep;
-mod run;
+mod corpus;
+mod test;
 
-pub use prep::Prep;
-pub use run::Run;
+pub use corpus::Corpus;
+pub use test::Test;

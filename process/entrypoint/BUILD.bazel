@@ -11,37 +11,11 @@ rust_library(
             "src/bin/**/*",
         ],
     ),
-    # will not work as expected on windows
-    target_compatible_with = select({
-        "@platforms//os:linux": [],
-        "@platforms//os:macos": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
     deps = [
-        "//process/entrypoint/fsutil",
-        "@crates//:anyhow",
-        "@crates//:clap",
-        "@crates//:futures",
-        "@crates//:humantime",
-        "@crates//:libc",
+        "//process",
         "@crates//:thiserror",
         "@crates//:tokio",
         "@crates//:tracing",
-    ],
-)
-
-rust_binary(
-    name = "coordinator",
-    srcs = ["src/bin/coordinator.rs"],
-    deps = [
-        ":entrypoint",
-        "//process/entrypoint/fsutil",
-        "@crates//:anyhow",
-        "@crates//:clap",
-        "@crates//:futures",
-        "@crates//:tokio",
-        "@crates//:tracing",
-        "@crates//:tracing-subscriber",
     ],
 )
 
@@ -58,4 +32,20 @@ rust_doc_test(
     name = "entrypoint_doc_test",
     size = "small",
     crate = ":entrypoint",
+)
+
+rust_binary(
+    name = "coordinator",
+    srcs = ["src/bin/coordinator.rs"],
+    deps = [
+        ":entrypoint",
+        "//process",
+        "//process/fsutil",
+        "@crates//:anyhow",
+        "@crates//:clap",
+        "@crates//:futures",
+        "@crates//:tokio",
+        "@crates//:tracing",
+        "@crates//:tracing-subscriber",
+    ],
 )

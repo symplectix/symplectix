@@ -1,30 +1,34 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//build/rules/fuzzing/private:fuzzing.bzl", "fuzz_binary", "fuzz_corpus")
+load("//build/rules/fuzzing/private:fuzzing.bzl", "fuzz_corpus", "fuzz_test")
 
-def rust_fuzz_binary(
+def rust_fuzz_test(
         name,
-        sanitizer,
+        sanitizer = "address",
         corpus = None,
         envs = None,
         **kwargs):
-    """Helps to fuzzing.
+    """A helper macro for fuzzing.
     """
 
     target_name = name + "_target"
     corpus_name = name + "_corpus"
 
-    fuzz_binary(
+    kwargs.setdefault("tags", []).extend([
+        "fuzzing",
+    ])
+
+    fuzz_test(
         name = name,
         envs = envs,
         corpus = corpus_name,
         target = target_name,
-        tags = ["fuzzing"],
+        tags = kwargs["tags"],
     )
 
     fuzz_corpus(
         name = corpus_name,
         srcs = corpus,
-        tags = ["fuzzing", "manual"],
+        tags = kwargs["tags"],
     )
 
     kwargs.setdefault("rustc_flags", []).extend([
@@ -36,10 +40,6 @@ def rust_fuzz_binary(
         "-Cllvm-args=-sanitizer-coverage-pc-table",
         "-Cllvm-args=-sanitizer-coverage-trace-compares",
         "-Zsanitizer={}".format(sanitizer),
-    ])
-
-    kwargs.setdefault("tags", []).extend([
-        "fuzzing",
     ])
 
     rust_binary(
