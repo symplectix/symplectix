@@ -5,10 +5,10 @@ def _bin_crates_repository(**kwargs):
     http_archive(
         name = "geckodriver",
         build_file = "//x/bin_crates:BUILD.geckodriver.bazel",
-        sha256 = "6847d9046206c0f0189857d356991b9b225554045241cb0d33b43c1c83d732b7",
-        strip_prefix = "geckodriver-0.33.0",
+        sha256 = "457dd896a5962cdc143acc7dbce147d32ec6578599e7874c5ee6fb445f12fc02",
+        strip_prefix = "geckodriver-0.34.0",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/geckodriver/0.33.0/download"],
+        urls = ["https://crates.io/api/v1/crates/geckodriver/0.34.0/download"],
     )
 
     crates_repository(

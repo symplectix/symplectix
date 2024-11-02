@@ -3,12 +3,12 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 _RUST_EDITION = "2021"
 
-_RUST_STABLE_VERSION = "1.72.1"
+_RUST_STABLE_VERSION = "1.77.0"
 
 # https://github.com/oxalica/rust-overlay/tree/master/manifests/nightly
-_RUST_NIGHTLY_VERSION = "nightly/2023-09-28"
+_RUST_NIGHTLY_VERSION = "nightly/2024-03-27"
 
-_GO_VERSION = "1.21.1"
+_GO_VERSION = "1.22.1"
 
 versions = struct(
     rust = struct(
@@ -25,23 +25,23 @@ versions = struct(
 
 _http_archives = {
     "platforms": {
-        "sha256": "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
+        "sha256": "5eda539c841265031c2f82d8ae7a3a6490bd62176e0c038fc469eabf91f6149b",
         "urls": [
-            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
-            "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.9/platforms-0.0.9.tar.gz",
+            "https://github.com/bazelbuild/platforms/releases/download/0.0.9/platforms-0.0.9.tar.gz",
+        ],
+    },
+    "bazel_skylib": {
+        "sha256": "cd55a062e763b9349921f0f5db8c3933288dc8ba4f76dd9416aac68acee3cb94",
+        "urls": [
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz",
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz",
         ],
     },
     "aspect_bazel_lib": {
-        "sha256": "09b51a9957adc56c905a2c980d6eb06f04beb1d85c665b467f659871403cf423",
-        "strip_prefix": "bazel-lib-1.34.5",
-        "url": "https://github.com/aspect-build/bazel-lib/releases/download/v1.34.5/bazel-lib-v1.34.5.tar.gz",
-    },
-    "bazel_skylib": {
-        "sha256": "66ffd9315665bfaafc96b52278f57c7e2dd09f5ede279ea6d39b2be471e7e3aa",
-        "urls": [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.2/bazel-skylib-1.4.2.tar.gz",
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.2/bazel-skylib-1.4.2.tar.gz",
-        ],
+        "sha256": "ac6392cbe5e1cc7701bbd81caf94016bae6f248780e12af4485d4a7127b4cb2b",
+        "strip_prefix": "bazel-lib-2.6.1",
+        "url": "https://github.com/aspect-build/bazel-lib/releases/download/v2.6.1/bazel-lib-v2.6.1.tar.gz",
     },
     "rules_cc": {
         "sha256": "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
@@ -55,11 +55,11 @@ _http_archives = {
     },
     "zlib": {
         "build_file": "//x/zlib:BUILD.zlib.bazel",
-        "sha256": "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
-        "strip_prefix": "zlib-1.2.13",
+        "sha256": "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
+        "strip_prefix": "zlib-1.3.1",
         "urls": [
-            "https://zlib.net/zlib-1.2.13.tar.gz",
-            "https://storage.googleapis.com/mirror.tensorflow.org/zlib.net/zlib-1.2.13.tar.gz",
+            "https://zlib.net/zlib-1.3.1.tar.gz",
+            "https://storage.googleapis.com/mirror.tensorflow.org/zlib.net/zlib-1.3.1.tar.gz",
         ],
     },
     "openssl": {
@@ -75,10 +75,10 @@ _http_archives = {
     "nasm": {
         "build_file": "//x/openssl:BUILD.nasm.bazel",
         "sha256": "f5c93c146f52b4f1664fa3ce6579f961a910e869ab0dae431bd871bdd2584ef2",
-        "strip_prefix": "nasm-2.15.05",
+        "strip_prefix": "nasm-2.16.01",
         "urls": [
-            "https://mirror.bazel.build/www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.15.05-win64.zip",
-            "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.15.05-win64.zip",
+            "https://mirror.bazel.build/www.nasm.us/pub/nasm/releasebuilds/2.16.01/win64/nasm-2.16.01-win64.zip",
+            "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.16.01-win64.zip",
         ],
     },
     "rules_perl": {
@@ -89,14 +89,14 @@ _http_archives = {
         ],
     },
     "rules_rust": {
-        "sha256": "c46bdafc582d9bd48a6f97000d05af4829f62d5fee10a2a3edddf2f3d9a232c1",
-        "urls": ["https://github.com/bazelbuild/rules_rust/releases/download/0.28.0/rules_rust-v0.28.0.tar.gz"],
+        "integrity": "sha256-Y4v6kjQQfXxh5tU6FQB6YXux/ODFGUq3IlpgBV4Bwj8=",
+        "urls": ["https://github.com/bazelbuild/rules_rust/releases/download/0.41.0/rules_rust-v0.41.0.tar.gz"],
     },
     "io_bazel_rules_go": {
-        "sha256": "91585017debb61982f7054c9688857a2ad1fd823fc3f9cb05048b0025c47d023",
+        "sha256": "80a98277ad1311dacd837f9b16db62887702e9f1d1c4c9f796d0121a46c8e184",
         "urls": [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.42.0/rules_go-v0.42.0.zip",
-            "https://github.com/bazelbuild/rules_go/releases/download/v0.42.0/rules_go-v0.42.0.zip",
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.46.0/rules_go-v0.46.0.zip",
+            "https://github.com/bazelbuild/rules_go/releases/download/v0.46.0/rules_go-v0.46.0.zip",
         ],
     },
     "rules_proto": {
@@ -112,33 +112,33 @@ _http_archives = {
         "urls": ["https://github.com/rules-proto-grpc/rules_proto_grpc/releases/download/4.4.0/rules_proto_grpc-4.4.0.tar.gz"],
     },
     "bazel_gazelle": {
-        "sha256": "d3fa66a39028e97d76f9e2db8f1b0c11c099e8e01bf363a923074784e451f809",
+        "sha256": "32938bda16e6700063035479063d9d24c60eda8d79fd4739563f50d331cb3209",
         "urls": [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.33.0/bazel-gazelle-v0.33.0.tar.gz",
-            "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.33.0/bazel-gazelle-v0.33.0.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.35.0/bazel-gazelle-v0.35.0.tar.gz",
+            "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.35.0/bazel-gazelle-v0.35.0.tar.gz",
         ],
     },
     "com_github_bazelbuild_buildtools": {
-        "sha256": "42968f9134ba2c75c03bb271bd7bb062afb7da449f9b913c96e5be4ce890030a",
-        "strip_prefix": "buildtools-6.3.3",
-        "urls": ["https://github.com/bazelbuild/buildtools/archive/refs/tags/v6.3.3.tar.gz"],
+        "sha256": "061472b3e8b589fb42233f0b48798d00cf9dee203bd39502bd294e6b050bc6c2",
+        "strip_prefix": "buildtools-7.1.0",
+        "urls": ["https://github.com/bazelbuild/buildtools/archive/refs/tags/v7.1.0.tar.gz"],
     },
     "rules_pkg": {
+        "sha256": "d250924a2ecc5176808fc4c25d5cf5e9e79e6346d79d5ab1c493e289e722d1d0",
         "urls": [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
-            "https://github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.10.1/rules_pkg-0.10.1.tar.gz",
+            "https://github.com/bazelbuild/rules_pkg/releases/download/0.10.1/rules_pkg-0.10.1.tar.gz",
         ],
-        "sha256": "8f9ee2dc10c1ae514ee599a8b42ed99fa262b757058f65ad3c384289ff70c4b8",
     },
     "rules_oci": {
-        "sha256": "a3b6f4c0051938940ccf251a7bdcdf7ac5a93ae00e63ad107c9c6d3bfe20885b",
-        "strip_prefix": "rules_oci-1.3.1",
-        "url": "https://github.com/bazel-contrib/rules_oci/releases/download/v1.3.1/rules_oci-v1.3.1.tar.gz",
+        "sha256": "56d5499025d67a6b86b2e6ebae5232c72104ae682b5a21287770bd3bf0661abf",
+        "strip_prefix": "rules_oci-1.7.5",
+        "url": "https://github.com/bazel-contrib/rules_oci/releases/download/v1.7.5/rules_oci-v1.7.5.tar.gz",
     },
     "container_structure_test": {
-        "sha256": "2da13da4c4fec9d4627d4084b122be0f4d118bd02dfa52857ff118fde88e4faa",
-        "strip_prefix": "container-structure-test-1.16.0",
-        "urls": ["https://github.com/GoogleContainerTools/container-structure-test/archive/v1.16.0.zip"],
+        "sha256": "978db1ed0f802120fb0308b08b5c1e38ea81377944cc7a2fb727529815e4ed09",
+        "strip_prefix": "container-structure-test-1.17.0",
+        "urls": ["https://github.com/GoogleContainerTools/container-structure-test/archive/v1.17.0.zip"],
     },
 }
 

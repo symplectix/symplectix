@@ -8,7 +8,7 @@ _crates = {
     ),
     "libz-sys": struct(
         spec = crate.spec(
-            version = "1.1.0",
+            version = "1.1",
             features = ["libc"],
         ),
         annotations = [crate.annotation(
@@ -18,12 +18,12 @@ _crates = {
     ),
     "openssl": struct(
         spec = crate.spec(
-            version = "0.10.55",
+            version = "0.10.64",
         ),
     ),
     "openssl-sys": struct(
         spec = crate.spec(
-            version = "0.9.85",
+            version = "0.9.101",
         ),
         annotations = [crate.annotation(
             build_script_data = [
@@ -44,7 +44,7 @@ _crates = {
     # A framework for serializing and deserializing Rust data structures.
     "serde": struct(
         spec = crate.spec(
-            version = "1.0.188",
+            version = "1",
             features = ["derive"],
         ),
     ),
@@ -58,7 +58,7 @@ _crates = {
     # Async runtime
     "tokio": struct(
         spec = crate.spec(
-            version = "1.29.1",
+            version = "1.36",
             features = ["full"],
         ),
     ),
@@ -101,22 +101,22 @@ _crates = {
     ),
     "tonic": struct(
         spec = crate.spec(
-            version = "0.10",
+            version = "0.11",
         ),
     ),
     "tonic-types": struct(
         spec = crate.spec(
-            version = "0.10",
+            version = "0.11",
         ),
     ),
     "tonic-health": struct(
         spec = crate.spec(
-            version = "0.10",
+            version = "0.11",
         ),
     ),
     "tonic-reflection": struct(
         spec = crate.spec(
-            version = "0.10",
+            version = "0.11",
         ),
     ),
 
