@@ -5,7 +5,7 @@ use core::ops::{Bound, Range, RangeBounds};
 
 #[inline]
 pub(crate) fn address<T: Block>(i: usize) -> (usize, usize) {
-    num::divrem(i, T::BITS)
+    (i / T::BITS, i % T::BITS)
 }
 
 pub(crate) fn between<B: Block>(s: usize, e: usize) -> impl Iterator<Item = (usize, Range<usize>)> {

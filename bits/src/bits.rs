@@ -31,6 +31,24 @@ pub trait Bits {
     fn bit(&self, i: usize) -> Option<bool>;
 }
 
+macro_rules! impls {
+    ($( $Int:ty )*) => ($(
+        impl Bits for $Int {
+            #[inline]
+            fn bits(&self) -> usize {
+                <Self as Block>::BITS
+            }
+
+            #[inline]
+            fn bit(&self, i: usize) -> Option<bool> {
+                (i < self.bits()).then(|| (*self & (1 << i)) != 0)
+            }
+        }
+    )*)
+}
+impls!(u8 u16 u32 u64 u128 usize);
+impls!(i8 i16 i32 i64 i128 isize);
+
 impl<B: Block> Bits for [B] {
     #[inline]
     fn bits(&self) -> usize {

@@ -12,6 +12,22 @@ pub trait Block: Clone + Bits + Count + Rank + Excess + Select + BitsMut {
     fn empty() -> Self;
 }
 
+macro_rules! impls {
+    ($( $Int:ty )*) => ($(
+        impl Block for $Int {
+            const BITS: usize = <$Int>::BITS as usize;
+
+            #[inline]
+            fn empty() -> Self {
+                0
+            }
+        }
+
+    )*)
+}
+impls!(u8 u16 u32 u64 u128 usize);
+impls!(i8 i16 i32 i64 i128 isize);
+
 impl<B, const N: usize> Block for [B; N]
 where
     B: Copy + Block,

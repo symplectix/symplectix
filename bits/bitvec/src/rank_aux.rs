@@ -87,7 +87,7 @@ pub(crate) fn build<'a, T, I>(
     super_blocks: I,
 ) -> (Buckets<layout::Uninit>, Vec<Vec<u32>>)
 where
-    T: bits::Int + 'a,
+    T: num::Int + bits::Block + 'a,
     I: IntoIterator<Item = Option<&'a [T]>>,
 {
     use fenwicktree::Nodes;
@@ -96,7 +96,7 @@ where
     let mut samples = vec![Vec::new(); buckets.hi.nodes()];
     let mut ones = 0i64;
 
-    fn bbs<W: bits::Int>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
+    fn bbs<W: num::Int + bits::Block>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
         let mut bbs = [0; L1L2::LEN];
         if let Some(sb) = sb.as_ref() {
             for (i, bb) in sb.chunks(BASIC / W::BITS).enumerate() {
@@ -144,7 +144,9 @@ where
     (buckets, samples)
 }
 
-pub(crate) fn sbs_from_words<T: bits::Int>(slice: &[T]) -> impl Iterator<Item = Option<&[T]>> {
+pub(crate) fn sbs_from_words<T: num::Int + bits::Block>(
+    slice: &[T],
+) -> impl Iterator<Item = Option<&[T]>> {
     slice.chunks(SUPER / T::BITS).map(Some)
 }
 
@@ -351,7 +353,7 @@ impl<T: Block> Rho<Vec<T>> {
 //     }
 // }
 
-impl<'a, T: bits::Int> From<&'a [T]> for Rho<&'a [T]> {
+impl<'a, T: num::Int + bits::Block> From<&'a [T]> for Rho<&'a [T]> {
     fn from(dat: &'a [T]) -> Self {
         let (buckets, _) = build(dat.bits(), sbs_from_words(dat));
         Rho(Imp { buckets: buckets.into(), samples: None, bit_vec: dat })

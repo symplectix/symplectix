@@ -1,4 +1,6 @@
-pub trait Int: Sized + Copy + Eq + Ord {
+use crate::{Arith, ArithAssign, Bitwise, BitwiseAssign};
+
+pub trait Int: Sized + Copy + Eq + Ord + Arith + ArithAssign + Bitwise + BitwiseAssign {
     const ZERO: Self;
 
     const ONE: Self;

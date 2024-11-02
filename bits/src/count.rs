@@ -76,6 +76,34 @@ pub trait Count: Bits {
     }
 }
 
+macro_rules! impls {
+    ($( $Int:ty )*) => ($(
+        impl Count for $Int {
+            #[inline]
+            fn count1(&self) -> usize {
+                self.count_ones() as usize
+            }
+
+            #[inline]
+            fn count0(&self) -> usize {
+                self.count_zeros() as usize
+            }
+
+            #[inline]
+            fn all(&self) -> bool {
+                *self == !0
+            }
+
+            #[inline]
+            fn any(&self) -> bool {
+                *self != 0
+            }
+        }
+    )*)
+}
+impls!(u8 u16 u32 u64 u128 usize);
+impls!(i8 i16 i32 i64 i128 isize);
+
 impl<B: Block> Count for [B] {
     #[inline]
     fn count1(&self) -> usize {

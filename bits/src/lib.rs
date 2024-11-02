@@ -1,9 +1,17 @@
 //! `bits`
 
-mod int;
+macro_rules! bitmask {
+    ($( $Int: ty, $i: expr, $j: expr )*) => ($(
+        if $i >= $j {
+            0
+        } else {
+            !0 >> (<$Int>::BITS as usize - ($j - $i)) << $i
+        }
+    )*)
+}
+
 mod lsb;
 mod msb;
-pub use self::int::Int;
 pub use self::lsb::Lsb;
 pub use self::msb::Msb;
 

@@ -6,6 +6,23 @@ pub trait BitsMut: Bits {
     fn unset_bit(&mut self, i: usize);
 }
 
+macro_rules! impls {
+    ($( $Int:ty )*) => ($(
+        impl BitsMut for $Int {
+            #[inline]
+            fn set_bit(&mut self, i: usize) {
+                *self |= 1 << i;
+            }
+            #[inline]
+            fn unset_bit(&mut self, i: usize) {
+                *self &= !(1 << i);
+            }
+        }
+    )*)
+}
+impls!(u8 u16 u32 u64 u128 usize);
+impls!(i8 i16 i32 i64 i128 isize);
+
 impl<B: Block> BitsMut for [B] {
     #[inline]
     fn set_bit(&mut self, i: usize) {

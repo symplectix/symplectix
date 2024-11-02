@@ -1,6 +1,7 @@
 use core::{arch::x86_64, fmt::Debug};
 
-use bits::{Int, Lsb};
+use bits::Lsb;
+use num::Int;
 
 trait Pdep {
     fn pdep(self, mask: Self) -> Self;
@@ -30,8 +31,8 @@ impl Pdep for u64 {
     }
 }
 
-fn _pdep<T: Int + Lsb>(data: T, mut mask: T) -> T {
-    let mut dest = T::NULL;
+fn _pdep<T: Int + num::Arith + num::BitwiseAssign + bits::Block + Lsb>(data: T, mut mask: T) -> T {
+    let mut dest = T::ZERO;
     for i in 0..<T as bits::Block>::BITS {
         if !mask.any() {
             break;
@@ -46,7 +47,7 @@ fn _pdep<T: Int + Lsb>(data: T, mut mask: T) -> T {
 
 fn pdep_test<T>(s: T, m: T, o: T)
 where
-    T: Int + Lsb + Pdep + Debug,
+    T: Int + num::Arith + num::BitwiseAssign + bits::Block + Lsb + Pdep + Debug,
 {
     assert_eq!(s.pdep(m), o);
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

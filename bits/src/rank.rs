@@ -18,6 +18,26 @@ pub trait Rank: Count {
     }
 }
 
+macro_rules! impls {
+    ($( $Int:ty )*) => ($(
+        impl Rank for $Int {
+            #[inline]
+            fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
+                let Range { start: i, end: j } = index::to_range(&r, 0, self.bits());
+                (*self & bitmask!($Int, i, j)).count1()
+            }
+
+            #[inline]
+            fn rank0<R: RangeBounds<usize>>(&self, r: R) -> usize {
+                (!*self).rank1(r)
+            }
+        }
+
+    )*)
+}
+impls!(u8 u16 u32 u64 u128 usize);
+impls!(i8 i16 i32 i64 i128 isize);
+
 impl<B: Block> Rank for [B] {
     #[inline]
     fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {

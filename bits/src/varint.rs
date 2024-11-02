@@ -1,4 +1,4 @@
-use crate::{index, Bits, BitsMut, Block, Int};
+use crate::{Bits, BitsMut, Block};
 
 /// # Examples
 ///
@@ -14,29 +14,27 @@ use crate::{index, Bits, BitsMut, Block, Int};
 pub trait Varint: Bits {
     /// Reads `n` bits from `i`, and returns it as the lowest `n` bits of `Int`.
     #[doc(hidden)]
-    fn varint<T: Int>(&self, i: usize, n: usize) -> T {
+    fn varint<T: Block>(&self, i: usize, n: usize) -> T {
         debug_assert!(i < self.bits() && n <= T::BITS);
 
-        let mut int = T::NULL;
+        let mut block = T::empty();
         for b in i..i + n {
-            // unwrap_or?
-            if self.bit(b).expect("index out of bounds") {
-                int.set_bit(b - i);
+            if self.bit(b).unwrap_or_default() {
+                block.set_bit(b - i);
             }
         }
-        int
+        block
     }
 }
 
 pub trait PutVarint: BitsMut + Varint {
     /// Writes `N` bits in `[i, i+N)`.
     #[doc(hidden)]
-    fn put_varint<T: Int>(&mut self, i: usize, n: usize, int: T) {
+    fn put_varint<T: Block>(&mut self, i: usize, n: usize, int: T) {
         debug_assert!(i < self.bits() && n <= T::BITS);
 
         for b in i..i + n {
-            // unwrap_or?
-            if int.bit(b - i).expect("index out of bounds") {
+            if int.bit(b - i).unwrap_or_default() {
                 self.set_bit(b);
             }
         }
@@ -46,10 +44,10 @@ pub trait PutVarint: BitsMut + Varint {
 macro_rules! int_impls {
     ($( $Int:ty )*) => ($(
         impl Varint for $Int {
-            #[inline]
-            fn varint<T: Int>(&self, i: usize, n: usize) -> T {
-                num::cast((*self >> i) & <$Int>::mask(0, n))
-            }
+            // #[inline]
+            // fn varint<T: Block>(&self, i: usize, n: usize) -> T {
+            //     num::cast((*self >> i) & <$Int>::mask(0, n))
+            // }
         }
 
         impl PutVarint for $Int {
@@ -60,41 +58,43 @@ int_impls!(u8 u16 u32 u64 u128 usize);
 int_impls!(i8 i16 i32 i64 i128 isize);
 
 impl<B: Block + Varint> Varint for [B] {
-    #[doc(hidden)]
-    fn varint<T: Int>(&self, i: usize, n: usize) -> T {
-        debug_assert!(i < self.bits() && n <= T::BITS);
+    // #[doc(hidden)]
+    // fn varint<T: Block>(&self, i: usize, n: usize) -> T {
+    //     use crate::index;
+    //     debug_assert!(i < self.bits() && n <= T::BITS);
 
-        let mut cur = 0;
-        let mut out = T::NULL;
-        index::between::<B>(i, i + n).for_each(|(i, r)| {
-            if i < self.len() && cur < T::BITS {
-                out |= self[i].varint::<T>(r.start, r.len()) << cur;
-                cur += r.len();
-            }
-        });
-        out
-    }
+    //     let mut cur = 0;
+    //     let mut out = T::empty();
+    //     index::between::<B>(i, i + n).for_each(|(i, r)| {
+    //         if i < self.len() && cur < T::BITS {
+    //             out |= self[i].varint::<T>(r.start, r.len()) << cur;
+    //             cur += r.len();
+    //         }
+    //     });
+    //     out
+    // }
 }
 
 impl<B: Block + PutVarint> PutVarint for [B] {
-    #[doc(hidden)]
-    fn put_varint<T: Int>(&mut self, i: usize, n: usize, int: T) {
-        debug_assert!(i < self.bits() && n <= T::BITS);
+    // #[doc(hidden)]
+    // fn put_varint<T: Block>(&mut self, i: usize, n: usize, int: T) {
+    //     use crate::index;
+    //     debug_assert!(i < self.bits() && n <= T::BITS);
 
-        let mut cur = 0;
-        index::between::<B>(i, i + n).for_each(|(i, r)| {
-            if i < self.len() {
-                self[i].put_varint::<T>(r.start, r.len(), int.varint::<T>(cur, r.len()));
-                cur += r.len();
-            }
-        });
-    }
+    //     let mut cur = 0;
+    //     index::between::<B>(i, i + n).for_each(|(i, r)| {
+    //         if i < self.len() {
+    //             self[i].put_varint::<T>(r.start, r.len(), int.varint::<T>(cur, r.len()));
+    //             cur += r.len();
+    //         }
+    //     });
+    // }
 }
 
 macro_rules! impl_varint {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn varint<I: Int>(&self, i: usize, n: usize) -> I {
+        fn varint<I: Block>(&self, i: usize, n: usize) -> I {
             <$X as Varint>::varint(self$(.$method())?, i, n)
         }
     }
@@ -103,7 +103,7 @@ macro_rules! impl_varint {
 macro_rules! impl_put_varint {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn put_varint<I: Int>(&mut self, i: usize, n: usize, int: I) {
+        fn put_varint<I: Block>(&mut self, i: usize, n: usize, int: I) {
             <$X as PutVarint>::put_varint(self$(.$method())?, i, n, int)
         }
     }
