@@ -13,7 +13,7 @@ on:
 
 jobs:
   bazel:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Caches and restores the bazelisk binary downloaded before
       - uses: actions/cache@v3
