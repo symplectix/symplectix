@@ -1,0 +1,35 @@
+name: bazel
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+
+jobs:
+  bazel:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        env:
+          cache-name: bazel-cache
+        with:
+          # bazelisk stores a bazel binary in the [UserCacheDir](https://pkg.go.dev/os#UserCacheDir).
+          path: |
+            /tmp/trunk
+            ~/.cache/bazelisk
+            ~/Library/Caches/bazelisk
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
+
+      - name: bazel run //:buildifier/check
+        run: bazel run //:buildifier/check
+
+      - name: bazel build //...
+        run: bazel build --config=ci //...
+
+      - name: bazel test //...
+        run: bazel test --config=ci //...

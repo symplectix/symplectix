@@ -1,0 +1,15 @@
+name: postsubmit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bazel:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-12]
+    uses: ./.github/workflows/bazel.yml
+    with:
+      os: ${{ matrix.os }}
