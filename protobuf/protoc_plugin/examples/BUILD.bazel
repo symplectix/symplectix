@@ -9,8 +9,8 @@ proto_library(
         "product.proto",
     ],
     deps = [
-        "@com_google_protobuf//:any_proto",
-        "@com_google_protobuf//:empty_proto",
+        "@protobuf//:any_proto",
+        "@protobuf//:empty_proto",
     ],
 )
 

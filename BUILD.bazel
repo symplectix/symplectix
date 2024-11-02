@@ -1,9 +1,9 @@
 load("@gazelle//:def.bzl", "gazelle")
 
 exports_files([
+    "WORKSPACE",
     ".clippy.toml",
     ".rustfmt.toml",
-    "WORKSPACE.bazel",
 ])
 
 gazelle(name = "gazelle")
