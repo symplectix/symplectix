@@ -109,10 +109,7 @@ mod tests {
 
     #[test]
     fn worspace() {
-        assert_eq!(
-            rlocation("symplectix").join(".rustfmt.toml"),
-            rlocation("symplectix/.rustfmt.toml"),
-        );
+        assert_eq!(rlocation("trunk").join(".rustfmt.toml"), rlocation("trunk/.rustfmt.toml"),);
         assert_eq!(
             rlocation("rules_rust").join(".rustfmt.toml"),
             rlocation("rules_rust/.rustfmt.toml"),

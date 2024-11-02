@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	runRloc    = must(runfiles.Rlocation("symplectix/process/run/cmd/run"))
-	orphanRloc = must(runfiles.Rlocation("symplectix/process/run/cmd/orphan"))
+	runRloc    = must(runfiles.Rlocation("trunk/process/run/cmd/run"))
+	orphanRloc = must(runfiles.Rlocation("trunk/process/run/cmd/orphan"))
 )
 
 var run = &runCmd{
@@ -49,7 +49,7 @@ func must[T any](t T, err error) T {
 }
 
 func executable(info fs.FileInfo) bool {
-	return info.Mode()&0111 != 0
+	return info.Mode()&0o111 != 0
 }
 
 func testRunfiles(t *testing.T, locs ...string) {
@@ -139,8 +139,6 @@ func TestOrphan(t *testing.T) {
 			t.Errorf("process %s still running", child)
 		}
 	}
-
-	return
 }
 
 func TestMax(t *testing.T) {

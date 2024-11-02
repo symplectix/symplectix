@@ -73,9 +73,9 @@ async fn sleep() {
 #[tokio::test]
 async fn sleep_kill() {
     for sig in [libc::SIGINT, libc::SIGTERM, libc::SIGKILL] {
-        let mut sleep = command(["sleep", "10"]).spawn().await.unwrap();
-        sleep.inner.kill(Some(sig)).await;
-        // super::kill(sleep.child_id as i32, sig).expect("failed to kill");
+        let sleep = command(["sleep", "10"]).spawn().await.unwrap();
+        // sleep.inner.kill(Some(sig)).await;
+        crate::child::kill(sleep.pid().unwrap() as i32, sig).expect("failed to kill");
         let status = sleep.wait().await.expect("failed to wait");
         assert!(
             matches!(status.exit_reason.proc_signaled, Some(got) if sig == got),

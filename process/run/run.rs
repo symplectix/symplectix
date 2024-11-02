@@ -215,13 +215,6 @@ impl Process {
 }
 
 impl ProcessInner {
-    #[cfg(test)]
-    async fn kill(&mut self, signal: Option<libc::c_int>) {
-        if let ProcessInner::Spawned { child, .. } = self {
-            child.kill(signal).await
-        }
-    }
-
     async fn wait(self) -> io::Result<WaitStatus> {
         match self {
             ProcessInner::DryRun { cmd } => cmd.dry_run(),

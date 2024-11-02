@@ -36,10 +36,6 @@ test:verbose --test_output=errors
 # https://bazel.build/docs/user-manual#workspace_status
 common:stamp --stamp --workspace_status_command=stamp/buildinfo.sh
 
-# Force the use of Clang for C++ builds.
-build --action_env=CC=clang
-build --action_env=CXX=clang++
-
 # Disables a legacy feature where local sandboxed execution can silently fall back to non-sandboxed
 # if an action can't be run in a sandbox. This will be the default flag in a future release (probably 7.0).
 #
@@ -66,6 +62,12 @@ build --incompatible_sandbox_hermetic_tmp
 # If true, Bazel uses an environment with a static value for PATH and does not inherit LD_LIBRARY_PATH or TMPDIR.
 # https://bazel.build/reference/command-line-reference#flag--incompatible_strict_action_env
 build --incompatible_strict_action_env
+
+# Force the use of Clang for C++ builds.
+build:linux --action_env=CC=gcc
+build:linux --action_env=CXX=gcc++
+build:macos --action_env=CC=clang
+build:macos --action_env=CXX=clang++
 
 # https://github.com/bazelbuild/rules_foreign_cc/issues/1186
 build:macos --host_action_env=CXXFLAGS=-Wno-int-conversion

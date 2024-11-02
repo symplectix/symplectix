@@ -1,4 +1,4 @@
-module github.com/vec-jp/symplectix
+module github.com/symplectix/trunk
 
 go 1.23.2
 

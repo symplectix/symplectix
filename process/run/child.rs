@@ -67,7 +67,7 @@ impl Child {
     }
 }
 
-fn kill(pid: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
+pub(crate) fn kill(pid: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
     unsafe {
         if libc::kill(pid, sig) == 0 {
             Ok(())

@@ -91,6 +91,9 @@ container_structure_test(
     name = "container_structure_test",
     configs = ["testdata/container_structure_test.yaml"],
     image = ":image",
+    tags = [
+        "manual",
+    ],
     target_compatible_with = [
         "@platforms//os:linux",
     ],
