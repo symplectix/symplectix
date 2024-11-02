@@ -8,6 +8,7 @@ go_library(
         exclude = ["*_test.go"],
     ),
     importpath = "github.com/vec-jp/symplectix/bits",
+    visibility = ["//visibility:public"],
 )
 
 go_test(

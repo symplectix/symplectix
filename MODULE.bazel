@@ -48,6 +48,21 @@ use_repo(
 # Prebuilt binaries for buildifier and buildozer.
 bazel_dep(name = "buildifier_prebuilt", version = "7.3.1", dev_dependency = True)
 
+# Protocol Buffers - Google's data interchange format.
+bazel_dep(name = "protobuf", version = "28.2")
+
+# Pre-built protoc binary toolchain for Bazel, fetched from official protobuf releases.
+# https://github.com/aspect-build/toolchains_protoc/releases
+bazel_dep(name = "toolchains_protoc", version = "0.3.3")
+
+# Bazel rules for building Protobuf and gRPC code and libraries from proto_library targets.
+bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
+# bazel_dep(name = "rules_proto_grpc_doc", version = "<version number here>")
+# bazel_dep(name = "rules_proto_grpc_grpcgateway", version = "<version number here>")
+# bazel_dep(name = "rules_proto_grpc_buf", version = "<version number here>")
+# bazel_dep(name = "rules_proto_grpc_cc", version = "<version number here>")
+# bazel_dep(name = "rules_proto_grpc_go", version = "<version number here>")
+
 # Non-hermetic C++ rules, contains an auto-detecting toolchain that
 # expects to find tools installed on the host machine.
 # bazel_dep(name = "rules_cc", version = "0.0.9")
@@ -71,46 +86,6 @@ bazel_dep(name = "rules_go", version = "0.50.1")
 # Bazel build file generator for Bazel projects.
 # It natively supports Go and protobuf, and it may be extended to support new languages and custom rule sets.
 bazel_dep(name = "gazelle", version = "0.39.1")
-
-# Protocol Buffers - Google's data interchange format.
-bazel_dep(name = "protobuf", version = "28.2")
-
-# Rules for protobuf and gRPC.
-bazel_dep(name = "rules_proto", version = "6.0.2")
-
-# bazel_dep(name = "protobuf", version = "28.2")
-
-# Bazel rules for building Protobuf and gRPC code and libraries from proto_library targets.
-bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
-# bazel_dep(name = "rules_proto_grpc_doc", version = "<version number here>")
-# bazel_dep(name = "rules_proto_grpc_grpcgateway", version = "<version number here>")
-# bazel_dep(name = "rules_proto_grpc_buf", version = "<version number here>")
-# bazel_dep(name = "rules_proto_grpc_cc", version = "<version number here>")
-# bazel_dep(name = "rules_proto_grpc_go", version = "<version number here>")
-
-GO_VERSION = "1.23.2"
-
-go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
-
-# Download an SDK for the host OS & architecture as well as common remote execution platforms.
-go_sdk.download(version = GO_VERSION)
-
-# TODO: Setup nogo
-# go_sdk.nogo(
-#     nogo = "//tools/nogo",
-#     includes = [
-#         "//:__subpackages__",
-#         "@my_own_go_dep//logic:__pkg__",
-#     ],
-#     excludes = [
-#         "//third_party:__subpackages__",
-#     ],
-# )
-
-go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
-
-# Manage Go dependencies via go.mod.
-go_deps.from_file(go_mod = "//:go.mod")
 
 RUST_EDITION = "2021"
 
@@ -212,37 +187,41 @@ crate.spec(
 # Protobuf support for Rust.
 crate.spec(
     package = "prost",
-    version = "0.12",
+    version = "0.13",
 )
 crate.spec(
     package = "prost-types",
-    version = "0.12",
+    version = "0.13",
 )
 crate.spec(
     package = "prost-reflect",
-    version = "0.12",
+    version = "0.14",
 )
 crate.spec(
     package = "tonic",
-    version = "0.11",
+    version = "0.12",
+)
+crate.spec(
+    package = "tonic-build",
+    version = "0.12",
 )
 crate.spec(
     package = "tonic-types",
-    version = "0.11",
+    version = "0.12",
 )
 crate.spec(
     package = "tonic-health",
-    version = "0.11",
+    version = "0.12",
 )
 crate.spec(
     package = "tonic-reflection",
-    version = "0.11",
+    version = "0.12",
 )
 
 # Proroc plugins for prost/tonic.
 crate.spec(
     package = "protoc-gen-prost",
-    version = "0",
+    version = "0.4",
 )
 crate.annotation(
     crate = "protoc-gen-prost",
@@ -250,7 +229,7 @@ crate.annotation(
 )
 crate.spec(
     package = "protoc-gen-tonic",
-    version = "0",
+    version = "0.4",
 )
 crate.annotation(
     crate = "protoc-gen-tonic",
@@ -355,6 +334,30 @@ crate.spec(
 )
 crate.from_specs()
 use_repo(crate, "crates")
+
+GO_VERSION = "1.23.2"
+
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+
+# Download an SDK for the host OS & architecture as well as common remote execution platforms.
+go_sdk.download(version = GO_VERSION)
+
+# TODO: Setup nogo
+# go_sdk.nogo(
+#     nogo = "//tools/nogo",
+#     includes = [
+#         "//:__subpackages__",
+#         "@my_own_go_dep//logic:__pkg__",
+#     ],
+#     excludes = [
+#         "//third_party:__subpackages__",
+#     ],
+# )
+
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+
+# Manage Go dependencies via go.mod.
+go_deps.from_file(go_mod = "//:go.mod")
 
 # Rules for building OCI containers.
 bazel_dep(name = "rules_oci", version = "2.0.0")

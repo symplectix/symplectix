@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package protobuf.protoc_plugin.examples;
+package examplepb;
 
 import "google/protobuf/any.proto";
-import "protobuf/protoc_plugin/examples/product.proto";
+import "google/protobuf/empty.proto";
 
 message Customer {
     message Id {
@@ -44,11 +44,17 @@ message Customer {
     int32 i32 = 4;
     int64 i64 = 5;
 
-    repeated protobuf.protoc_plugin.examples.Review reviews = 6;
+    repeated Review reviews = 6;
 
     reserved 100 to max;
 }
 
-service CustomerService {
-    rpc Get(Customer.Id) returns (Customer);
+message Product {
+    int32 id = 1;
+}
+
+message Review {
+    int32 id = 1;
+    Product product = 2;
+    optional google.protobuf.Empty empty = 3;
 }
