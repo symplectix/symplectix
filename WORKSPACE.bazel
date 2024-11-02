@@ -48,7 +48,7 @@ http_archive(
     urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/releases/download/4.4.0/rules_proto_grpc-4.4.0.tar.gz"],
 )
 
-register_toolchains("//toolchains:prost_toolchain")
+register_toolchains("//tools/prost:prost_toolchain")
 
 _RUST_EDITION = "2021"
 
