@@ -2,7 +2,7 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 
 rust_binary(
     name = "print_cst",
-    srcs = ["bin/print_cst.rs"],
+    srcs = ["cmd/print_cst.rs"],
     deps = [
         "@crates//:tree-sitter",
         "@crates//:tree-sitter-rust",

@@ -4,8 +4,13 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_doc_test", "rust_library", "rust_test")
 
 rust_library(
-    name = "entrypoint",
-    srcs = glob(["src/**/*.rs"]),
+    name = "entrypoint_rs",
+    srcs = glob(
+        ["*.rs"],
+        exclude = ["*_test.rs"],
+    ),
+    crate_name = "entrypoint",
+    crate_root = "entrypoint.rs",
     # will not work as expected on windows
     target_compatible_with = select({
         "@platforms//os:linux": [],
@@ -14,7 +19,7 @@ rust_library(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        "//process/fsutil",
+        "//process/fsutil:fsutil_rs",
         "@crates//:anyhow",
         "@crates//:clap",
         "@crates//:humantime",
@@ -26,26 +31,26 @@ rust_library(
 )
 
 rust_test(
-    name = "entrypoint_unit_test",
+    name = "entrypoint_rs_lib_test",
     size = "small",
-    crate = ":entrypoint",
+    crate = ":entrypoint_rs",
     deps = [
-        "//testing",
+        "//testing:testing_rs",
     ],
 )
 
 rust_doc_test(
-    name = "entrypoint_doc_test",
+    name = "entrypoint_rs_doc_test",
     size = "small",
-    crate = ":entrypoint",
+    crate = ":entrypoint_rs",
 )
 
 rust_binary(
     name = "coordinator",
-    srcs = ["bin/coordinator.rs"],
+    srcs = ["cmd/coordinator.rs"],
     deps = [
-        ":entrypoint",
-        "//process/fsutil",
+        ":entrypoint_rs",
+        "//process/fsutil:fsutil_rs",
         "@crates//:anyhow",
         "@crates//:clap",
         "@crates//:futures",
@@ -57,12 +62,12 @@ rust_binary(
 
 cc_binary(
     name = "orphan",
-    srcs = ["src/orphan.c"],
+    srcs = ["orphan.c"],
 )
 
 cc_binary(
     name = "zombie",
-    srcs = ["src/zombie.c"],
+    srcs = ["zombie.c"],
 )
 
 pkg_tar(

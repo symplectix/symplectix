@@ -1,24 +1,29 @@
 load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test")
 
 rust_library(
-    name = "bitaux",
-    srcs = glob(["src/**/*.rs"]),
+    name = "bitaux_rs",
+    srcs = glob(
+        ["*.rs"],
+        exclude = ["*_test.rs"],
+    ),
+    crate_name = "bitaux",
+    crate_root = "bitaux.rs",
     visibility = ["//bits:__subpackages__"],
     deps = [
-        "//bits",
-        "//bits/bit",
-        "//bits/bitpacking",
-        "//index/fenwicktree",
+        "//bits:bits_rs",
+        "//bits/bit:bit_rs",
+        "//bits/bitpacking:bitpacking_rs",
+        "//index/fenwicktree:fenwicktree_rs",
         "@crates//:num",
     ],
 )
 
 rust_test(
-    name = "bitaux_unit_test",
-    crate = ":bitaux",
+    name = "bitaux_rs_lib_test",
+    crate = ":bitaux_rs",
 )
 
 rust_doc_test(
-    name = "bitaux_doc_test",
-    crate = ":bitaux",
+    name = "bitaux_rs_doc_test",
+    crate = ":bitaux_rs",
 )

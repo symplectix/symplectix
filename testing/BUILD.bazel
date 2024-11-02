@@ -1,9 +1,10 @@
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 rust_library(
-    name = "testing",
+    name = "testing_rs",
     testonly = True,
-    srcs = glob(["src/*.rs"]),
+    srcs = ["testing.rs"],
+    crate_name = "testing",
     visibility = ["//visibility:public"],
     deps = [
         "@crates//:once_cell",
@@ -13,6 +14,6 @@ rust_library(
 )
 
 rust_test(
-    name = "testing_unit_test",
-    crate = ":testing",
+    name = "testing_rs_lib_test",
+    crate = ":testing_rs",
 )

@@ -1,8 +1,10 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
 
 rust_library(
-    name = "fuzzing",
-    srcs = ["src/lib.rs"],
+    name = "fuzzing_rs",
+    srcs = ["fuzzing.rs"],
+    crate_name = "fuzzing",
+    crate_root = "fuzzing.rs",
     visibility = ["//fuzzing:__subpackages__"],
     deps = [
         "@crates//:anyhow",
@@ -14,11 +16,11 @@ rust_library(
 
 rust_binary(
     name = "fuzz_test",
-    srcs = ["bin/fuzz_test.rs"],
+    srcs = ["cmd/fuzz_test.rs"],
     visibility = ["//fuzzing:__subpackages__"],
     deps = [
-        ":fuzzing",
-        "//process/entrypoint",
+        ":fuzzing_rs",
+        "//process/entrypoint:entrypoint_rs",
         "@crates//:anyhow",
         "@crates//:clap",
         "@crates//:tokio",
@@ -27,10 +29,10 @@ rust_binary(
 
 rust_binary(
     name = "fuzz_corpus",
-    srcs = ["bin/fuzz_corpus.rs"],
+    srcs = ["cmd/fuzz_corpus.rs"],
     visibility = ["//fuzzing:__subpackages__"],
     deps = [
-        ":fuzzing",
+        ":fuzzing_rs",
         "@crates//:anyhow",
         "@crates//:clap",
         "@crates//:tokio",

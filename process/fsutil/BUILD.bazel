@@ -3,8 +3,9 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//process:__subpackages__"])
 
 rust_library(
-    name = "fsutil",
-    srcs = ["src/fsutil.rs"],
+    name = "fsutil_rs",
+    srcs = ["fsutil.rs"],
+    crate_name = "fsutil",
     deps = [
         "@crates//:futures",
         "@crates//:tokio",

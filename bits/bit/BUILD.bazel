@@ -1,17 +1,19 @@
 load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test")
 
 rust_library(
-    name = "bit",
-    srcs = ["src/lib.rs"],
+    name = "bit_rs",
+    srcs = ["bit.rs"],
+    crate_name = "bit",
+    crate_root = "bit.rs",
     visibility = ["//bits:__subpackages__"],
 )
 
 rust_test(
-    name = "bit_unit_test",
-    crate = ":bit",
+    name = "bit_rs_lib_test",
+    crate = ":bit_rs",
 )
 
 rust_doc_test(
-    name = "bit_doc_test",
-    crate = ":bit",
+    name = "bit_rs_doc_test",
+    crate = ":bit_rs",
 )

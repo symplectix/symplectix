@@ -1,5 +1,5 @@
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("@rules_go//proto:def.bzl", "go_proto_library")
-load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//protobuf/protoc_plugin:defs.bzl", "message_descriptor_dump_compile")
 
 proto_library(
@@ -14,14 +14,14 @@ proto_library(
     ],
 )
 
-message_descriptor_dump_compile(
-    name = "examples_message_descriptor_dump",
-    protos = [":examples_proto"],
-)
-
 go_proto_library(
-    name = "protobuf_protoc_plugin_examples_go_proto",
+    name = "examples_proto_go",
     compilers = ["@rules_go//proto:go_grpc"],
     importpath = "github.com/vec-jp/symplectix/protobuf/protoc_plugin/examples",
     proto = ":examples_proto",
+)
+
+message_descriptor_dump_compile(
+    name = "examples_message_descriptor_dump",
+    protos = [":examples_proto"],
 )

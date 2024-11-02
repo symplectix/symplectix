@@ -14,9 +14,9 @@ jq(
 )
 
 genrule(
-    name = "git_commit",
+    name = "git_revision",
     srcs = [":buildinfo.json"],
-    outs = ["git_commit.txt"],
-    cmd = "$(JQ_BIN) -r '.STABLE_GIT_COMMIT' $(location :buildinfo.json) > $@",
+    outs = ["git_revision.txt"],
+    cmd = "$(JQ_BIN) -r '.STABLE_GIT_REVISION' $(location :buildinfo.json) > $@",
     toolchains = ["@jq_toolchains//:resolved_toolchain"],
 )

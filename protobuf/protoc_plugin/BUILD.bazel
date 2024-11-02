@@ -2,8 +2,9 @@ load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
 
 rust_library(
-    name = "protoc_plugin",
-    srcs = glob(["src/*.rs"]),
+    name = "protoc_plugin_rs",
+    srcs = ["protoc_plugin.rs"],
+    crate_name = "protoc_plugin",
     visibility = ["//protobuf/protoc_plugin:__subpackages__"],
     deps = [
         "@crates//:anyhow",
@@ -15,13 +16,13 @@ rust_library(
 
 rust_binary(
     name = "gen_message_descriptor_dump",
-    srcs = ["bin/gen_message_descriptor_dump.rs"],
+    srcs = ["cmd/gen_message_descriptor_dump.rs"],
     rustc_flags = [
         "-Copt-level=3",
         "-Cdebuginfo=2",
     ],
     deps = [
-        "//protobuf/protoc_plugin",
+        "//protobuf/protoc_plugin:protoc_plugin_rs",
         "@crates//:anyhow",
         "@crates//:prost-reflect",
         "@crates//:prost-types",

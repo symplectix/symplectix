@@ -33,8 +33,21 @@ func upto(n int) iter.Seq[int] {
 
 func TestRange(t *testing.T) {
 	for i := range upto(10) {
-		if i >= 10 {
-			t.Errorf("%d, %d", i, 10)
-		}
+		testRange(t, i)
+	}
+}
+
+func FuzzRange(f *testing.F) {
+	for i := range upto(10) {
+		f.Add(i)
+	}
+	f.Fuzz(func(t *testing.T, i int) {
+		testRange(t, i)
+	})
+}
+
+func testRange(t *testing.T, i int) {
+	if i >= 10 {
+		t.Errorf("%d, %d", i, 10)
 	}
 }

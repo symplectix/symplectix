@@ -48,11 +48,11 @@ mod test {
     fn faccessat_runfiles() {
         assert!(check(rlocation("symplectix/.rustfmt.toml"), Mode::EXISTS).is_ok());
         assert!(check(rlocation("symplectix/.clippy.toml"), Mode::EXISTS).is_ok());
-        assert!(check(rlocation("symplectix/path/faccess/src/lib.rs"), Mode::EXISTS).is_ok());
+        assert!(check(rlocation("symplectix/path/faccess/faccess.rs"), Mode::EXISTS).is_ok());
 
         assert!(check(rlocation("symplectix/.rustfmt.toml"), Mode::READ).is_ok());
         assert!(check(rlocation("symplectix/.clippy.toml"), Mode::READ).is_ok());
-        assert!(check(rlocation("symplectix/path/faccess/src/lib.rs"), Mode::READ).is_ok());
+        assert!(check(rlocation("symplectix/path/faccess/faccess.rs"), Mode::READ).is_ok());
 
         // See about --spawn_strategy at .bazelrc.
         // assert!(check(rlocation("symplectix/.rustfmt.toml"), Mode::WRITE).is_err());
@@ -61,6 +61,6 @@ mod test {
 
         assert!(check(rlocation("symplectix/.rustfmt.toml"), Mode::EXECUTE).is_err());
         assert!(check(rlocation("symplectix/.clippy.toml"), Mode::EXECUTE).is_err());
-        assert!(check(rlocation("symplectix/path/faccess/src/lib.rs"), Mode::EXECUTE).is_err());
+        assert!(check(rlocation("symplectix/path/faccess/faccess.rs"), Mode::EXECUTE).is_err());
     }
 }

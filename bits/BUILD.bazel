@@ -2,7 +2,7 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test", "rust_test_suite")
 
 go_library(
-    name = "go_bits",
+    name = "bits_go",
     srcs = glob(
         ["*.go"],
         exclude = ["*_test.go"],
@@ -11,37 +11,42 @@ go_library(
 )
 
 go_test(
-    name = "go_bits_test",
+    name = "bits_go_test",
     srcs = glob(["*_test.go"]),
     deps = [
-        ":go_bits",
+        ":bits_go",
         "@rules_go//go/runfiles",
     ],
 )
 
 rust_library(
-    name = "bits",
-    srcs = glob(["src/**/*.rs"]),
+    name = "bits_rs",
+    srcs = glob(
+        ["*.rs"],
+        exclude = ["*_test.rs"],
+    ),
+    crate_name = "bits",
+    crate_root = "bits.rs",
     visibility = ["//visibility:public"],
     deps = [
-        "//bits/bit",
+        "//bits/bit:bit_rs",
         "@crates//:num",
     ],
 )
 
 rust_test(
-    name = "bits_unit_test",
-    crate = ":bits",
+    name = "bits_rs_lib_test",
+    crate = ":bits_rs",
 )
 
 rust_doc_test(
-    name = "bits_doc_test",
-    crate = ":bits",
+    name = "bits_rs_doc_test",
+    crate = ":bits_rs",
 )
 
 rust_test_suite(
-    name = "integration",
-    srcs = glob(["tests/**/*.rs"]),
+    name = "bits_rs_tests",
+    srcs = glob(["*_test.rs"]),
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
@@ -49,9 +54,9 @@ rust_test_suite(
         "-Copt-level=3",
     ],
     deps = [
-        ":bits",
-        "//bits/bitaux",
-        "//bits/bitpacking",
+        ":bits_rs",
+        "//bits/bitaux:bitaux_rs",
+        "//bits/bitpacking:bitpacking_rs",
         "@crates//:quickcheck",
     ],
 )
