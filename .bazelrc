@@ -1,23 +1,20 @@
-# To suppress symlink creation
-# build --symlink_prefix=/
-# build --symlink_prefix=.bazel/
-# build --experimental_convenience_symlinks=ignore
-
 --nosystem_rc
 --nohome_rc
 --workspace_rc
 
+test --test_output=errors
+
 # Make Bazel print out all options from rc files.
-build --announce_rc
+common --announce_rc
 
 # Bazel picks up host-OS-specific config lines from bazelrc files.
 # https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
-build --enable_platform_specific_config
+common --enable_platform_specific_config
 
 # If set to true, tags will be propagated from a target to the actions' execution requirements;
 # otherwise tags are not propagated. See https://github.com/bazelbuild/bazel/issues/8830 for details.
 # https://bazel.build/reference/command-line-reference#flag--experimental_allow_tags_propagation
-build --experimental_allow_tags_propagation
+common --experimental_allow_tags_propagation
 
 # If true, Bazel uses an environment with a static value for PATH and does not inherit LD_LIBRARY_PATH or TMPDIR.
 # https://bazel.build/reference/command-line-reference#flag--incompatible_strict_action_env
@@ -35,15 +32,8 @@ build --sandbox_fake_hostname
 # https://bazel.build/reference/command-line-reference#flag--sandbox_fake_username
 build --sandbox_fake_username
 
-# Need to specify `-c dbg` or `-c fastbuild` to compile with debug mode
-build --compilation_mode opt
-
-# rust-analyzer
-# Ensure rust source code is available to `rust-analyzer`.
-build --repo_env=RULES_RUST_TOOLCHAIN_INCLUDE_RUSTC_SRCS=true
-
 # rustfmt
-# To format, run `bazel run @rules_rust//tools/rustfmt`.
+# Run `bazel run @rules_rust//tools/rustfmt` to format.
 build:ci --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
 build:ci --output_groups=+rustfmt_checks
 build --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
@@ -52,3 +42,17 @@ build --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
 build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build --output_groups=+clippy_checks
 build --@rules_rust//:clippy.toml=//:.clippy.toml
+
+# rust-analyzer
+# Ensure rust source code is available to `rust-analyzer`.
+build --repo_env=RULES_RUST_TOOLCHAIN_INCLUDE_RUSTC_SRCS=true
+
+# rustc flags for proc-macros, cargo_build_script, etc.
+build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
+
+build:debug --compilation_mode=dbg # implies -Copt-level=0 -Cdebuginfo=2
+
+build:release --compilation_mode=opt # implies -Copt-level=3 -Cdebuginfo=0
+build:release --@rules_rust//:extra_rustc_flags=-Clto,-Ccodegen-units=1
+
+build:ci --config=release
