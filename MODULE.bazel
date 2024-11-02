@@ -1,6 +1,81 @@
-###############################################################################
+# TODO: Migrate external dependencies from WORKSPACE to MODULE.bazel.
 # Bazel now uses Bzlmod by default to manage external dependencies.
-# Please consider migrating your external dependencies from WORKSPACE to MODULE.bazel.
 #
-# For more details, please check https://github.com/bazelbuild/bazel/issues/18958
-###############################################################################
+# https://bazel.build/external/module
+# https://registry.bazel.build/
+module(name = "trunk")
+
+# Constraint values for specifying platforms and toolchains.
+bazel_dep(name = "platforms", version = "0.0.9")
+
+# Common useful functions and rules for Bazel.
+bazel_dep(name = "bazel_skylib", version = "1.5.0")
+
+# Starlark libraries and rules which are useful for
+# constructing rulesets and BUILD files.
+bazel_dep(name = "aspect_bazel_lib", version = "2.6.1")
+
+bazel_lib_toolchains = use_extension("@aspect_bazel_lib//lib:extensions.bzl", "toolchains")
+bazel_lib_toolchains.jq()
+bazel_lib_toolchains.yq()
+use_repo(bazel_lib_toolchains, "jq_toolchains")
+use_repo(bazel_lib_toolchains, "yq_toolchains")
+
+# Prebuilt binaries for buildifier and buildozer.
+bazel_dep(name = "buildifier_prebuilt", version = "6.4.0", dev_dependency = True)
+
+# Non-hermetic C++ rules, contains an auto-detecting toolchain that
+# expects to find tools installed on the host machine.
+# bazel_dep(name = "rules_cc", version = "0.0.9")
+
+# Build rules for interfacing with "foreign" (non-Bazel) build systems
+# (CMake, configure-make, GNU Make, boost, ninja, Meson).
+# bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
+
+# Perl rules, to build openssl.
+bazel_dep(name = "rules_perl", version = "0.2.0")
+
+# Rules for creating packages of many types (zip, tar, deb, rpm, ...).
+bazel_dep(name = "rules_pkg", version = "0.10.1")
+
+# Rules for building OCI containers.
+bazel_dep(name = "rules_oci", version = "1.7.5")
+
+# Validate the structure of container images.
+bazel_dep(name = "container_structure_test", version = "1.16.0")
+
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+
+# The image contains:
+# - ca-certificates
+# - A /etc/passwd entry for a root user
+# - A /tmp directory
+# - tzdata
+# - glibc
+# - libssl
+# - openssl
+oci.pull(
+    name = "distroless_base_nonroot",
+    digest = "sha256:c62385962234a3dae5c9e9777dedc863d99f676b7202cd073e90b06e46021994",
+    image = "gcr.io/distroless/base",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+    ],
+)
+
+# The image contains everything in the base image, plus:
+# libgcc1 and its dependencies.
+oci.pull(
+    name = "distroless_cc_nonroot",
+    digest = "sha256:880bcf2ca034ab5e8ae76df0bd50d700e54eb44e948877244b130e3fcd5a1d66",
+    image = "gcr.io/distroless/cc",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+    ],
+)
+
+# For each oci.pull call, repeat the "name" here to expose them as dependencies.
+use_repo(oci, "distroless_base_nonroot")
+use_repo(oci, "distroless_cc_nonroot")
