@@ -1,0 +1,27 @@
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:private"])
+
+rust_library(
+    name = "bitvec",
+    srcs = glob(["*.rs"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//bits",
+    ],
+)
+
+rust_test(
+    name = "cfg_test",
+    crate = ":bitvec",
+)
+
+rust_doc_test(
+    name = "doc_test",
+    crate = ":bitvec",
+)
+
+rust_doc(
+    name = "doc",
+    crate = ":bitvec",
+)

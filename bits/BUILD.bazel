@@ -1,0 +1,42 @@
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test", "rust_test_suite")
+
+package(default_visibility = ["//visibility:private"])
+
+rust_library(
+    name = "bits",
+    srcs = glob(["src/*.rs"]),
+    crate_features = [
+        "alloc",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+rust_library(
+    name = "bits_no_alloc",
+    srcs = glob(["src/*.rs"]),
+    crate_name = "bits",
+    visibility = ["//visibility:public"],
+)
+
+rust_test_suite(
+    name = "integration",
+    srcs = glob(["tests/*.rs"]),
+    deps = [
+        ":bits",
+    ],
+)
+
+rust_test(
+    name = "cfg_test",
+    crate = ":bits",
+)
+
+rust_doc_test(
+    name = "doc_test",
+    crate = ":bits",
+)
+
+rust_doc(
+    name = "doc",
+    crate = ":bits",
+)

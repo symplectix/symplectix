@@ -40,23 +40,20 @@ rules_foreign_cc_dependencies()
 
 # Rust
 
-# `Digest::compute` in cargo-bazel seems to return a different result for linux and macos.
-# _RUST_VERSION = "1.60.0"
+_RUST_VERSION = "1.60.0"
 
-_RUST_VERSION = "1.59.0"
+_RUST_EDITION = "2021"
 
-_RUST_EDITION = "2018"
+_RULES_RUST_VERSION = "0.4.0"
 
-_RULES_RUST_VERSION = "0.2.1"
-
-_RULES_RUST_SHA256 = "b58c63a6d8221f408f8852b4f74f81bc8c7aac9273f3899a74e32e6168a2c624"
+_RULES_RUST_SHA256 = "edb87c0d2ba70823fe3df7862676d695599314a4634b9758bd55f0e8f19c2751"
 
 http_archive(
     name = "rules_rust",
     sha256 = _RULES_RUST_SHA256,
     urls = [
-        "https://github.com/bazelbuild/rules_rust/releases/download/{ver}/rules_rust-v{ver}.tar.gz".format(ver = _RULES_RUST_VERSION),
         "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/{ver}/rules_rust-v{ver}.tar.gz".format(ver = _RULES_RUST_VERSION),
+        "https://github.com/bazelbuild/rules_rust/releases/download/{ver}/rules_rust-v{ver}.tar.gz".format(ver = _RULES_RUST_VERSION),
     ],
 )
 

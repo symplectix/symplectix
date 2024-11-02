@@ -6,7 +6,9 @@ package(default_visibility = ["//visibility:public"])
 
 buildifier(
     name = "buildifier",
-    exclude_patterns = ["**/node_modules/**/*"],
+    exclude_patterns = [
+        "./tmp/**/*",
+    ],
     lint_mode = "fix",
     lint_warnings = [
         "+out-of-order-load",
@@ -18,7 +20,7 @@ buildifier(
 buildifier(
     name = "buildifier/check",
     exclude_patterns = [
-        "**/node_modules/**/*",
+        "./tmp/**/*",
     ],
     lint_mode = "warn",
     lint_warnings = [
@@ -36,5 +38,7 @@ rust_analyzer(
     name = "rust_analyzer",
     targets = [
         # bazel query 'kind("rust_*library|rust_binary", //...:all)'
+        "//bits",
+        "//bits/bitvec",
     ] + all_crate_deps(),
 )

@@ -46,8 +46,8 @@ build --repo_env=RULES_RUST_TOOLCHAIN_INCLUDE_RUSTC_SRCS=true
 
 # rustfmt
 # To format, run `bazel run @rules_rust//tools/rustfmt`.
-build --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
-build --output_groups=+rustfmt_checks
+# build --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
+# build --output_groups=+rustfmt_checks
 build --@rules_rust//:rustfmt.toml=//build/rust:rustfmt.toml
 
 # clippy
