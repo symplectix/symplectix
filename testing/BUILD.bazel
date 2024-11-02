@@ -1,11 +1,10 @@
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
-package(default_visibility = ["//:__subpackages__"])
-
 rust_library(
     name = "testing",
     testonly = True,
     srcs = glob(["*.rs"]),
+    visibility = ["//visibility:public"],
     deps = [
         "@crates//:once_cell",
         "@crates//:tempfile",

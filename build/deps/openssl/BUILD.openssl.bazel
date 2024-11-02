@@ -1,7 +1,5 @@
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make", "configure_make_variant")
 
-package(default_visibility = ["//visibility:public"])
-
 filegroup(
     name = "all_srcs",
     srcs = glob(
@@ -37,6 +35,7 @@ alias(
         ":msvc_compiler": "openssl_msvc",
         "//conditions:default": "openssl_default",
     }),
+    visibility = ["//visibility:public"],
 )
 
 configure_make(
@@ -106,6 +105,7 @@ filegroup(
     name = "openssl_dir",
     srcs = [":openssl"],
     output_group = "gen_dir",
+    visibility = ["//visibility:public"],
 )
 
 # runnable_binary(

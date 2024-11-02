@@ -1,7 +1,5 @@
 load("//build/rules/fuzzing:defs.bzl", "rust_fuzz_test")
 
-package(default_visibility = ["//:__subpackages__"])
-
 filegroup(
     name = "corpus_filegroup",
     srcs = glob([

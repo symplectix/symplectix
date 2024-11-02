@@ -1,11 +1,9 @@
 load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test")
 
-package(default_visibility = ["//visibility:private"])
-
 rust_library(
     name = "bitaux",
     srcs = glob(["src/**/*.rs"]),
-    visibility = ["//visibility:public"],
+    visibility = ["//bits:__subpackages__"],
     deps = [
         "//bits",
         "//bits/bit",

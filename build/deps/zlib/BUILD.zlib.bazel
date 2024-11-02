@@ -1,7 +1,5 @@
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 
-package(default_visibility = ["//visibility:public"])
-
 filegroup(
     name = "all_srcs",
     srcs = glob(
@@ -21,4 +19,5 @@ cmake(
         "@platforms//os:windows": ["zlibstatic.lib"],
         "//conditions:default": ["libz.a"],
     }),
+    visibility = ["//visibility:public"],
 )
