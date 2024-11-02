@@ -29,7 +29,7 @@ impl<T: Mask> Or for T {
     }
 }
 
-macro_rules! impl_or_assign_for_words {
+macro_rules! ints_impl_or_assign {
     ($( $Word:ty )*) => ($(
         impl OrAssign<$Word> for $Word {
             #[inline]
@@ -39,7 +39,7 @@ macro_rules! impl_or_assign_for_words {
         }
     )*)
 }
-impl_or_assign_for_words!(u8 u16 u32 u64 u128);
+ints_impl_or_assign!(u8 u16 u32 u64 u128);
 
 impl<A: OrAssign<B>, B> OrAssign<[B]> for [A] {
     fn or_assign(this: &mut Self, that: &[B]) {

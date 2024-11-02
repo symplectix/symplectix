@@ -1,5 +1,4 @@
-use crate::index;
-use crate::Bits;
+use crate::{index, Bits};
 
 pub trait Container {
     /// Returns the number of binary digits.
@@ -31,7 +30,7 @@ pub trait Container {
     fn bit(&self, i: usize) -> Option<bool>;
 }
 
-macro_rules! impls {
+macro_rules! ints_impl_container {
     ($( $Int:ty )*) => ($(
         impl Container for $Int {
             #[inline]
@@ -46,8 +45,8 @@ macro_rules! impls {
         }
     )*)
 }
-impls!(u8 u16 u32 u64 u128 usize);
-impls!(i8 i16 i32 i64 i128 isize);
+ints_impl_container!(u8 u16 u32 u64 u128 usize);
+ints_impl_container!(i8 i16 i32 i64 i128 isize);
 
 impl<B: Bits> Container for [B] {
     #[inline]
@@ -80,11 +79,11 @@ impl<'a, T: ?Sized + Container> Container for &'a T {
     impl_bits!(T);
 }
 
-impl<T, const N: usize> Container for [T; N]
+impl<B, const N: usize> Container for [B; N]
 where
-    [T]: Container,
+    [B]: Container,
 {
-    impl_bits!([T], as_ref);
+    impl_bits!([B], as_ref);
 }
 
 mod impl_alloc {

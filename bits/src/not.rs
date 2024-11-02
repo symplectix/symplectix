@@ -29,7 +29,7 @@ impl<T: Mask> Not for T {
     }
 }
 
-macro_rules! impl_not_assign_for_words {
+macro_rules! ints_impl_not_assign {
     ($( $Word:ty )*) => ($(
         impl NotAssign<$Word> for $Word {
             #[inline]
@@ -39,7 +39,7 @@ macro_rules! impl_not_assign_for_words {
         }
     )*)
 }
-impl_not_assign_for_words!(u8 u16 u32 u64 u128);
+ints_impl_not_assign!(u8 u16 u32 u64 u128);
 
 impl<A: NotAssign<B>, B> NotAssign<[B]> for [A] {
     fn not_assign(this: &mut Self, that: &[B]) {

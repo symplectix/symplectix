@@ -6,7 +6,7 @@ pub trait ContainerMut: Container {
     fn unset_bit(&mut self, i: usize);
 }
 
-macro_rules! impls {
+macro_rules! ints_impl_container_mut {
     ($( $Int:ty )*) => ($(
         impl ContainerMut for $Int {
             #[inline]
@@ -20,8 +20,8 @@ macro_rules! impls {
         }
     )*)
 }
-impls!(u8 u16 u32 u64 u128 usize);
-impls!(i8 i16 i32 i64 i128 isize);
+ints_impl_container_mut!(u8 u16 u32 u64 u128 usize);
+ints_impl_container_mut!(i8 i16 i32 i64 i128 isize);
 
 impl<B: Bits> ContainerMut for [B] {
     #[inline]

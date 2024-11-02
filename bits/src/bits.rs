@@ -9,7 +9,7 @@ pub trait Bits: Clone + Container + ContainerMut + Count + Rank + Excess + Selec
     fn empty() -> Self;
 }
 
-macro_rules! impl_bits_for_ints {
+macro_rules! ints_impl_bits {
     ($( $Int:ty )*) => ($(
         impl Bits for $Int {
             const BITS: usize = <$Int>::BITS as usize;
@@ -22,8 +22,8 @@ macro_rules! impl_bits_for_ints {
 
     )*)
 }
-impl_bits_for_ints!(u8 u16 u32 u64 u128 usize);
-impl_bits_for_ints!(i8 i16 i32 i64 i128 isize);
+ints_impl_bits!(u8 u16 u32 u64 u128 usize);
+ints_impl_bits!(i8 i16 i32 i64 i128 isize);
 
 impl<B, const N: usize> Bits for [B; N]
 where

@@ -3,7 +3,7 @@ pub trait Lsb: Sized + Copy {
     fn lsb(self) -> Self;
 }
 
-macro_rules! impl_lsb {
+macro_rules! ints_impl_lsb {
     ($( $N:ty )*) => ($(
         impl Lsb for $N {
             #[inline]
@@ -13,8 +13,8 @@ macro_rules! impl_lsb {
         }
     )*)
 }
-impl_lsb!(u8 u16 u32 u64 u128 usize);
-impl_lsb!(i8 i16 i32 i64 i128 isize);
+ints_impl_lsb!(u8 u16 u32 u64 u128 usize);
+ints_impl_lsb!(i8 i16 i32 i64 i128 isize);
 
 #[cfg(test)]
 mod tests {

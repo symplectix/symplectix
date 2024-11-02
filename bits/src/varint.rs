@@ -41,7 +41,7 @@ pub trait PutVarint: ContainerMut + Varint {
     }
 }
 
-macro_rules! int_impls {
+macro_rules! ints_impl_varint {
     ($( $Int:ty )*) => ($(
         impl Varint for $Int {
             // #[inline]
@@ -54,8 +54,8 @@ macro_rules! int_impls {
         }
     )*)
 }
-int_impls!(u8 u16 u32 u64 u128 usize);
-int_impls!(i8 i16 i32 i64 i128 isize);
+ints_impl_varint!(u8 u16 u32 u64 u128 usize);
+ints_impl_varint!(i8 i16 i32 i64 i128 isize);
 
 impl<B: Bits + Varint> Varint for [B] {
     // #[doc(hidden)]

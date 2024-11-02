@@ -56,33 +56,33 @@ mod helper {
     }
 }
 
-macro_rules! impls {
+macro_rules! ints_impl_select {
     ($( $Int:ty )*) => ($(
         impl Select for $Int {
             #[inline]
             fn select1(&self, n: usize) -> Option<usize> {
-                <Self as int_select_impl::IntSelectImpl>::select1(*self, n)
+                <Self as int_select_helper::IntSelectHelper>::select1(*self, n)
             }
 
             #[inline]
             fn select0(&self, n: usize) -> Option<usize> {
-                <Self as int_select_impl::IntSelectImpl>::select1(!self, n)
+                <Self as int_select_helper::IntSelectHelper>::select1(!self, n)
             }
         }
     )*)
 }
-impls!(u8 u16 u32 u64 u128 usize);
-impls!(i8 i16 i32 i64 i128 isize);
+ints_impl_select!(u8 u16 u32 u64 u128 usize);
+ints_impl_select!(i8 i16 i32 i64 i128 isize);
 
-mod int_select_impl {
+mod int_select_helper {
     use crate::{Count, Select};
 
     /// A helper trait to implement `Select` for u64.
-    pub(crate) trait IntSelectImpl {
+    pub(crate) trait IntSelectHelper {
         fn select1(self, n: usize) -> Option<usize>;
     }
 
-    impl IntSelectImpl for u64 {
+    impl IntSelectHelper for u64 {
         // Need the `std` crate to use `is_x86_feature_detected`.
         //
         // ```
@@ -145,19 +145,19 @@ mod int_select_impl {
         (((le8(s, l * L8) >> 7).wrapping_mul(L8) >> 56) + b) as usize
     }
 
-    macro_rules! int_select_impl_as_u64 {
+    macro_rules! impl_select_helper_as_u64 {
         ( $( $Ty:ty )* ) => ($(
-            impl IntSelectImpl for $Ty {
+            impl IntSelectHelper for $Ty {
                 #[inline]
                 fn select1(self, c: usize) -> Option<usize> {
-                    (c < self.count1()).then(|| <u64 as IntSelectImpl>::select1(self as u64, c).unwrap())
+                    (c < self.count1()).then(|| <u64 as IntSelectHelper>::select1(self as u64, c).unwrap())
                 }
             }
         )*)
     }
-    int_select_impl_as_u64!(u8 u16 u32);
+    impl_select_helper_as_u64!(u8 u16 u32);
 
-    impl IntSelectImpl for u128 {
+    impl IntSelectHelper for u128 {
         /// ```
         /// # use bits::{ContainerMut, Select};
         /// let mut n: u128 = 0;
@@ -174,7 +174,7 @@ mod int_select_impl {
         }
     }
 
-    impl IntSelectImpl for usize {
+    impl IntSelectHelper for usize {
         #[cfg(target_pointer_width = "16")]
         #[inline]
         fn select1(self, c: usize) -> Option<usize> {
@@ -200,17 +200,24 @@ mod int_select_impl {
         }
     }
 
-    macro_rules! int_select_impl_as {
+    macro_rules! sint_impl_select_helper {
         ( $( ($T1:ty, $T2:ty), )* ) => ($(
-            impl IntSelectImpl for $T1 {
+            impl IntSelectHelper for $T1 {
                 #[inline]
                 fn select1(self, c: usize) -> Option<usize> {
-                    (c < self.count1()).then(|| <$T2 as IntSelectImpl>::select1(self as $T2, c).unwrap())
+                    (c < self.count1()).then(|| <$T2 as IntSelectHelper>::select1(self as $T2, c).unwrap())
                 }
             }
         )*)
     }
-    int_select_impl_as!((i8, u8), (i16, u16), (i32, u32), (i64, u64), (i128, u128), (isize, usize),);
+    sint_impl_select_helper!(
+        (i8, u8),
+        (i16, u16),
+        (i32, u32),
+        (i64, u64),
+        (i128, u128),
+        (isize, usize),
+    );
 }
 
 impl<B: Bits> Select for [B] {

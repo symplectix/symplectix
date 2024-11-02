@@ -29,7 +29,7 @@ impl<T: Mask> And for T {
     }
 }
 
-macro_rules! impl_and_assign_for_words {
+macro_rules! ints_impl_and_assign {
     ($( $Word:ty )*) => ($(
         impl AndAssign<$Word> for $Word {
             #[inline]
@@ -39,7 +39,7 @@ macro_rules! impl_and_assign_for_words {
         }
     )*)
 }
-impl_and_assign_for_words!(u8 u16 u32 u64 u128);
+ints_impl_and_assign!(u8 u16 u32 u64 u128);
 
 impl<A, B> AndAssign<[B]> for [A]
 where

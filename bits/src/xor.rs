@@ -29,7 +29,7 @@ impl<T: Mask> Xor for T {
     }
 }
 
-macro_rules! impl_xor_assign_for_words {
+macro_rules! ints_impl_xor_assign {
     ($( $Word:ty )*) => ($(
         impl XorAssign<$Word> for $Word {
             #[inline]
@@ -39,7 +39,7 @@ macro_rules! impl_xor_assign_for_words {
         }
     )*)
 }
-impl_xor_assign_for_words!(u8 u16 u32 u64 u128);
+ints_impl_xor_assign!(u8 u16 u32 u64 u128);
 
 impl<A: XorAssign<B>, B> XorAssign<[B]> for [A] {
     fn xor_assign(this: &mut Self, that: &[B]) {
