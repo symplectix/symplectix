@@ -49,34 +49,36 @@ _packages = {
         features = ["derive"],
     ),
 
-    # Protobuf support
-    "prost": crate.spec(
-        version = "0",
-    ),
-    # Protobuf well-known types
-    "prost-types": crate.spec(
-        version = "0",
-    ),
-    "prost-reflect": crate.spec(
-        version = "0",
-    ),
+    # Proroc plugins for prost/tonic
     "protoc-gen-prost": crate.spec(
         version = "0",
     ),
     "protoc-gen-tonic": crate.spec(
         version = "0",
     ),
+
+    # Protobuf support
+    "prost": crate.spec(
+        version = "0.12",
+    ),
+    # Protobuf well-known types
+    "prost-types": crate.spec(
+        version = "0.12",
+    ),
+    "prost-reflect": crate.spec(
+        version = "0.12",
+    ),
     "tonic": crate.spec(
-        version = "0",
+        version = "0.10",
     ),
     "tonic-types": crate.spec(
-        version = "0",
+        version = "0.10",
     ),
     "tonic-health": crate.spec(
-        version = "0",
+        version = "0.10",
     ),
     "tonic-reflection": crate.spec(
-        version = "0",
+        version = "0.10",
     ),
 
     # For fuzzing
