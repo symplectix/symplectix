@@ -1,20 +1,30 @@
 use crate::{Bits, Container};
 
 pub trait ContainerMut: Container {
-    fn set_bit(&mut self, i: usize);
+    fn bit_set(&mut self, i: usize);
 
-    fn unset_bit(&mut self, i: usize);
+    fn bit_clear(&mut self, i: usize);
+}
+
+#[inline]
+pub fn set<T: ?Sized + ContainerMut>(c: &mut T, i: usize) {
+    ContainerMut::bit_set(c, i)
+}
+
+#[inline]
+pub fn clear<T: ?Sized + ContainerMut>(c: &mut T, i: usize) {
+    ContainerMut::bit_clear(c, i)
 }
 
 macro_rules! ints_impl_container_mut {
     ($( $Int:ty )*) => ($(
         impl ContainerMut for $Int {
             #[inline]
-            fn set_bit(&mut self, i: usize) {
+            fn bit_set(&mut self, i: usize) {
                 *self |= 1 << i;
             }
             #[inline]
-            fn unset_bit(&mut self, i: usize) {
+            fn bit_clear(&mut self, i: usize) {
                 *self &= !(1 << i);
             }
         }
@@ -25,30 +35,30 @@ ints_impl_container_mut!(i8 i16 i32 i64 i128 isize);
 
 impl<B: Bits> ContainerMut for [B] {
     #[inline]
-    fn set_bit(&mut self, i: usize) {
+    fn bit_set(&mut self, i: usize) {
         assert!(i < self.bits());
         let (i, o) = bit::addr(i, B::BITS);
-        self[i].set_bit(o)
+        self[i].bit_set(o)
     }
 
     #[inline]
-    fn unset_bit(&mut self, i: usize) {
+    fn bit_clear(&mut self, i: usize) {
         assert!(i < self.bits());
         let (i, o) = bit::addr(i, B::BITS);
-        self[i].unset_bit(o)
+        self[i].bit_clear(o)
     }
 }
 
 macro_rules! impl_bits_mut {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn set_bit(&mut self, i: usize) {
-            <$X as ContainerMut>::set_bit(self$(.$method())?, i)
+        fn bit_set(&mut self, i: usize) {
+            <$X as ContainerMut>::bit_set(self$(.$method())?, i)
         }
 
         #[inline]
-        fn unset_bit(&mut self, i: usize) {
-            <$X as ContainerMut>::unset_bit(self$(.$method())?, i)
+        fn bit_clear(&mut self, i: usize) {
+            <$X as ContainerMut>::bit_clear(self$(.$method())?, i)
         }
     }
 }

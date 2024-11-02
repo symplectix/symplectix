@@ -76,6 +76,26 @@ pub trait Count: Container {
     }
 }
 
+#[inline]
+pub fn count1<T: ?Sized + Count>(c: &T) -> usize {
+    Count::count1(c)
+}
+
+#[inline]
+pub fn count0<T: ?Sized + Count>(c: &T) -> usize {
+    Count::count0(c)
+}
+
+#[inline]
+pub fn all<T: ?Sized + Count>(c: &T) -> bool {
+    Count::all(c)
+}
+
+#[inline]
+pub fn any<T: ?Sized + Count>(c: &T) -> bool {
+    Count::any(c)
+}
+
 macro_rules! ints_impl_count {
     ($( $Int:ty )*) => ($(
         impl Count for $Int {

@@ -3,6 +3,11 @@ pub trait Msb: Sized + Copy {
     fn msb(self) -> Self;
 }
 
+#[inline]
+pub fn msb<T: Msb>(t: T) -> T {
+    t.msb()
+}
+
 macro_rules! ints_impl_msb {
     ($( $N:ty )*) => ($(
         impl Msb for $N {

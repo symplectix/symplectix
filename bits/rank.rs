@@ -17,6 +17,16 @@ pub trait Rank: Count {
     }
 }
 
+#[inline]
+pub fn rank1<T: ?Sized + Rank, R: RangeBounds<usize>>(c: &T, r: R) -> usize {
+    c.rank1(r)
+}
+
+#[inline]
+pub fn rank0<T: ?Sized + Rank, R: RangeBounds<usize>>(c: &T, r: R) -> usize {
+    c.rank0(r)
+}
+
 macro_rules! ints_impl_rank {
     ($( $Int:ty )*) => ($(
         impl Rank for $Int {

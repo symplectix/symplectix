@@ -30,6 +30,21 @@ pub trait Container {
     fn bit(&self, i: usize) -> Option<bool>;
 }
 
+#[inline]
+pub fn len<T: ?Sized + Container>(c: &T) -> usize {
+    Container::bits(c)
+}
+
+#[inline]
+pub fn is_empty<T: ?Sized + Container>(c: &T) -> bool {
+    len(c) == 0
+}
+
+#[inline]
+pub fn get<T: ?Sized + Container>(c: &T, i: usize) -> Option<bool> {
+    Container::bit(c, i)
+}
+
 macro_rules! ints_impl_container {
     ($( $Int:ty )*) => ($(
         impl Container for $Int {

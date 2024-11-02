@@ -24,6 +24,21 @@ pub trait Excess: Rank {
     fn excess0<R: RangeBounds<usize>>(&self, r: R) -> Option<usize>;
 }
 
+#[inline]
+pub fn excess<T: ?Sized + Excess, R: RangeBounds<usize>>(c: &T, r: R) -> usize {
+    c.excess(r)
+}
+
+#[inline]
+pub fn excess1<T: ?Sized + Excess, R: RangeBounds<usize>>(c: &T, r: R) -> Option<usize> {
+    c.excess1(r)
+}
+
+#[inline]
+pub fn excess0<T: ?Sized + Excess, R: RangeBounds<usize>>(c: &T, r: R) -> Option<usize> {
+    c.excess0(r)
+}
+
 impl<T: ?Sized + Rank> Excess for T {
     #[inline]
     fn excess<Index: RangeBounds<usize>>(&self, index: Index) -> usize {

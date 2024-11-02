@@ -3,6 +3,11 @@ pub trait Lsb: Sized + Copy {
     fn lsb(self) -> Self;
 }
 
+#[inline]
+pub fn lsb<T: Lsb>(t: T) -> T {
+    t.lsb()
+}
+
 macro_rules! ints_impl_lsb {
     ($( $N:ty )*) => ($(
         impl Lsb for $N {

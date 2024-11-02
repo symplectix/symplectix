@@ -6,6 +6,32 @@ use std::ops::{AddAssign, Sub, SubAssign};
 
 pub use iter::{children, prefix, search, update};
 
+pub trait Node: Sized + Copy {}
+
+impl<T> Node for T where T: Sized + Copy {}
+
+pub trait Nodes {
+    type Node: Node;
+
+    /// The size of fenwick tree.
+    fn nodes(&self) -> usize;
+}
+
+impl<T: Node> Nodes for [T] {
+    type Node = T;
+    #[inline]
+    fn nodes(&self) -> usize {
+        self.len() - 1 // self[0] is a dummy node
+    }
+}
+
+impl<'a, T: ?Sized + Nodes> Nodes for &'a T {
+    type Node = <T as Nodes>::Node;
+    fn nodes(&self) -> usize {
+        <T as Nodes>::nodes(self)
+    }
+}
+
 /// Build a fenwick tree.
 pub fn build<T: Node + AddAssign>(bit: &mut [T]) {
     assert!(!bit.is_empty());
@@ -132,24 +158,6 @@ mod iter {
     }
 }
 
-pub trait Node: Sized + Copy {}
-
-impl<T> Node for T where T: Sized + Copy {}
-
-pub trait Nodes {
-    type Node: Node;
-
-    /// The size of fenwick tree.
-    fn nodes(&self) -> usize;
-}
-
-impl<'a, T: ?Sized + Nodes> Nodes for &'a T {
-    type Node = <T as Nodes>::Node;
-    fn nodes(&self) -> usize {
-        <T as Nodes>::nodes(self)
-    }
-}
-
 pub trait Prefix<S>: Nodes {
     fn sum(&self, index: usize) -> S;
 }
@@ -167,14 +175,6 @@ pub trait Decr<N>: Nodes {
 pub trait LowerBound<S>: Nodes {
     /// Finds the lowest idnex `i` that satisfies `sum(i) >= threshold`.
     fn lower_bound(&self, threshold: S) -> usize;
-}
-
-impl<T: Node> Nodes for [T] {
-    type Node = T;
-    #[inline]
-    fn nodes(&self) -> usize {
-        self.len() - 1 // self[0] is a dummy node
-    }
 }
 
 impl<T: Node, S: Sum<Self::Node>> Prefix<S> for [T] {

@@ -2,14 +2,14 @@ use crate::{Bits, Rank};
 
 pub trait Select: Rank {
     /// Returns the position of the n-th 1, indexed starting from zero.
-    /// `n` must be less than `self.count1()`, orherwise returns `None`.
+    /// `n` must be less than `self.count1()`, otherwise returns `None`.
     #[inline]
     fn select1(&self, n: usize) -> Option<usize> {
         helper::search1(self, n)
     }
 
     /// Returns the position of the n-th 0, indexed starting from zero.
-    /// `n` must be less than `self.count0()`, orherwise returns `None`.
+    /// `n` must be less than `self.count0()`, otherwise returns `None`.
     #[inline]
     fn select0(&self, n: usize) -> Option<usize> {
         helper::search0(self, n)
@@ -24,6 +24,16 @@ pub trait Select: Rank {
     // fn select0_from(&self, i: usize, n: usize) -> Option<usize> {
     //     self.select0(self.rank0(..i) + n).map(|pos| pos - i)
     // }
+}
+
+#[inline]
+pub fn select1<T: ?Sized + Select>(c: &T, n: usize) -> Option<usize> {
+    c.select1(n)
+}
+
+#[inline]
+pub fn select0<T: ?Sized + Select>(c: &T, n: usize) -> Option<usize> {
+    c.select0(n)
 }
 
 mod helper {
@@ -148,7 +158,7 @@ mod int_select_helper {
         /// # use bits::{ContainerMut, Select};
         /// let mut n: u128 = 0;
         /// for i in (0..128).step_by(2) {
-        ///     n.set_bit(i);
+        ///     n.bit_set(i);
         /// }
         /// assert_eq!(n.select1(60), Some(120));
         /// assert_eq!(n.select1(61), Some(122));

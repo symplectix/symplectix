@@ -21,7 +21,7 @@ pub trait Unpack: Container {
         let mut bits = T::empty();
         for b in i..i + n {
             if self.bit(b).unwrap_or_default() {
-                bits.set_bit(b - i);
+                bits.bit_set(b - i);
             }
         }
         bits
@@ -37,7 +37,7 @@ pub trait Pack: Unpack + ContainerMut {
 
         for b in i..i + n {
             if bits.bit(b - i).unwrap_or_default() {
-                self.set_bit(b);
+                self.bit_set(b);
             }
         }
     }
