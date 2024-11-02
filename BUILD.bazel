@@ -7,6 +7,11 @@ exports_files([
     ".rustfmt.toml",
 ])
 
+alias(
+    name = "cargo_audit",
+    actual = "@crates//:cargo-audit__cargo-audit",
+)
+
 buildifier(
     name = "buildifier",
     exclude_patterns = [

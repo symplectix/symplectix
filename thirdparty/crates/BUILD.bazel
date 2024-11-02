@@ -1,0 +1,9 @@
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
+
+package(default_visibility = ["//visibility:public"])
+
+cargo_build_script(
+    name = "build_libgit2_sys",
+    srcs = ["build.libgit2-sys.rs"],
+    links = "git2",
+)

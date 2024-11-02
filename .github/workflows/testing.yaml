@@ -11,12 +11,14 @@ jobs:
   bazel:
     name: Bazel
     runs-on: ${{ inputs.os }}
+    env:
+      BAZEL: bazel --output_user_root=/tmp/trunk/
+      BAZEL_ARGS: --config=ci
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Cache
-        uses: actions/cache@v3
+      - uses: actions/cache@v3
         env:
           cache-name: bazel-cache
         with:
@@ -29,10 +31,26 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
       - name: Format (buildifier)
-        run: bazel --output_user_root=/tmp/trunk/ run --config=ci //:buildifier/check
+        if: runner.os == 'Linux'
+        run: $BAZEL run $BAZEL_ARGS //:buildifier/check
 
       - name: Build
-        run: bazel --output_user_root=/tmp/trunk/ build --config=ci //...
+        run: $BAZEL build $BAZEL_ARGS //...
 
       - name: Test
-        run: bazel --output_user_root=/tmp/trunk/ test --config=ci //...
+        run: $BAZEL test $BAZEL_ARGS //...
+
+      - uses: actions/cache@v3
+        if: runner.os == 'Linux'
+        env:
+          cache-name: advisory-db-cache
+        with:
+          path: ~/.cargo/advisory-db
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
+
+      - name: Run cargo-audit
+        if: runner.os == 'Linux'
+        run: |
+          $BAZEL run $BAZEL_ARGS //:cargo_audit -- \
+            audit --file $(realpath thirdparty/crates/cargo.lock)

@@ -8,6 +8,9 @@ on:
 jobs:
   testing:
     name: Testing
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-12]
     uses: ./.github/workflows/testing.yaml
     with:
-      os: ubuntu-22.04
+      os: ${{ matrix.os }}
