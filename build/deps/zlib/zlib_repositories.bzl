@@ -5,7 +5,7 @@ def zlib_repositories():
     maybe(
         http_archive,
         name = "zlib",
-        build_file = Label("//thirdparty/zlib:BUILD.zlib.bazel"),
+        build_file = Label("//build/deps/zlib:BUILD.zlib.bazel"),
         sha256 = "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9",
         strip_prefix = "zlib-1.2.12",
         urls = [

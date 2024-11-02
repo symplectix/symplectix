@@ -23,6 +23,10 @@ common --enable_platform_specific_config
 # https://bazel.build/reference/command-line-reference#flag--experimental_allow_tags_propagation
 common --experimental_allow_tags_propagation
 
+# Force the use of Clang for C++ builds.
+build --action_env=CC=clang
+build --action_env=CXX=clang++
+
 # The option sandboxed causes commands to be executed inside a sandbox on the local machine.
 # This requires that all input files, data dependencies and tools are listed as direct dependencies in the srcs, data and tools attributes.
 # Bazel enables local sandboxing by default, on systems that support sandboxed execution.

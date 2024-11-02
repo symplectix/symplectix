@@ -1,0 +1,42 @@
+load(":defs.bzl", "rust_fuzzing")
+
+rust_fuzzing(
+    name = "buffer_overflow",
+    srcs = ["buffer_overflow.rs"],
+    sanitizer = "address",
+    deps = [
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
+    ],
+)
+
+rust_fuzzing(
+    name = "use_after_scope",
+    srcs = ["use_after_scope.rs"],
+    sanitizer = "address",
+    deps = [
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
+    ],
+)
+
+# ASAN_OPTIONS=detect_leaks=1
+rust_fuzzing(
+    name = "memory_leaks",
+    srcs = ["memory_leaks.rs"],
+    sanitizer = "address",
+    deps = [
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
+    ],
+)
+
+rust_fuzzing(
+    name = "data_race",
+    srcs = ["data_race.rs"],
+    sanitizer = "thread",
+    deps = [
+        "@crates//:arbitrary",
+        "@crates//:libfuzzer-sys",
+    ],
+)

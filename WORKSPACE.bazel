@@ -153,10 +153,10 @@ http_archive(
 
 # Thirdparty
 
-load("@//thirdparty:repositories.bzl", thirdparty_repositories = "repositories")
+load("@//build/deps:repositories.bzl", build_deps_repositories = "repositories")
 
-thirdparty_repositories()
+build_deps_repositories()
 
-load("@//thirdparty:setup.bzl", thirdparty_setup = "setup")
+load("@//build/deps:init.bzl", build_deps_init = "init")
 
-thirdparty_setup()
+build_deps_init()
