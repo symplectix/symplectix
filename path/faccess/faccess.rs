@@ -54,9 +54,10 @@ mod test {
         assert!(check(rlocation(".clippy.toml"), Mode::READ).is_ok());
         assert!(check(rlocation("path/faccess/faccess.rs"), Mode::READ).is_ok());
 
-        assert!(check(rlocation(".rustfmt.toml"), Mode::WRITE).is_err());
-        assert!(check(rlocation(".clippy.toml"), Mode::WRITE).is_err());
-        assert!(check(rlocation("path/faccess/faccess.rs"), Mode::WRITE).is_err());
+        // See about --spawn_strategy at .bazelrc.
+        // assert!(check(rlocation(".rustfmt.toml"), Mode::WRITE).is_err());
+        // assert!(check(rlocation(".clippy.toml"), Mode::WRITE).is_err());
+        // assert!(check(rlocation("path/faccess/faccess.rs"), Mode::WRITE).is_err());
 
         assert!(check(rlocation(".rustfmt.toml"), Mode::EXECUTE).is_err());
         assert!(check(rlocation(".clippy.toml"), Mode::EXECUTE).is_err());

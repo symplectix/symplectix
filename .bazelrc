@@ -36,13 +36,6 @@ build --action_env=CXX=clang++
 # https://github.com/bazelbuild/bazel/issues/16522
 build --noincompatible_legacy_local_fallback
 
-# The option sandboxed causes commands to be executed inside a sandbox on the local machine.
-# This requires that all input files, data dependencies and tools are listed as direct dependencies in the srcs, data and tools attributes.
-# Bazel enables local sandboxing by default, on systems that support sandboxed execution.
-#
-# https://bazel.build/docs/user-manual#spawn-strategy
-build --spawn_strategy=sandboxed,local
-
 # Restricts network access by default for actions.
 # https://bazel.build/reference/command-line-reference#flag--sandbox_default_allow_network
 build --nosandbox_default_allow_network
@@ -55,14 +48,14 @@ build --sandbox_fake_hostname
 # https://bazel.build/reference/command-line-reference#flag--sandbox_fake_username
 build --sandbox_fake_username
 
-# If true, Bazel uses an environment with a static value for PATH and does not inherit LD_LIBRARY_PATH or TMPDIR.
-# https://bazel.build/reference/command-line-reference#flag--incompatible_strict_action_env
-build --incompatible_strict_action_env
-
 # If set to true, each Linux sandbox will have its own dedicated empty directory mounted as /tmp rather than
 # sharing /tmp with the host filesystem. Use --sandbox_add_mount_pair=/tmp to keep seeing the host's /tmp in all sandboxes.
 # https://bazel.build/reference/command-line-reference#flag--incompatible_sandbox_hermetic_tmp
 build --incompatible_sandbox_hermetic_tmp
+
+# If true, Bazel uses an environment with a static value for PATH and does not inherit LD_LIBRARY_PATH or TMPDIR.
+# https://bazel.build/reference/command-line-reference#flag--incompatible_strict_action_env
+build --incompatible_strict_action_env
 
 # rustc flags for proc-macros, cargo_build_script, etc.
 build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
@@ -125,5 +118,13 @@ build:fuzz --config=verbose
 build:fuzz --config=lint
 build:fuzz --config=nightly
 build:fuzz --config=dbg
+
+# Disable sandoxing in CI for a while.
+#
+# TODO: Enable sandboxing.
+# Since Bazel 7, the details are unknown, but builds in sandbox has
+# started to fail with an error that process_wrapper.sh does not exist.
+build:ci --spawn_strategy=local
+build:fuzz --spawn_strategy=local
 
 try-import %workspace%/.bazelrc.user
