@@ -65,6 +65,13 @@ bazel_dep(name = "rules_pkg", version = "1.0.1")
 # Rust rules for Bazel.
 bazel_dep(name = "rules_rust", version = "0.52.0")
 
+# Go rules for Bazel.
+bazel_dep(name = "rules_go", version = "0.50.1")
+
+# Bazel build file generator for Bazel projects.
+# It natively supports Go and protobuf, and it may be extended to support new languages and custom rule sets.
+bazel_dep(name = "gazelle", version = "0.39.1")
+
 # Rules for protobuf and gRPC.
 bazel_dep(name = "rules_proto", version = "6.0.2")
 
@@ -77,6 +84,30 @@ bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
 # bazel_dep(name = "rules_proto_grpc_buf", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_cc", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_go", version = "<version number here>")
+
+GO_VERSION = "1.23.2"
+
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+
+# Download an SDK for the host OS & architecture as well as common remote execution platforms.
+go_sdk.download(version = GO_VERSION)
+
+# TODO: Setup nogo
+# go_sdk.nogo(
+#     nogo = "//tools/nogo",
+#     includes = [
+#         "//:__subpackages__",
+#         "@my_own_go_dep//logic:__pkg__",
+#     ],
+#     excludes = [
+#         "//third_party:__subpackages__",
+#     ],
+# )
+
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+
+# Manage Go dependencies via go.mod.
+go_deps.from_file(go_mod = "//:go.mod")
 
 RUST_EDITION = "2021"
 
