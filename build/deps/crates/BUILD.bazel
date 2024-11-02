@@ -1,12 +1,3 @@
-load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
-
 exports_files([
     "Cargo.lock",
 ])
-
-cargo_build_script(
-    name = "build_libgit2_sys",
-    srcs = ["build.libgit2-sys.rs"],
-    links = "git2",
-    visibility = ["//visibility:public"],
-)

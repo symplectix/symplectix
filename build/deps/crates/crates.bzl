@@ -15,17 +15,6 @@ _annotations = {
         data = ["@openssl"],
         deps = ["@openssl"],
     )],
-    "libgit2-sys": [crate.annotation(
-        gen_build_script = False,
-        deps = [
-            "@libgit2",
-            "@//build/deps/crates:build_libgit2_sys",
-        ],
-    )],
-    "libssh2-sys": [crate.annotation(
-        gen_build_script = False,
-        deps = ["@libssh2"],
-    )],
     "libz-sys": [crate.annotation(
         gen_build_script = False,
         deps = ["@zlib"],
@@ -51,17 +40,9 @@ _packages = {
     "openssl-sys": crate.spec(
         version = "0.9.85",
     ),
-    "ssh2": crate.spec(
-        version = "0.9",
-    ),
-    "libssh2-sys": crate.spec(
-        version = "0.2",
-    ),
-    "git2": crate.spec(
-        version = "0.16.1",
-    ),
-    "libgit2-sys": crate.spec(
-        version = "0.14.2+1.5.1",
+    "libz-sys": crate.spec(
+        version = "1.1.0",
+        features = ["libc"],
     ),
     "serde": crate.spec(
         version = "1.0.188",
@@ -175,7 +156,7 @@ _packages = {
 
     # Audit
     "cargo-audit": crate.spec(
-        version = "0.17.6",
+        version = "0.18.1",
     ),
 }
 
