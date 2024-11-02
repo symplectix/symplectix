@@ -62,10 +62,10 @@ def crates_repositories():
                 version = "0.2",
             ),
             "git2": crate.spec(
-                version = "0.15",
+                version = "0.16.1",
             ),
             "libgit2-sys": crate.spec(
-                version = "0.14.0+1.5.0",
+                version = "0.14.2+1.5.1",
             ),
 
             # Result/Error helpers
