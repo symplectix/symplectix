@@ -64,11 +64,7 @@ _packages = {
         version = "0.14.2+1.5.1",
     ),
     "serde": crate.spec(
-        # TODO: Set version to "1"
-        # "=1.0.164" is just a workaround to avoid compilation failure in a CI environment.
-        # * https://github.com/bazelbuild/rules_rust/issues/2071
-        # * https://github.com/bazelbuild/rules_rust/issues/2074
-        version = "=1.0.164",
+        version = "1.0.188",
         features = ["derive"],
     ),
 
