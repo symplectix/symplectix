@@ -31,5 +31,5 @@ buildifier_test(
     lint_warnings = _lint_warnings,
     mode = "diff",
     no_sandbox = True,
-    workspace = "//:WORKSPACE",
+    workspace = "//:WORKSPACE.bazel",
 )
