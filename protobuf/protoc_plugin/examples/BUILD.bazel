@@ -1,0 +1,13 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//protobuf/protoc_plugin:defs.bzl", "empty_file_compile")
+
+proto_library(
+    name = "customer_proto",
+    srcs = ["customer.proto"],
+    deps = ["@com_google_protobuf//:any_proto"],
+)
+
+empty_file_compile(
+    name = "customer_proto_empty_file",
+    protos = [":customer_proto"],
+)

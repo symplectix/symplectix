@@ -63,7 +63,6 @@ _packages = {
     "libgit2-sys": crate.spec(
         version = "0.14.2+1.5.1",
     ),
-
     "serde": crate.spec(
         # TODO: Set version to "1"
         # "=1.0.164" is just a workaround to avoid compilation failure in a CI environment.

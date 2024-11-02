@@ -1,0 +1,25 @@
+load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+rust_binary(
+    name = "empty_file_generator",
+    srcs = ["main.rs"],
+    rustc_flags = [
+        "-Copt-level=3",
+        "-Cdebuginfo=2",
+    ],
+    deps = [
+        "//protobuf/protoc_plugin",
+        "@crates//:anyhow",
+        "@crates//:prost",
+        "@crates//:prost-types",
+    ],
+)
+
+proto_plugin(
+    name = "empty_file",
+    # {protopath} gets replaced with relative path to each .proto file
+    outputs = ["{protopath}.empty"],
+    tool = ":empty_file_generator",
+    visibility = ["//visibility:public"],
+)

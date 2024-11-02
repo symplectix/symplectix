@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package trunk.protobuf.compiler.plugin.examples;
+
+import "google/protobuf/any.proto";
+
+
+message Customer {
+    message Id {
+        message Email {
+            string address = 1;
+        }
+
+        message Phone {
+            string number = 1;
+
+            enum PhoneType {
+                UNKNOWN = 0;
+                MOBILE = 1;
+                HOME = 2;
+                WORK = 3;
+            }
+            PhoneType type = 2;
+        }
+
+        oneof id {
+            int32 uid = 1;
+            Email email = 2;
+            Phone phone = 3;
+        }
+    }
+
+    repeated Id ids = 1;
+
+    google.protobuf.Any payload = 2;
+
+    reserved 100 to max;
+}
+
+service CustomerService {
+    rpc Get(Customer.Id) returns (Customer);
+}
