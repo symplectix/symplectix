@@ -23,7 +23,7 @@ rust_test_suite(
     name = "integration",
     srcs = glob(["tests/**/*.rs"]),
     proc_macro_deps = [
-        "@crates//:quickcheck_macros",
+        "@lib_crates//:quickcheck_macros",
     ],
     rustc_flags = [
         "-Copt-level=3",
@@ -32,6 +32,6 @@ rust_test_suite(
         ":bits",
         "//bits/bitaux",
         "//bits/bitpacking",
-        "@crates//:quickcheck",
+        "@lib_crates//:quickcheck",
     ],
 )

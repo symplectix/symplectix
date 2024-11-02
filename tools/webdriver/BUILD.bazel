@@ -1,27 +1,18 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 
-alias(
-    name = "geckodriver_bin",
-    actual = select({
-        "//build/platform:linux_x86_64": "@geckodriver_linux_x86_64//:geckodriver",
-        "//build/platform:macos_x86_64": "@geckodriver_macos_x86_64//:geckodriver",
-        "//build/platform:macos_arm64": "@geckodriver_macos_arm64//:geckodriver",
-    }),
-)
-
 rust_binary(
     name = "geckodriver",
     srcs = ["geckodriver.rs"],
     data = [
-        "//tools/webdriver:geckodriver_bin",
+        "@geckodriver",
     ],
     deps = [
         "//process",
         "//process/entrypoint",
-        "@crates//:anyhow",
-        "@crates//:tokio",
-        "@crates//:tracing",
-        "@crates//:tracing-subscriber",
+        "@lib_crates//:anyhow",
+        "@lib_crates//:tokio",
+        "@lib_crates//:tracing",
+        "@lib_crates//:tracing-subscriber",
         "@rules_rust//tools/runfiles",
     ],
 )

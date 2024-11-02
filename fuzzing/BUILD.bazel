@@ -10,11 +10,11 @@ rust_binary(
     deps = [
         "//process",
         "//process/entrypoint",
-        "@crates//:anyhow",
-        "@crates//:clap",
-        "@crates//:thiserror",
-        "@crates//:tokio",
-        "@crates//:tracing",
-        "@crates//:tracing-subscriber",
+        "@lib_crates//:anyhow",
+        "@lib_crates//:clap",
+        "@lib_crates//:thiserror",
+        "@lib_crates//:tokio",
+        "@lib_crates//:tracing",
+        "@lib_crates//:tracing-subscriber",
     ],
 )

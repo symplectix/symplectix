@@ -10,8 +10,8 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     deps = [
-        "@crates//:bitflags",
-        "@crates//:libc",
+        "@lib_crates//:bitflags",
+        "@lib_crates//:libc",
     ],
 )
 

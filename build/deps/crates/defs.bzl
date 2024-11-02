@@ -1,6 +1,7 @@
-load("@rules_rust//crate_universe:defs.bzl", "crate")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
 
-_annotations = {
+_lib_crates_annotations = {
     "openssl-sys": [crate.annotation(
         build_script_data = [
             "@openssl//:openssl_dir",
@@ -30,7 +31,7 @@ _annotations = {
     )],
 }
 
-_packages = {
+_lib_crates_packages = {
     "libc": crate.spec(
         version = "0.2",
     ),
@@ -162,7 +163,48 @@ _packages = {
     ),
 }
 
-crates = struct(
-    annotations = _annotations,
-    packages = _packages,
+def _lib_crates_repository(**kwargs):
+    crates_repository(
+        name = "lib_crates",
+        annotations = _lib_crates_annotations,
+        cargo_lockfile = "//build/deps/crates/lib_crates:Cargo.lock",
+        lockfile = "//build/deps/crates/lib_crates:Cargo.Bazel.lock",
+        packages = _lib_crates_packages,
+        **kwargs
+    )
+
+lib_crates = struct(
+    repository = _lib_crates_repository,
+)
+
+# In order to depend on a Cargo package that contains binaries but no library:
+# * use http_archive to import its source code,
+# * use crates_repository to make build targets for its dependencies
+# * create build targets for the binary
+#
+# https://bazelbuild.github.io/rules_rust/crate_universe.html#binary-dependencies
+def _bin_crates_dependencies():
+    http_archive(
+        name = "geckodriver",
+        build_file = "//build/deps/crates/bin_crates:BUILD.geckodriver.bazel",
+        sha256 = "6847d9046206c0f0189857d356991b9b225554045241cb0d33b43c1c83d732b7",
+        strip_prefix = "geckodriver-0.33.0",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/geckodriver/0.33.0/download"],
+    )
+
+def _bin_crates_repository(**kwargs):
+    crates_repository(
+        name = "bin_crates",
+        cargo_lockfile = "//build/deps/crates/bin_crates:Cargo.lock",
+        lockfile = "//build/deps/crates/bin_crates:Cargo.Bazel.lock",
+        manifests = [
+            "@geckodriver//:Cargo.toml",
+        ],
+        **kwargs
+    )
+
+bin_crates = struct(
+    dependencies = _bin_crates_dependencies,
+    repository = _bin_crates_repository,
 )

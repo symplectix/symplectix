@@ -1,20 +1,7 @@
 workspace(name = "trunk")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-RUST_STABLE_VERSION = "1.72.0"
-
-# https://github.com/oxalica/rust-overlay/tree/master/manifests/nightly
-RUST_NIGHTLY_VERSION = "nightly/2023-09-14"
-
-RUST_VERSIONS = [
-    RUST_STABLE_VERSION,
-    RUST_NIGHTLY_VERSION,
-]
-
-RUST_EDITION = "2021"
-
-GO_VERSION = "1.20.5"
+load("//build/deps:versions.bzl", "GO_VERSION", "RUST_EDITION", "RUST_VERSIONS")
 
 # Platforms
 http_archive(
@@ -85,11 +72,6 @@ perl_rules_dependencies()
 
 perl_register_toolchains()
 
-# External build dependencies
-load("@//build/deps:repositories.bzl", build_deps_repositories = "repositories")
-
-build_deps_repositories()
-
 # Protocol Buffers
 http_archive(
     name = "rules_proto",
@@ -127,7 +109,6 @@ http_archive(
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
-load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
 
 rules_rust_dependencies()
 
@@ -136,43 +117,23 @@ rust_register_toolchains(
     versions = RUST_VERSIONS,
 )
 
+load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
+
+# Load the dependencies for the rust-project.json generator tool.
+# n.b., rust_register_toolchains in WORKSPACE ensure a rust_analyzer_toolchain is registered.
+#
+# To regenerate the rust-project.json file:
+#   bazel run @rules_rust//tools/rust_analyzer:gen_rust_project
 rust_analyzer_dependencies()
 
-load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
+# External build dependencies
+load("//build/deps:repositories.bzl", "build_deps_repositories")
 
-crate_universe_dependencies(
-    rust_version = RUST_STABLE_VERSION,
-)
+build_deps_repositories()
 
-load("@//build/deps/crates:crates.bzl", "crates")
-load("@rules_rust//crate_universe:defs.bzl", "crates_repository", "splicing_config")
+load("//build/deps:setup.bzl", "build_deps_setup")
 
-# Repinning
-# https://bazelbuild.github.io/rules_rust/crate_universe.html#repinning--updating-dependencies
-crates_repository(
-    name = "crates",
-    annotations = crates.annotations,
-    cargo_lockfile = "//build/deps/crates:Cargo.lock",
-    lockfile = "//build/deps/crates:Cargo.Bazel.lock",
-    packages = crates.packages,
-    # The version of Rust the currently registered toolchain is using.
-    rust_version = RUST_STABLE_VERSION,
-    splicing_config = splicing_config(
-        resolver_version = "2",
-    ),
-)
-
-load("@crates//:defs.bzl", "crate_repositories")
-
-crate_repositories()
-
-load("@rules_rust//proto/prost:repositories.bzl", "rust_prost_dependencies")
-
-rust_prost_dependencies()
-
-load("@rules_rust//proto/prost:transitive_repositories.bzl", "rust_prost_transitive_repositories")
-
-rust_prost_transitive_repositories()
+build_deps_setup()
 
 register_toolchains("//build/toolchains:prost_toolchain")
 
@@ -186,6 +147,12 @@ http_archive(
     ],
 )
 
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+go_register_toolchains(version = GO_VERSION)
+
 http_archive(
     name = "bazel_gazelle",
     sha256 = "29218f8e0cebe583643cbf93cae6f971be8a2484cdcfa1e45057658df8d54002",
@@ -196,11 +163,6 @@ http_archive(
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-
-go_rules_dependencies()
-
-go_register_toolchains(version = GO_VERSION)
 
 gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
 

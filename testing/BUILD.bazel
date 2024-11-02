@@ -6,8 +6,8 @@ rust_library(
     srcs = glob(["*.rs"]),
     visibility = ["//visibility:public"],
     deps = [
-        "@crates//:once_cell",
-        "@crates//:tempfile",
+        "@lib_crates//:once_cell",
+        "@lib_crates//:tempfile",
         "@rules_rust//tools/runfiles",
     ],
 )

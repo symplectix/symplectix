@@ -23,11 +23,11 @@ rust_test_suite(
     name = "integration",
     srcs = glob(["tests/**/*.rs"]),
     proc_macro_deps = [
-        "@crates//:quickcheck_macros",
+        "@lib_crates//:quickcheck_macros",
     ],
     deps = [
         ":num",
         "//bits",
-        "@crates//:quickcheck",
+        "@lib_crates//:quickcheck",
     ],
 )

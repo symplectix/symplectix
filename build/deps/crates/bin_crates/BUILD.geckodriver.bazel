@@ -1,0 +1,26 @@
+load("@bin_crates//:defs.bzl", "aliases", "all_crate_deps")
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+# https://hg.mozilla.org/mozilla-central/file/tip/testing/geckodriver
+
+rust_binary(
+    name = "geckodriver",
+    srcs = glob(["src/**/*.rs"]),
+    aliases = aliases(),
+    edition = "2018",
+    proc_macro_deps = all_crate_deps(
+        proc_macro = True,
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        ":build_script",
+    ] + all_crate_deps(
+        normal = True,
+    ),
+)
+
+cargo_build_script(
+    name = "build_script",
+    srcs = ["build.rs"],
+)
