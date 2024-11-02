@@ -24,6 +24,7 @@ RUN DEBIAN_FRONTEND=noninteractive && apt-get update \
     gnupg=2.2.27-2+deb11u1 \
     iproute2=5.10.0-4 \
     less=551-2 \
+    lldb=1:11.0-51+nmu5 \
     locales=2.31-13+deb11u3 \
     lsb-release=11.1.0 \
     lsof=4.93.2+dfsg-1.1 \
@@ -40,6 +41,8 @@ RUN DEBIAN_FRONTEND=noninteractive && apt-get update \
 USER nonroot
 WORKDIR /home/nonroot
 
+COPY --chown=nonroot:nonroot configs/bash_profile .bash_profile
+
 COPY --chown=nonroot:nonroot setup.sh .
 COPY --chown=nonroot:nonroot scripts  ./scripts
-RUN ./setup.sh scripts/post_image_build && rm ./setup.sh && rm -r ./scripts/post_image_build
+RUN ./setup.sh scripts/post_image_build && rm ./setup.sh && rm -r ./scripts
