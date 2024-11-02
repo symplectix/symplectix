@@ -88,7 +88,7 @@ load("//build/rust:packages.bzl", "packages")
 
 crates_repository(
     name = "crates",
-    lockfile = "//build/rust:crates.lock",
+    lockfile = "//:Cargo.Bazel.lock",
     packages = packages,
     rust_version = _RUST_VERSION,
     splicing_config = splicing_config(

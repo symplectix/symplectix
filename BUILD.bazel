@@ -1,6 +1,4 @@
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
-load("@crates//:defs.bzl", "all_crate_deps")
-load("@rules_rust//rust:defs.bzl", "rust_analyzer")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -29,16 +27,4 @@ buildifier(
         "-module-docstring",
     ],
     mode = "check",
-)
-
-# Run bazel run @rules_rust//tools/rust_analyzer:gen_rust_project whenever dependencies change
-# to regenerate the rust-project.json file.
-# Once the rust-project.json has been generated in the project root, rust-analyzer can pick it up upon restart.
-rust_analyzer(
-    name = "rust_analyzer",
-    targets = [
-        # bazel query 'kind("rust_*library|rust_binary", //...:all)'
-        "//bits",
-        "//bits/bitvec",
-    ] + all_crate_deps(),
 )
