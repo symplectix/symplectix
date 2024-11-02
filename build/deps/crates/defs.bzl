@@ -148,6 +148,14 @@ _lib_crates = {
             version = "0.20",
         ),
     ),
+    "tree-sitter-cli": struct(
+        spec = crate.spec(
+            version = "0.20",
+        ),
+        annotations = [crate.annotation(
+            gen_binaries = ["tree-sitter"],
+        )],
+    ),
     # Rust grammar for tree-sitter.
     "tree-sitter-rust": struct(
         spec = crate.spec(
