@@ -8,5 +8,6 @@ build_test(
         "@libgit2//:libgit2",
         "@libssh2//:libssh2",
         "@openssl//:openssl",
+        "@zlib//:zlib",
     ],
 )

@@ -42,10 +42,10 @@ _packages = {
         version = "0.2",
     ),
     "openssl": crate.spec(
-        version = "0.10.48",
+        version = "0.10.50",
     ),
     "openssl-sys": crate.spec(
-        version = "0.9.83",
+        version = "0.9.85",
     ),
     "ssh2": crate.spec(
         version = "0.9",
@@ -83,7 +83,7 @@ _packages = {
     ),
     # Async runtime
     "tokio": crate.spec(
-        version = "1.24",
+        version = "1.27",
         features = ["full"],
     ),
     # Async fn in traits
@@ -102,7 +102,7 @@ _packages = {
 
     # Arguments parsing
     "clap": crate.spec(
-        version = "4.1",
+        version = "4.2.1",
         features = ["derive"],
     ),
 
@@ -113,7 +113,7 @@ _packages = {
 
     # Provides a macro to generate structures which behave like a set of bitflags
     "bitflags": crate.spec(
-        version = "2.0.0-rc.1",
+        version = "2.1.0",
     ),
 
     # TODO: Use std::cell::OnceCell
@@ -122,7 +122,7 @@ _packages = {
         version = "1.17",
     ),
     "tempfile": crate.spec(
-        version = "3.4",
+        version = "3.5",
     ),
 
     # "rand": crate.spec(
@@ -137,7 +137,7 @@ _packages = {
 
     # Audit
     "cargo-audit": crate.spec(
-        version = "0.17",
+        version = "0.17.5",
     ),
 }
 
