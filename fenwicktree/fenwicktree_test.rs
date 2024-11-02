@@ -8,7 +8,7 @@ use std::{iter, ops};
 
 #[test]
 fn next_index_for_prefix() {
-    let indices = vec![
+    let indices = [
         0b_0110_1110_1010_1101_0000, // 453328
         0b_0110_1110_1010_1100_0000, // 453312
         0b_0110_1110_1010_1000_0000, // 453248
@@ -26,7 +26,7 @@ fn next_index_for_prefix() {
 
 #[test]
 fn next_index_for_update() {
-    let indices = vec![
+    let indices = [
         0b_0000_0110_1110_1010_1101_0001, // 453329
         0b_0000_0110_1110_1010_1101_0010, // 453330
         0b_0000_0110_1110_1010_1101_0100, // 453332
