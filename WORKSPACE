@@ -1,6 +1,6 @@
 workspace(name = "trunk")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
 http_archive(
     name = "platforms",
@@ -129,6 +129,48 @@ http_archive(
     sha256 = "42968f9134ba2c75c03bb271bd7bb062afb7da449f9b913c96e5be4ce890030a",
     strip_prefix = "buildtools-6.3.3",
     urls = ["https://github.com/bazelbuild/buildtools/archive/refs/tags/v6.3.3.tar.gz"],
+)
+
+http_file(
+    name = "target-determinator_linux_x86_64",
+    executable = True,
+    sha256 = "5200dbca0dd4980690d5060cf8e04abac927efaca143567c51fe24cf973364d2",
+    url = "https://github.com/bazel-contrib/target-determinator/releases/download/v0.23.0/target-determinator.linux.amd64",
+)
+
+http_file(
+    name = "target-determinator_macos_x86_64",
+    executable = True,
+    sha256 = "aba6dce8a978d2174b37dd1355eecba86db93be1ff77742d0753d8efd6a8a316",
+    url = "https://github.com/bazel-contrib/target-determinator/releases/download/v0.23.0/target-determinator.darwin.amd64",
+)
+
+http_file(
+    name = "target-determinator_macos_arm64",
+    executable = True,
+    sha256 = "6c3c308dcfc651408ed5490245ea3e0180fc49d4cc9b762ab84a4b979bcb07b8",
+    url = "https://github.com/bazel-contrib/target-determinator/releases/download/v0.23.0/target-determinator.darwin.arm64",
+)
+
+http_file(
+    name = "target-determinator-driver_linux_x86_64",
+    executable = True,
+    sha256 = "28b6570c637a99c78ee53524967bc7e0fd7b16a29fbfb9d081fbc214a56ea0f6",
+    url = "https://github.com/bazel-contrib/target-determinator/releases/download/v0.23.0/driver.linux.amd64",
+)
+
+http_file(
+    name = "target-determinator-driver_macos_x86_64",
+    executable = True,
+    sha256 = "6c9e30f3207f592de588c8cdaa90b53577ec38d3ff48c9a00c8d8b0217ecc990",
+    url = "https://github.com/bazel-contrib/target-determinator/releases/download/v0.23.0/driver.darwin.amd64",
+)
+
+http_file(
+    name = "target-determinator-driver_macos_arm64",
+    executable = True,
+    sha256 = "41b957c671c4a3cdef83a9cda66eb1042fa1e7b00cc0e5eec9640579ad841f9f",
+    url = "https://github.com/bazel-contrib/target-determinator/releases/download/v0.23.0/driver.darwin.arm64",
 )
 
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
