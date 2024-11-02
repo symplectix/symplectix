@@ -60,6 +60,12 @@ build --incompatible_sandbox_hermetic_tmp
 # https://bazel.build/reference/command-line-reference#flag--incompatible_strict_action_env
 build --incompatible_strict_action_env
 
+# https://github.com/bazelbuild/rules_foreign_cc/issues/1186
+build:macos --host_action_env=CXXFLAGS=-Wno-int-conversion
+build:macos --host_action_env=CFLAGS=-Wno-int-conversion
+build:macos --action_env=CXXFLAGS=-Wno-int-conversion
+build:macos --action_env=CFLAGS=-Wno-int-conversion
+
 # rustc flags for proc-macros, cargo_build_script, etc.
 build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
 
