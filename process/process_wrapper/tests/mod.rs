@@ -66,7 +66,7 @@ async fn wait_for_files() {
             assert_eq!(p, errs[0]);
         }
         others => {
-            panic!("unexpected error: {:?}", others)
+            panic!("unexpected error: {others:?}")
         }
     }
 
@@ -80,7 +80,7 @@ async fn wait_for_files() {
             assert_eq!(p, errs[0]);
         }
         others => {
-            panic!("unexpected error: {:?}", others)
+            panic!("unexpected error: {others:?}")
         }
     }
 

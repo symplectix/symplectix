@@ -53,6 +53,11 @@ build --incompatible_sandbox_hermetic_tmp
 # rustc flags for proc-macros, cargo_build_script, etc.
 build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
 
+# Controls stripping of debuginfo and similar auxiliary data from binaries during linking.
+# * debuginfo - debuginfo sections and debuginfo symbols from the symbol table section are stripped at link time and are not copied to the produced binary or separate files.
+# * symbols   - same as debuginfo, but the rest of the symbol table section is stripped as well if the linker supports it.
+build:strip --@rules_rust//:extra_rustc_flag=-Cstrip=symbols
+
 # rustfmt
 # Run `bazel run @rules_rust//tools/rustfmt` to format.
 build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
@@ -70,7 +75,6 @@ build:clippy --@rules_rust//:clippy.toml=//:.clippy.toml
 # opt:       -Copt-level=3 -Cdebuginfo=0
 build:release --compilation_mode=opt
 build:release --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
-build:release --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
 build:release --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
 build:release --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
 build:release --@rules_rust//:extra_rustc_flag=-Clto=fat
