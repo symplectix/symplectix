@@ -17,6 +17,9 @@ indent_size = 4
 [.envrc]
 indent_size = 2
 
+[.nix]
+indent_size = 2
+
 [*.{yml,yaml,toml,json}]
 indent_size = 2
 

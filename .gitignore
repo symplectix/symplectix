@@ -1,5 +1,8 @@
 /tmp
 
+### Direnv
+/.direnv
+
 
 ### Bazel
 /bazel-*
@@ -26,5 +29,3 @@ target/
 
 # For rust-analyzer
 /rust-project.json
-
-
