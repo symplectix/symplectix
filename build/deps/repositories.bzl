@@ -55,9 +55,10 @@ def build_dependencies():
 
     # CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=lib_crates bazel sync --only=lib_crates
     lib_crates.repository(
-        # The version of Rust the currently registered toolchain is using.
-        rust_version = RUST_STABLE_VERSION,
         splicing_config = splicing_config(
+            # The resolver version to use in generated Cargo manifests.
+            # This flag is only used when splicing a manifest from direct package definitions.
+            # https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions
             resolver_version = "2",
         ),
     )
