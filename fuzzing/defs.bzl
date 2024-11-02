@@ -1,5 +1,5 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//build/rules/fuzzing/private:fuzzing.bzl", "fuzz_corpus", "fuzz_test")
+load("//fuzzing/private:fuzzing.bzl", "fuzz_corpus", "fuzz_test")
 
 def rust_fuzz_test(
         name,

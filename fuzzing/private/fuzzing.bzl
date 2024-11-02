@@ -58,7 +58,7 @@ _fuzz_test = rule(
     test = True,
     attrs = {
         "_fuzz": attr.label(
-            default = Label("@//build/rules/fuzzing:fuzz"),
+            default = Label("@//fuzzing:fuzz"),
             executable = True,
             cfg = "exec",
         ),
@@ -125,7 +125,7 @@ specified in the srcs attribute.
 """,
     attrs = {
         "_fuzz": attr.label(
-            default = Label("@//build/rules/fuzzing:fuzz"),
+            default = Label("@//fuzzing:fuzz"),
             executable = True,
             cfg = "exec",
         ),

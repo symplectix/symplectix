@@ -1,4 +1,4 @@
-load("//build/rules/fuzzing:defs.bzl", "rust_fuzz_test")
+load("//fuzzing:defs.bzl", "rust_fuzz_test")
 
 filegroup(
     name = "corpus_filegroup",
