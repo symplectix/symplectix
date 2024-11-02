@@ -34,8 +34,8 @@ build --sandbox_fake_username
 
 # rustfmt
 # Run `bazel run @rules_rust//tools/rustfmt` to format.
-build:ci --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
-build:ci --output_groups=+rustfmt_checks
+build --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
+build --output_groups=+rustfmt_checks
 build --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
 
 # clippy

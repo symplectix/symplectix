@@ -42,7 +42,7 @@ mod tests {
 
     fn range<T: Int + Add<Output = T>>(start: T, end: T) -> impl Iterator<Item = T> {
         use core::iter::successors;
-        successors(Some(start), move |&x| (x < end).then(|| x + T::ONE))
+        successors(Some(start), move |&x| (x < end).then_some(x + T::ONE))
     }
 
     #[test]

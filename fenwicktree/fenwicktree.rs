@@ -78,11 +78,11 @@ mod iter {
         #[inline]
         fn next_index(&i: &usize) -> Option<usize> {
             let x = next_index_for_prefix(i);
-            (x > 0).then(|| x)
+            (x > 0).then_some(x)
         }
 
         // for x := i; x > 0; x -= lsb(x)
-        successors((i > 0).then(|| i), next_index)
+        successors((i > 0).then_some(i), next_index)
     }
 
     pub fn children(i: usize) -> impl Iterator<Item = usize> {
@@ -92,23 +92,23 @@ mod iter {
         // Yields `nb`s of each children of `i`. Not an index itself.
         let next_nb = move |&x: &usize| {
             let x = x << 1;
-            (x < nb).then(|| x)
+            (x < nb).then_some(x)
         };
 
         // Maps children's `nb`s to node indices
         let to_index = move |d: usize| i - d;
 
-        successors((nb > 1).then(|| 1), next_nb).map(to_index)
+        successors((nb > 1).then_some(1), next_nb).map(to_index)
     }
 
     pub fn update(i: usize, nodes: usize) -> impl Iterator<Item = usize> {
         let next_index = move |&i: &usize| -> Option<usize> {
             let x = next_index_for_update(i);
-            (x <= nodes).then(|| x)
+            (x <= nodes).then_some(x)
         };
 
         // for x := i; x <= nodes; x += lsb(x)
-        successors((i > 0).then(|| i), next_index)
+        successors((i > 0).then_some(i), next_index)
     }
 
     // #[inline]
@@ -127,7 +127,7 @@ mod iter {
         // for x := m.msb(); x > 0; x >>= 1
         successors((nodes > 0).then(|| nodes.msb()), |&i| {
             let x = i >> 1;
-            (x > 0).then(|| x)
+            (x > 0).then_some(x)
         })
     }
 }
