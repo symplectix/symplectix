@@ -1,5 +1,5 @@
 {
-  "checksum": "59a870a78e834430c9f48cb08c9516e5f0a1ebed8812db8a15628e8259409244",
+  "checksum": "f1349b20540610052bbf20d958a17f588d5e498c19dd2a9a6ba10f8b7592618d",
   "crates": {
     "aho-corasick 0.7.18": {
       "name": "aho-corasick",
@@ -175,13 +175,13 @@
       },
       "license": "MIT/Apache-2.0"
     },
-    "getrandom 0.2.6": {
+    "getrandom 0.2.7": {
       "name": "getrandom",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/getrandom/0.2.6/download",
-          "sha256": "9be70c98951c83b8d2f8f60d7065fa6d5146873094452a1008da8c2f1e4205ad"
+          "url": "https://crates.io/api/v1/crates/getrandom/0.2.7/download",
+          "sha256": "4eb1a864a501629691edf6c15a593b7a51eebaa1e8468e9ddc623de7c9b58ec6"
         }
       },
       "targets": [
@@ -213,7 +213,7 @@
           "selects": {
             "cfg(target_os = \"wasi\")": [
               {
-                "id": "wasi 0.10.2+wasi-snapshot-preview1",
+                "id": "wasi 0.11.0+wasi-snapshot-preview1",
                 "target": "wasi"
               }
             ],
@@ -226,7 +226,7 @@
           }
         },
         "edition": "2018",
-        "version": "0.2.6"
+        "version": "0.2.7"
       },
       "license": "MIT OR Apache-2.0"
     },
@@ -469,7 +469,7 @@
               "target": "build_script_build"
             },
             {
-              "id": "unicode-ident 1.0.0",
+              "id": "unicode-ident 1.0.1",
               "target": "unicode_ident"
             }
           ],
@@ -581,7 +581,7 @@
               "target": "quote"
             },
             {
-              "id": "syn 1.0.95",
+              "id": "syn 1.0.96",
               "target": "syn"
             }
           ],
@@ -718,7 +718,7 @@
         "deps": {
           "common": [
             {
-              "id": "getrandom 0.2.6",
+              "id": "getrandom 0.2.7",
               "target": "getrandom"
             }
           ],
@@ -822,13 +822,13 @@
       },
       "license": "MIT OR Apache-2.0"
     },
-    "syn 1.0.95": {
+    "syn 1.0.96": {
       "name": "syn",
-      "version": "1.0.95",
+      "version": "1.0.96",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/syn/1.0.95/download",
-          "sha256": "fbaf6116ab8924f39d52792136fb74fd60a80194cf1b1c6ffa6453eef1c3f942"
+          "url": "https://crates.io/api/v1/crates/syn/1.0.96/download",
+          "sha256": "0748dd251e24453cb8717f0354206b91557e4ec8703673a4b30208f2abaf1ebf"
         }
       },
       "targets": [
@@ -883,18 +883,18 @@
               "target": "quote"
             },
             {
-              "id": "syn 1.0.95",
+              "id": "syn 1.0.96",
               "target": "build_script_build"
             },
             {
-              "id": "unicode-ident 1.0.0",
+              "id": "unicode-ident 1.0.1",
               "target": "unicode_ident"
             }
           ],
           "selects": {}
         },
         "edition": "2018",
-        "version": "1.0.95"
+        "version": "1.0.96"
       },
       "build_script_attrs": {
         "data_glob": [
@@ -903,13 +903,13 @@
       },
       "license": "MIT OR Apache-2.0"
     },
-    "unicode-ident 1.0.0": {
+    "unicode-ident 1.0.1": {
       "name": "unicode-ident",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/unicode-ident/1.0.0/download",
-          "sha256": "d22af068fba1eb5edcb4aea19d382b2a3deb4c8f9d475c589b6ada9e0fd493ee"
+          "url": "https://crates.io/api/v1/crates/unicode-ident/1.0.1/download",
+          "sha256": "5bd2fe26506023ed7b5e1e315add59d6f584c621d037f9368fea9cfb988f368c"
         }
       },
       "targets": [
@@ -932,17 +932,17 @@
           "**"
         ],
         "edition": "2018",
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       "license": "MIT OR Apache-2.0"
     },
-    "wasi 0.10.2+wasi-snapshot-preview1": {
+    "wasi 0.11.0+wasi-snapshot-preview1": {
       "name": "wasi",
-      "version": "0.10.2+wasi-snapshot-preview1",
+      "version": "0.11.0+wasi-snapshot-preview1",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/wasi/0.10.2+wasi-snapshot-preview1/download",
-          "sha256": "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
+          "url": "https://crates.io/api/v1/crates/wasi/0.11.0+wasi-snapshot-preview1/download",
+          "sha256": "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
         }
       },
       "targets": [
@@ -969,7 +969,7 @@
           "std"
         ],
         "edition": "2018",
-        "version": "0.10.2+wasi-snapshot-preview1"
+        "version": "0.11.0+wasi-snapshot-preview1"
       },
       "license": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT"
     }
@@ -989,6 +989,7 @@
       "aarch64-linux-android",
       "aarch64-unknown-linux-gnu",
       "arm-unknown-linux-gnueabi",
+      "armv7-linux-androideabi",
       "armv7-unknown-linux-gnueabi",
       "i686-apple-darwin",
       "i686-linux-android",
