@@ -1,9 +1,0 @@
-on:
-  workflow_call:
-
-jobs:
-  title:
-    runs-on: [ubuntu-latest]
-    steps:
-      - run: |
-          [[ "${{ github.event.pull_request.title }}" =~ ^[a-z]{1}[a-z/_-]*:\ [a-z]{1}.*[^.]$ ]]

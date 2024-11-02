@@ -105,26 +105,5 @@ build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
 build:rustfmt --output_groups=+rustfmt_checks
 build --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
 
-build:lint --config=clippy
-build:lint --config=rustfmt
-
-build:ci --config=verbose
-build:ci --config=lint
-build:ci --config=stable
-build:ci --config=opt
-build:ci --config=strip
-
-build:fuzz --config=verbose
-build:fuzz --config=lint
-build:fuzz --config=nightly
-build:fuzz --config=dbg
-
-# Disable sandoxing in CI for a while.
-#
-# TODO: Enable sandboxing.
-# Since Bazel 7, the details are unknown, but builds in sandbox has
-# started to fail with an error that process_wrapper.sh does not exist.
-build:ci --spawn_strategy=local
-build:fuzz --spawn_strategy=local
-
-try-import %workspace%/.bazelrc.user
+# Load extra bazel settings if any.
+try-import %workspace%/.bazelrc.local

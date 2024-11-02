@@ -1,0 +1,21 @@
+build:testing --config=stable
+build:testing --config=verbose
+build:testing --config=clippy
+build:testing --config=rustfmt
+build:testing --config=opt
+build:testing --config=strip
+
+build:fuzzing --config=nightly
+build:fuzzing --config=verbose
+build:fuzzing --config=clippy
+build:fuzzing --config=rustfmt
+build:fuzzing --config=dbg
+build:fuzzing --build_tag_filters=+fuzzing
+
+# Disable sandoxing in CI for a while.
+#
+# TODO: Enable sandboxing.
+# Since Bazel 7, the details are unknown, but builds in sandbox has
+# started to fail with an error that process_wrapper.sh does not exist.
+build:testing --spawn_strategy=local
+build:fuzzing --spawn_strategy=local
