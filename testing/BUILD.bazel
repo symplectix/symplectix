@@ -3,7 +3,7 @@ load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 rust_library(
     name = "testing",
     testonly = True,
-    srcs = glob(["*.rs"]),
+    srcs = glob(["src/*.rs"]),
     visibility = ["//visibility:public"],
     deps = [
         "@crates//:once_cell",

@@ -4,11 +4,11 @@ def _fuzz_test_impl(ctx):
     entrypoint_template = """\
 {exports}
 RUNFILES_DIR="$0.runfiles" \
-exec "{fuzz}" "{command}" \
+exec "{fuzz_test}" \
 {time_to_run} \
 {envs} \
 -- \
-"{target}" \
+"{executable}" \
 "{corpus}" \
 "$@"
 """
@@ -23,7 +23,7 @@ exec "{fuzz}" "{command}" \
             "export %s='%s'" % (key, val)
             for key, val in ctx.attr.envs.items()
         ]),
-        fuzz = ctx.executable._fuzz.short_path,
+        fuzz_test = ctx.executable._fuzz_test.short_path,
         command = ctx.attr.command,
         corpus = ctx.file.corpus.short_path,
         time_to_run = time_to_run,
@@ -31,7 +31,7 @@ exec "{fuzz}" "{command}" \
             "\"--env\" '%s'" % key
             for key in ctx.attr.envs.keys()
         ]),
-        target = ctx.executable.target.short_path,
+        executable = ctx.executable.executable.short_path,
     )
 
     ctx.actions.write(
@@ -41,10 +41,10 @@ exec "{fuzz}" "{command}" \
     )
 
     runfiles = ctx.runfiles(files = [ctx.file.corpus]) \
-        .merge(ctx.attr._fuzz[DefaultInfo].default_runfiles) \
-        .merge(ctx.attr._fuzz[DefaultInfo].data_runfiles) \
-        .merge(ctx.attr.target[DefaultInfo].default_runfiles) \
-        .merge(ctx.attr.target[DefaultInfo].data_runfiles)
+        .merge(ctx.attr._fuzz_test[DefaultInfo].default_runfiles) \
+        .merge(ctx.attr._fuzz_test[DefaultInfo].data_runfiles) \
+        .merge(ctx.attr.executable[DefaultInfo].default_runfiles) \
+        .merge(ctx.attr.executable[DefaultInfo].data_runfiles)
 
     return [
         DefaultInfo(
@@ -57,8 +57,8 @@ _fuzz_test = rule(
     implementation = _fuzz_test_impl,
     test = True,
     attrs = {
-        "_fuzz": attr.label(
-            default = Label("@//fuzzing:fuzz"),
+        "_fuzz_test": attr.label(
+            default = Label("@//fuzzing:fuzz_test"),
             executable = True,
             cfg = "exec",
         ),
@@ -77,7 +77,7 @@ _fuzz_test = rule(
             default = {},
             mandatory = False,
         ),
-        "target": attr.label(
+        "executable": attr.label(
             doc = "The executable of the fuzz test to run.",
             executable = True,
             allow_single_file = True,
@@ -106,8 +106,8 @@ def _fuzz_corpus_impl(ctx):
     output_args.add("--output=" + output.path)
 
     ctx.actions.run(
-        executable = ctx.executable._fuzz,
-        arguments = ["corpus", output_args, corpus_list_args],
+        executable = ctx.executable._fuzz_corpus,
+        arguments = [output_args, corpus_list_args],
         inputs = ctx.files.srcs,
         outputs = [output],
     )
@@ -124,8 +124,8 @@ This rule creates a directory collecting all the corpora files
 specified in the srcs attribute.
 """,
     attrs = {
-        "_fuzz": attr.label(
-            default = Label("@//fuzzing:fuzz"),
+        "_fuzz_corpus": attr.label(
+            default = Label("@//fuzzing:fuzz_corpus"),
             executable = True,
             cfg = "exec",
         ),

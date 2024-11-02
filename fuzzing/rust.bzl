@@ -1,5 +1,5 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//fuzzing/private:fuzzing.bzl", "fuzz_corpus", "fuzz_test")
+load("//fuzzing/internal:fuzzing.bzl", "fuzz_corpus", "fuzz_test")
 
 def rust_fuzz_test(
         name,
@@ -10,9 +10,6 @@ def rust_fuzz_test(
     """A helper macro for fuzzing.
     """
 
-    target_name = name + "_target"
-    corpus_name = name + "_corpus"
-
     kwargs.setdefault("tags", []).extend([
         "fuzzing",
     ])
@@ -20,13 +17,13 @@ def rust_fuzz_test(
     fuzz_test(
         name = name,
         envs = envs,
-        corpus = corpus_name,
-        target = target_name,
+        executable = name + "_fuzz_test",
+        corpus = name + "_corpus",
         tags = kwargs["tags"],
     )
 
     fuzz_corpus(
-        name = corpus_name,
+        name = name + "_corpus",
         srcs = corpus,
         tags = kwargs["tags"],
     )
@@ -43,7 +40,7 @@ def rust_fuzz_test(
     ])
 
     rust_binary(
-        name = target_name,
+        name = name + "_fuzz_test",
         target_compatible_with = [
             "@rules_rust//rust/platform/channel:nightly",
         ],

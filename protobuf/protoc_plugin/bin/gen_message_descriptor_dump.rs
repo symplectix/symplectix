@@ -1,9 +1,13 @@
 use prost_reflect::FileDescriptor;
 use prost_types::compiler::code_generator_response::File;
 
+fn main() -> anyhow::Result<()> {
+    protoc_plugin::gen_code(GenMessageDescriptorDump::default())
+}
+
 /// An example protobuf compiler plugin which dumps message descriptor.
 #[derive(Debug, Default, Clone)]
-pub struct GenMessageDescriptorDump {}
+struct GenMessageDescriptorDump {}
 
 impl protoc_plugin::GenFile for GenMessageDescriptorDump {
     fn gen_file(&self, target_proto: &str, fd: &FileDescriptor) -> Result<File, String> {

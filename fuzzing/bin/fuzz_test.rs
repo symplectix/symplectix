@@ -1,14 +1,20 @@
+use clap::Parser;
 use entrypoint::Entrypoint;
 
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    fuzzing::run(Test::parse()).await
+}
+
 /// Runs a instrumented binary.
-#[derive(Clone, Debug, clap::Parser)]
-pub struct Test {
+#[derive(Clone, Debug, Parser)]
+struct Test {
     #[command(flatten)]
     entrypoint: Entrypoint,
 }
 
-impl Test {
-    pub(crate) async fn run(self) -> anyhow::Result<()> {
+impl fuzzing::Op for Test {
+    async fn run(self) -> anyhow::Result<()> {
         use entrypoint::Error::*;
 
         let process = self.entrypoint.spawn().await?;

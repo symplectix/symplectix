@@ -1,8 +1,13 @@
+use anyhow::Context as _;
+use clap::Parser;
 use std::fs;
 use std::io::{prelude::*, BufReader};
 use std::path::PathBuf;
 
-use anyhow::Context as _;
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    fuzzing::run(Corpus::parse()).await
+}
 
 /// Copies and renames a set of corpus files into a given directory.
 #[derive(Clone, Debug, clap::Parser)]
@@ -16,8 +21,8 @@ pub struct Corpus {
     output: PathBuf,
 }
 
-impl Corpus {
-    pub(crate) async fn run(self) -> anyhow::Result<()> {
+impl fuzzing::Op for Corpus {
+    async fn run(self) -> anyhow::Result<()> {
         fs::create_dir_all(&self.output).with_context(|| {
             format!("failed to create a directory at {}", self.output.display())
         })?;

@@ -2,7 +2,7 @@ load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test")
 
 rust_library(
     name = "bit",
-    srcs = ["bit.rs"],
+    srcs = ["src/lib.rs"],
     visibility = ["//bits:__subpackages__"],
 )
 

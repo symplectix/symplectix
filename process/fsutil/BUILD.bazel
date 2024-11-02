@@ -4,7 +4,7 @@ package(default_visibility = ["//process:__subpackages__"])
 
 rust_library(
     name = "fsutil",
-    srcs = ["fsutil.rs"],
+    srcs = ["src/fsutil.rs"],
     deps = [
         "@crates//:futures",
         "@crates//:tokio",

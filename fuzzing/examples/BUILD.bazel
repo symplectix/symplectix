@@ -1,4 +1,4 @@
-load("//fuzzing:defs.bzl", "rust_fuzz_test")
+load("//fuzzing:rust.bzl", "rust_fuzz_test")
 
 rust_fuzz_test(
     name = "should_not_fail",

@@ -62,12 +62,12 @@ pkg_tar(
 
 cc_binary(
     name = "orphan",
-    srcs = ["orphan.c"],
+    srcs = ["src/orphan.c"],
 )
 
 cc_binary(
     name = "zombie",
-    srcs = ["zombie.c"],
+    srcs = ["src/zombie.c"],
 )
 
 pkg_tar(
