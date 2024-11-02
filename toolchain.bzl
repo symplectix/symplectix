@@ -1,7 +1,7 @@
-RUST_STABLE_VERSION = "1.67.1"
+RUST_STABLE_VERSION = "1.68.2"
 
 # https://github.com/oxalica/rust-overlay/tree/master/manifests/nightly
-RUST_NIGHTLY_VERSION = "nightly/2023-02-12"
+RUST_NIGHTLY_VERSION = "nightly/2023-03-25"
 
 RUST_VERSIONS = [
     RUST_STABLE_VERSION,
