@@ -29,10 +29,10 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
       - name: Format (buildifier)
-        run: bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci run //:buildifier/check
+        run: bazel --output_user_root=/tmp/trunk/ run --config=ci //:buildifier/check
 
       - name: Build
-        run: bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci build //...
+        run: bazel --output_user_root=/tmp/trunk/ build --config=ci //...
 
       - name: Test
-        run: bazel --bazelrc=.bazelrc --bazelrc=.bazelrc.ci test //...
+        run: bazel --output_user_root=/tmp/trunk/ test --config=ci //...

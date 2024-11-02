@@ -1,3 +1,19 @@
+# Whether to announce rc options.
+# https://bazel.build/reference/command-line-reference#flag--announce_rc
+common:verbose --announce_rc
+
+# If a command fails, print out the full command line.
+# https://bazel.build/reference/command-line-reference#flag--verbose_failures
+build:verbose --verbose_failures
+
+# Specifies desired output mode. Valid values are
+# - 'summary' to output only test status summary
+# - 'errors' to also print test logs for failed tests
+# - 'all' to print logs for all tests
+# - 'streamed' to output logs for all tests in real time
+# https://bazel.build/reference/command-line-reference#flag--test_output
+test:verbose --test_output=errors
+
 # Bazel picks up host-OS-specific config lines from bazelrc files.
 # https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
 common --enable_platform_specific_config
@@ -13,15 +29,6 @@ common --experimental_allow_tags_propagation
 # https://bazel.build/docs/user-manual#spawn-strategy
 build --spawn_strategy=sandboxed
 
-# If true, Bazel uses an environment with a static value for PATH and does not inherit LD_LIBRARY_PATH or TMPDIR.
-# https://bazel.build/reference/command-line-reference#flag--incompatible_strict_action_env
-build --incompatible_strict_action_env
-
-# If set to true, each Linux sandbox will have its own dedicated empty directory mounted as /tmp rather than
-# sharing /tmp with the host filesystem. Use --sandbox_add_mount_pair=/tmp to keep seeing the host's /tmp in all sandboxes.
-# https://bazel.build/reference/command-line-reference#flag--incompatible_sandbox_hermetic_tmp
-build --incompatible_sandbox_hermetic_tmp
-
 # Restricts network access by default for actions.
 # https://bazel.build/reference/command-line-reference#flag--sandbox_default_allow_network
 build --nosandbox_default_allow_network
@@ -34,12 +41,22 @@ build --sandbox_fake_hostname
 # https://bazel.build/reference/command-line-reference#flag--sandbox_fake_username
 build --sandbox_fake_username
 
+# If true, Bazel uses an environment with a static value for PATH and does not inherit LD_LIBRARY_PATH or TMPDIR.
+# https://bazel.build/reference/command-line-reference#flag--incompatible_strict_action_env
+build --incompatible_strict_action_env
+
+# For sandboxed actions, mount an empty, writable directory at this absolute path
+# (if supported by the sandboxing implementation, ignored otherwise).
+# https://bazel.build/reference/command-line-reference#flag--sandbox_tmpfs_path
+build --sandbox_tmpfs_path=/tmp
+
+# If set to true, each Linux sandbox will have its own dedicated empty directory mounted as /tmp rather than
+# sharing /tmp with the host filesystem. Use --sandbox_add_mount_pair=/tmp to keep seeing the host's /tmp in all sandboxes.
+# https://bazel.build/reference/command-line-reference#flag--incompatible_sandbox_hermetic_tmp
+build --incompatible_sandbox_hermetic_tmp
+
 # rustc flags for proc-macros, cargo_build_script, etc.
 build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
-
-# rust-analyzer
-# Ensure rust source code is available to `rust-analyzer`.
-build --repo_env=RULES_RUST_TOOLCHAIN_INCLUDE_RUSTC_SRCS=true
 
 # rustfmt
 # Run `bazel run @rules_rust//tools/rustfmt` to format.
@@ -51,5 +68,22 @@ build:rustfmt --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
 build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build:clippy --output_groups=+clippy_checks
 build:clippy --@rules_rust//:clippy.toml=//:.clippy.toml
+
+# compilation_mode to rustc codegen options
+# fastbuild: -Copt-level=0 -Cdebuginfo=0
+# dbg:       -Copt-level=0 -Cdebuginfo=2
+# opt:       -Copt-level=3 -Cdebuginfo=0
+build:release --compilation_mode=opt
+build:release --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
+build:release --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
+build:release --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
+build:release --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
+build:release --@rules_rust//:extra_rustc_flag=-Clto=fat
+build:release --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1
+
+build:ci --config=verbose
+build:ci --config=rustfmt
+build:ci --config=clippy
+build:ci --config=release
 
 try-import %workspace%/.bazelrc.user
