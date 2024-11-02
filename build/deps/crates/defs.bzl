@@ -1,182 +1,259 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
 
-_lib_crates_annotations = {
-    "openssl-sys": [crate.annotation(
-        build_script_data = [
-            "@openssl//:openssl_dir",
-            "@openssl//:openssl",
-        ],
-        # https://github.com/sfackler/rust-openssl/tree/master/openssl-sys/build
-        build_script_data_glob = ["build/**/*.c"],
-        build_script_env = {
-            "OPENSSL_DIR": "$(execpath @openssl//:openssl_dir)",
-            "OPENSSL_STATIC": "1",
-        },
-        data = ["@openssl"],
-        deps = ["@openssl"],
-    )],
-    "libz-sys": [crate.annotation(
-        gen_build_script = False,
-        deps = ["@zlib"],
-    )],
-    "cargo-audit": [crate.annotation(
-        gen_binaries = ["cargo-audit"],
-    )],
-    "protoc-gen-prost": [crate.annotation(
-        gen_binaries = ["protoc-gen-prost"],
-    )],
-    "protoc-gen-tonic": [crate.annotation(
-        gen_binaries = ["protoc-gen-tonic"],
-    )],
-}
-
-_lib_crates_packages = {
-    "libc": crate.spec(
-        version = "0.2",
+_lib_crates = {
+    "libc": struct(
+        spec = crate.spec(
+            version = "0.2",
+        ),
     ),
-    "openssl": crate.spec(
-        version = "0.10.55",
+    "libz-sys": struct(
+        spec = crate.spec(
+            version = "1.1.0",
+            features = ["libc"],
+        ),
+        annotations = [crate.annotation(
+            gen_build_script = False,
+            deps = ["@zlib"],
+        )],
     ),
-    "openssl-sys": crate.spec(
-        version = "0.9.85",
+    "openssl": struct(
+        spec = crate.spec(
+            version = "0.10.55",
+        ),
     ),
-    "libz-sys": crate.spec(
-        version = "1.1.0",
-        features = ["libc"],
+    "openssl-sys": struct(
+        spec = crate.spec(
+            version = "0.9.85",
+        ),
+        annotations = [crate.annotation(
+            build_script_data = [
+                "@openssl//:openssl_dir",
+                "@openssl//:openssl",
+            ],
+            # https://github.com/sfackler/rust-openssl/tree/master/openssl-sys/build
+            build_script_data_glob = ["build/**/*.c"],
+            build_script_env = {
+                "OPENSSL_DIR": "$(execpath @openssl//:openssl_dir)",
+                "OPENSSL_STATIC": "1",
+            },
+            data = ["@openssl"],
+            deps = ["@openssl"],
+        )],
     ),
 
     # A framework for serializing and deserializing Rust data structures.
-    "serde": crate.spec(
-        version = "1.0.188",
-        features = ["derive"],
-    ),
-
-    # A Rust tree-sitter binding.
-    # Tree-sitter is a parser generator tool and an incremental parsing library.
-    #
-    # https://tree-sitter.github.io/tree-sitter/
-    "tree-sitter": crate.spec(
-        version = "0.20",
-    ),
-    "tree-sitter-rust": crate.spec(
-        version = "0.20",
-    ),
-
-    # Proroc plugins for prost/tonic
-    "protoc-gen-prost": crate.spec(
-        version = "0",
-    ),
-    "protoc-gen-tonic": crate.spec(
-        version = "0",
-    ),
-
-    # Protobuf support
-    "prost": crate.spec(
-        version = "0.12",
-    ),
-    # Protobuf well-known types
-    "prost-types": crate.spec(
-        version = "0.12",
-    ),
-    "prost-reflect": crate.spec(
-        version = "0.12",
-    ),
-    "tonic": crate.spec(
-        version = "0.10",
-    ),
-    "tonic-types": crate.spec(
-        version = "0.10",
-    ),
-    "tonic-health": crate.spec(
-        version = "0.10",
-    ),
-    "tonic-reflection": crate.spec(
-        version = "0.10",
-    ),
-
-    # For fuzzing
-    "arbitrary": crate.spec(
-        version = "1",
-        features = ["derive"],
-    ),
-    "libfuzzer-sys": crate.spec(
-        version = "0.4",
-    ),
-
-    # Result/Error helpers
-    "anyhow": crate.spec(
-        version = "1",
-    ),
-    "thiserror": crate.spec(
-        version = "1",
+    "serde": struct(
+        spec = crate.spec(
+            version = "1.0.188",
+            features = ["derive"],
+        ),
     ),
 
     # Futures extensions
-    "futures": crate.spec(
-        version = "0.3",
+    "futures": struct(
+        spec = crate.spec(
+            version = "0.3",
+        ),
     ),
     # Async runtime
-    "tokio": crate.spec(
-        version = "1.29.1",
-        features = ["full"],
+    "tokio": struct(
+        spec = crate.spec(
+            version = "1.29.1",
+            features = ["full"],
+        ),
     ),
+
     # Async fn in traits
     # https://blog.rust-lang.org/inside-rust/2022/11/17/async-fn-in-trait-nightly.html
-    "async-trait": crate.spec(
-        version = "0.1",
+    "async-trait": struct(
+        spec = crate.spec(
+            version = "0.1",
+        ),
     ),
 
     # Tracing
-    "tracing": crate.spec(
-        version = "0.1",
+    "tracing": struct(
+        spec = crate.spec(
+            version = "0.1",
+        ),
     ),
-    "tracing-subscriber": crate.spec(
-        version = "0.3",
-    ),
-
-    # Arguments parsing
-    "clap": crate.spec(
-        version = "4.3",
-        features = ["derive"],
+    "tracing-subscriber": struct(
+        spec = crate.spec(
+            version = "0.3",
+        ),
     ),
 
-    # Includes formatters and parsers for std::time::SystemTime/std::time::Duration
-    "humantime": crate.spec(
-        version = "2",
+    # Protobuf support for Rust.
+    "prost": struct(
+        spec = crate.spec(
+            version = "0.12",
+        ),
+    ),
+    "prost-types": struct(
+        spec = crate.spec(
+            version = "0.12",
+        ),
+    ),
+    "prost-reflect": struct(
+        spec = crate.spec(
+            version = "0.12",
+        ),
+    ),
+    "tonic": struct(
+        spec = crate.spec(
+            version = "0.10",
+        ),
+    ),
+    "tonic-types": struct(
+        spec = crate.spec(
+            version = "0.10",
+        ),
+    ),
+    "tonic-health": struct(
+        spec = crate.spec(
+            version = "0.10",
+        ),
+    ),
+    "tonic-reflection": struct(
+        spec = crate.spec(
+            version = "0.10",
+        ),
+    ),
+
+    # Proroc plugins for prost/tonic.
+    "protoc-gen-prost": struct(
+        spec = crate.spec(
+            version = "0",
+        ),
+        annotations = [crate.annotation(
+            gen_binaries = ["protoc-gen-prost"],
+        )],
+    ),
+    "protoc-gen-tonic": struct(
+        spec = crate.spec(
+            version = "0",
+        ),
+        annotations = [crate.annotation(
+            gen_binaries = ["protoc-gen-tonic"],
+        )],
+    ),
+
+    # A tree-sitter binding.
+    # Tree-sitter is a parser generator tool and an incremental parsing library.
+    #
+    # https://tree-sitter.github.io/tree-sitter/
+    "tree-sitter": struct(
+        spec = crate.spec(
+            version = "0.20",
+        ),
+    ),
+    # Rust grammar for tree-sitter.
+    "tree-sitter-rust": struct(
+        spec = crate.spec(
+            version = "0.20",
+        ),
+    ),
+
+    # Arguments parsing.
+    "clap": struct(
+        spec = crate.spec(
+            version = "4.3",
+            features = ["derive"],
+        ),
+    ),
+
+    # Includes formatters and parsers for std::time::SystemTime and std::time::Duration.
+    "humantime": struct(
+        spec = crate.spec(
+            version = "2",
+        ),
+    ),
+
+    # Result/Error helpers.
+    "anyhow": struct(
+        spec = crate.spec(
+            version = "1",
+        ),
+    ),
+    "thiserror": struct(
+        spec = crate.spec(
+            version = "1",
+        ),
     ),
 
     # Provides a macro to generate structures which behave like a set of bitflags
-    "bitflags": crate.spec(
-        version = "2",
+    "bitflags": struct(
+        spec = crate.spec(
+            version = "2",
+        ),
     ),
 
+    # Temporary files and directories.
+    "tempfile": struct(
+        spec = crate.spec(
+            version = "3",
+        ),
+    ),
+
+    # Single assignment cells and lazy statics without macros.
+    #
     # TODO: Use std::cell::OnceCell
+    # Parts of once_cell API are included into std as of Rust 1.70.0.
     # https://doc.rust-lang.org/std/cell/struct.OnceCell.html
-    "once_cell": crate.spec(
-        version = "1.18",
-    ),
-    "tempfile": crate.spec(
-        version = "3",
-    ),
-
-    # "rand": crate.spec(
-    #     version = "0.8.5",
-    # ),
-    "quickcheck": crate.spec(
-        version = "1",
-    ),
-    "quickcheck_macros": crate.spec(
-        version = "1",
+    "once_cell": struct(
+        spec = crate.spec(
+            version = "1.18",
+        ),
     ),
 
-    # Audit
-    "cargo-audit": crate.spec(
-        version = "0.18.1",
+    # For testing.
+    "quickcheck": struct(
+        spec = crate.spec(
+            version = "1",
+        ),
+    ),
+    "quickcheck_macros": struct(
+        spec = crate.spec(
+            version = "1",
+        ),
+    ),
+    "arbitrary": struct(
+        spec = crate.spec(
+            version = "1",
+            features = ["derive"],
+        ),
+    ),
+    "libfuzzer-sys": struct(
+        spec = crate.spec(
+            version = "0.4",
+        ),
+    ),
+
+    # For auditing Rust packages.
+    "cargo-audit": struct(
+        spec = crate.spec(
+            version = "0.18.1",
+        ),
+        annotations = [crate.annotation(
+            gen_binaries = ["cargo-audit"],
+        )],
     ),
 }
 
 def _lib_crates_repository(**kwargs):
+    _lib_crates_annotations = {
+        name: c.annotations
+        for (name, c) in _lib_crates.items()
+        if hasattr(c, "annotations")
+    }
+
+    _lib_crates_packages = {
+        name: c.spec
+        for (name, c) in _lib_crates.items()
+        if hasattr(c, "spec")
+    }
+
     crates_repository(
         name = "lib_crates",
         annotations = _lib_crates_annotations,
