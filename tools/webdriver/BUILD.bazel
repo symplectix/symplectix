@@ -13,7 +13,7 @@ rust_binary(
     name = "geckodriver",
     srcs = ["geckodriver.rs"],
     data = [
-        "//tool/webdriver:geckodriver_bin",
+        "//tools/webdriver:geckodriver_bin",
     ],
     deps = [
         "//process",
