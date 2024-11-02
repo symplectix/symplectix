@@ -1,5 +1,5 @@
 {
-  "checksum": "474f437d8ce2256f5af5c1af756ade32ee27605f646655195ee81abee4e7b8c2",
+  "checksum": "1daa967de0cd373309b023ebac74e29cfd5d0d5b5a98607964f0d5f468b688e2",
   "crates": {
     "abscissa_core 0.6.0": {
       "name": "abscissa_core",
@@ -749,7 +749,7 @@
             ],
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
@@ -805,13 +805,13 @@
       },
       "license": "MIT OR Apache-2.0"
     },
-    "auditable-info 0.6.2": {
+    "auditable-info 0.7.0": {
       "name": "auditable-info",
-      "version": "0.6.2",
+      "version": "0.7.0",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/auditable-info/0.6.2/download",
-          "sha256": "158d56117c834b6e90edbe4c5b5caaefff0996eebe8b952108a0a491330344ee"
+          "url": "https://crates.io/api/v1/crates/auditable-info/0.7.0/download",
+          "sha256": "e563c9e31a71d1a6f2ab7a5a168cdb0d387f59bde891aac5957b9ebaaf03f602"
         }
       },
       "targets": [
@@ -846,7 +846,7 @@
               "target": "auditable_extract"
             },
             {
-              "id": "auditable-serde 0.5.2",
+              "id": "auditable-serde 0.6.0",
               "target": "auditable_serde"
             },
             {
@@ -861,17 +861,17 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "0.6.2"
+        "version": "0.7.0"
       },
       "license": "MIT OR Apache-2.0"
     },
-    "auditable-serde 0.5.2": {
+    "auditable-serde 0.6.0": {
       "name": "auditable-serde",
-      "version": "0.5.2",
+      "version": "0.6.0",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/auditable-serde/0.5.2/download",
-          "sha256": "57ba7d807ad2850c436750154dbc442eb8611527deb6dfcc4e5e0bd10d5fbf28"
+          "url": "https://crates.io/api/v1/crates/auditable-serde/0.6.0/download",
+          "sha256": "b23f8f6711ddeb1c2a163edc94dff5d7c805ca484d33e3464e779741805790c0"
         }
       },
       "targets": [
@@ -901,7 +901,7 @@
         "deps": {
           "common": [
             {
-              "id": "cargo-lock 8.0.3",
+              "id": "cargo-lock 9.0.0",
               "target": "cargo_lock"
             },
             {
@@ -924,7 +924,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "0.5.2"
+        "version": "0.6.0"
       },
       "license": "MIT OR Apache-2.0"
     },
@@ -1015,7 +1015,7 @@
               "target": "cfg_if"
             },
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             },
             {
@@ -1215,13 +1215,13 @@
       },
       "license": "Apache-2.0"
     },
-    "cargo-audit 0.17.5": {
+    "cargo-audit 0.17.6": {
       "name": "cargo-audit",
-      "version": "0.17.5",
+      "version": "0.17.6",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/cargo-audit/0.17.5/download",
-          "sha256": "9687fb6e8e2217aac2e72955ffb03d2d93b987f5f36a806787a5c64b38db0d13"
+          "url": "https://crates.io/api/v1/crates/cargo-audit/0.17.6/download",
+          "sha256": "d7c04d2178b9ff56e0d4500d10d72d3a5d8156c2d6b6fc193e28a524dadde5c5"
         }
       },
       "targets": [
@@ -1263,15 +1263,19 @@
               "target": "abscissa_core"
             },
             {
-              "id": "auditable-info 0.6.2",
+              "id": "auditable-info 0.7.0",
               "target": "auditable_info"
             },
             {
-              "id": "auditable-serde 0.5.2",
+              "id": "auditable-serde 0.6.0",
               "target": "auditable_serde"
             },
             {
-              "id": "cargo-lock 8.0.3",
+              "id": "binfarce 0.2.1",
+              "target": "binfarce"
+            },
+            {
+              "id": "cargo-lock 9.0.0",
               "target": "cargo_lock"
             },
             {
@@ -1283,11 +1287,15 @@
               "target": "home"
             },
             {
+              "id": "once_cell 1.17.0",
+              "target": "once_cell"
+            },
+            {
               "id": "quitters 0.1.0",
               "target": "quitters"
             },
             {
-              "id": "rustsec 0.26.5",
+              "id": "rustsec 0.27.0",
               "target": "rustsec"
             },
             {
@@ -1306,17 +1314,17 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.17.5"
+        "version": "0.17.6"
       },
       "license": "Apache-2.0 OR MIT"
     },
-    "cargo-lock 8.0.3": {
+    "cargo-lock 9.0.0": {
       "name": "cargo-lock",
-      "version": "8.0.3",
+      "version": "9.0.0",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/cargo-lock/8.0.3/download",
-          "sha256": "031718ddb8f78aa5def78a09e90defe30151d1f6c672f937af4dd916429ed996"
+          "url": "https://crates.io/api/v1/crates/cargo-lock/9.0.0/download",
+          "sha256": "e11c675378efb449ed3ce8de78d75d0d80542fc98487c26aba28eb3b82feac72"
         }
       },
       "targets": [
@@ -1357,7 +1365,7 @@
               "target": "serde"
             },
             {
-              "id": "toml 0.5.11",
+              "id": "toml 0.7.3",
               "target": "toml"
             },
             {
@@ -1368,7 +1376,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "8.0.3"
+        "version": "9.0.0"
       },
       "license": "Apache-2.0 OR MIT"
     },
@@ -2469,7 +2477,7 @@
               "target": "bitflags"
             },
             {
-              "id": "cargo-audit 0.17.5",
+              "id": "cargo-audit 0.17.6",
               "target": "cargo_audit"
             },
             {
@@ -2489,7 +2497,7 @@
               "target": "humantime"
             },
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             },
             {
@@ -2533,7 +2541,7 @@
               "target": "thiserror"
             },
             {
-              "id": "tokio 1.27.0",
+              "id": "tokio 1.29.1",
               "target": "tokio"
             },
             {
@@ -2680,19 +2688,19 @@
             ],
             "cfg(target_os = \"hermit\")": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
             "cfg(target_os = \"wasi\")": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
@@ -2750,7 +2758,7 @@
               "target": "build_script_build"
             },
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             }
           ],
@@ -3647,7 +3655,7 @@
             ],
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ]
@@ -3738,7 +3746,7 @@
               "target": "bitflags"
             },
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             },
             {
@@ -3872,7 +3880,7 @@
         "deps": {
           "common": [
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             }
           ],
@@ -3911,7 +3919,7 @@
         "deps": {
           "common": [
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             }
           ],
@@ -4388,7 +4396,7 @@
           "selects": {
             "cfg(not(windows))": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
@@ -4534,7 +4542,7 @@
           "selects": {
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ]
@@ -4575,13 +4583,13 @@
       },
       "license": "MIT/Apache-2.0"
     },
-    "libc 0.2.141": {
+    "libc 0.2.147": {
       "name": "libc",
-      "version": "0.2.141",
+      "version": "0.2.147",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/libc/0.2.141/download",
-          "sha256": "3304a64d199bb964be99741b7a14d26972741915b3649639149b2479bb46f4b5"
+          "url": "https://crates.io/api/v1/crates/libc/0.2.147/download",
+          "sha256": "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
         }
       },
       "targets": [
@@ -4701,14 +4709,14 @@
         "deps": {
           "common": [
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "build_script_build"
             }
           ],
           "selects": {}
         },
         "edition": "2015",
-        "version": "0.2.141"
+        "version": "0.2.147"
       },
       "build_script_attrs": {
         "data_glob": [
@@ -4825,7 +4833,7 @@
         "deps": {
           "common": [
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             },
             {
@@ -4883,7 +4891,7 @@
         "deps": {
           "common": [
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             },
             {
@@ -4942,7 +4950,7 @@
         "deps": {
           "common": [
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             }
           ],
@@ -5357,13 +5365,13 @@
       },
       "license": "MIT OR Zlib OR Apache-2.0"
     },
-    "mio 0.8.5": {
+    "mio 0.8.8": {
       "name": "mio",
-      "version": "0.8.5",
+      "version": "0.8.8",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/mio/0.8.5/download",
-          "sha256": "e5d732bc30207a6423068df043e3d02e0735b155ad7ce1a6f76fe2baa5b158de"
+          "url": "https://crates.io/api/v1/crates/mio/0.8.8/download",
+          "sha256": "927a765cd3fc26206e66b296465fa9d3e5ab003e651c1b3c060e7956d96b19d2"
         }
       },
       "targets": [
@@ -5384,7 +5392,6 @@
         ],
         "crate_features": {
           "common": [
-            "default",
             "net",
             "os-ext",
             "os-poll"
@@ -5392,16 +5399,11 @@
           "selects": {}
         },
         "deps": {
-          "common": [
-            {
-              "id": "log 0.4.17",
-              "target": "log"
-            }
-          ],
+          "common": [],
           "selects": {
             "cfg(target_os = \"wasi\")": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               },
               {
@@ -5411,20 +5413,20 @@
             ],
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.42.0",
+                "id": "windows-sys 0.48.0",
                 "target": "windows_sys"
               }
             ]
           }
         },
         "edition": "2018",
-        "version": "0.8.5"
+        "version": "0.8.8"
       },
       "license": "MIT"
     },
@@ -5510,7 +5512,7 @@
             ],
             "cfg(not(windows))": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ]
@@ -5666,7 +5668,7 @@
               "target": "foreign_types"
             },
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             },
             {
@@ -5834,7 +5836,7 @@
         "deps": {
           "common": [
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             },
             {
@@ -6153,7 +6155,7 @@
             ],
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
@@ -6233,7 +6235,7 @@
             ],
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
@@ -7584,7 +7586,7 @@
             ],
             "cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", any(target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"), all(target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"powerpc64\", target_arch = \"riscv64\", target_arch = \"mips\", target_arch = \"mips64\")))))": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               },
               {
@@ -7599,7 +7601,7 @@
                 "alias": "libc_errno"
               },
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
@@ -7621,13 +7623,13 @@
       },
       "license": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT"
     },
-    "rustsec 0.26.5": {
+    "rustsec 0.27.0": {
       "name": "rustsec",
-      "version": "0.26.5",
+      "version": "0.27.0",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/rustsec/0.26.5/download",
-          "sha256": "252facd5756861013b3dbad84b0568036a4310014311f064e56b214ccc4364db"
+          "url": "https://crates.io/api/v1/crates/rustsec/0.27.0/download",
+          "sha256": "cabcfea780f9b2f75bc2eaae946621fa42cb18189f41cda4dee608ea73a9c397"
         }
       },
       "targets": [
@@ -7657,7 +7659,7 @@
         "deps": {
           "common": [
             {
-              "id": "cargo-lock 8.0.3",
+              "id": "cargo-lock 9.0.0",
               "target": "cargo_lock"
             },
             {
@@ -7716,7 +7718,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.26.5"
+        "version": "0.27.0"
       },
       "license": "Apache-2.0 OR MIT"
     },
@@ -8223,7 +8225,7 @@
         "deps": {
           "common": [
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             }
           ],
@@ -8416,7 +8418,7 @@
           "selects": {
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ],
@@ -8465,7 +8467,7 @@
               "target": "bitflags"
             },
             {
-              "id": "libc 0.2.141",
+              "id": "libc 0.2.147",
               "target": "libc"
             },
             {
@@ -9071,13 +9073,13 @@
       },
       "license": "MIT OR Apache-2.0 OR Zlib"
     },
-    "tokio 1.27.0": {
+    "tokio 1.29.1": {
       "name": "tokio",
-      "version": "1.27.0",
+      "version": "1.29.1",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/tokio/1.27.0/download",
-          "sha256": "d0de47a4eecbe11f498978a9b29d792f0d2692d1dd003650c24c76510e3bc001"
+          "url": "https://crates.io/api/v1/crates/tokio/1.29.1/download",
+          "sha256": "532826ff75199d5833b9d2c5fe410f29235e25704ee5f0ef599fb51c21f4a4da"
         }
       },
       "targets": [
@@ -9148,7 +9150,7 @@
               "target": "bytes"
             },
             {
-              "id": "mio 0.8.5",
+              "id": "mio 0.8.8",
               "target": "mio"
             },
             {
@@ -9164,26 +9166,26 @@
               "target": "pin_project_lite"
             },
             {
-              "id": "tokio 1.27.0",
+              "id": "tokio 1.29.1",
               "target": "build_script_build"
             }
           ],
           "selects": {
-            "cfg(docsrs)": [
-              {
-                "id": "windows-sys 0.45.0",
-                "target": "windows_sys"
-              }
-            ],
             "cfg(not(any(target_arch = \"wasm32\", target_arch = \"wasm64\")))": [
               {
                 "id": "socket2 0.4.9",
                 "target": "socket2"
               }
             ],
+            "cfg(tokio_taskdump)": [
+              {
+                "id": "backtrace 0.3.67",
+                "target": "backtrace"
+              }
+            ],
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               },
               {
@@ -9193,7 +9195,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.45.0",
+                "id": "windows-sys 0.48.0",
                 "target": "windows_sys"
               }
             ]
@@ -9203,13 +9205,13 @@
         "proc_macro_deps": {
           "common": [
             {
-              "id": "tokio-macros 2.0.0",
+              "id": "tokio-macros 2.1.0",
               "target": "tokio_macros"
             }
           ],
           "selects": {}
         },
-        "version": "1.27.0"
+        "version": "1.29.1"
       },
       "build_script_attrs": {
         "data_glob": [
@@ -9227,13 +9229,13 @@
       },
       "license": "MIT"
     },
-    "tokio-macros 2.0.0": {
+    "tokio-macros 2.1.0": {
       "name": "tokio-macros",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "repository": {
         "Http": {
-          "url": "https://crates.io/api/v1/crates/tokio-macros/2.0.0/download",
-          "sha256": "61a573bdc87985e9d6ddeed1b3d864e8a302c847e40d647746df2f1de209d1ce"
+          "url": "https://crates.io/api/v1/crates/tokio-macros/2.1.0/download",
+          "sha256": "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e"
         }
       },
       "targets": [
@@ -9270,7 +9272,7 @@
           "selects": {}
         },
         "edition": "2018",
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       "license": "MIT"
     },
@@ -10220,7 +10222,7 @@
           "selects": {
             "cfg(unix)": [
               {
-                "id": "libc 0.2.141",
+                "id": "libc 0.2.147",
                 "target": "libc"
               }
             ]
@@ -10531,15 +10533,8 @@
           "common": [
             "Win32",
             "Win32_Foundation",
-            "Win32_Networking",
-            "Win32_Networking_WinSock",
-            "Win32_Security",
-            "Win32_Storage",
-            "Win32_Storage_FileSystem",
             "Win32_System",
-            "Win32_System_IO",
             "Win32_System_LibraryLoader",
-            "Win32_System_Pipes",
             "Win32_System_SystemServices",
             "Win32_System_WindowsProgramming",
             "default"
@@ -10657,15 +10652,10 @@
           "common": [
             "Win32",
             "Win32_Foundation",
-            "Win32_Security",
             "Win32_Storage",
             "Win32_Storage_FileSystem",
             "Win32_System",
             "Win32_System_Console",
-            "Win32_System_Pipes",
-            "Win32_System_SystemServices",
-            "Win32_System_Threading",
-            "Win32_System_WindowsProgramming",
             "default"
           ],
           "selects": {}
@@ -10723,7 +10713,10 @@
             "Win32_System",
             "Win32_System_Console",
             "Win32_System_IO",
+            "Win32_System_Pipes",
+            "Win32_System_SystemServices",
             "Win32_System_Threading",
+            "Win32_System_WindowsProgramming",
             "default"
           ],
           "selects": {}
@@ -11744,7 +11737,7 @@
     }
   },
   "binary_crates": [
-    "cargo-audit 0.17.5"
+    "cargo-audit 0.17.6"
   ],
   "workspace_members": {
     "direct-cargo-bazel-deps 0.0.1": ""
@@ -11860,7 +11853,6 @@
       "x86_64-unknown-freebsd",
       "x86_64-unknown-linux-gnu"
     ],
-    "cfg(docsrs)": [],
     "cfg(not(any(target_arch = \"wasm32\", target_arch = \"wasm64\")))": [
       "aarch64-apple-darwin",
       "aarch64-apple-ios",
@@ -12004,6 +11996,7 @@
       "i686-pc-windows-msvc",
       "x86_64-pc-windows-msvc"
     ],
+    "cfg(tokio_taskdump)": [],
     "cfg(tracing_unstable)": [],
     "cfg(unix)": [
       "aarch64-apple-darwin",

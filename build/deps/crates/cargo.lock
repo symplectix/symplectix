@@ -159,9 +159,9 @@ dependencies = [
 
 [[package]]
 name = "auditable-info"
-version = "0.6.2"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "158d56117c834b6e90edbe4c5b5caaefff0996eebe8b952108a0a491330344ee"
+checksum = "e563c9e31a71d1a6f2ab7a5a168cdb0d387f59bde891aac5957b9ebaaf03f602"
 dependencies = [
  "auditable-extract",
  "auditable-serde",
@@ -171,9 +171,9 @@ dependencies = [
 
 [[package]]
 name = "auditable-serde"
-version = "0.5.2"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57ba7d807ad2850c436750154dbc442eb8611527deb6dfcc4e5e0bd10d5fbf28"
+checksum = "b23f8f6711ddeb1c2a163edc94dff5d7c805ca484d33e3464e779741805790c0"
 dependencies = [
  "cargo-lock",
  "semver",
@@ -235,16 +235,18 @@ checksum = "e6e9e01327e6c86e92ec72b1c798d4a94810f147209bbe3ffab6a86954937a6f"
 
 [[package]]
 name = "cargo-audit"
-version = "0.17.5"
+version = "0.17.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9687fb6e8e2217aac2e72955ffb03d2d93b987f5f36a806787a5c64b38db0d13"
+checksum = "d7c04d2178b9ff56e0d4500d10d72d3a5d8156c2d6b6fc193e28a524dadde5c5"
 dependencies = [
  "abscissa_core",
  "auditable-info",
  "auditable-serde",
+ "binfarce",
  "cargo-lock",
  "clap 3.2.23",
  "home",
+ "once_cell",
  "quitters",
  "rustsec",
  "serde",
@@ -254,14 +256,14 @@ dependencies = [
 
 [[package]]
 name = "cargo-lock"
-version = "8.0.3"
+version = "9.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "031718ddb8f78aa5def78a09e90defe30151d1f6c672f937af4dd916429ed996"
+checksum = "e11c675378efb449ed3ce8de78d75d0d80542fc98487c26aba28eb3b82feac72"
 dependencies = [
  "petgraph",
  "semver",
  "serde",
- "toml 0.5.11",
+ "toml 0.7.3",
  "url",
 ]
 
@@ -873,9 +875,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.141"
+version = "0.2.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3304a64d199bb964be99741b7a14d26972741915b3649639149b2479bb46f4b5"
+checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
 name = "libfuzzer-sys"
@@ -988,14 +990,13 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.8.5"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5d732bc30207a6423068df043e3d02e0735b155ad7ce1a6f76fe2baa5b158de"
+checksum = "927a765cd3fc26206e66b296465fa9d3e5ab003e651c1b3c060e7956d96b19d2"
 dependencies = [
  "libc",
- "log",
  "wasi",
- "windows-sys 0.42.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -1373,9 +1374,9 @@ dependencies = [
 
 [[package]]
 name = "rustsec"
-version = "0.26.5"
+version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "252facd5756861013b3dbad84b0568036a4310014311f064e56b214ccc4364db"
+checksum = "cabcfea780f9b2f75bc2eaae946621fa42cb18189f41cda4dee608ea73a9c397"
 dependencies = [
  "cargo-lock",
  "crates-index",
@@ -1642,11 +1643,12 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.27.0"
+version = "1.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0de47a4eecbe11f498978a9b29d792f0d2692d1dd003650c24c76510e3bc001"
+checksum = "532826ff75199d5833b9d2c5fe410f29235e25704ee5f0ef599fb51c21f4a4da"
 dependencies = [
  "autocfg",
+ "backtrace",
  "bytes",
  "libc",
  "mio",
@@ -1656,14 +1658,14 @@ dependencies = [
  "signal-hook-registry",
  "socket2",
  "tokio-macros",
- "windows-sys 0.45.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
 name = "tokio-macros"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61a573bdc87985e9d6ddeed1b3d864e8a302c847e40d647746df2f1de209d1ce"
+checksum = "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e"
 dependencies = [
  "proc-macro2",
  "quote",

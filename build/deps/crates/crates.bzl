@@ -81,7 +81,7 @@ _packages = {
     ),
     # Async runtime
     "tokio": crate.spec(
-        version = "1.27",
+        version = "1.29.1",
         features = ["full"],
     ),
     # Async fn in traits
@@ -135,7 +135,7 @@ _packages = {
 
     # Audit
     "cargo-audit": crate.spec(
-        version = "0.17.5",
+        version = "0.17.6",
     ),
 }
 
