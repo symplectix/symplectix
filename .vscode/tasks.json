@@ -14,29 +14,7 @@
         "cwd": "${workspaceFolder}"
       },
       "group": {
-        "kind": "build",
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "never",
-        "panel": "dedicated",
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
-      }
-    },
-    {
-      "label": "Build a devcontainer image",
-      "command": "bazel",
-      "args": [
-        "run",
-        "//tools/devcontainer:debian_bullseye_slim",
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "group": {
-        "kind": "build",
+        "kind": "none",
       },
       "problemMatcher": [],
       "presentation": {

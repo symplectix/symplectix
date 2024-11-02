@@ -21,12 +21,10 @@
     "files.exclude": {
       "**/.git": true,
       "bazel-*": true,
-      "tmp": true
     },
     "search.exclude": {
       "**/.git": true,
       "bazel-*": true,
-      "tmp": true
     },
   },
   // Add the IDs of extensions you want installed when the container is created.
@@ -36,7 +34,7 @@
     "rust-lang.rust-analyzer",
   ],
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  // "forwardPorts": [],
+  "forwardPorts": [],
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "sudo chown -R nonroot:nonroot /home/nonroot/.cache",
+  "postCreateCommand": "cd .devcontainer/workspace && ./setup.sh scripts/post_container_create"
 }

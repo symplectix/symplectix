@@ -1,0 +1,4 @@
+*
+!.gitignore
+!00_locales.sh
+!01_bazeltools.sh
