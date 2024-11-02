@@ -65,4 +65,4 @@ def build_dependencies():
 
     go_rules_dependencies()
     go_register_toolchains(version = GO_VERSION)
-    gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
+    gazelle_dependencies()
