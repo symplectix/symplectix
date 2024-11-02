@@ -1,3 +1,6 @@
+load("@container_structure_test//:defs.bzl", "container_structure_test")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_doc_test", "rust_library", "rust_test")
 
 rust_library(
@@ -37,16 +40,6 @@ rust_doc_test(
     crate = ":entrypoint",
 )
 
-cc_binary(
-    name = "orphan",
-    srcs = ["orphan.c"],
-)
-
-cc_binary(
-    name = "zombie",
-    srcs = ["zombie.c"],
-)
-
 rust_binary(
     name = "coordinator",
     srcs = ["bin/coordinator.rs"],
@@ -59,5 +52,56 @@ rust_binary(
         "@crates//:tokio",
         "@crates//:tracing",
         "@crates//:tracing-subscriber",
+    ],
+)
+
+pkg_tar(
+    name = "coordinator_pkg",
+    srcs = [":coordinator"],
+)
+
+cc_binary(
+    name = "orphan",
+    srcs = ["orphan.c"],
+)
+
+cc_binary(
+    name = "zombie",
+    srcs = ["zombie.c"],
+)
+
+pkg_tar(
+    name = "orphan_pkg",
+    srcs = [":orphan"],
+)
+
+pkg_tar(
+    name = "zombie_pkg",
+    srcs = [":zombie"],
+)
+
+oci_image(
+    name = "coordinator_test_image",
+    base = "@distroless_cc_nonroot",
+    entrypoint = ["/coordinator"],
+    tars = [
+        ":coordinator_pkg",
+        ":orphan_pkg",
+        ":zombie_pkg",
+    ],
+)
+
+oci_tarball(
+    name = "coordinator_test_tarball",
+    image = ":coordinator_test_image",
+    repo_tags = [package_name() + ":coordinator_test_tarball"],
+)
+
+container_structure_test(
+    name = "coordinator_test",
+    configs = ["testdata/coordinator_test.yaml"],
+    image = ":coordinator_test_image",
+    target_compatible_with = [
+        "@platforms//os:linux",
     ],
 )

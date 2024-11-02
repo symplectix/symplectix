@@ -31,17 +31,17 @@ _http_archives = {
             "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
         ],
     },
+    "aspect_bazel_lib": {
+        "sha256": "09b51a9957adc56c905a2c980d6eb06f04beb1d85c665b467f659871403cf423",
+        "strip_prefix": "bazel-lib-1.34.5",
+        "url": "https://github.com/aspect-build/bazel-lib/releases/download/v1.34.5/bazel-lib-v1.34.5.tar.gz",
+    },
     "bazel_skylib": {
         "sha256": "66ffd9315665bfaafc96b52278f57c7e2dd09f5ede279ea6d39b2be471e7e3aa",
         "urls": [
             "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.2/bazel-skylib-1.4.2.tar.gz",
             "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.2/bazel-skylib-1.4.2.tar.gz",
         ],
-    },
-    "aspect_bazel_lib": {
-        "sha256": "09b51a9957adc56c905a2c980d6eb06f04beb1d85c665b467f659871403cf423",
-        "strip_prefix": "bazel-lib-1.34.5",
-        "url": "https://github.com/aspect-build/bazel-lib/releases/download/v1.34.5/bazel-lib-v1.34.5.tar.gz",
     },
     "rules_cc": {
         "sha256": "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
@@ -123,12 +123,22 @@ _http_archives = {
         "strip_prefix": "buildtools-6.3.3",
         "urls": ["https://github.com/bazelbuild/buildtools/archive/refs/tags/v6.3.3.tar.gz"],
     },
-
-    # OCI
+    "rules_pkg": {
+        "urls": [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+            "https://github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+        ],
+        "sha256": "8f9ee2dc10c1ae514ee599a8b42ed99fa262b757058f65ad3c384289ff70c4b8",
+    },
     "rules_oci": {
         "sha256": "a3b6f4c0051938940ccf251a7bdcdf7ac5a93ae00e63ad107c9c6d3bfe20885b",
         "strip_prefix": "rules_oci-1.3.1",
         "url": "https://github.com/bazel-contrib/rules_oci/releases/download/v1.3.1/rules_oci-v1.3.1.tar.gz",
+    },
+    "container_structure_test": {
+        "sha256": "2da13da4c4fec9d4627d4084b122be0f4d118bd02dfa52857ff118fde88e4faa",
+        "strip_prefix": "container-structure-test-1.16.0",
+        "urls": ["https://github.com/GoogleContainerTools/container-structure-test/archive/v1.16.0.zip"],
     },
 }
 

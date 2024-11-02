@@ -115,6 +115,10 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
 
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
+rules_pkg_dependencies()
+
 load("@rules_oci//oci:dependencies.bzl", "rules_oci_dependencies")
 
 rules_oci_dependencies()
@@ -128,6 +132,10 @@ oci_register_toolchains(
     # Note that it does not support docker-format images.
     # zot_version = LATEST_ZOT_VERSION,
 )
+
+load("@container_structure_test//:repositories.bzl", "container_structure_test_register_toolchain")
+
+container_structure_test_register_toolchain(name = "cst")
 
 load("@rules_oci//oci:pull.bzl", "oci_pull")
 
