@@ -1,50 +1,44 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "register_jq_toolchains", "register_yq_toolchains")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+load("@rules_perl//perl:deps.bzl", "perl_register_toolchains", "perl_rules_dependencies")
 load("@rules_rust//crate_universe:defs.bzl", "splicing_config")
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
 load("@rules_rust//proto/prost:repositories.bzl", "rust_prost_dependencies")
 load("@rules_rust//proto/prost:transitive_repositories.bzl", "rust_prost_transitive_repositories")
-load("//build/deps:versions.bzl", "RUST_STABLE_VERSION")
+load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
+load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
+load("//build/deps:versions.bzl", "GO_VERSION", "RUST_EDITION", "RUST_STABLE_VERSION", "RUST_VERSIONS")
 load("//build/deps/crates:defs.bzl", "bin_crates", "lib_crates")
 
-def build_deps_repositories():
-    # openssl
-    maybe(
-        http_archive,
-        name = "openssl",
-        build_file = Label("//build/deps/openssl:BUILD.openssl.bazel"),
-        sha256 = "cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8",
-        strip_prefix = "openssl-1.1.1w",
-        urls = [
-            "https://mirror.bazel.build/www.openssl.org/source/openssl-1.1.1w.tar.gz",
-            "https://www.openssl.org/source/openssl-1.1.1w.tar.gz",
-            "https://github.com/openssl/openssl/archive/OpenSSL_1_1_1w.tar.gz",
-        ],
-    )
-    maybe(
-        http_archive,
-        name = "nasm",
-        build_file = Label("//build/deps/openssl:BUILD.nasm.bazel"),
-        sha256 = "f5c93c146f52b4f1664fa3ce6579f961a910e869ab0dae431bd871bdd2584ef2",
-        strip_prefix = "nasm-2.15.05",
-        urls = [
-            "https://mirror.bazel.build/www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.15.05-win64.zip",
-            "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.15.05-win64.zip",
-        ],
+def build_dependencies():
+    bazel_skylib_workspace()
+    aspect_bazel_lib_dependencies()
+    register_jq_toolchains()
+    register_yq_toolchains()
+
+    # This sets up some common toolchains for building targets. For more details, please see
+    # https://bazelbuild.github.io/rules_foreign_cc/0.9.0/flatten.html#rules_foreign_cc_dependencies
+    rules_foreign_cc_dependencies()
+
+    perl_rules_dependencies()
+    perl_register_toolchains()
+
+    rules_rust_dependencies()
+
+    rust_register_toolchains(
+        edition = RUST_EDITION,
+        versions = RUST_VERSIONS,
     )
 
-    # zlib
-    maybe(
-        http_archive,
-        name = "zlib",
-        build_file = Label("//build/deps/zlib:BUILD.zlib.bazel"),
-        sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
-        strip_prefix = "zlib-1.2.13",
-        urls = [
-            "https://zlib.net/zlib-1.2.13.tar.gz",
-            "https://storage.googleapis.com/mirror.tensorflow.org/zlib.net/zlib-1.2.13.tar.gz",
-        ],
-    )
+    # Load the dependencies for the rust-project.json generator tool.
+    # n.b., rust_register_toolchains in WORKSPACE ensure a rust_analyzer_toolchain is registered.
+    #
+    # To regenerate the rust-project.json file:
+    #   bazel run @rules_rust//tools/rust_analyzer:gen_rust_project
+    rust_analyzer_dependencies()
 
     # For prost and tonic.
     rust_prost_dependencies()
@@ -67,3 +61,7 @@ def build_deps_repositories():
             resolver_version = "2",
         ),
     )
+
+    go_rules_dependencies()
+    go_register_toolchains(version = GO_VERSION)
+    gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
