@@ -241,7 +241,7 @@ _crates = {
     # For auditing Rust packages.
     "cargo-audit": struct(
         spec = crate.spec(
-            version = "0.18.1",
+            version = "0.18.2",
         ),
         annotations = [crate.annotation(
             gen_binaries = ["cargo-audit"],
