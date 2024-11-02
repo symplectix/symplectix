@@ -1,4 +1,4 @@
-use core::cmp::Ordering;
+use core::iter::successors;
 use core::ops::{Bound, Range, RangeBounds};
 
 // TODO: Use type parameters instead of an argument.
@@ -44,51 +44,57 @@ const fn max_index_exclusive(bound: Bound<&usize>, max: usize) -> usize {
     }
 }
 
-pub const fn between(
-    start: usize,
-    end: usize,
-    step: usize,
-) -> impl Iterator<Item = (usize, Range<usize>)> {
-    struct Between {
-        current: (usize, usize),
-        end: (usize, usize),
-        sep: usize,
-    }
+/// Splits a given range [s, e) into chunks.
+/// Each chunk is represented as a (index, len) tuple, and its rhs, index+len, is aligned to a multiple of n.
+///
+/// # Examples
+///
+/// ```
+/// let mut it = bitaddr::chunks_aligned(10, 0, 3);
+/// assert_eq!(it.next(), None);
+///
+/// let mut it = bitaddr::chunks_aligned(10, 10, 3);
+/// assert_eq!(it.next(), None);
+///
+/// let mut it = bitaddr::chunks_aligned(10, 12, 3);
+/// assert_eq!(it.next(), Some((10, 2)));
+/// assert_eq!(it.next(), None);
+///
+/// let mut it = bitaddr::chunks_aligned(10, 20, 3);
+/// assert_eq!(it.next(), Some((10, 2)));
+/// assert_eq!(it.next(), Some((12, 3)));
+/// assert_eq!(it.next(), Some((15, 3)));
+/// assert_eq!(it.next(), Some((18, 2)));
+/// assert_eq!(it.next(), None);
+///
+/// let mut it = bitaddr::chunks_aligned(10, 21, 3);
+/// assert_eq!(it.next(), Some((10, 2)));
+/// assert_eq!(it.next(), Some((12, 3)));
+/// assert_eq!(it.next(), Some((15, 3)));
+/// assert_eq!(it.next(), Some((18, 3)));
+/// assert_eq!(it.next(), None);
+/// ```
+pub fn chunks_aligned(start: usize, end: usize, n: usize) -> impl Iterator<Item = (usize, usize)> {
+    let step = move |i| (i < end).then_some((i, next_multiple_of(i, n).min(end) - i));
+    successors(step(start), move |&(index, len)| step(index + len))
+}
 
-    impl Iterator for Between {
-        type Item = (usize, Range<usize>);
-
-        fn next(&mut self) -> Option<Self::Item> {
-            let (i, p) = self.current; // p is 0 except the first item
-            let (j, q) = self.end; // q is B::BITS except the last item
-            let sep = self.sep;
-
-            match i.cmp(&j) {
-                Ordering::Less => {
-                    self.current = (i + 1, 0);
-                    Some((i, p..sep))
-                }
-                Ordering::Equal => {
-                    self.current = (i + 1, 0);
-                    Some((i, p..q))
-                }
-                Ordering::Greater => None,
-            }
-        }
-    }
-
-    Between { current: address(start, step), end: address(end, step), sep: step }
+// TODO: Use [usize::checked_next_multiple_of](https://doc.rust-lang.org/std/primitive.usize.html#method.checked_next_multiple_of).
+// https://github.com/rust-lang/rust/issues/88581
+#[inline]
+const fn next_multiple_of(x: usize, n: usize) -> usize {
+    x + (n - x % n)
 }
 
 #[cfg(test)]
 mod tests {
     #[test]
-    fn between() {
-        let mut it = super::between(10, 20, 3);
-        assert_eq!(it.next(), Some((3, 1..3))); // 10..12
-        assert_eq!(it.next(), Some((4, 0..3))); // 12..15
-        assert_eq!(it.next(), Some((5, 0..3))); // 15..18
-        assert_eq!(it.next(), Some((6, 0..2))); // 18..20
-        assert_eq!(it.next(), None);
+    fn next_multiple_of() {
+        use super::next_multiple_of;
+        assert_eq!(next_multiple_of(0, 8), 8);
+        assert_eq!(next_multiple_of(12, 3), 15);
+        assert_eq!(next_multiple_of(16, 8), 24);
+        assert_eq!(next_multiple_of(23, 8), 24);
+        assert_eq!(next_multiple_of(9, 3), 12);
     }
 }
