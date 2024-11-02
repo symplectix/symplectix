@@ -40,11 +40,10 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
       - name: Run //tool/buildifier
-        if: runner.os == 'Linux'
         run: $BAZEL run $BAZEL_ARGS //tool/buildifier
 
       - name: Run //tool/audit
-        if: runner.os == 'Linux'
+        if: github.event_name == 'schedule'
         run: $BAZEL run $BAZEL_ARGS //tool/audit
 
       - name: Build
