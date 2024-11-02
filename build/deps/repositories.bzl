@@ -1,4 +1,3 @@
-load("//build/deps/crates:crates_repositories.bzl", "crates_repositories")
 load("//build/deps/libgit2:libgit2_repositories.bzl", "libgit2_repositories")
 load("//build/deps/libssh2:libssh2_repositories.bzl", "libssh2_repositories")
 load("//build/deps/openssl:openssl_repositories.bzl", "openssl_repositories")
@@ -9,4 +8,3 @@ def repositories():
     zlib_repositories()
     libssh2_repositories()
     libgit2_repositories()
-    crates_repositories()

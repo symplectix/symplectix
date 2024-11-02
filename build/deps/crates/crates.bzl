@@ -1,6 +1,4 @@
-load("@//:toolchain.bzl", "RUST_STABLE_VERSION")
-load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository", "splicing_config")
-load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
+load("@rules_rust//crate_universe:defs.bzl", "crate")
 
 _annotations = {
     "openssl-sys": [crate.annotation(
@@ -141,22 +139,7 @@ _packages = {
     ),
 }
 
-def crates_repositories():
-    crate_universe_dependencies(
-        rust_version = RUST_STABLE_VERSION,
-    )
-
-    # Repinning
-    # https://bazelbuild.github.io/rules_rust/crate_universe.html#repinning--updating-dependencies
-    crates_repository(
-        name = "crates",
-        cargo_lockfile = "//build/deps/crates:cargo.lock",
-        lockfile = "//build/deps/crates:cargo-bazel-lock.json",
-        annotations = _annotations,
-        packages = _packages,
-        # The version of Rust the currently registered toolchain is using.
-        rust_version = RUST_STABLE_VERSION,
-        splicing_config = splicing_config(
-            resolver_version = "2",
-        ),
-    )
+crates = struct(
+    annotations = _annotations,
+    packages = _packages,
+)
