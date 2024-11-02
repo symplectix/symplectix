@@ -5,6 +5,8 @@ use runfiles::Runfiles;
 
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 static GECKODRIVER_BIN: &str = "geckodriver_linux_x86_64/geckodriver";
+#[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+static GECKODRIVER_BIN: &str = "geckodriver_macos_x86_64/geckodriver";
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 static GECKODRIVER_BIN: &str = "geckodriver_macos_arm64/geckodriver";
 

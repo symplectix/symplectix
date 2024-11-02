@@ -10,8 +10,7 @@ jobs:
     name: Testing
     strategy:
       matrix:
-        # TODO: add macos-12
-        os: [ubuntu-22.04]
+        os: [ubuntu-22.04, macos-12]
     uses: ./.github/workflows/testing.yaml
     with:
       os: ${{ matrix.os }}

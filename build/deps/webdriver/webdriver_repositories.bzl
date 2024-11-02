@@ -14,6 +14,14 @@ def geckodriver_repositories():
 
     maybe(
         http_archive,
+        name = "geckodriver_macos_x86_64",
+        build_file = Label("@//build/deps/webdriver:BUILD.geckodriver.bazel"),
+        sha256 = "a39c72553beae18c58a560c84cfe86c1708d101bb3d57b8744e3eca64f403703",
+        url = "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-macos.tar.gz",
+    )
+
+    maybe(
+        http_archive,
         name = "geckodriver_macos_arm64",
         build_file = Label("@//build/deps/webdriver:BUILD.geckodriver.bazel"),
         sha256 = "36ec6d2ff40d4019ac348bd96b83be46917cc8c3e87184890c3de995890d8e2c",

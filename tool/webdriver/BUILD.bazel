@@ -4,6 +4,7 @@ alias(
     name = "geckodriver_bin",
     actual = select({
         "//build/platform:linux_x86_64": "@geckodriver_linux_x86_64//:geckodriver",
+        "//build/platform:macos_x86_64": "@geckodriver_macos_x86_64//:geckodriver",
         "//build/platform:macos_arm64": "@geckodriver_macos_arm64//:geckodriver",
     }),
 )
