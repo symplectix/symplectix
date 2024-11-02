@@ -4,29 +4,18 @@ use core::{
     iter::{Fuse, Peekable},
 };
 
-pub trait Xor: Sized + Mask {
-    fn xor<That: Mask>(self, that: That) -> BitwiseXor<Self, That>;
+pub struct Xor<A, B> {
+    pub(crate) a: A,
+    pub(crate) b: B,
 }
 
 pub trait XorAssign<That: ?Sized> {
     fn xor_assign(a: &mut Self, b: &That);
 }
 
-pub struct BitwiseXor<A, B> {
-    pub(crate) a: A,
-    pub(crate) b: B,
-}
-
 pub struct SymmetricDifference<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
-}
-
-impl<T: Mask> Xor for T {
-    #[inline]
-    fn xor<That: Mask>(self, that: That) -> BitwiseXor<Self, That> {
-        BitwiseXor { a: self, b: that }
-    }
 }
 
 macro_rules! ints_impl_xor_assign {
@@ -73,7 +62,7 @@ where
 //     }
 // }
 
-impl<A, B> IntoIterator for BitwiseXor<A, B>
+impl<A, B> IntoIterator for Xor<A, B>
 where
     Self: Mask,
 {
@@ -85,7 +74,7 @@ where
     }
 }
 
-impl<A: Mask, B: Mask<Bits = A::Bits>> Mask for BitwiseXor<A, B>
+impl<A: Mask, B: Mask<Bits = A::Bits>> Mask for Xor<A, B>
 where
     A::Bits: XorAssign<B::Bits>,
 {

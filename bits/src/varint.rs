@@ -11,6 +11,7 @@ use crate::{Bits, Container, ContainerMut};
 /// assert_eq!(bits.varint::<u8>(14, len), 0b0111);
 /// assert_eq!(bits.varint::<u8>(30, len), 0b0010);
 /// ```
+#[doc(hidden)]
 pub trait Varint: Container {
     /// Reads `n` bits from `i`, and returns it as the lowest `n` bits of `Int`.
     #[doc(hidden)]
@@ -27,6 +28,7 @@ pub trait Varint: Container {
     }
 }
 
+#[doc(hidden)]
 pub trait PutVarint: ContainerMut + Varint {
     /// Writes `N` bits in `[i, i+N)`.
     #[doc(hidden)]

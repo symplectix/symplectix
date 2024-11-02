@@ -4,29 +4,18 @@ use core::{
     iter::{Fuse, Peekable},
 };
 
-pub trait Or: Sized + Mask {
-    fn or<That: Mask>(self, that: That) -> BitwiseOr<Self, That>;
+pub struct Or<A, B> {
+    pub(crate) a: A,
+    pub(crate) b: B,
 }
 
 pub trait OrAssign<That: ?Sized> {
     fn or_assign(a: &mut Self, b: &That);
 }
 
-pub struct BitwiseOr<A, B> {
-    pub(crate) a: A,
-    pub(crate) b: B,
-}
-
 pub struct Union<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
-}
-
-impl<T: Mask> Or for T {
-    #[inline]
-    fn or<That: Mask>(self, that: That) -> BitwiseOr<Self, That> {
-        BitwiseOr { a: self, b: that }
-    }
 }
 
 macro_rules! ints_impl_or_assign {
@@ -72,7 +61,7 @@ where
 //     }
 // }
 
-impl<A, B> IntoIterator for BitwiseOr<A, B>
+impl<A, B> IntoIterator for Or<A, B>
 where
     Self: Mask,
 {
@@ -84,7 +73,7 @@ where
     }
 }
 
-impl<A: Mask, B: Mask<Bits = A::Bits>> Mask for BitwiseOr<A, B>
+impl<A: Mask, B: Mask<Bits = A::Bits>> Mask for Or<A, B>
 where
     A::Bits: OrAssign<B::Bits>,
 {
