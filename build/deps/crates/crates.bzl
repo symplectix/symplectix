@@ -33,6 +33,12 @@ _annotations = {
     "cargo-audit": [crate.annotation(
         gen_binaries = ["cargo-audit"],
     )],
+    "protoc-gen-prost": [crate.annotation(
+        gen_binaries = ["protoc-gen-prost"],
+    )],
+    "protoc-gen-tonic": [crate.annotation(
+        gen_binaries = ["protoc-gen-tonic"],
+    )],
 }
 
 _packages = {
@@ -56,6 +62,42 @@ _packages = {
     ),
     "libgit2-sys": crate.spec(
         version = "0.14.2+1.5.1",
+    ),
+
+    "serde": crate.spec(
+        # TODO: Set version to "1"
+        # "=1.0.164" is just a workaround to avoid compilation failure in a CI environment.
+        # * https://github.com/bazelbuild/rules_rust/issues/2071
+        # * https://github.com/bazelbuild/rules_rust/issues/2074
+        version = "=1.0.164",
+        features = ["derive"],
+    ),
+
+    # Protobuf support
+    "prost": crate.spec(
+        version = "0",
+    ),
+    # Protobuf well-known types
+    "prost-types": crate.spec(
+        version = "0",
+    ),
+    "protoc-gen-prost": crate.spec(
+        version = "0",
+    ),
+    "protoc-gen-tonic": crate.spec(
+        version = "0",
+    ),
+    "tonic": crate.spec(
+        version = "0",
+    ),
+    "tonic-types": crate.spec(
+        version = "0",
+    ),
+    "tonic-health": crate.spec(
+        version = "0",
+    ),
+    "tonic-reflection": crate.spec(
+        version = "0",
     ),
 
     # For fuzzing

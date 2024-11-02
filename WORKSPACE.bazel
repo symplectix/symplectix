@@ -63,7 +63,6 @@ load("@//build/deps:repositories.bzl", build_deps_repositories = "repositories")
 build_deps_repositories()
 
 # Protocol Buffers
-# For tonic/prost: https://github.com/rules-proto-grpc/rules_proto_grpc/pull/202
 http_archive(
     name = "rules_proto",
     sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
@@ -96,12 +95,6 @@ rust_register_toolchains(
     versions = RUST_VERSIONS,
 )
 
-# load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_repositories")
-# rust_bindgen_repositories()
-
-# load("@rules_rust//wasm_bindgen:repositories.bzl", "rust_wasm_bindgen_repositories")
-# rust_wasm_bindgen_repositories()
-
 rust_analyzer_dependencies()
 
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
@@ -131,6 +124,16 @@ crates_repository(
 load("@crates//:defs.bzl", "crate_repositories")
 
 crate_repositories()
+
+load("@rules_rust//proto/prost:repositories.bzl", "rust_prost_dependencies")
+
+rust_prost_dependencies()
+
+load("@rules_rust//proto/prost:transitive_repositories.bzl", "rust_prost_transitive_repositories")
+
+rust_prost_transitive_repositories()
+
+register_toolchains("//build/toolchains:prost_toolchain")
 
 # Go
 http_archive(
