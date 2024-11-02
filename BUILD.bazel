@@ -28,3 +28,8 @@ buildifier(
     ],
     mode = "check",
 )
+
+exports_files([
+    "clippy.toml",
+    "rustfmt.toml",
+])

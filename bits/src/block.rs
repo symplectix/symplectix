@@ -86,9 +86,7 @@ mod impl_alloc {
         type Block = Cow<'a, T>;
         type Blocks = Blocks<'a, T>;
         fn into_blocks(self) -> Self::Blocks {
-            Blocks {
-                blocks: self.iter().enumerate(),
-            }
+            Blocks { blocks: self.iter().enumerate() }
         }
     }
 
@@ -100,8 +98,7 @@ mod impl_alloc {
         type Item = (usize, Cow<'a, T>);
         #[inline]
         fn next(&mut self) -> Option<Self::Item> {
-            self.blocks
-                .find_map(|(i, b)| b.any().then(|| (i, Cow::Borrowed(b))))
+            self.blocks.find_map(|(i, b)| b.any().then(|| (i, Cow::Borrowed(b))))
         }
     }
 }

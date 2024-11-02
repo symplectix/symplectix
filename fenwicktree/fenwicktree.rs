@@ -208,10 +208,7 @@ impl<'a, T: Int> Prefix for &'a [T] {
 
     #[inline]
     fn prefix(self, index: usize) -> Self::Iter {
-        iter::Prefix {
-            index: prefix(index),
-            data: self,
-        }
+        iter::Prefix { index: prefix(index), data: self }
     }
 }
 

@@ -28,7 +28,5 @@ pub fn with_capacity<T: bits::Block>(capacity: usize) -> Vec<T> {
 /// ```
 pub fn empty<T: bits::Block>(n: usize) -> Vec<T> {
     use std::iter::from_fn;
-    from_fn(|| Some(T::empty()))
-        .take(blocks(n, T::BITS))
-        .collect::<Vec<T>>()
+    from_fn(|| Some(T::empty())).take(blocks(n, T::BITS)).collect::<Vec<T>>()
 }

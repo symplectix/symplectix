@@ -1,0 +1,12 @@
+# https://rust-lang.github.io/rust-clippy/master/index.html
+
+disallowed-types = [
+    "std::env::temp_dir", # use the `tempdir` crate instead
+    "std::env::home_dir", # deprecated
+
+    # use the faster & simpler non-poisonable primitives in `parking_lot` instead
+    "std::sync::Mutex::new",
+    "std::sync::RwLock::new",
+    "std::sync::Condvar::new",
+    "std::sync::Once::new",
+]
