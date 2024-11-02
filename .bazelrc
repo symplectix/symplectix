@@ -15,7 +15,7 @@ build:verbose --verbose_failures
 test:verbose --test_output=errors
 
 # https://bazel.build/docs/user-manual#workspace_status
-common:stamp --stamp --workspace_status_command=stamp/workspace_status.sh
+common:stamp --stamp --workspace_status_command=stamp/buildinfo.sh
 
 # Bazel picks up host-OS-specific config lines from bazelrc files.
 # https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config

@@ -4,7 +4,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "zlib",
-    build_file = "//x/zlib:BUILD.zlib.bazel",
+    build_file = "//compress/zlib:BUILD.zlib.bazel",
     sha256 = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
     strip_prefix = "zlib-1.3.1",
     urls = [
@@ -15,7 +15,7 @@ http_archive(
 
 http_archive(
     name = "openssl",
-    build_file = "//x/openssl:BUILD.openssl.bazel",
+    build_file = "//crypto/openssl:BUILD.openssl.bazel",
     sha256 = "83c7329fe52c850677d75e5d0b0ca245309b97e8ecbcfdc1dfdc4ab9fac35b39",
     strip_prefix = "openssl-3.2.1",
     urls = ["https://www.openssl.org/source/openssl-3.2.1.tar.gz"],
@@ -48,7 +48,7 @@ http_archive(
     urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/releases/download/4.4.0/rules_proto_grpc-4.4.0.tar.gz"],
 )
 
-register_toolchains("//tools/prost:prost_toolchain")
+register_toolchains("//protobuf/prost:prost_toolchain")
 
 _RUST_EDITION = "2021"
 
@@ -110,7 +110,7 @@ load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencie
 
 crate_universe_dependencies()
 
-load("//x/crates:defs.bzl", "crates")
+load("//crates:defs.bzl", "crates")
 
 # Cargo packages that contain a library. To generate Bazel targets for binaries,
 # you must annotate on the package. See defs.bzl for working examples.
@@ -118,8 +118,8 @@ load("//x/crates:defs.bzl", "crates")
 # CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=crates bazel sync --only=crates
 crates.repository(
     name = "crates",
-    cargo_lockfile = "//x/crates:Cargo.lock",
-    lockfile = "//x/crates:Cargo.Bazel.lock",
+    cargo_lockfile = "//crates:Cargo.lock",
+    lockfile = "//crates:Cargo.Bazel.lock",
     splicing_config = splicing_config(
         # The resolver version to use in generated Cargo manifests.
         # This flag is only used when splicing a manifest from direct package definitions.

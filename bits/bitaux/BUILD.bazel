@@ -8,7 +8,7 @@ rust_library(
         "//bits",
         "//bits/bit",
         "//bits/bitpacking",
-        "//fenwicktree",
+        "//index/fenwicktree",
         "//num",
     ],
 )

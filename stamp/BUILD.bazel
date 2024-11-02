@@ -1,19 +1,22 @@
 load("@aspect_bazel_lib//lib:jq.bzl", "jq")
 
 jq(
-    name = "status",
+    name = "buildinfo",
     srcs = [],
+    args = [
+        "--sort-keys",
+    ],
     filter = "|".join([
         "$ARGS.named.STAMP as $stamp",
         "$stamp // []",
-        ".[]",
+        "reduce .[] as $x ({}; . * $x)",
     ]),
 )
 
 genrule(
     name = "git_commit",
-    srcs = [":status.json"],
+    srcs = [":buildinfo.json"],
     outs = ["git_commit.txt"],
-    cmd = "$(JQ_BIN) -r '.STABLE_GIT_COMMIT' $(location :status.json) > $@",
+    cmd = "$(JQ_BIN) -r '.STABLE_GIT_COMMIT' $(location :buildinfo.json) > $@",
     toolchains = ["@jq_toolchains//:resolved_toolchain"],
 )
