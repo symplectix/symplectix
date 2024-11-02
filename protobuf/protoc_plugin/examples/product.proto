@@ -11,7 +11,7 @@ message Product {
 message Review {
     int32 id = 1;
     Product product = 2;
-    google.protobuf.Empty empty = 3;
+    optional google.protobuf.Empty empty = 3;
 }
 
 service ProductService {
