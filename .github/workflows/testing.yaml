@@ -28,15 +28,15 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
-      - run: $BAZEL run $BAZEL_ARGS //tool/buildifier
-        name: Buildifier
+      - name: Buildifier
+        run: $BAZEL run $BAZEL_ARGS //tool/buildifier
 
-      - run: $BAZEL build $BAZEL_ARGS //...
-        name: Build
+      - name: Build
+        run: $BAZEL build $BAZEL_ARGS //...
 
-      - run: $BAZEL test $BAZEL_ARGS //...
-        name: Test
+      - name: Test
+        run: $BAZEL test $BAZEL_ARGS //...
 
-      - run: $BAZEL run $BAZEL_ARGS //tool/audit
-        name: Audit
+      - name: Audit
         if: github.event_name == 'schedule'
+        run: $BAZEL run $BAZEL_ARGS //tool/audit
