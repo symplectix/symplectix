@@ -102,24 +102,24 @@ fn bit_rank() {
 
 #[quickcheck]
 fn repr_bits(vec: Vec<u32>) -> bool {
-    let rho = bitvec::Rho::from(&vec[..]);
-    vec.bits() == rho.bits()
+    let aux = bitaux::BitAux::from(&vec[..]);
+    vec.bits() == aux.bits()
 }
 
 #[quickcheck]
 fn repr_rank(vec: Vec<u32>) -> bool {
-    let rho = bitvec::Rho::from(&vec[..]);
-    vec.count1() == rho.count1() && vec.count0() == rho.count0()
+    let aux = bitaux::BitAux::from(&vec[..]);
+    vec.count1() == aux.count1() && vec.count0() == aux.count0()
 }
 
 #[quickcheck]
 fn repr_select1(vec: Vec<u32>) -> bool {
-    let rho = bitvec::Rho::from(&vec[..]);
-    (0..vec.count1()).all(|i| vec.select1(i) == rho.select1(i))
+    let aux = bitaux::BitAux::from(&vec[..]);
+    (0..vec.count1()).all(|i| vec.select1(i) == aux.select1(i))
 }
 
 #[quickcheck]
 fn repr_select0(vec: Vec<u32>) -> bool {
-    let rho = bitvec::Rho::from(&vec[..]);
-    (0..vec.count0()).all(|i| vec.select0(i) == rho.select0(i))
+    let aux = bitaux::BitAux::from(&vec[..]);
+    (0..vec.count0()).all(|i| vec.select0(i) == aux.select0(i))
 }

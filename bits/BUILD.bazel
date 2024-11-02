@@ -5,8 +5,8 @@ package(default_visibility = ["//visibility:private"])
 rust_library(
     name = "bits",
     srcs = glob(
-        ["*.rs"],
-        exclude = ["*_test.rs"],
+        ["src/*.rs"],
+        exclude = ["src/*_test.rs"],
     ),
     visibility = ["//visibility:public"],
     deps = ["//bits/bit"],
@@ -14,13 +14,13 @@ rust_library(
 
 rust_test_suite(
     name = "tests",
-    srcs = glob(["*_test.rs"]),
+    srcs = glob(["src/*_test.rs"]),
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
     deps = [
         ":bits",
-        "//bits/bitvec",
+        "//bits/bitaux",
         "//num",
         "@crates//:quickcheck",
     ],

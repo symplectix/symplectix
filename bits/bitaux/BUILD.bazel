@@ -3,7 +3,7 @@ load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", 
 package(default_visibility = ["//visibility:private"])
 
 rust_library(
-    name = "bitvec",
+    name = "bitaux",
     srcs = glob(
         ["*.rs"],
         exclude = ["*_test.rs"],
@@ -20,15 +20,21 @@ rust_library(
 
 rust_test(
     name = "cfg_test",
-    crate = ":bitvec",
+    crate = ":bitaux",
+    rustc_flags = [
+        "-Copt-level=3",
+    ],
+    deps = [
+        "@crates//:quickcheck",
+    ],
 )
 
 rust_doc_test(
     name = "doc_test",
-    crate = ":bitvec",
+    crate = ":bitaux",
 )
 
 rust_doc(
     name = "doc",
-    crate = ":bitvec",
+    crate = ":bitaux",
 )

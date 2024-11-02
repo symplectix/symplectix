@@ -4,7 +4,7 @@ use num::Int;
 use std::iter::Sum;
 use std::ops::{AddAssign, Sub, SubAssign};
 
-pub use iter::{children, prefix, search, update};
+pub use index::{children, prefix, search, update};
 
 pub trait Node: Sized + Copy {}
 
@@ -32,25 +32,26 @@ impl<'a, T: ?Sized + Nodes> Nodes for &'a T {
     }
 }
 
-/// Build a fenwick tree.
-pub fn build<T: Node + AddAssign>(bit: &mut [T]) {
-    assert!(!bit.is_empty());
+/// Builds a fenwick tree.
+pub fn build<T: Node + AddAssign>(tr: &mut [T]) {
+    assert!(!tr.is_empty());
 
-    for i in 1..bit.len() {
-        let j = iter::next_index_for_update(i);
-        if j < bit.len() {
-            bit[j] += bit[i];
+    for i in 1..tr.len() {
+        let j = index::next_for_update(i);
+        if j < tr.len() {
+            tr[j] += tr[i];
         }
     }
 }
 
-pub fn unbuild<T: Node + SubAssign>(bit: &mut [T]) {
-    assert!(!bit.is_empty());
+/// Resets a fenwick tree.
+pub fn reset<T: Node + SubAssign>(tr: &mut [T]) {
+    assert!(!tr.is_empty());
 
-    for i in (1..bit.len()).rev() {
-        let j = iter::next_index_for_update(i);
-        if j < bit.len() {
-            bit[j] -= bit[i];
+    for i in (1..tr.len()).rev() {
+        let j = index::next_for_update(i);
+        if j < tr.len() {
+            tr[j] -= tr[i];
         }
     }
 }
@@ -76,7 +77,7 @@ pub fn pop<T: Node + SubAssign>(bit: &mut Vec<T>) -> Option<T> {
     })
 }
 
-mod iter {
+mod index {
     use bits::{Lsb, Msb};
     use core::iter::{successors, Successors};
     use core::ops::{Add, Sub};
@@ -84,13 +85,13 @@ mod iter {
 
     // The next node to be updated can be found by adding the node size `n.lsb()`.
     #[inline]
-    pub(crate) fn next_index_for_update<T: Int + Add + Lsb>(i: T) -> <T as Add>::Output {
+    pub(crate) fn next_for_update<T: Int + Add + Lsb>(i: T) -> <T as Add>::Output {
         i + i.lsb()
     }
 
     // The next node to be queried can be found by subtracting the node size `n.lsb()`.
     #[inline]
-    pub(crate) fn next_index_for_prefix<T: Int + Sub + Lsb>(i: T) -> <T as Sub>::Output {
+    pub(crate) fn next_for_prefix<T: Int + Sub + Lsb>(i: T) -> <T as Sub>::Output {
         i - i.lsb()
     }
 
@@ -101,9 +102,8 @@ mod iter {
     /// }
     /// ```
     pub fn prefix(i: usize) -> Successors<usize, fn(&usize) -> Option<usize>> {
-        #[inline]
         fn next_index(&i: &usize) -> Option<usize> {
-            let x = next_index_for_prefix(i);
+            let x = next_for_prefix(i);
             (x > 0).then_some(x)
         }
 
@@ -129,7 +129,7 @@ mod iter {
 
     pub fn update(i: usize, nodes: usize) -> impl Iterator<Item = usize> {
         let next_index = move |&i: &usize| -> Option<usize> {
-            let x = next_index_for_update(i);
+            let x = next_for_update(i);
             (x <= nodes).then_some(x)
         };
 
@@ -137,18 +137,6 @@ mod iter {
         successors((i > 0).then_some(i), next_index)
     }
 
-    // #[inline]
-    // pub fn update_(i: usize, slice_len: usize) -> impl Iterator<Item = usize> {
-    //     // The next segment to be updated can be found by adding the segment length `n.lsb()`.
-    //     #[inline]
-    //     fn next(&d: &usize) -> Option<usize> {
-    //         Some(next_index_for_update(d))
-    //     }
-    //     // for x := k+1; x < max; x += lsb(x) { ...
-    //     successors(Some(i + 1), next).take_while(move |&x| x < slice_len)
-    // }
-
-    #[inline]
     pub fn search(nodes: usize) -> impl Iterator<Item = usize> {
         // for x := m.msb(); x > 0; x >>= 1
         successors((nodes > 0).then(|| nodes.msb()), |&i| {
