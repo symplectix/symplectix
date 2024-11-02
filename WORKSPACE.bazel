@@ -3,8 +3,17 @@ workspace(name = "trunk")
 load("@//:toolchain.bzl", "GO_VERSION", "RUST_EDITION", "RUST_VERSIONS")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Skylib
+# Platforms
+http_archive(
+    name = "platforms",
+    sha256 = "5308fc1d8865406a49427ba24a9ab53087f17f5266a7aabbfc28823f3916e1ca",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
+    ],
+)
 
+# Skylib
 http_archive(
     name = "bazel_skylib",
     sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
@@ -20,7 +29,6 @@ bazel_skylib_workspace()
 
 # Protocol Buffers
 # For tonic/prost: https://github.com/rules-proto-grpc/rules_proto_grpc/pull/202
-
 http_archive(
     name = "rules_proto",
     sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
@@ -37,7 +45,6 @@ rules_proto_dependencies()
 rules_proto_toolchains()
 
 # Rust
-
 http_archive(
     name = "rules_rust",
     sha256 = "d125fb75432dc3b20e9b5a19347b45ec607fabe75f98c6c4ba9badaab9c193ce",
@@ -63,7 +70,6 @@ rust_register_toolchains(
 rust_analyzer_dependencies()
 
 # CC
-
 http_archive(
     name = "rules_foreign_cc",
     sha256 = "2a4d07cd64b0719b39a7c12218a3e507672b82a97b98c6a89d38565894cf7c51",
@@ -78,7 +84,6 @@ load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_depende
 rules_foreign_cc_dependencies()
 
 # Perl
-
 http_archive(
     name = "rules_perl",
     sha256 = "391edb08802860ba733d402c6376cfe1002b598b90d2240d9d302ecce2289a64",
@@ -95,7 +100,6 @@ perl_rules_dependencies()
 perl_register_toolchains()
 
 # Go
-
 http_archive(
     name = "io_bazel_rules_go",
     sha256 = "dd926a88a564a9246713a9c00b35315f54cbd46b31a26d5d8fb264c07045f05d",
@@ -124,7 +128,6 @@ go_register_toolchains(version = GO_VERSION)
 gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
 
 # Docker
-
 http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
@@ -144,15 +147,13 @@ load("@io_bazel_rules_docker//rust:image.bzl", _rust_image_repos = "repositories
 _rust_image_repos()
 
 # Bazel Buildtools
-
 http_archive(
     name = "com_github_bazelbuild_buildtools",
     strip_prefix = "buildtools-6.0.0",
     urls = ["https://github.com/bazelbuild/buildtools/archive/refs/tags/6.0.0.tar.gz"],
 )
 
-# Thirdparty
-
+# External build dependencies
 load("@//build/deps:repositories.bzl", build_deps_repositories = "repositories")
 
 build_deps_repositories()

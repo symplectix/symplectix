@@ -57,11 +57,13 @@ build --incompatible_sandbox_hermetic_tmp
 # rustc flags for proc-macros, cargo_build_script, etc.
 build --@rules_rust//:extra_exec_rustc_flags=-Copt-level=3
 
-# Some tools like sanitizers depend on nightly.
-# https://github.com/bazelbuild/rules_rust/blob/main/rust/toolchain/channel/BUILD.bazel
+# * The platfrom `stable` should be the default target.
 #
-# To constrain builds/tests based on Rust release channels:
-# https://github.com/bazelbuild/rules_rust/blob/main/rust/platform/channel/BUILD.bazel
+# * Some tools like sanitizers depend on nightly.
+#   https://github.com/bazelbuild/rules_rust/blob/main/rust/toolchain/channel/BUILD.bazel
+build:stable --platforms=//build/platform:stable
+build:stable --@rules_rust//rust/toolchain/channel=stable
+build:nightly --platforms=//build/platform:nightly
 build:nightly --@rules_rust//rust/toolchain/channel=nightly
 
 # compilation_mode to rustc codegen options

@@ -44,9 +44,8 @@ def rust_fuzz_binary(
 
     rust_binary(
         name = target_name,
-        # TODO: do not compile on stable
-        # target_compatible_with = [
-        #     "@rules_rust//rust/platform/channel:nightly",
-        # ],
+        target_compatible_with = [
+            "@rules_rust//rust/platform/channel:nightly",
+        ],
         **kwargs
     )
