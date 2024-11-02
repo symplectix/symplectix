@@ -75,7 +75,7 @@ const fn max_index_exclusive(bound: Bound<&usize>, max: usize) -> usize {
 /// assert_eq!(it.next(), None);
 /// ```
 pub fn chunks_aligned(start: usize, end: usize, n: usize) -> impl Iterator<Item = (usize, usize)> {
-    let step = move |i| (i < end).then_some((i, next_multiple_of(i, n).min(end) - i));
+    let step = move |i| (i < end).then(|| (i, next_multiple_of(i, n).min(end) - i));
     successors(step(start), move |&(index, len)| step(index + len))
 }
 
