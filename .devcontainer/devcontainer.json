@@ -1,6 +1,6 @@
 // https://containers.dev/implementors/json_reference/
 {
-  "name": "trunk",
+  "name": "symplectix",
   "workspaceFolder": "/home/nonroot/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/nonroot/workspace,type=bind,consistency=cached",
   "build": {

@@ -5,11 +5,6 @@ common --experimental_convenience_symlinks=ignore
 # https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
 common --enable_platform_specific_config
 
-# If set to true, tags will be propagated from a target to the actions' execution requirements;
-# otherwise tags are not propagated. See https://github.com/bazelbuild/bazel/issues/8830 for details.
-# https://bazel.build/reference/command-line-reference#flag--experimental_allow_tags_propagation
-common --experimental_allow_tags_propagation
-
 # Whether to announce rc options.
 # https://bazel.build/reference/command-line-reference#flag--announce_rc
 common:verbose --announce_rc

@@ -9,26 +9,29 @@ startup --output_user_root=/tmp/ci/
 # you might want to automate a periodic cleanup of this directory.
 #
 # https://bazel.build/remote/caching#disk-cache
-build:ci --disk_cache=/tmp/ci/
-fetch:ci --disk_cache=/tmp/ci/
+build --disk_cache=/tmp/ci/
+fetch --disk_cache=/tmp/ci/
 
-build:ci --config=verbose
-build:ci --config=clippy
-build:ci --config=rustfmt
+# UI for cleaner CI output
+common --color=no
+common --curses=no
+common --show_timestamps
+
+build --config=verbose
+build --config=clippy
+build --config=rustfmt
 
 # Disable sandoxing in CI for a while.
 #
 # TODO: Enable sandboxing.
 # Since Bazel 7, the details are unknown, but builds in sandbox has
 # started to fail with an error that process_wrapper.sh does not exist.
-build:ci --spawn_strategy=local
+build --spawn_strategy=local
 
-build:testing --config=ci
 build:testing --config=stable
 build:testing --config=opt
 build:testing --config=strip
 
-build:fuzzing --config=ci
 build:fuzzing --config=nightly
 build:fuzzing --config=dbg
 build:fuzzing --build_tag_filters=+fuzzing
