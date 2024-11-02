@@ -1,0 +1,125 @@
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl", "download_pkgs")
+load("@io_bazel_rules_docker//docker/package_managers:install_pkgs.bzl", "install_pkgs")
+load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_commit_layer")
+
+tags = ["manual"]
+
+# Bazel has no support for multi-arch and multi-platform images
+# https://github.com/bazelbuild/rules_docker/issues/1599
+container_image(
+    name = "debian_bullseye_slim",
+    base = ":devcontainer_commons.tar",
+    layers = select({
+        "@platforms//cpu:x86_64": [
+            ":bazelisk_linux_amd64",
+            ":buildifier_linux_amd64",
+        ],
+        "@platforms//cpu:arm64": [
+            ":bazelisk_linux_arm64",
+            ":buildifier_linux_arm64",
+        ],
+        "//conditions:default": [
+            "@platforms//:incompatible",
+        ],
+    }),
+    tags = tags,
+)
+
+devcontainer_packages = [
+    "apt-transport-https=2.2.4",
+    "build-essential=12.9",
+    "ca-certificates=20210119",
+    "curl=7.74.0-1.3+deb11u1",
+    "git=1:2.30.2-1",
+    "gnupg=2.2.27-2+deb11u1",
+    "iproute2=5.10.0-4",
+    "less=551-2",
+    "locales=2.31-13+deb11u3",
+    "lsb-release=11.1.0",
+    "lsof=4.93.2+dfsg-1.1",
+    "procps=2:3.3.17-5",
+    "python3=3.9.2-3",
+    "python-is-python3=3.9.2-1",
+    "sudo=1.9.5p2-3",
+    "unzip=6.0-26",
+    "zip=3.0-12",
+]
+
+install_pkgs(
+    name = "devcontainer_commons",
+    image_tar = "@debian_bullseye_slim//image:dockerfile_image.tar",
+    installables_tar = ":devcontainer_commons_deps.tar",
+    installation_cleanup_commands = " && ".join([
+        "apt-get clean",
+        "rm -fr /var/lib/apt/lists/*",
+    ]),
+    output_image_name = "bazel/" + package_name() + ":devcontainer_commons",
+    tags = tags,
+)
+
+download_pkgs(
+    name = "devcontainer_commons_deps",
+    image_tar = "@debian_bullseye_slim//image:dockerfile_image.tar",
+    packages = devcontainer_packages,
+    tags = tags,
+)
+
+[
+    container_run_and_commit_layer(
+        name = "bazelisk_linux_{arch}".format(arch = arch),
+        commands = [
+            "wget --no-hsts https://github.com/bazelbuild/bazelisk/releases/download/v1.11.0/bazelisk-linux-{arch}".format(arch = arch),
+            "chmod +x bazelisk-linux-{arch}".format(arch = arch),
+            "mv bazelisk-linux-{arch} /usr/local/bin/bazel".format(arch = arch),
+        ],
+        image = ":downloader.tar",
+        tags = tags,
+    )
+    for arch in [
+        "amd64",
+        "arm64",
+    ]
+]
+
+[
+    container_run_and_commit_layer(
+        name = "buildifier_linux_{arch}".format(arch = arch),
+        commands = [
+            "wget --no-hsts https://github.com/bazelbuild/buildtools/releases/download/5.1.0/buildifier-linux-{arch}".format(arch = arch),
+            "chmod +x buildifier-linux-{arch}".format(arch = arch),
+            "mv buildifier-linux-{arch} /usr/local/bin/buildifier".format(arch = arch),
+        ],
+        image = ":downloader.tar",
+        tags = tags,
+    )
+    for arch in [
+        "amd64",
+        "arm64",
+    ]
+]
+
+downloader_packages = [
+    "ca-certificates",
+    "wget",
+]
+
+# An intermediate image just to download binaries.
+install_pkgs(
+    name = "downloader",
+    image_tar = "@debian_bullseye_slim//image:dockerfile_image.tar",
+    installables_tar = ":downloader_deps.tar",
+    installation_cleanup_commands = " && ".join([
+        "apt-get clean",
+        "rm -fr /var/lib/apt/lists/*",
+    ]),
+    output_image_name = "bazel/" + package_name() + ":downloader",
+    tags = tags,
+)
+
+download_pkgs(
+    name = "downloader_deps",
+    image_tar = "@debian_bullseye_slim//image:dockerfile_image.tar",
+    packages = downloader_packages,
+    tags = tags,
+)

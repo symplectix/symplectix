@@ -1,0 +1,38 @@
+{
+  "name": "trunk",
+  // Need to load the image by `bazel run //tools/devcontainer:debian_bullseye_slim`.
+  "image": "bazel/tools/devcontainer:debian_bullseye_slim",
+  "runArgs": [
+    "--init",
+    // For a ptrace-based debugging.
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined",
+  ],
+  "mounts": [],
+  "remoteUser": "nonroot",
+  "remoteEnv": {
+    "USER": "nonroot",
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+  },
+  "features": {
+    "docker-from-docker": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v1",
+    }
+  },
+  "settings": {
+    "bazel.executable": "/usr/local/bin/bazel",
+    "bazel.buildifierExecutable": "/usr/local/bin/buildifier",
+  },
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
+    "EditorConfig.EditorConfig",
+    "BazelBuild.vscode-bazel",
+  ],
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // "postCreateCommand": "",
+}
