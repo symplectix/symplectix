@@ -1,7 +1,5 @@
-.devcontainer
 .git
 .github
 .vscode
-node_modules
 target
 tmp

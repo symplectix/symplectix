@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = [
+  "bits",
+  "bits/bitvec",
+  "fenwicktree",
+  "num",
+]
+
+[profile.test.package.fenwicktree]
+overflow-checks = false

@@ -1,0 +1,16 @@
+[package]
+name    = "fenwicktree"
+edition = "2021"
+version = "0.0.0"
+publish = false
+
+[lib]
+path = "fenwicktree.rs"
+
+[dependencies]
+bits = { path = "../bits" }
+num = { path = "../num" }
+
+[dev-dependencies]
+quickcheck = "1"
+quickcheck_macros = "1"
