@@ -1,11 +1,11 @@
-use crate::block::IntoBlocks;
+use crate::mask::Mask;
 use core::{
     cmp::Ordering::*,
     iter::{Fuse, Peekable},
 };
 
-pub trait And: Sized + IntoBlocks {
-    fn and<That: IntoBlocks>(self, that: That) -> BitwiseAnd<Self, That>;
+pub trait And: Sized + Mask {
+    fn and<That: Mask>(self, that: That) -> BitwiseAnd<Self, That>;
 }
 
 pub trait AndAssign<That: ?Sized> {
@@ -22,9 +22,9 @@ pub struct Intersection<A: Iterator, B: Iterator> {
     b: Peekable<Fuse<B>>,
 }
 
-impl<T: IntoBlocks> And for T {
+impl<T: Mask> And for T {
     #[inline]
-    fn and<That: IntoBlocks>(self, that: That) -> BitwiseAnd<Self, That> {
+    fn and<That: Mask>(self, that: That) -> BitwiseAnd<Self, That> {
         BitwiseAnd { a: self, b: that }
     }
 }
@@ -77,26 +77,26 @@ where
 
 impl<A, B> IntoIterator for BitwiseAnd<A, B>
 where
-    Self: IntoBlocks,
+    Self: Mask,
 {
-    type Item = (usize, <Self as IntoBlocks>::Block);
-    type IntoIter = <Self as IntoBlocks>::Blocks;
+    type Item = (usize, <Self as Mask>::Bits);
+    type IntoIter = <Self as Mask>::Iter;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_blocks()
+        self.into_mask()
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for BitwiseAnd<A, B>
+impl<A: Mask, B: Mask> Mask for BitwiseAnd<A, B>
 where
-    A::Block: AndAssign<B::Block>,
+    A::Bits: AndAssign<B::Bits>,
 {
-    type Block = A::Block;
-    type Blocks = Intersection<A::Blocks, B::Blocks>;
-    fn into_blocks(self) -> Self::Blocks {
+    type Bits = A::Bits;
+    type Iter = Intersection<A::Iter, B::Iter>;
+    fn into_mask(self) -> Self::Iter {
         Intersection {
-            a: self.a.into_blocks().fuse().peekable(),
-            b: self.b.into_blocks().fuse().peekable(),
+            a: self.a.into_mask().fuse().peekable(),
+            b: self.b.into_mask().fuse().peekable(),
         }
     }
 }

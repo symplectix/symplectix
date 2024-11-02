@@ -1,11 +1,11 @@
-use crate::{block::IntoBlocks, index};
+use crate::{index, mask::Mask};
 use core::{
     cmp::Ordering::*,
     iter::{Fuse, Peekable},
 };
 
-pub trait Or: Sized + IntoBlocks {
-    fn or<That: IntoBlocks>(self, that: That) -> BitwiseOr<Self, That>;
+pub trait Or: Sized + Mask {
+    fn or<That: Mask>(self, that: That) -> BitwiseOr<Self, That>;
 }
 
 pub trait OrAssign<That: ?Sized> {
@@ -22,9 +22,9 @@ pub struct Union<A: Iterator, B: Iterator> {
     b: Peekable<Fuse<B>>,
 }
 
-impl<T: IntoBlocks> Or for T {
+impl<T: Mask> Or for T {
     #[inline]
-    fn or<That: IntoBlocks>(self, that: That) -> BitwiseOr<Self, That> {
+    fn or<That: Mask>(self, that: That) -> BitwiseOr<Self, That> {
         BitwiseOr { a: self, b: that }
     }
 }
@@ -74,28 +74,25 @@ where
 
 impl<A, B> IntoIterator for BitwiseOr<A, B>
 where
-    Self: IntoBlocks,
+    Self: Mask,
 {
-    type Item = (usize, <Self as IntoBlocks>::Block);
-    type IntoIter = <Self as IntoBlocks>::Blocks;
+    type Item = (usize, <Self as Mask>::Bits);
+    type IntoIter = <Self as Mask>::Iter;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_blocks()
+        self.into_mask()
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for BitwiseOr<A, B>
+impl<A: Mask, B: Mask<Bits = A::Bits>> Mask for BitwiseOr<A, B>
 where
-    A::Block: OrAssign<B::Block>,
+    A::Bits: OrAssign<B::Bits>,
 {
-    type Block = A::Block;
-    type Blocks = Union<A::Blocks, B::Blocks>;
+    type Bits = A::Bits;
+    type Iter = Union<A::Iter, B::Iter>;
     #[inline]
-    fn into_blocks(self) -> Self::Blocks {
-        Union {
-            a: self.a.into_blocks().fuse().peekable(),
-            b: self.b.into_blocks().fuse().peekable(),
-        }
+    fn into_mask(self) -> Self::Iter {
+        Union { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
     }
 }
 

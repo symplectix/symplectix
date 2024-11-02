@@ -1,21 +1,21 @@
-use crate::Block;
+use crate::Bits;
 use core::cmp::Ordering;
 use core::marker;
 use core::ops::{Bound, Range, RangeBounds};
 
 #[inline]
-pub(crate) fn address<T: Block>(i: usize) -> (usize, usize) {
+pub(crate) fn address<T: Bits>(i: usize) -> (usize, usize) {
     (i / T::BITS, i % T::BITS)
 }
 
-pub(crate) fn between<B: Block>(s: usize, e: usize) -> impl Iterator<Item = (usize, Range<usize>)> {
+pub(crate) fn between<B: Bits>(s: usize, e: usize) -> impl Iterator<Item = (usize, Range<usize>)> {
     struct Between<B> {
         pos: (usize, usize),
         end: (usize, usize),
         _block: marker::PhantomData<B>,
     }
 
-    impl<B: Block> Iterator for Between<B> {
+    impl<B: Bits> Iterator for Between<B> {
         type Item = (usize, Range<usize>);
 
         fn next(&mut self) -> Option<Self::Item> {

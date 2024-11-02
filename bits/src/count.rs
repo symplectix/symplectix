@@ -1,6 +1,6 @@
-use crate::{Bits, Block};
+use crate::{Bits, Container};
 
-pub trait Count: Bits {
+pub trait Count: Container {
     /// Counts the occurrences of `1`.
     ///
     /// # Examples
@@ -104,7 +104,7 @@ macro_rules! impls {
 impls!(u8 u16 u32 u64 u128 usize);
 impls!(i8 i16 i32 i64 i128 isize);
 
-impl<B: Block> Count for [B] {
+impl<B: Bits> Count for [B] {
     #[inline]
     fn count1(&self) -> usize {
         self.iter().map(Count::count1).sum()

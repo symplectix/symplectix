@@ -4,13 +4,13 @@ extern crate quickcheck_macros;
 use std::borrow::Cow;
 use std::iter::successors;
 
-use bits::{Bits, Count, Lsb, PutVarint, Rank, Select, Varint};
+use bits::{Container, Count, Lsb, PutVarint, Rank, Select, Varint};
 
 #[test]
 fn bits_is_implemented() {
     fn _test<T>()
     where
-        T: ?Sized + bits::Bits + bits::Count + bits::Rank + bits::Select,
+        T: ?Sized + bits::Container + bits::Count + bits::Rank + bits::Select,
     {
     }
 

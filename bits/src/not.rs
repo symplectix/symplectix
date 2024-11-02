@@ -1,11 +1,11 @@
-use crate::{block::IntoBlocks, index};
+use crate::{index, mask::Mask};
 use core::{
     cmp::Ordering::*,
     iter::{Fuse, Peekable},
 };
 
-pub trait Not: Sized + IntoBlocks {
-    fn not<That: IntoBlocks>(self, that: That) -> BitwiseNot<Self, That>;
+pub trait Not: Sized + Mask {
+    fn not<That: Mask>(self, that: That) -> BitwiseNot<Self, That>;
 }
 
 pub trait NotAssign<That: ?Sized> {
@@ -22,9 +22,9 @@ pub struct Difference<A: Iterator, B: Iterator> {
     b: Peekable<Fuse<B>>,
 }
 
-impl<T: IntoBlocks> Not for T {
+impl<T: Mask> Not for T {
     #[inline]
-    fn not<That: IntoBlocks>(self, that: That) -> BitwiseNot<Self, That> {
+    fn not<That: Mask>(self, that: That) -> BitwiseNot<Self, That> {
         BitwiseNot { a: self, b: that }
     }
 }
@@ -73,27 +73,27 @@ where
 
 impl<A, B> IntoIterator for BitwiseNot<A, B>
 where
-    Self: IntoBlocks,
+    Self: Mask,
 {
-    type Item = (usize, <Self as IntoBlocks>::Block);
-    type IntoIter = <Self as IntoBlocks>::Blocks;
+    type Item = (usize, <Self as Mask>::Bits);
+    type IntoIter = <Self as Mask>::Iter;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_blocks()
+        self.into_mask()
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for BitwiseNot<A, B>
+impl<A: Mask, B: Mask> Mask for BitwiseNot<A, B>
 where
-    A::Block: NotAssign<B::Block>,
+    A::Bits: NotAssign<B::Bits>,
 {
-    type Block = A::Block;
-    type Blocks = Difference<A::Blocks, B::Blocks>;
+    type Bits = A::Bits;
+    type Iter = Difference<A::Iter, B::Iter>;
     #[inline]
-    fn into_blocks(self) -> Self::Blocks {
+    fn into_mask(self) -> Self::Iter {
         Difference {
-            a: self.a.into_blocks().fuse().peekable(),
-            b: self.b.into_blocks().fuse().peekable(),
+            a: self.a.into_mask().fuse().peekable(),
+            b: self.b.into_mask().fuse().peekable(),
         }
     }
 }

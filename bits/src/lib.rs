@@ -1,6 +1,6 @@
 //! `bits`
 
-macro_rules! bitmask {
+macro_rules! mask {
     ($( $Int: ty, $i: expr, $j: expr )*) => ($(
         if $i >= $j {
             0
@@ -16,23 +16,25 @@ pub use self::lsb::Lsb;
 pub use self::msb::Msb;
 
 pub mod bits;
-pub mod bits_mut;
-pub mod block;
+pub mod container;
+pub mod container_mut;
 pub mod count;
 pub mod excess;
 pub mod rank;
 pub mod select;
-pub mod varint;
 pub use self::bits::Bits;
-pub use self::bits_mut::BitsMut;
-pub use self::block::Block;
+pub use self::container::Container;
+pub use self::container_mut::ContainerMut;
 pub use self::count::Count;
 pub use self::excess::Excess;
 pub use self::rank::Rank;
 pub use self::select::Select;
+
+pub mod varint;
 pub use self::varint::{PutVarint, Varint};
 
 pub mod and;
+pub mod mask;
 pub mod not;
 pub mod or;
 pub mod xor;

@@ -31,9 +31,9 @@ impl Pdep for u64 {
     }
 }
 
-fn _pdep<T: Int + num::Arith + num::BitwiseAssign + bits::Block + Lsb>(data: T, mut mask: T) -> T {
+fn _pdep<T: Int + num::Arith + num::BitwiseAssign + bits::Bits + Lsb>(data: T, mut mask: T) -> T {
     let mut dest = T::ZERO;
-    for i in 0..<T as bits::Block>::BITS {
+    for i in 0..<T as bits::Bits>::BITS {
         if !mask.any() {
             break;
         }
@@ -47,7 +47,7 @@ fn _pdep<T: Int + num::Arith + num::BitwiseAssign + bits::Block + Lsb>(data: T, 
 
 fn pdep_test<T>(s: T, m: T, o: T)
 where
-    T: Int + num::Arith + num::BitwiseAssign + bits::Block + Lsb + Pdep + Debug,
+    T: Int + num::Arith + num::BitwiseAssign + bits::Bits + Lsb + Pdep + Debug,
 {
     assert_eq!(s.pdep(m), o);
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

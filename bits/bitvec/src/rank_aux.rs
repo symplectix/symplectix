@@ -1,7 +1,7 @@
 use super::empty;
 use crate::blocks;
 use crate::L1L2;
-use bits::{index, Bits, Block, Count, Rank, Select, Varint};
+use bits::{index, Bits, Container, Count, Rank, Select, Varint};
 use fenwicktree::{LowerBound, Nodes, Prefix};
 use std::cmp;
 use std::fmt::{self, Debug, Formatter};
@@ -87,7 +87,7 @@ pub(crate) fn build<'a, T, I>(
     super_blocks: I,
 ) -> (Buckets<layout::Uninit>, Vec<Vec<u32>>)
 where
-    T: num::Int + bits::Block + 'a,
+    T: num::Int + bits::Bits + 'a,
     I: IntoIterator<Item = Option<&'a [T]>>,
 {
     use fenwicktree::Nodes;
@@ -96,7 +96,7 @@ where
     let mut samples = vec![Vec::new(); buckets.hi.nodes()];
     let mut ones = 0i64;
 
-    fn bbs<W: num::Int + bits::Block>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
+    fn bbs<W: num::Int + bits::Bits>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
         let mut bbs = [0; L1L2::LEN];
         if let Some(sb) = sb.as_ref() {
             for (i, bb) in sb.chunks(BASIC / W::BITS).enumerate() {
@@ -144,7 +144,7 @@ where
     (buckets, samples)
 }
 
-pub(crate) fn sbs_from_words<T: num::Int + bits::Block>(
+pub(crate) fn sbs_from_words<T: num::Int + bits::Bits>(
     slice: &[T],
 ) -> impl Iterator<Item = Option<&[T]>> {
     slice.chunks(SUPER / T::BITS).map(Some)
@@ -339,7 +339,7 @@ impl Buckets<layout::Rho> {
     // }
 }
 
-impl<T: Block> Rho<Vec<T>> {
+impl<T: Bits> Rho<Vec<T>> {
     #[inline]
     pub fn new(n: usize) -> Rho<Vec<T>> {
         let dat = empty(n);
@@ -353,7 +353,7 @@ impl<T: Block> Rho<Vec<T>> {
 //     }
 // }
 
-impl<'a, T: num::Int + bits::Block> From<&'a [T]> for Rho<&'a [T]> {
+impl<'a, T: num::Int + bits::Bits> From<&'a [T]> for Rho<&'a [T]> {
     fn from(dat: &'a [T]) -> Self {
         let (buckets, _) = build(dat.bits(), sbs_from_words(dat));
         Rho(Imp { buckets: buckets.into(), samples: None, bit_vec: dat })
@@ -381,7 +381,7 @@ impl<'a, T: num::Int + bits::Block> From<&'a [T]> for Rho<&'a [T]> {
 //     }
 // }
 
-impl<T: Bits> Bits for Rho<T> {
+impl<T: Container> Container for Rho<T> {
     #[inline]
     fn bits(&self) -> usize {
         self.0.bit_vec.bits()
@@ -466,7 +466,7 @@ impl<T: Varint + Select> Select for Rho<T> {
 
         // i + imp.bit_vec[x..y].select1(r).unwrap()
 
-        const BITS: usize = <u128 as Block>::BITS;
+        const BITS: usize = <u128 as Bits>::BITS;
         for i in (s..e).step_by(BITS) {
             let b = imp.bit_vec.varint::<u128>(i, BITS);
             let c = b.count1();
@@ -511,7 +511,7 @@ impl<T: Varint + Select> Select for Rho<T> {
             debug_assert!(r < self.rank0(s..e));
         }
 
-        const BITS: usize = <u128 as Block>::BITS;
+        const BITS: usize = <u128 as Bits>::BITS;
         for i in (s..e).step_by(BITS) {
             let b = imp.bit_vec.varint::<u128>(i, BITS);
             let c = b.count0();

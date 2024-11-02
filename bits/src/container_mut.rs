@@ -1,6 +1,6 @@
-use crate::{index, Bits, Block};
+use crate::{index, Bits, Container};
 
-pub trait BitsMut: Bits {
+pub trait ContainerMut: Container {
     fn set_bit(&mut self, i: usize);
 
     fn unset_bit(&mut self, i: usize);
@@ -8,7 +8,7 @@ pub trait BitsMut: Bits {
 
 macro_rules! impls {
     ($( $Int:ty )*) => ($(
-        impl BitsMut for $Int {
+        impl ContainerMut for $Int {
             #[inline]
             fn set_bit(&mut self, i: usize) {
                 *self |= 1 << i;
@@ -23,7 +23,7 @@ macro_rules! impls {
 impls!(u8 u16 u32 u64 u128 usize);
 impls!(i8 i16 i32 i64 i128 isize);
 
-impl<B: Block> BitsMut for [B] {
+impl<B: Bits> ContainerMut for [B] {
     #[inline]
     fn set_bit(&mut self, i: usize) {
         assert!(i < self.bits());
@@ -43,19 +43,19 @@ macro_rules! impl_bits_mut {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
         fn set_bit(&mut self, i: usize) {
-            <$X as BitsMut>::set_bit(self$(.$method())?, i)
+            <$X as ContainerMut>::set_bit(self$(.$method())?, i)
         }
 
         #[inline]
         fn unset_bit(&mut self, i: usize) {
-            <$X as BitsMut>::unset_bit(self$(.$method())?, i)
+            <$X as ContainerMut>::unset_bit(self$(.$method())?, i)
         }
     }
 }
 
-impl<B, const N: usize> BitsMut for [B; N]
+impl<B, const N: usize> ContainerMut for [B; N]
 where
-    [B]: BitsMut,
+    [B]: ContainerMut,
 {
     impl_bits_mut!([B], as_mut);
 }
@@ -66,21 +66,21 @@ mod impl_alloc {
     use std::boxed::Box;
     use std::vec::Vec;
 
-    impl<B> BitsMut for Vec<B>
+    impl<B> ContainerMut for Vec<B>
     where
-        [B]: BitsMut,
+        [B]: ContainerMut,
     {
         impl_bits_mut!([B]);
     }
 
-    impl<T: ?Sized + BitsMut> BitsMut for Box<T> {
+    impl<T: ?Sized + ContainerMut> ContainerMut for Box<T> {
         impl_bits_mut!(T);
     }
 
-    impl<'a, T> BitsMut for Cow<'a, T>
+    impl<'a, T> ContainerMut for Cow<'a, T>
     where
-        T: ?Sized + ToOwned + Bits,
-        T::Owned: BitsMut,
+        T: ?Sized + ToOwned + Container,
+        T::Owned: ContainerMut,
     {
         impl_bits_mut!(T::Owned, to_mut);
     }
