@@ -65,7 +65,7 @@ jobs:
 
       - name: Audit
         if: github.event_name == 'schedule'
-        run: $BAZEL run $BAZEL_COMMAND_ARGS //tools/audit
+        run: $BAZEL run $BAZEL_COMMAND_ARGS //audit
 
   Fuzzing:
     strategy:
