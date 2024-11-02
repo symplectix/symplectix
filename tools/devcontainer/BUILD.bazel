@@ -65,15 +65,22 @@ download_pkgs(
     tags = tags,
 )
 
+bazelisk_version = "1.11.0"
+
+buildtools_version = "5.1.0"
+
 [
     container_run_and_commit_layer(
         name = "bazelisk_linux_{arch}".format(arch = arch),
         commands = [
-            "wget --no-hsts https://github.com/bazelbuild/bazelisk/releases/download/v1.11.0/bazelisk-linux-{arch}".format(arch = arch),
+            "wget --no-hsts https://github.com/bazelbuild/bazelisk/releases/download/v{version}/bazelisk-linux-{arch}".format(
+                arch = arch,
+                version = bazelisk_version,
+            ),
             "chmod +x bazelisk-linux-{arch}".format(arch = arch),
             "mv bazelisk-linux-{arch} /usr/local/bin/bazel".format(arch = arch),
         ],
-        image = ":downloader.tar",
+        image = ":layer_base.tar",
         tags = tags,
     )
     for arch in [
@@ -86,11 +93,14 @@ download_pkgs(
     container_run_and_commit_layer(
         name = "buildifier_linux_{arch}".format(arch = arch),
         commands = [
-            "wget --no-hsts https://github.com/bazelbuild/buildtools/releases/download/5.1.0/buildifier-linux-{arch}".format(arch = arch),
+            "wget --no-hsts https://github.com/bazelbuild/buildtools/releases/download/{version}/buildifier-linux-{arch}".format(
+                arch = arch,
+                version = buildtools_version,
+            ),
             "chmod +x buildifier-linux-{arch}".format(arch = arch),
             "mv buildifier-linux-{arch} /usr/local/bin/buildifier".format(arch = arch),
         ],
-        image = ":downloader.tar",
+        image = ":layer_base.tar",
         tags = tags,
     )
     for arch in [
@@ -99,27 +109,27 @@ download_pkgs(
     ]
 ]
 
-downloader_packages = [
+layer_base_packages = [
     "ca-certificates",
     "wget",
 ]
 
 # An intermediate image just to download binaries.
 install_pkgs(
-    name = "downloader",
+    name = "layer_base",
     image_tar = "@debian_bullseye_slim//image:dockerfile_image.tar",
-    installables_tar = ":downloader_deps.tar",
+    installables_tar = ":layer_base_deps.tar",
     installation_cleanup_commands = " && ".join([
         "apt-get clean",
         "rm -fr /var/lib/apt/lists/*",
     ]),
-    output_image_name = "bazel/" + package_name() + ":downloader",
+    output_image_name = "bazel/" + package_name() + ":layer_base",
     tags = tags,
 )
 
 download_pkgs(
-    name = "downloader_deps",
+    name = "layer_base_deps",
     image_tar = "@debian_bullseye_slim//image:dockerfile_image.tar",
-    packages = downloader_packages,
+    packages = layer_base_packages,
     tags = tags,
 )

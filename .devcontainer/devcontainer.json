@@ -1,15 +1,10 @@
 {
   "name": "trunk",
-  // Need to load the image by `bazel run //tools/devcontainer:debian_bullseye_slim`.
-  "image": "bazel/tools/devcontainer:debian_bullseye_slim",
-  "runArgs": [
-    "--init",
-    // For a ptrace-based debugging.
-    "--cap-add=SYS_PTRACE",
-    "--security-opt",
-    "seccomp=unconfined",
+  "service": "workspace",
+  "dockerComposeFile": [
+    "docker-compose.yaml"
   ],
-  "mounts": [],
+  "workspaceFolder": "/home/nonroot/trunk",
   "remoteUser": "nonroot",
   "remoteEnv": {
     "USER": "nonroot",
@@ -23,16 +18,25 @@
     }
   },
   "settings": {
-    "bazel.executable": "/usr/local/bin/bazel",
-    "bazel.buildifierExecutable": "/usr/local/bin/buildifier",
+    "files.exclude": {
+      "**/.git": true,
+      "bazel-*": true,
+      "tmp": true
+    },
+    "search.exclude": {
+      "**/.git": true,
+      "bazel-*": true,
+      "tmp": true
+    },
   },
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
-    "EditorConfig.EditorConfig",
     "BazelBuild.vscode-bazel",
+    "EditorConfig.EditorConfig",
+    "rust-lang.rust-analyzer",
   ],
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
   // Use 'postCreateCommand' to run commands after the container is created.
-  // "postCreateCommand": "",
+  "postCreateCommand": "sudo chown -R nonroot:nonroot /home/nonroot/.cache",
 }

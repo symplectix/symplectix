@@ -1,0 +1,24 @@
+version: "3"
+
+# Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
+
+services:
+  workspace:
+    # Need to load the image by `bazel run //tools/devcontainer:debian_bullseye_slim`.
+    image: bazel/tools/devcontainer:debian_bullseye_slim
+    user: "1000:1000"
+    command: sleep infinity
+    tty: true
+    init: true
+    volumes:
+      - ..:/home/nonroot/trunk
+      - bazel-cache:/home/nonroot/.cache/bazel
+      - bazelisk-cache:/home/nonroot/.cache/bazelisk
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+
+volumes:
+  bazel-cache:
+  bazelisk-cache:
