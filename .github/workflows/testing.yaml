@@ -12,6 +12,7 @@ jobs:
     env:
       BAZEL: bazel --output_user_root=/tmp/ci/
       BAZEL_ARGS: --config=ci
+
     steps:
       - uses: actions/checkout@v3
 

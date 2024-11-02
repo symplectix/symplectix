@@ -1,22 +1,29 @@
+load("@aspect_bazel_lib//lib:jq.bzl", "jq")
+
 exports_files([
     ".clippy.toml",
     ".rustfmt.toml",
 ])
 
-# platform(
-#     name = "linux_x86_64_nightly",
-#     constraint_values = [
-#         "@platforms//os:linux",
-#         "@platforms//cpu:x86_64",
-#         "@rules_rust//rust/platform/channel:nightly",
-#     ],
-# )
+jq(
+    name = "status",
+    srcs = [],
+    filter = "|".join([
+        "$ARGS.named.STAMP as $stamp",
+        """
+        {
+            gitCommit: ($stamp.STABLE_GIT_COMMIT // \"none\"),
+            githubRunId: ($stamp.STABLE_GITHUB_RUN_ID // \"none\"),
+            githubRunNumber: ($stamp.STABLE_GITHUB_RUN_NUMBER // \"none\"),
+        }
+        """,
+    ]),
+)
 
-# platform(
-#     name = "macos_arm64_nightly",
-#     constraint_values = [
-#         "@platforms//os:macos",
-#         "@platforms//cpu:arm64",
-#         "@rules_rust//rust/platform/channel:nightly",
-#     ],
-# )
+genrule(
+    name = "git_commit",
+    srcs = [":status.json"],
+    outs = ["git_commit.txt"],
+    cmd = "$(JQ_BIN) -r '.gitCommit' $(location :status.json) > $@",
+    toolchains = ["@jq_toolchains//:resolved_toolchain"],
+)

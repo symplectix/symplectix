@@ -14,6 +14,9 @@ build:verbose --verbose_failures
 # https://bazel.build/reference/command-line-reference#flag--test_output
 test:verbose --test_output=errors
 
+# https://bazel.build/docs/user-manual#workspace_status
+common:stamp --stamp --workspace_status_command=build/stamp/workspace_status.sh
+
 # Bazel picks up host-OS-specific config lines from bazelrc files.
 # https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
 common --enable_platform_specific_config
@@ -70,19 +73,19 @@ build:nightly --@rules_rust//rust/toolchain/channel=nightly
 # fastbuild: -Copt-level=0 -Cdebuginfo=0
 # dbg:       -Copt-level=0 -Cdebuginfo=2
 # opt:       -Copt-level=3 -Cdebuginfo=0
-build:release --compilation_mode=opt
-build:release --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
-build:release --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
-build:release --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
-build:release --@rules_rust//:extra_rustc_flag=-Clto=fat
-build:release --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1
+build:opt --compilation_mode=opt
+build:opt --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
+build:opt --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
+build:opt --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
+build:opt --@rules_rust//:extra_rustc_flag=-Clto=fat
+build:opt --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1
 
-build:debug --compilation_mode=dbg
-build:debug --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=on
-build:debug --@rules_rust//:extra_rustc_flag=-Coverflow-checks=on
-build:debug --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
-build:debug --@rules_rust//:extra_rustc_flag=-Clto=fat
-build:debug --@rules_rust//:extra_rustc_flag=-Ccodegen-units=32
+build:dbg --compilation_mode=dbg
+build:dbg --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=on
+build:dbg --@rules_rust//:extra_rustc_flag=-Coverflow-checks=on
+build:dbg --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
+build:dbg --@rules_rust//:extra_rustc_flag=-Clto=fat
+build:dbg --@rules_rust//:extra_rustc_flag=-Ccodegen-units=32
 
 # Controls whether Bazel will strip debugging information from all binaries and shared libraries,
 # by invoking the linker with the -Wl,--strip-debug option.
@@ -103,14 +106,14 @@ build:clippy --output_groups=+clippy_checks
 build --@rules_rust//:clippy.toml=//:.clippy.toml
 
 build:ci --config=stable
-build:ci --config=release
+build:ci --config=opt
 build:ci --config=strip
 build:ci --config=rustfmt
 build:ci --config=clippy
 build:ci --config=verbose
 
 build:fuzz --config=nightly
-build:fuzz --config=debug
+build:fuzz --config=dbg
 build:fuzz --config=rustfmt
 build:fuzz --config=clippy
 build:fuzz --config=verbose
