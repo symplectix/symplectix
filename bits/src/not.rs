@@ -1,4 +1,4 @@
-use crate::{block::IntoBlocks, compare_index};
+use crate::{block::IntoBlocks, index};
 use core::{
     cmp::Ordering::*,
     iter::{Fuse, Peekable},
@@ -109,7 +109,7 @@ where
         let a = &mut self.a;
         let b = &mut self.b;
         loop {
-            match compare_index(a.peek(), b.peek(), Less, Less) {
+            match index::compare(a.peek(), b.peek(), Less, Less) {
                 Less => return a.next(),
                 Equal => {
                     let (i, mut s1) = a.next().expect("unreachable");

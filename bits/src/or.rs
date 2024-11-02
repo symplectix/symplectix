@@ -1,4 +1,4 @@
-use crate::{block::IntoBlocks, compare_index};
+use crate::{block::IntoBlocks, index};
 use core::{
     cmp::Ordering::*,
     iter::{Fuse, Peekable},
@@ -109,7 +109,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         let x = &mut self.a;
         let y = &mut self.b;
-        match compare_index(x.peek(), y.peek(), Greater, Less) {
+        match index::compare(x.peek(), y.peek(), Greater, Less) {
             Less => x.next(),
             Equal => {
                 let (i, mut l) = x.next().expect("unreachable");

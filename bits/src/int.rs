@@ -1,5 +1,5 @@
 use crate::*;
-use core::ops::RangeBounds;
+use core::ops::{Range, RangeBounds};
 
 mod private {
     pub trait Sealed {}
@@ -154,7 +154,7 @@ macro_rules! impls {
         impl Rank for $Word {
             #[inline]
             fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
-                let (i, j) = to_range(&r, 0, self.bits());
+                let Range { start: i, end: j } = index::to_range(&r, 0, self.bits());
                 (*self & mask::<Self>(i, j)).count1()
             }
 

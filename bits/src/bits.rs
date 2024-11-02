@@ -1,3 +1,4 @@
+use crate::index;
 use crate::Block;
 
 pub trait Bits {
@@ -38,7 +39,7 @@ impl<B: Block> Bits for [B] {
 
     #[inline]
     fn bit(&self, i: usize) -> Option<bool> {
-        let (i, o) = crate::address::<B>(i);
+        let (i, o) = index::address::<B>(i);
         self.get(i).map(|b| b.bit(o).expect("index out of bounds"))
     }
 }

@@ -1,5 +1,4 @@
-use crate::{Bits, BitsMut, Block, Int};
-use core::ops::Range;
+use crate::{index, Bits, BitsMut, Block, Int};
 
 /// # Examples
 ///
@@ -60,28 +59,6 @@ macro_rules! int_impls {
 int_impls!(u8 u16 u32 u64 u128 usize);
 int_impls!(i8 i16 i32 i64 i128 isize);
 
-fn for_each_blocks<B, F>(s: usize, e: usize, mut f: F)
-where
-    B: Block,
-    F: FnMut(usize, Range<usize>),
-{
-    assert!(s <= e);
-    if s == e {
-        return;
-    }
-
-    let (s, p) = crate::address::<B>(s);
-    let (e, q) = crate::address::<B>(e);
-
-    if s == e {
-        f(s, p..q);
-    } else {
-        f(s, p..B::BITS);
-        (s + 1..e).for_each(|k| f(k, 0..B::BITS));
-        f(e, 0..q)
-    }
-}
-
 impl<B: Block + Varint> Varint for [B] {
     #[doc(hidden)]
     fn varint<T: Int>(&self, i: usize, n: usize) -> T {
@@ -89,9 +66,9 @@ impl<B: Block + Varint> Varint for [B] {
 
         let mut cur = 0;
         let mut out = T::NULL;
-        for_each_blocks::<B, _>(i, i + n, |k, r| {
-            if k < self.len() && cur < T::BITS {
-                out |= self[k].varint::<T>(r.start, r.len()) << cur;
+        index::between::<B>(i, i + n).for_each(|(i, r)| {
+            if i < self.len() && cur < T::BITS {
+                out |= self[i].varint::<T>(r.start, r.len()) << cur;
                 cur += r.len();
             }
         });
@@ -102,10 +79,12 @@ impl<B: Block + Varint> Varint for [B] {
 impl<B: Block + PutVarint> PutVarint for [B] {
     #[doc(hidden)]
     fn put_varint<T: Int>(&mut self, i: usize, n: usize, int: T) {
+        debug_assert!(i < self.bits() && n <= T::BITS);
+
         let mut cur = 0;
-        for_each_blocks::<B, _>(i, i + n, |k, r| {
-            if k < self.len() {
-                self[k].put_varint::<T>(r.start, r.len(), int.varint::<T>(cur, r.len()));
+        index::between::<B>(i, i + n).for_each(|(i, r)| {
+            if i < self.len() {
+                self[i].put_varint::<T>(r.start, r.len(), int.varint::<T>(cur, r.len()));
                 cur += r.len();
             }
         });

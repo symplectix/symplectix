@@ -1,3 +1,4 @@
+use crate::index;
 use crate::Rank;
 use core::ops::RangeBounds;
 
@@ -47,9 +48,10 @@ where
     T: ?Sized + Rank,
     Index: RangeBounds<usize>,
 {
-    let (i, j) = crate::to_range(&index, 0, bits.bits());
-    let rank1 = bits.rank1(i..j);
-    let rank0 = (j - i) - rank1;
+    let r = index::to_range(&index, 0, bits.bits());
+    let len = r.len();
+    let rank1 = bits.rank1(r);
+    let rank0 = len - rank1;
     Ranks { rank0, rank1 }
 }
 

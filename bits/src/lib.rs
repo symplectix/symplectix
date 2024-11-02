@@ -40,43 +40,6 @@ pub use self::xor::Xor;
 
 mod index;
 
-use core::{
-    cmp::Ordering,
-    ops::{Div, RangeBounds, Rem},
-};
-
-#[inline]
-fn address<T: Block>(i: usize) -> (usize, usize) {
-    fn divrem<T, U>(t: T, u: U) -> (<T as Div<U>>::Output, <T as Rem<U>>::Output)
-    where
-        T: Copy + Div<U> + Rem<U>,
-        U: Copy,
-    {
-        (t / u, t % u)
-    }
-
-    divrem(i, T::BITS)
-}
-
-#[inline]
-fn to_range<R: RangeBounds<usize>>(r: &R, min: usize, max: usize) -> (usize, usize) {
-    let r = index::to_range(r, min, max);
-    (r.start, r.end)
-}
-
-fn compare_index<T, U>(
-    x: Option<&(usize, T)>,
-    y: Option<&(usize, U)>,
-    when_x_is_none: Ordering,
-    when_y_is_none: Ordering,
-) -> Ordering {
-    match (x, y) {
-        (None, _) => when_x_is_none,
-        (_, None) => when_y_is_none,
-        (Some((i, _)), Some((j, _))) => i.cmp(j),
-    }
-}
-
 // /// `Fold` is an iterator built from `Mask`s.
 // pub struct Fold<'a, B>(Box<dyn Iterator<Item = (usize, B)> + 'a>);
 

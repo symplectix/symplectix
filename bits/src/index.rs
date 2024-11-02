@@ -1,4 +1,43 @@
+use crate::Block;
+use core::cmp::Ordering;
+use core::marker;
 use core::ops::{Bound, Range, RangeBounds};
+
+#[inline]
+pub(crate) fn address<T: Block>(i: usize) -> (usize, usize) {
+    num::divrem(i, T::BITS)
+}
+
+pub(crate) fn between<B: Block>(s: usize, e: usize) -> impl Iterator<Item = (usize, Range<usize>)> {
+    struct Between<B> {
+        pos: (usize, usize),
+        end: (usize, usize),
+        _block: marker::PhantomData<B>,
+    }
+
+    impl<B: Block> Iterator for Between<B> {
+        type Item = (usize, Range<usize>);
+
+        fn next(&mut self) -> Option<Self::Item> {
+            let (i, p) = self.pos; // p is 0 except the first item
+            let (j, q) = self.end; // q is B::BITS except the last item
+
+            match i.cmp(&j) {
+                Ordering::Less => {
+                    self.pos = (i + 1, 0);
+                    Some((i, p..B::BITS))
+                }
+                Ordering::Equal => {
+                    self.pos = (i + 1, 0);
+                    Some((i, p..q))
+                }
+                Ordering::Greater => None,
+            }
+        }
+    }
+
+    Between { pos: address::<B>(s), end: address::<B>(e), _block: marker::PhantomData::<B> }
+}
 
 /// A utility to clamp the given range into a valid one.
 /// Panics if debug is enabled and `min <= i && i <= j && j <= max`.
@@ -8,7 +47,7 @@ where
 {
     let i = min_index_inclusive(r.start_bound(), min);
     let j = max_index_exclusive(r.end_bound(), max);
-    debug_assert!(min <= i && i <= j && j <= max);
+    assert!(min <= i && i <= j && j <= max);
     i..j
 }
 
@@ -27,6 +66,19 @@ const fn max_index_exclusive(bound: Bound<&usize>, max: usize) -> usize {
         Bound::Included(&e) => e + 1,
         Bound::Excluded(&e) => e,
         Bound::Unbounded => max,
+    }
+}
+
+pub(crate) fn compare<X, Y>(
+    x: Option<&(usize, X)>,
+    y: Option<&(usize, Y)>,
+    when_x_is_none: Ordering,
+    when_y_is_none: Ordering,
+) -> Ordering {
+    match (x, y) {
+        (None, _) => when_x_is_none,
+        (_, None) => when_y_is_none,
+        (Some((i, _x)), Some((j, _y))) => i.cmp(j),
     }
 }
 

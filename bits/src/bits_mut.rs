@@ -1,4 +1,4 @@
-use crate::{Bits, Block};
+use crate::{index, Bits, Block};
 
 pub trait BitsMut: Bits {
     fn set_bit(&mut self, i: usize);
@@ -10,14 +10,14 @@ impl<B: Block> BitsMut for [B] {
     #[inline]
     fn set_bit(&mut self, i: usize) {
         assert!(i < self.bits());
-        let (i, o) = crate::address::<B>(i);
+        let (i, o) = index::address::<B>(i);
         self[i].set_bit(o)
     }
 
     #[inline]
     fn unset_bit(&mut self, i: usize) {
         assert!(i < self.bits());
-        let (i, o) = crate::address::<B>(i);
+        let (i, o) = index::address::<B>(i);
         self[i].unset_bit(o)
     }
 }
