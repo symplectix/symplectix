@@ -95,27 +95,28 @@ build:strip --strip=always
 # * symbols   - same as debuginfo, but the rest of the symbol table section is stripped as well if the linker supports it.
 build:strip --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
 
-# rustfmt
-build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
-build:rustfmt --output_groups=+rustfmt_checks
-build --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
-
 # clippy
 build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build:clippy --output_groups=+clippy_checks
 build --@rules_rust//:clippy.toml=//:.clippy.toml
 
+# rustfmt
+build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
+build:rustfmt --output_groups=+rustfmt_checks
+build --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
+
+build:lint --config=clippy
+build:lint --config=rustfmt
+
+build:ci --config=verbose
+build:ci --config=lint
 build:ci --config=stable
 build:ci --config=opt
 build:ci --config=strip
-build:ci --config=rustfmt
-build:ci --config=clippy
-build:ci --config=verbose
 
+build:fuzz --config=verbose
+build:fuzz --config=lint
 build:fuzz --config=nightly
 build:fuzz --config=dbg
-build:fuzz --config=rustfmt
-build:fuzz --config=clippy
-build:fuzz --config=verbose
 
 try-import %workspace%/.bazelrc.user
