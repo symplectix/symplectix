@@ -1,6 +1,7 @@
 --nosystem_rc
 --nohome_rc
---workspace_rc
+
+startup --output_user_root=/tmp/trunk/
 
 test --test_output=errors
 
