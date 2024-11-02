@@ -95,12 +95,12 @@ build:strip --@rules_rust//:extra_rustc_flag=-Cstrip=debuginfo
 # rustfmt
 build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
 build:rustfmt --output_groups=+rustfmt_checks
-build:rustfmt --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
+build --@rules_rust//:rustfmt.toml=//:.rustfmt.toml
 
 # clippy
 build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build:clippy --output_groups=+clippy_checks
-build:clippy --@rules_rust//:clippy.toml=//:.clippy.toml
+build --@rules_rust//:clippy.toml=//:.clippy.toml
 
 build:ci --config=stable
 build:ci --config=release

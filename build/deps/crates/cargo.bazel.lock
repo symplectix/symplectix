@@ -1,5 +1,5 @@
 {
-  "checksum": "40425a600278e01d7240fe7ec3ca79507d572dddb61b0402084a74b089eefaac",
+  "checksum": "f1fbfd438e3556b5aa58bbe393b9921d0d272c681a928e4a9731be02e5271f9f",
   "crates": {
     "abscissa_core 0.6.0": {
       "name": "abscissa_core",
@@ -6822,7 +6822,7 @@
         "data_glob": [
           "**"
         ],
-        "deps": {
+        "link_deps": {
           "common": [
             {
               "id": "openssl-sys 0.9.90",

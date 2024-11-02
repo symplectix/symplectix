@@ -55,26 +55,20 @@ mod tests {
     async fn run_process() {
         use Error::*;
 
-        let Ok(_) = wait(
-            Command::new("sleep")
-                .arg("0.1")
-                .spawn()
-                .await
-                .unwrap(),
-        )
-        .await else {
+        let sleep = wait(Command::new("sleep").arg("0.1").spawn().await.unwrap());
+        let Ok(_) = sleep.await else {
             panic!("expected that the command 'sleep' exit successfully");
         };
 
-        let Err(Timedout(_exit_status)) = wait(
+        let sleep = wait(
             Command::new("sleep")
                 .arg("10")
                 .timeout(Duration::from_millis(10))
                 .spawn()
                 .await
                 .unwrap(),
-        )
-        .await else {
+        );
+        let Err(Timedout(_exit_status)) = sleep.await else {
             panic!("expected that the command 'sleep' times out");
         };
     }

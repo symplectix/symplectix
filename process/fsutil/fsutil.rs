@@ -8,8 +8,11 @@ use tokio::fs;
 pub async fn ensure_path_is_writable<P: AsRef<Path>>(path: P) -> io::Result<()> {
     let path = path.as_ref();
     let Some(dir) = path.parent() else {
-            return Err(io::Error::new(io::ErrorKind::Other, format!("no parent '{}'", path.display())));
-        };
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            format!("no parent '{}'", path.display()),
+        ));
+    };
 
     fs::create_dir_all(dir).await
 }

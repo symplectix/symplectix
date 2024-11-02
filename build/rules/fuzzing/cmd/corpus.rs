@@ -24,8 +24,8 @@ impl Corpus {
 
         let corpus_file = BufReader::new({
             let Some(corpus_list) = self.corpus_list.as_ref() else {
-                        return Ok(());
-                    };
+                return Ok(());
+            };
 
             fs::File::open(corpus_list)
                 .with_context(|| format!("failed to read a file at {}", corpus_list.display()))?
