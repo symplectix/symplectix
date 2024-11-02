@@ -41,8 +41,8 @@ macro_rules! impl_or_assign_for_words {
 }
 impl_or_assign_for_words!(u8 u16 u32 u64 u128);
 
-impl<T: OrAssign<U>, U> OrAssign<[U]> for [T] {
-    fn or_assign(this: &mut Self, that: &[U]) {
+impl<A: OrAssign<B>, B> OrAssign<[B]> for [A] {
+    fn or_assign(this: &mut Self, that: &[B]) {
         assert_eq!(this.len(), that.len());
         for (v1, v2) in this.iter_mut().zip(that) {
             OrAssign::or_assign(v1, v2);
@@ -50,13 +50,13 @@ impl<T: OrAssign<U>, U> OrAssign<[U]> for [T] {
     }
 }
 
-impl<T, U: ?Sized, const N: usize> OrAssign<U> for [T; N]
+impl<A, B: ?Sized, const N: usize> OrAssign<B> for [A; N]
 where
-    [T]: OrAssign<U>,
+    [A]: OrAssign<B>,
 {
     #[inline]
-    fn or_assign(this: &mut Self, that: &U) {
-        <[T] as OrAssign<U>>::or_assign(this.as_mut(), that)
+    fn or_assign(this: &mut Self, that: &B) {
+        <[A] as OrAssign<B>>::or_assign(this.as_mut(), that)
     }
 }
 
@@ -130,6 +130,16 @@ mod impl_alloc {
     use alloc::boxed::Box;
     use alloc::vec::Vec;
 
+    impl<A, B: ?Sized> OrAssign<B> for Vec<A>
+    where
+        [A]: OrAssign<B>,
+    {
+        #[inline]
+        fn or_assign(this: &mut Self, that: &B) {
+            <[A] as OrAssign<B>>::or_assign(this.as_mut(), that)
+        }
+    }
+
     impl<T, U> OrAssign<U> for Box<T>
     where
         T: ?Sized + OrAssign<U>,
@@ -138,16 +148,6 @@ mod impl_alloc {
         #[inline]
         fn or_assign(this: &mut Self, that: &U) {
             <T as OrAssign<U>>::or_assign(this, that)
-        }
-    }
-
-    impl<T, U: ?Sized> OrAssign<U> for Vec<T>
-    where
-        [T]: OrAssign<U>,
-    {
-        #[inline]
-        fn or_assign(this: &mut Self, that: &U) {
-            <[T] as OrAssign<U>>::or_assign(this.as_mut(), that)
         }
     }
 

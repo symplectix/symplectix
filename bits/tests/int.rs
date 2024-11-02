@@ -1,35 +1,6 @@
-use bits::Word;
 use core::{arch::x86_64, fmt::Debug};
 
-#[test]
-fn lsb() {
-    let tests = [
-        (0b0000_0000_u8, 0b0000_0000),
-        (0b0000_0001_u8, 0b0000_0001),
-        (0b0000_1100_u8, 0b0000_0100),
-        (0b1001_0100_u8, 0b0000_0100),
-        (0b1001_0000_u8, 0b0001_0000),
-    ];
-
-    for (n, want) in tests {
-        assert_eq!(n.lsb(), want);
-    }
-}
-
-#[test]
-fn msb() {
-    let tests = [
-        (0b0000_0000_u8, 0b0000_0000),
-        (0b0000_0001_u8, 0b0000_0001),
-        (0b0000_1100_u8, 0b0000_1000),
-        (0b1001_0100_u8, 0b1000_0000),
-        (0b1001_0000_u8, 0b1000_0000),
-    ];
-
-    for (n, want) in tests {
-        assert_eq!(n.msb(), want);
-    }
-}
+use bits::{Int, Lsb};
 
 trait Pdep {
     fn pdep(self, mask: Self) -> Self;
@@ -59,23 +30,23 @@ impl Pdep for u64 {
     }
 }
 
-fn _pdep<T: Word>(data: T, mut mask: T) -> T {
+fn _pdep<T: Int + Lsb>(data: T, mut mask: T) -> T {
     let mut dest = T::NULL;
-    for i in 0..T::BITS {
+    for i in 0..<T as bits::Block>::BITS {
         if !mask.any() {
             break;
         }
         if data.bit(i).unwrap() {
             dest |= mask.lsb();
         }
-        mask &= mask - T::_1;
+        mask &= mask - T::ONE;
     }
     dest
 }
 
 fn pdep_test<T>(s: T, m: T, o: T)
 where
-    T: Word + Pdep + Debug,
+    T: Int + Lsb + Pdep + Debug,
 {
     assert_eq!(s.pdep(m), o);
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

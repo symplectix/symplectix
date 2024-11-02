@@ -76,7 +76,7 @@ pub trait Count: Bits {
     }
 }
 
-impl<T: Block> Count for [T] {
+impl<B: Block> Count for [B] {
     #[inline]
     fn count1(&self) -> usize {
         self.iter().map(Count::count1).sum()
@@ -95,32 +95,6 @@ impl<T: Block> Count for [T] {
     #[inline]
     fn any(&self) -> bool {
         self.iter().any(Count::any)
-    }
-}
-
-/// ```
-/// assert_eq!(bits::Count::count1(&true),  1);
-/// assert_eq!(bits::Count::count1(&false), 0);
-/// assert_eq!(bits::Count::count0(&true),  0);
-/// assert_eq!(bits::Count::count0(&false), 1);
-/// ```
-impl Count for bool {
-    #[inline]
-    fn count1(&self) -> usize {
-        *self as usize
-    }
-    #[inline]
-    fn count0(&self) -> usize {
-        !self as usize
-    }
-
-    #[inline]
-    fn all(&self) -> bool {
-        *self
-    }
-    #[inline]
-    fn any(&self) -> bool {
-        *self
     }
 }
 
@@ -165,11 +139,11 @@ mod impl_alloc {
     use alloc::boxed::Box;
     use alloc::vec::Vec;
 
-    impl<T> Count for Vec<T>
+    impl<B> Count for Vec<B>
     where
-        [T]: Count,
+        [B]: Count,
     {
-        impl_count!([T]);
+        impl_count!([B]);
     }
 
     impl<T: ?Sized + Count> Count for Box<T> {

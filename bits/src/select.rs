@@ -1,4 +1,4 @@
-use crate::{Block, Count, Rank};
+use crate::{Block, Rank};
 
 pub trait Select: Rank {
     /// Returns the position of the n-th 1, indexed starting from zero.
@@ -56,13 +56,13 @@ mod helper {
     }
 }
 
-impl<T: Block> Select for [T] {
+impl<B: Block> Select for [B] {
     #[inline]
     fn select1(&self, mut n: usize) -> Option<usize> {
         for (i, b) in self.iter().enumerate() {
             let count = b.count1();
             if n < count {
-                return Some(i * T::BITS + b.select1(n).expect("BUG"));
+                return Some(i * B::BITS + b.select1(n).expect("BUG"));
             }
             n -= count;
         }
@@ -74,34 +74,11 @@ impl<T: Block> Select for [T] {
         for (i, b) in self.iter().enumerate() {
             let count = b.count0();
             if n < count {
-                return Some(i * T::BITS + b.select0(n).expect("BUG"));
+                return Some(i * B::BITS + b.select0(n).expect("BUG"));
             }
             n -= count;
         }
         None
-    }
-}
-
-/// ```
-/// # use bits::Select;
-/// assert_eq!(Select::select1(&true, 0), Some(0));
-/// assert_eq!(Select::select1(&true, 1), None);
-///
-/// assert_eq!(Select::select1(&false, 0), None);
-/// assert_eq!(Select::select1(&false, 1), None);
-///
-/// assert_eq!(Select::select0(&false, 0), Some(0));
-/// assert_eq!(Select::select0(&false, 1), None);
-/// ```
-impl Select for bool {
-    #[inline]
-    fn select1(&self, n: usize) -> Option<usize> {
-        (n < self.count1()).then(|| 0)
-    }
-
-    #[inline]
-    fn select0(&self, n: usize) -> Option<usize> {
-        (n < self.count0()).then(|| 0)
     }
 }
 
@@ -123,11 +100,11 @@ impl<'a, T: ?Sized + Select> Select for &'a T {
     impl_select!(T);
 }
 
-impl<T, const N: usize> Select for [T; N]
+impl<B, const N: usize> Select for [B; N]
 where
-    [T]: Select,
+    [B]: Select,
 {
-    impl_select!([T], as_ref);
+    impl_select!([B], as_ref);
 }
 
 #[cfg(feature = "alloc")]
@@ -137,15 +114,15 @@ mod impl_alloc {
     use alloc::boxed::Box;
     use alloc::vec::Vec;
 
-    impl<T: ?Sized + Select> Select for Box<T> {
-        impl_select!(T);
+    impl<B> Select for Vec<B>
+    where
+        [B]: Select,
+    {
+        impl_select!([B]);
     }
 
-    impl<T> Select for Vec<T>
-    where
-        [T]: Select,
-    {
-        impl_select!([T]);
+    impl<T: ?Sized + Select> Select for Box<T> {
+        impl_select!(T);
     }
 
     impl<'a, T> Select for Cow<'a, T>

@@ -5,19 +5,21 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-pub mod and;
+mod int;
+mod lsb;
+mod msb;
+pub use self::int::Int;
+pub use self::lsb::Lsb;
+pub use self::msb::Msb;
+
 pub mod bits;
 pub mod bits_mut;
 pub mod block;
 pub mod count;
 pub mod excess;
-pub mod not;
-pub mod or;
 pub mod rank;
 pub mod select;
-pub mod word;
-pub mod xor;
-
+pub mod varint;
 pub use self::bits::Bits;
 pub use self::bits_mut::BitsMut;
 pub use self::block::Block;
@@ -25,12 +27,22 @@ pub use self::count::Count;
 pub use self::excess::Excess;
 pub use self::rank::Rank;
 pub use self::select::Select;
-pub use self::word::Word;
-pub use self::{and::And, not::Not, or::Or, xor::Xor};
+pub use self::varint::{PutVarint, Varint};
+
+pub mod and;
+pub mod not;
+pub mod or;
+pub mod xor;
+pub use self::and::And;
+pub use self::not::Not;
+pub use self::or::Or;
+pub use self::xor::Xor;
+
+mod index;
 
 use core::{
     cmp::Ordering,
-    ops::{Bound, Div, Range, RangeBounds, Rem},
+    ops::{Div, RangeBounds, Rem},
 };
 
 #[inline]
@@ -46,46 +58,10 @@ fn address<T: Block>(i: usize) -> (usize, usize) {
     divrem(i, T::BITS)
 }
 
-/// A utility to clamp the given range into a valid one.
-/// Panics if debug is enabled and `min <= i && i <= j && j <= max`.
+#[inline]
 fn to_range<R: RangeBounds<usize>>(r: &R, min: usize, max: usize) -> (usize, usize) {
-    let (i, j) = (
-        match r.start_bound() {
-            Bound::Included(&s) => s,
-            Bound::Excluded(&s) => s + 1,
-            Bound::Unbounded => min,
-        },
-        match r.end_bound() {
-            Bound::Included(&e) => e + 1,
-            Bound::Excluded(&e) => e,
-            Bound::Unbounded => max,
-        },
-    );
-
-    debug_assert!(min <= i && i <= j && j <= max);
-    (i, j)
-}
-
-fn for_each_blocks<T, F>(s: usize, e: usize, mut f: F)
-where
-    T: Block,
-    F: FnMut(usize, Range<usize>),
-{
-    assert!(s <= e);
-    if s == e {
-        return;
-    }
-
-    let (q0, r0) = crate::address::<T>(s);
-    let (q1, r1) = crate::address::<T>(e);
-
-    if q0 == q1 {
-        f(q0, r0..r1);
-    } else {
-        f(q0, r0..T::BITS);
-        (q0 + 1..q1).for_each(|k| f(k, 0..T::BITS));
-        f(q1, 0..r1)
-    }
+    let r = index::to_range(r, min, max);
+    (r.start, r.end)
 }
 
 fn compare_index<T, U>(

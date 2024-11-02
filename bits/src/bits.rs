@@ -1,4 +1,4 @@
-use crate::{Block, Word};
+use crate::Block;
 
 pub trait Bits {
     /// Returns the number of binary digits.
@@ -28,73 +28,18 @@ pub trait Bits {
     /// assert_eq!(v.bit(200), None);
     /// ```
     fn bit(&self, i: usize) -> Option<bool>;
-
-    /// Reads `n` bits within `[i, i+n)`, and returns it as the lowest `n` bits of `Word`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use bits::Bits;
-    /// let s: &[u64] = &[!0, 0, !0];
-    /// assert_eq!(s.word::<u32>(  0,  4), 0b1111);
-    /// assert_eq!(s.word::<u32>( 60, 20), 0b1111);
-    /// assert_eq!(s.word::<u32>(188, 10), 0b1111);
-    /// ```
-    #[doc(hidden)]
-    fn word<T: Word>(&self, i: usize, n: usize) -> T {
-        let mut w = T::NULL;
-        for b in i..i + n {
-            if self.bit(b).expect("index out of bounds") {
-                w.set_bit(b - i);
-            }
-        }
-        w
-    }
 }
 
-impl<T: Block> Bits for [T] {
+impl<B: Block> Bits for [B] {
     #[inline]
     fn bits(&self) -> usize {
-        T::BITS * <[T]>::len(self)
+        B::BITS * self.len()
     }
 
     #[inline]
     fn bit(&self, i: usize) -> Option<bool> {
-        let (i, o) = crate::address::<T>(i);
+        let (i, o) = crate::address::<B>(i);
         self.get(i).map(|b| b.bit(o).expect("index out of bounds"))
-    }
-
-    #[inline]
-    #[doc(hidden)]
-    fn word<N: Word>(&self, i: usize, n: usize) -> N {
-        let mut cur = 0;
-        let mut out = N::NULL;
-        crate::for_each_blocks::<T, _>(i, i + n, |k, r| {
-            if k < self.len() && cur < <N as Block>::BITS {
-                out |= self[k].word::<N>(r.start, r.len()) << cur;
-                cur += r.len();
-            }
-        });
-        out
-    }
-}
-
-/// ```
-/// # use bits::Bits;
-/// assert_eq!(Bits::bit(&true,  0), Some(true));
-/// assert_eq!(Bits::bit(&true,  1), None);
-/// assert_eq!(Bits::bit(&false, 0), Some(false));
-/// assert_eq!(Bits::bit(&false, 1), None);
-/// ```
-impl Bits for bool {
-    #[inline]
-    fn bits(&self) -> usize {
-        1
-    }
-
-    #[inline]
-    fn bit(&self, i: usize) -> Option<bool> {
-        (i < 1).then(|| *self)
     }
 }
 
@@ -108,12 +53,6 @@ macro_rules! impl_bits {
         #[inline]
         fn bit(&self, i: usize) -> Option<bool> {
             <$X as Bits>::bit(self$(.$method())?, i)
-        }
-
-        #[doc(hidden)]
-        #[inline]
-        fn word<W: Word>(&self, i: usize, n: usize) -> W {
-            <$X as Bits>::word(self$(.$method())?, i, n)
         }
     }
 }
@@ -136,15 +75,15 @@ mod impl_alloc {
     use alloc::boxed::Box;
     use alloc::vec::Vec;
 
-    impl<T: ?Sized + Bits> Bits for Box<T> {
-        impl_bits!(T);
+    impl<B> Bits for Vec<B>
+    where
+        [B]: Bits,
+    {
+        impl_bits!([B]);
     }
 
-    impl<T> Bits for Vec<T>
-    where
-        [T]: Bits,
-    {
-        impl_bits!([T]);
+    impl<T: ?Sized + Bits> Bits for Box<T> {
+        impl_bits!(T);
     }
 
     impl<'a, T> Bits for Cow<'a, T>

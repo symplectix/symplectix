@@ -1,0 +1,24 @@
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:private"])
+
+rust_library(
+    name = "num",
+    srcs = glob(["*.rs"]),
+    visibility = ["//visibility:public"],
+)
+
+rust_test(
+    name = "num_test",
+    crate = ":num",
+)
+
+rust_doc_test(
+    name = "num_doc_test",
+    crate = ":num",
+)
+
+rust_doc(
+    name = "num_doc",
+    crate = ":num",
+)

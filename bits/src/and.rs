@@ -41,11 +41,11 @@ macro_rules! impl_and_assign_for_words {
 }
 impl_and_assign_for_words!(u8 u16 u32 u64 u128);
 
-impl<T, U> AndAssign<[U]> for [T]
+impl<A, B> AndAssign<[B]> for [A]
 where
-    T: AndAssign<U>,
+    A: AndAssign<B>,
 {
-    fn and_assign(this: &mut Self, that: &[U]) {
+    fn and_assign(this: &mut Self, that: &[B]) {
         assert_eq!(this.len(), that.len());
         for (v1, v2) in this.iter_mut().zip(that) {
             AndAssign::and_assign(v1, v2);
@@ -53,13 +53,13 @@ where
     }
 }
 
-impl<T, U: ?Sized, const N: usize> AndAssign<U> for [T; N]
+impl<A, B: ?Sized, const N: usize> AndAssign<B> for [A; N]
 where
-    [T]: AndAssign<U>,
+    [A]: AndAssign<B>,
 {
     #[inline]
-    fn and_assign(this: &mut Self, that: &U) {
-        <[T] as AndAssign<U>>::and_assign(this.as_mut(), that)
+    fn and_assign(this: &mut Self, that: &B) {
+        <[A] as AndAssign<B>>::and_assign(this.as_mut(), that)
     }
 }
 
@@ -140,6 +140,16 @@ mod impl_alloc {
     use alloc::boxed::Box;
     use alloc::vec::Vec;
 
+    impl<A, B: ?Sized> AndAssign<B> for Vec<A>
+    where
+        [A]: AndAssign<B>,
+    {
+        #[inline]
+        fn and_assign(this: &mut Self, that: &B) {
+            <[A] as AndAssign<B>>::and_assign(this.as_mut(), that)
+        }
+    }
+
     impl<T, U> AndAssign<U> for Box<T>
     where
         T: ?Sized + AndAssign<U>,
@@ -148,16 +158,6 @@ mod impl_alloc {
         #[inline]
         fn and_assign(this: &mut Self, that: &U) {
             <T as AndAssign<U>>::and_assign(this, that)
-        }
-    }
-
-    impl<T, U: ?Sized> AndAssign<U> for Vec<T>
-    where
-        [T]: AndAssign<U>,
-    {
-        #[inline]
-        fn and_assign(this: &mut Self, that: &U) {
-            <[T] as AndAssign<U>>::and_assign(this.as_mut(), that)
         }
     }
 

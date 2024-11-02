@@ -41,8 +41,8 @@ macro_rules! impl_xor_assign_for_words {
 }
 impl_xor_assign_for_words!(u8 u16 u32 u64 u128);
 
-impl<T: XorAssign<U>, U> XorAssign<[U]> for [T] {
-    fn xor_assign(this: &mut Self, that: &[U]) {
+impl<A: XorAssign<B>, B> XorAssign<[B]> for [A] {
+    fn xor_assign(this: &mut Self, that: &[B]) {
         assert_eq!(this.len(), that.len());
         for (v1, v2) in this.iter_mut().zip(that) {
             XorAssign::xor_assign(v1, v2);
@@ -50,13 +50,13 @@ impl<T: XorAssign<U>, U> XorAssign<[U]> for [T] {
     }
 }
 
-impl<T, U: ?Sized, const N: usize> XorAssign<U> for [T; N]
+impl<A, B: ?Sized, const N: usize> XorAssign<B> for [A; N]
 where
-    [T]: XorAssign<U>,
+    [A]: XorAssign<B>,
 {
     #[inline]
-    fn xor_assign(this: &mut Self, that: &U) {
-        <[T] as XorAssign<U>>::xor_assign(this.as_mut(), that)
+    fn xor_assign(this: &mut Self, that: &B) {
+        <[A] as XorAssign<B>>::xor_assign(this.as_mut(), that)
     }
 }
 
@@ -131,6 +131,16 @@ mod impl_alloc {
     use alloc::boxed::Box;
     use alloc::vec::Vec;
 
+    impl<A, B: ?Sized> XorAssign<B> for Vec<A>
+    where
+        [A]: XorAssign<B>,
+    {
+        #[inline]
+        fn xor_assign(this: &mut Self, that: &B) {
+            <[A] as XorAssign<B>>::xor_assign(this.as_mut(), that)
+        }
+    }
+
     impl<T, U> XorAssign<U> for Box<T>
     where
         T: ?Sized + XorAssign<U>,
@@ -139,16 +149,6 @@ mod impl_alloc {
         #[inline]
         fn xor_assign(this: &mut Self, that: &U) {
             <T as XorAssign<U>>::xor_assign(this, that)
-        }
-    }
-
-    impl<T, U: ?Sized> XorAssign<U> for Vec<T>
-    where
-        [T]: XorAssign<U>,
-    {
-        #[inline]
-        fn xor_assign(this: &mut Self, that: &U) {
-            <[T] as XorAssign<U>>::xor_assign(this.as_mut(), that)
         }
     }
 

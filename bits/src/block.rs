@@ -12,24 +12,15 @@ pub trait Block: Clone + Bits + Count + Rank + Excess + Select + BitsMut {
     fn empty() -> Self;
 }
 
-impl Block for bool {
-    const BITS: usize = 1;
-
-    #[inline]
-    fn empty() -> Self {
-        false
-    }
-}
-
-impl<T, const N: usize> Block for [T; N]
+impl<B, const N: usize> Block for [B; N]
 where
-    T: Copy + Block,
+    B: Copy + Block,
 {
-    const BITS: usize = T::BITS * N;
+    const BITS: usize = B::BITS * N;
 
     #[inline]
     fn empty() -> Self {
-        [T::empty(); N]
+        [B::empty(); N]
     }
 }
 
@@ -53,12 +44,12 @@ where
     }
 }
 
-impl<'a, T, const N: usize> IntoBlocks for &'a [T; N]
+impl<'a, B, const N: usize> IntoBlocks for &'a [B; N]
 where
-    &'a [T]: IntoBlocks,
+    &'a [B]: IntoBlocks,
 {
-    type Block = <&'a [T] as IntoBlocks>::Block;
-    type Blocks = <&'a [T] as IntoBlocks>::Blocks;
+    type Block = <&'a [B] as IntoBlocks>::Block;
+    type Blocks = <&'a [B] as IntoBlocks>::Blocks;
     #[inline]
     fn into_blocks(self) -> Self::Blocks {
         self.as_ref().into_blocks()

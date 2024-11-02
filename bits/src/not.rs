@@ -41,8 +41,8 @@ macro_rules! impl_not_assign_for_words {
 }
 impl_not_assign_for_words!(u8 u16 u32 u64 u128);
 
-impl<T: NotAssign<U>, U> NotAssign<[U]> for [T] {
-    fn not_assign(this: &mut Self, that: &[U]) {
+impl<A: NotAssign<B>, B> NotAssign<[B]> for [A] {
+    fn not_assign(this: &mut Self, that: &[B]) {
         assert_eq!(this.len(), that.len());
         for (v1, v2) in this.iter_mut().zip(that) {
             NotAssign::not_assign(v1, v2);
@@ -50,13 +50,13 @@ impl<T: NotAssign<U>, U> NotAssign<[U]> for [T] {
     }
 }
 
-impl<T, U: ?Sized, const N: usize> NotAssign<U> for [T; N]
+impl<A, B: ?Sized, const N: usize> NotAssign<B> for [A; N]
 where
-    [T]: NotAssign<U>,
+    [A]: NotAssign<B>,
 {
     #[inline]
-    fn not_assign(this: &mut Self, that: &U) {
-        <[T] as NotAssign<U>>::not_assign(this.as_mut(), that)
+    fn not_assign(this: &mut Self, that: &B) {
+        <[A] as NotAssign<B>>::not_assign(this.as_mut(), that)
     }
 }
 
@@ -133,6 +133,16 @@ mod impl_alloc {
     use alloc::boxed::Box;
     use alloc::vec::Vec;
 
+    impl<A, B: ?Sized> NotAssign<B> for Vec<A>
+    where
+        [A]: NotAssign<B>,
+    {
+        #[inline]
+        fn not_assign(this: &mut Self, that: &B) {
+            <[A] as NotAssign<B>>::not_assign(this.as_mut(), that)
+        }
+    }
+
     impl<T, U> NotAssign<U> for Box<T>
     where
         T: ?Sized + NotAssign<U>,
@@ -141,16 +151,6 @@ mod impl_alloc {
         #[inline]
         fn not_assign(this: &mut Self, that: &U) {
             <T as NotAssign<U>>::not_assign(this, that)
-        }
-    }
-
-    impl<T, U: ?Sized> NotAssign<U> for Vec<T>
-    where
-        [T]: NotAssign<U>,
-    {
-        #[inline]
-        fn not_assign(this: &mut Self, that: &U) {
-            <[T] as NotAssign<U>>::not_assign(this.as_mut(), that)
         }
     }
 

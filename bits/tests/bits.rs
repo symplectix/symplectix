@@ -1,6 +1,10 @@
-use bits::{Count, Select, Word};
+#[macro_use(quickcheck)]
+extern crate quickcheck_macros;
+
 use std::borrow::Cow;
 use std::iter::successors;
+
+use bits::{Bits, Count, Lsb, PutVarint, Rank, Select, Varint};
 
 #[test]
 fn bits_is_implemented() {
@@ -24,33 +28,46 @@ fn bits_is_implemented() {
     _test::<Cow<Box<[u8; 2000]>>>();
 }
 
-fn ones<T: Word>(word: T) -> impl Iterator<Item = usize> {
-    successors(Some(word), |&n| {
+#[quickcheck]
+fn varint(mut data: Vec<u32>) -> bool {
+    let orig = data.clone();
+    let len = 7;
+    (0..data.bits()).all(|n| {
+        data.put_varint(n, len, data.varint::<u8>(n, len));
+        data.put_varint(n, len, data.varint::<i8>(n, len));
+        orig == data
+    })
+}
+
+#[quickcheck]
+fn lsb(u: u32) -> bool {
+    let i = u as i32;
+    u.lsb() == (i & -i) as u32
+}
+
+#[quickcheck]
+fn next_set_bit(n: u32) -> bool {
+    let mut set_bit = successors(Some(n), |&n| {
         let m = n & !n.lsb();
         m.any().then(|| m)
     })
-    .map(Word::count_t0)
-}
+    .map(|x| u32::trailing_zeros(x) as usize);
 
-#[test]
-fn next_set_bit() {
-    let n: u32 = 0b_0101_0101;
-    let mut ones = ones(n);
-
-    assert_eq!(ones.next(), Some(0));
-    assert_eq!(ones.next(), Some(2));
-    assert_eq!(ones.next(), Some(4));
-    assert_eq!(ones.next(), Some(6));
-    assert_eq!(ones.next(), None);
-}
-
-#[test]
-fn ones_select1() {
-    let n: u32 = 0b_0101_0101;
-    let mut ones = ones(n);
     for c in 0..n.count1() {
-        assert_eq!(ones.next(), n.select1(c));
+        assert_eq!(set_bit.next(), n.select1(c));
     }
+
+    true
+}
+
+#[quickcheck]
+fn rank_count(vec: Vec<u32>) -> bool {
+    vec.count0() == vec.rank0(..) && vec.count1() == vec.rank1(..)
+}
+
+#[quickcheck]
+fn bits_rank0_rank1(vec: Vec<u32>) -> bool {
+    vec.bits() == vec.rank1(..) + vec.rank0(..)
 }
 
 fn rank_for_empty_range<T>(bits: &T)
@@ -79,7 +96,6 @@ where
 fn bit_rank() {
     rank_for_empty_range::<u8>(&!0);
     rank_for_empty_range::<[u8]>(&[!0, !0, !0, !0]);
-    rank_for_empty_range::<[bool]>(&[true, true, true, true, true, true, true, true]);
 
     rank_0_plus_rank_1::<u64>(&0b_1010_1010, 0..10);
     rank_0_plus_rank_1::<u64>(&0b_1010_1010, 7..20);

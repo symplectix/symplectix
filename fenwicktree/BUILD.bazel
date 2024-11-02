@@ -3,23 +3,13 @@ load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", 
 package(default_visibility = ["//visibility:private"])
 
 rust_library(
-    name = "bits",
-    srcs = glob(["src/*.rs"]),
-    crate_features = [
-        "alloc",
+    name = "fenwicktree",
+    srcs = [
+        "fenwicktree.rs",
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//num",
-    ],
-)
-
-rust_library(
-    name = "bits_no_alloc",
-    srcs = glob(["src/*.rs"]),
-    crate_name = "bits",
-    visibility = ["//visibility:public"],
-    deps = [
+        "//bits",
         "//num",
     ],
 )
@@ -31,7 +21,8 @@ rust_test_suite(
         "@crates//:quickcheck_macros",
     ],
     deps = [
-        ":bits",
+        ":fenwicktree",
+        "//bits",
         "//num",
         "@crates//:quickcheck",
     ],
@@ -39,15 +30,15 @@ rust_test_suite(
 
 rust_test(
     name = "cfg_test",
-    crate = ":bits",
+    crate = ":fenwicktree",
 )
 
 rust_doc_test(
     name = "doc_test",
-    crate = ":bits",
+    crate = ":fenwicktree",
 )
 
 rust_doc(
     name = "doc",
-    crate = ":bits",
+    crate = ":fenwicktree",
 )

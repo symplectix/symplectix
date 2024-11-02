@@ -1,0 +1,4 @@
+disallowed-types = [
+    # Can use a string as the path of the disallowed type.
+    { path = "num::PrimInt", reason = "Use 'int::Int' (//num/int) instead" }
+]

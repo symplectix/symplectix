@@ -1,6 +1,18 @@
-# load("@rules_rust//crate_universe:defs.bzl", "crate")
+load("@rules_rust//crate_universe:defs.bzl", "crate")
 
 packages = {
+    # Testing
+    # "arbitrary": crate.spec(
+    #     version = "1",
+    #     features = ["derive"],
+    # },
+    "quickcheck": crate.spec(
+        version = "1",
+    ),
+    "quickcheck_macros": crate.spec(
+        version = "1",
+    ),
+
     # # Async
     # "tokio": crate.spec(
     #     version = "1.17.0",
