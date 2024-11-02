@@ -17,3 +17,6 @@ jobs:
     uses: ./.github/workflows/testing.yaml
     with:
       os: ${{ matrix.os }}
+  fuzzing:
+    name: Fuzzing
+    uses: ./.github/workflows/fuzzing.yaml

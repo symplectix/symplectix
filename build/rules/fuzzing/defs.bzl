@@ -18,13 +18,13 @@ def rust_fuzz_binary(
         envs = envs,
         corpus = corpus_name,
         target = target_name,
-        tags = ["manual"],
+        tags = ["fuzzing"],
     )
 
     fuzz_corpus(
         name = corpus_name,
         srcs = corpus,
-        tags = ["manual"],
+        tags = ["fuzzing", "manual"],
     )
 
     kwargs.setdefault("rustc_flags", []).extend([
@@ -39,7 +39,7 @@ def rust_fuzz_binary(
     ])
 
     kwargs.setdefault("tags", []).extend([
-        "manual",
+        "fuzzing",
     ])
 
     rust_binary(

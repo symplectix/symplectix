@@ -1,5 +1,3 @@
-name: Testing
-
 on:
   workflow_call:
     inputs:
@@ -12,11 +10,10 @@ jobs:
     name: Bazel
     runs-on: ${{ inputs.os }}
     env:
-      BAZEL: bazel --output_user_root=/tmp/trunk/
+      BAZEL: bazel --output_user_root=/tmp/ci/
       BAZEL_ARGS: --config=ci
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - uses: actions/cache@v3
         env:
@@ -24,30 +21,21 @@ jobs:
         with:
           # bazelisk stores a bazel binary in the [UserCacheDir](https://pkg.go.dev/os#UserCacheDir).
           path: |
-            /tmp/trunk
+            /tmp/ci
             ~/.cache/bazelisk
             ~/Library/Caches/bazelisk
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
-      - uses: actions/cache@v3
+      - run: $BAZEL run $BAZEL_ARGS //tool/buildifier
+        name: Buildifier
+
+      - run: $BAZEL build $BAZEL_ARGS //...
+        name: Build
+
+      - run: $BAZEL test $BAZEL_ARGS //...
+        name: Test
+
+      - run: $BAZEL run $BAZEL_ARGS //tool/audit
+        name: Audit
         if: github.event_name == 'schedule'
-        env:
-          cache-name: advisory-db-cache
-        with:
-          path: ~/.cargo/advisory-db
-          key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
-
-      - name: Run //tool/buildifier
-        run: $BAZEL run $BAZEL_ARGS //tool/buildifier
-
-      - name: Run //tool/audit
-        if: github.event_name == 'schedule'
-        run: $BAZEL run $BAZEL_ARGS //tool/audit
-
-      - name: Build
-        run: $BAZEL build $BAZEL_ARGS //...
-
-      - name: Test
-        run: $BAZEL test $BAZEL_ARGS //...

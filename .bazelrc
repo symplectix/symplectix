@@ -71,12 +71,18 @@ build:nightly --@rules_rust//rust/toolchain/channel=nightly
 # dbg:       -Copt-level=0 -Cdebuginfo=2
 # opt:       -Copt-level=3 -Cdebuginfo=0
 build:release --compilation_mode=opt
-
 build:release --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=off
 build:release --@rules_rust//:extra_rustc_flag=-Coverflow-checks=off
 build:release --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
 build:release --@rules_rust//:extra_rustc_flag=-Clto=fat
 build:release --@rules_rust//:extra_rustc_flag=-Ccodegen-units=1
+
+build:debug --compilation_mode=dbg
+build:debug --@rules_rust//:extra_rustc_flag=-Cdebug-assertions=on
+build:debug --@rules_rust//:extra_rustc_flag=-Coverflow-checks=on
+build:debug --@rules_rust//:extra_rustc_flag=-Cpanic=unwind
+build:debug --@rules_rust//:extra_rustc_flag=-Clto=fat
+build:debug --@rules_rust//:extra_rustc_flag=-Ccodegen-units=32
 
 # Controls whether Bazel will strip debugging information from all binaries and shared libraries,
 # by invoking the linker with the -Wl,--strip-debug option.
@@ -96,10 +102,17 @@ build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build:clippy --output_groups=+clippy_checks
 build:clippy --@rules_rust//:clippy.toml=//:.clippy.toml
 
-build:ci --config=verbose
+build:ci --config=stable
 build:ci --config=release
 build:ci --config=strip
 build:ci --config=rustfmt
 build:ci --config=clippy
+build:ci --config=verbose
+
+build:fuzz --config=nightly
+build:fuzz --config=debug
+build:fuzz --config=rustfmt
+build:fuzz --config=clippy
+build:fuzz --config=verbose
 
 try-import %workspace%/.bazelrc.user
