@@ -1,4 +1,4 @@
-workspace(name = "com_symplectik_trunk")
+workspace(name = "trunk")
 
 load("@//:toolchain.bzl", "GO_VERSION", "RUST_EDITION", "RUST_VERSION")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
