@@ -3,9 +3,8 @@ use std::iter::Sum;
 use std::ops::RangeBounds;
 
 use bitpacking::Unpack;
-use bits::{Bits, BitsMut, Block};
+use bits::{Bits, BitsMut, Block, Word};
 use fenwicktree::{LowerBound, Nodes, Prefix};
-use num::Int;
 
 mod l1l2;
 /// `BitAux<T>` stores auxiliary data to compute `Rank` and `Select` more efficiently.
@@ -42,7 +41,7 @@ const MAX_SB_LEN: usize = UPPER_BLOCK / SUPER_BLOCK;
 
 fn build<'a, T, I>(size: usize, super_blocks: I) -> Poppy
 where
-    T: Int + 'a,
+    T: Word + 'a,
     I: IntoIterator<Item = Option<&'a [T]>>,
 {
     let mut poppy = Poppy::new(size);
@@ -51,7 +50,7 @@ where
         let bbs = basic_blocks(sb);
         let sum = bbs.iter().sum::<u64>();
 
-        let (q, r) = num::divrem(i, MAX_SB_LEN);
+        let (q, r) = (i / MAX_SB_LEN, i % MAX_SB_LEN);
 
         // +1 to skip dummy index
         poppy.ubs[q + 1] += sum;
@@ -61,7 +60,7 @@ where
     poppy
 }
 
-fn basic_blocks<W: Int>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
+fn basic_blocks<W: Word>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
     let mut bbs = [0; L1L2::LEN];
     if let Some(sb) = sb {
         for (i, bb) in sb.chunks(BASIC_BLOCK / W::BITS).enumerate() {
@@ -71,7 +70,7 @@ fn basic_blocks<W: Int>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
     bbs
 }
 
-fn super_blocks_from_words<T: Int>(slice: &[T]) -> impl Iterator<Item = Option<&[T]>> {
+fn super_blocks_from_words<T: Word>(slice: &[T]) -> impl Iterator<Item = Option<&[T]>> {
     slice.chunks(SUPER_BLOCK / T::BITS).map(Some)
 }
 
@@ -88,13 +87,13 @@ fn lbs_len(n: usize) -> usize {
         supers + {
             // Remenber that fenwicks for L1 and L2 is logically `Vec<Vec<LL>>` but flattened.
             // Need additional space for each fenwicks because of its 1-based indexing.
-            let (q, r) = num::divrem(supers, MAX_SB_LEN);
+            let (q, r) = (supers / MAX_SB_LEN, supers % MAX_SB_LEN);
             q + (r > 0) as usize
         }
     }
 }
 
-impl<'a, T: Int> From<&'a [T]> for BitAux<&'a [T]> {
+impl<'a, T: Word> From<&'a [T]> for BitAux<&'a [T]> {
     fn from(inner: &'a [T]) -> Self {
         let mut poppy = build(inner.bits(), super_blocks_from_words(inner));
 
@@ -141,7 +140,7 @@ impl<T: Unpack + Bits> Bits for BitAux<T> {
     #[inline]
     fn count1(&self) -> usize {
         let bit = &self.poppy.ubs;
-        num::cast::<u64, usize>(bit.sum(bit.nodes()))
+        num::cast::<u64, usize>(bit.sum(bit.nodes())).expect("failed to cast from u64 to usize")
     }
 
     fn rank1<Idx: RangeBounds<usize>>(&self, index: Idx) -> usize {
@@ -151,16 +150,17 @@ impl<T: Unpack + Bits> Bits for BitAux<T> {
             } else if p0 == me.bits() {
                 me.count1()
             } else {
-                let (q0, r0) = num::divrem(p0, UPPER_BLOCK);
-                let (q1, r1) = num::divrem(r0, SUPER_BLOCK);
-                let (q2, r2) = num::divrem(r1, BASIC_BLOCK);
+                let (q0, r0) = (p0 / UPPER_BLOCK, p0 % UPPER_BLOCK);
+                let (q1, r1) = (r0 / SUPER_BLOCK, r0 % SUPER_BLOCK);
+                let (q2, r2) = (r1 / BASIC_BLOCK, r1 % BASIC_BLOCK);
 
                 let hi = &me.poppy.ubs;
                 let lo = me.poppy.lb(q0);
                 let c0: u64 = hi.sum(q0);
                 let c1: u64 = lo.sum(q1);
                 let c2 = lo[q1 + 1].l2(q2);
-                num::cast::<_, usize>(c0 + c1 + c2) + me.inner.rank1(p0 - r2..p0)
+                num::cast::<_, usize>(c0 + c1 + c2).expect("failed to cast from u64 to usize")
+                    + me.inner.rank1(p0 - r2..p0)
             }
         }
         use std::ops::Range;
@@ -169,7 +169,7 @@ impl<T: Unpack + Bits> Bits for BitAux<T> {
     }
 
     fn select1(&self, n: usize) -> Option<usize> {
-        let mut r = num::cast(n);
+        let mut r = num::cast(n).expect("failed to cast from usize to u64");
 
         let (s, e) = {
             let p0 = find_l0(&self.poppy.ubs[..], &mut r)?;
@@ -210,7 +210,7 @@ impl<T: Unpack + Bits> Bits for BitAux<T> {
     }
 
     fn select0(&self, n: usize) -> Option<usize> {
-        let mut r = num::cast(n);
+        let mut r = num::cast(n).expect("failed to cast from usize to u64");
 
         let (s, e) = {
             const UB: u64 = UPPER_BLOCK as u64;
@@ -354,8 +354,8 @@ impl Poppy {
     fn incr(&mut self, p0: usize, delta: u64) {
         use fenwicktree::Incr;
 
-        let (q0, r0) = num::divrem(p0, UPPER_BLOCK);
-        let (q1, r1) = num::divrem(r0, SUPER_BLOCK);
+        let (q0, r0) = (p0 / UPPER_BLOCK, p0 % UPPER_BLOCK);
+        let (q1, r1) = (r0 / SUPER_BLOCK, r0 % SUPER_BLOCK);
 
         self.ubs.incr(q0 + 1, delta);
 
@@ -377,8 +377,8 @@ impl Poppy {
     fn decr(&mut self, p0: usize, delta: u64) {
         use fenwicktree::Decr;
 
-        let (q0, r0) = num::divrem(p0, UPPER_BLOCK);
-        let (q1, r1) = num::divrem(r0, SUPER_BLOCK);
+        let (q0, r0) = (p0 / UPPER_BLOCK, p0 % UPPER_BLOCK);
+        let (q1, r1) = (r0 / SUPER_BLOCK, r0 % SUPER_BLOCK);
 
         let hi = &mut self.ubs;
         hi.decr(q0 + 1, delta);

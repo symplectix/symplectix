@@ -69,7 +69,8 @@ pub(crate) fn compare<X, Y>(
 
 mod impl_mask {
     use super::Mask;
-    use crate::Block;
+    use crate::{Bits, Block};
+
     use std::borrow::Cow;
     use std::{iter::Enumerate, slice};
 
@@ -89,7 +90,7 @@ mod impl_mask {
         type Item = (usize, Cow<'a, T>);
         #[inline]
         fn next(&mut self) -> Option<Self::Item> {
-            self.blocks.find_map(|(i, b)| b.any().then(|| (i, Cow::Borrowed(b))))
+            self.blocks.find_map(|(i, b)| Bits::any(b).then(|| (i, Cow::Borrowed(b))))
         }
     }
 }

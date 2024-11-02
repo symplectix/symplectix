@@ -6,7 +6,6 @@ rust_library(
     visibility = ["//bits:__subpackages__"],
     deps = [
         "//bits",
-        "//num",
     ],
 )
 

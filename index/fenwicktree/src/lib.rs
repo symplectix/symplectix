@@ -3,7 +3,7 @@
 use std::iter::Sum;
 use std::ops::{AddAssign, Sub, SubAssign};
 
-use num::Int;
+use bits::{Bits, Word};
 
 pub use index::{children, prefix, search, update};
 
@@ -79,19 +79,19 @@ pub fn pop<T: Node + SubAssign>(bit: &mut Vec<T>) -> Option<T> {
 }
 
 mod index {
+    use bits::Word;
     use core::iter::{successors, Successors};
     use core::ops::{Add, Sub};
-    use num::Int;
 
     // The next node to be updated can be found by adding the node size `n.lsb()`.
     #[inline]
-    pub(crate) fn next_for_update<T: Int + Add>(i: T) -> <T as Add>::Output {
+    pub(crate) fn next_for_update<T: Word + Add>(i: T) -> <T as Add>::Output {
         i + i.lsb()
     }
 
     // The next node to be queried can be found by subtracting the node size `n.lsb()`.
     #[inline]
-    pub(crate) fn next_for_prefix<T: Int + Sub>(i: T) -> <T as Sub>::Output {
+    pub(crate) fn next_for_prefix<T: Word + Sub>(i: T) -> <T as Sub>::Output {
         i - i.lsb()
     }
 
@@ -175,12 +175,12 @@ impl<T: Node, S: Sum<Self::Node>> Prefix<S> for [T] {
 impl<T, U> LowerBound<U> for [T]
 where
     T: Node + PartialOrd<U>,
-    U: Int + SubAssign<T>,
+    U: Word + SubAssign<T>,
 {
     fn lower_bound(&self, mut w: U) -> usize {
         assert!(!self.is_empty());
 
-        if !w.any() {
+        if !Bits::any(&w) {
             return 0;
         }
 

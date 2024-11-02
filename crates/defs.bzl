@@ -170,6 +170,13 @@ _crates = {
         ),
     ),
 
+    # A collection of numeric types and traits.
+    "num": struct(
+        spec = crate.spec(
+            version = "0.4",
+        ),
+    ),
+
     # Includes formatters and parsers for std::time::SystemTime and std::time::Duration.
     "humantime": struct(
         spec = crate.spec(

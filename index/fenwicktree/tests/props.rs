@@ -1,11 +1,12 @@
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
 
-use fenwicktree::{Incr, LowerBound, Nodes, Prefix};
-use num::Int;
 use std::{iter, ops};
 
-fn build<T: Int + ops::AddAssign>(mut vec: Vec<T>) -> Vec<T> {
+use bits::Word;
+use fenwicktree::{Incr, LowerBound, Nodes, Prefix};
+
+fn build<T: Word + ops::AddAssign>(mut vec: Vec<T>) -> Vec<T> {
     vec.insert(0, T::ZERO); // ensure vec.len() > 0
     fenwicktree::build(&mut vec);
     vec
