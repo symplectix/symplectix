@@ -28,9 +28,6 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
-      - name: Buildifier
-        run: $BAZEL run $BAZEL_ARGS //tools/buildifier
-
       - name: Build
         run: $BAZEL build $BAZEL_ARGS //...
 

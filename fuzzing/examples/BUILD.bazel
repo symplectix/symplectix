@@ -1,13 +1,5 @@
 load("//fuzzing:defs.bzl", "rust_fuzz_test")
 
-filegroup(
-    name = "corpus_filegroup",
-    srcs = glob([
-        "corpus/corpus_0",
-        "corpus/**",
-    ]),
-)
-
 rust_fuzz_test(
     name = "should_not_fail",
     srcs = ["should_not_fail.rs"],

@@ -30,11 +30,18 @@ common --experimental_allow_tags_propagation
 build --action_env=CC=clang
 build --action_env=CXX=clang++
 
+# Disables a legacy feature where local sandboxed execution can silently fall back to non-sandboxed
+# if an action can't be run in a sandbox. This will be the default flag in a future release (probably 7.0).
+#
+# https://github.com/bazelbuild/bazel/issues/16522
+build --noincompatible_legacy_local_fallback
+
 # The option sandboxed causes commands to be executed inside a sandbox on the local machine.
 # This requires that all input files, data dependencies and tools are listed as direct dependencies in the srcs, data and tools attributes.
 # Bazel enables local sandboxing by default, on systems that support sandboxed execution.
+#
 # https://bazel.build/docs/user-manual#spawn-strategy
-build --spawn_strategy=sandboxed
+build --spawn_strategy=sandboxed,local
 
 # Restricts network access by default for actions.
 # https://bazel.build/reference/command-line-reference#flag--sandbox_default_allow_network

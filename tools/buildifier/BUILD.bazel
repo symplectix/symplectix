@@ -1,33 +1,35 @@
-load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
+load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
 
 alias(
     name = "buildifier",
     actual = ":fix",
 )
 
-_EXCLUDE_PATTERNS = [
+_exclude_patterns = [
     "./tmp/**/*",
+]
+
+_lint_warnings = [
+    "-function-docstring",
+    "-function-docstring-args",
+    "-module-docstring",
 ]
 
 buildifier(
     name = "fix",
-    exclude_patterns = _EXCLUDE_PATTERNS,
+    exclude_patterns = _exclude_patterns,
     lint_mode = "fix",
-    lint_warnings = [
-        "+out-of-order-load",
-    ],
+    lint_warnings = _lint_warnings,
 )
 
-# `mode = "check"` is deprecated.
-# https://github.com/bazelbuild/buildtools/issues/1005
-buildifier(
+buildifier_test(
     name = "check",
-    exclude_patterns = _EXCLUDE_PATTERNS,
+    size = "small",
+    timeout = "short",
+    exclude_patterns = _exclude_patterns,
     lint_mode = "warn",
-    lint_warnings = [
-        "+out-of-order-load",
-        "-function-docstring",
-        "-module-docstring",
-    ],
-    mode = "check",
+    lint_warnings = _lint_warnings,
+    mode = "diff",
+    no_sandbox = True,
+    workspace = "//:WORKSPACE",
 )

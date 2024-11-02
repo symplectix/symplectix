@@ -2,10 +2,7 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 
 rust_binary(
     name = "fuzz",
-    srcs = glob([
-        "main.rs",
-        "cmd/*.rs",
-    ]),
+    srcs = ["main.rs"] + glob(["cmd/*.rs"]),
     visibility = ["//visibility:public"],
     deps = [
         "//process",
