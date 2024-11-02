@@ -9,7 +9,10 @@ rust_library(
         exclude = ["*_test.rs"],
     ),
     visibility = ["//visibility:public"],
-    deps = ["//bits"],
+    deps = [
+        "//bits",
+        "//num",
+    ],
 )
 
 rust_test_suite(

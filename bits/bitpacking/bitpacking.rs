@@ -1,21 +1,43 @@
-use bits::{Bits, Container, ContainerMut};
+//! Provides helper methods to read/write auxiliary data for Rank and Select.
+//! This library should not be used to compress/decompress a large array.
+//! Consider using [`quickwit-oss/bitpacking`](https://github.com/quickwit-oss/bitpacking) in such cases.
 
-/// # Examples
-///
-/// ```
-/// # use bitpacking::Unpack;
-/// let bits: &[u16] = &[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001];
-/// let len = 4;
-/// assert_eq!(bits.unpack::<u8>(0, len), 0b0011);
-/// assert_eq!(bits.unpack::<u8>(8, len), 0b0001);
-/// assert_eq!(bits.unpack::<u8>(14, len), 0b0111);
-/// assert_eq!(bits.unpack::<u8>(30, len), 0b0010);
-/// ```
-#[doc(hidden)]
+use bits::{Bits, Container, ContainerMut};
+use num::Int;
+
+pub trait Block: Int + Bits {}
+impl<T: Int + Bits> Block for T {}
+
+pub trait Pack: ContainerMut {
+    /// Writes `N` bits in `[i, i+N)`.
+    #[doc(hidden)]
+    fn pack<T: Block>(&mut self, i: usize, n: usize, bits: T) {
+        debug_assert!(i < self.bits() && n <= T::BITS);
+
+        for b in i..i + n {
+            if bits.bit(b - i).unwrap_or_default() {
+                self.bit_set(b);
+            }
+        }
+    }
+}
+
 pub trait Unpack: Container {
     /// Reads `n` bits from `i`, and returns it as the lowest `n` bits of `Int`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bitpacking::Unpack;
+    /// let bits: &[u16] = &[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001];
+    /// let len = 4;
+    /// assert_eq!(bits.unpack::<u8>(0, len), 0b0011);
+    /// assert_eq!(bits.unpack::<u8>(8, len), 0b0001);
+    /// assert_eq!(bits.unpack::<u8>(14, len), 0b0111);
+    /// assert_eq!(bits.unpack::<u8>(30, len), 0b0010);
+    /// ```
     #[doc(hidden)]
-    fn unpack<T: Bits>(&self, i: usize, n: usize) -> T {
+    fn unpack<T: Block>(&self, i: usize, n: usize) -> T {
         debug_assert!(i < self.bits() && n <= T::BITS);
 
         let mut bits = T::empty();
@@ -28,26 +50,11 @@ pub trait Unpack: Container {
     }
 }
 
-#[doc(hidden)]
-pub trait Pack: Unpack + ContainerMut {
-    /// Writes `N` bits in `[i, i+N)`.
-    #[doc(hidden)]
-    fn pack<T: Bits>(&mut self, i: usize, n: usize, bits: T) {
-        debug_assert!(i < self.bits() && n <= T::BITS);
-
-        for b in i..i + n {
-            if bits.bit(b - i).unwrap_or_default() {
-                self.bit_set(b);
-            }
-        }
-    }
-}
-
 macro_rules! ints_impl_packing {
     ($( $Int:ty )*) => ($(
         impl Unpack for $Int {
             // #[inline]
-            // fn varint<T: Block>(&self, i: usize, n: usize) -> T {
+            // fn unpack<T: Block>(&self, i: usize, n: usize) -> T {
             //     num::cast((*self >> i) & <$Int>::mask(0, n))
             // }
         }
@@ -96,7 +103,7 @@ impl<B: Bits + Pack> Pack for [B] {
 macro_rules! impl_unpack {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn unpack<I: Bits>(&self, i: usize, n: usize) -> I {
+        fn unpack<I: Block>(&self, i: usize, n: usize) -> I {
             <$X as Unpack>::unpack(self$(.$method())?, i, n)
         }
     }
@@ -105,7 +112,7 @@ macro_rules! impl_unpack {
 macro_rules! impl_pack {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn pack<I: Bits>(&mut self, i: usize, n: usize, int: I) {
+        fn pack<I: Block>(&mut self, i: usize, n: usize, int: I) {
             <$X as Pack>::pack(self$(.$method())?, i, n, int)
         }
     }
