@@ -1,7 +1,7 @@
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 
 filegroup(
-    name = "all_srcs",
+    name = "src",
     srcs = glob(
         include = ["**"],
         exclude = ["*.bazel"],
@@ -14,7 +14,7 @@ cmake(
         "@platforms//os:windows": ["-GNinja"],
         "//conditions:default": [],
     }),
-    lib_source = ":all_srcs",
+    lib_source = ":src",
     out_static_libs = select({
         "@platforms//os:windows": ["zlibstatic.lib"],
         "//conditions:default": ["libz.a"],

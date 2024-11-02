@@ -1,48 +1,23 @@
-load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make", "configure_make_variant")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 
 filegroup(
-    name = "all_srcs",
+    name = "src",
     srcs = glob(
         include = ["**"],
         exclude = ["*.bazel"],
     ),
 )
 
-CONFIGURE_OPTIONS = [
-    "no-comp",
-    "no-idea",
-    "no-shared",
-    "no-weak-ssl-ciphers",
-]
-
-LIB_NAME = "openssl"
-
-MAKE_TARGETS = [
-    "build_libs",
-    "install_dev",
-]
-
-config_setting(
-    name = "msvc_compiler",
-    flag_values = {
-        "@bazel_tools//tools/cpp:compiler": "msvc-cl",
-    },
-)
-
-alias(
-    name = "openssl",
-    actual = select({
-        ":msvc_compiler": "openssl_msvc",
-        "//conditions:default": "openssl_default",
-    }),
-    visibility = ["//visibility:public"],
-)
-
 configure_make(
-    name = "openssl_default",
+    name = "openssl",
     configure_command = "config",
     configure_in_place = True,
-    configure_options = CONFIGURE_OPTIONS,
+    configure_options = [
+        "no-comp",
+        "no-idea",
+        "no-shared",
+        "no-weak-ssl-ciphers",
+    ],
     env = select({
         "@platforms//os:macos": {
             "AR": "",
@@ -52,8 +27,14 @@ configure_make(
             "PERL": "$$EXT_BUILD_ROOT$$/$(PERL)",
         },
     }),
-    lib_name = LIB_NAME,
-    lib_source = ":all_srcs",
+    lib_name = "openssl",
+    lib_source = ":src",
+    out_binaries = ["openssl"],
+    out_lib_dir = select({
+        "@platforms//os:linux": "lib64",
+        "@platforms//os:macos": "lib",
+        "//conditions:default": "@platforms//:incompatible",
+    }),
     out_static_libs = [
         "libssl.a",
         "libcrypto.a",
@@ -63,42 +44,12 @@ configure_make(
         "@platforms//os:macos": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    targets = MAKE_TARGETS,
+    targets = [
+        "build_programs",
+        "install_sw",
+    ],
     toolchains = ["@rules_perl//:current_toolchain"],
-)
-
-configure_make_variant(
-    name = "openssl_msvc",
-    build_data = [
-        "@nasm//:nasm",
-    ],
-    configure_command = "Configure",
-    configure_in_place = True,
-    configure_options = CONFIGURE_OPTIONS + [
-        "VC-WIN64A",
-        # Unset Microsoft Assembler (MASM) flags set by built-in MSVC toolchain,
-        # as NASM is unsed to build OpenSSL rather than MASM
-        "ASFLAGS=\" \"",
-    ],
-    configure_prefix = "$$PERL",
-    env = {
-        # The Zi flag must be set otherwise OpenSSL fails to build due to missing .pdb files
-        "CFLAGS": "-Zi",
-        "PATH": "$$(dirname $(execpath @nasm//:nasm)):$$PATH",
-        "PERL": "$$EXT_BUILD_ROOT$$/$(PERL)",
-    },
-    lib_name = LIB_NAME,
-    lib_source = ":all_srcs",
-    out_static_libs = [
-        "libssl.lib",
-        "libcrypto.lib",
-    ],
-    target_compatible_with = [
-        "@platforms//os:windows",
-    ],
-    targets = MAKE_TARGETS,
-    toolchain = "@rules_foreign_cc//toolchains:preinstalled_nmake_toolchain",
-    toolchains = ["@rules_perl//:current_toolchain"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

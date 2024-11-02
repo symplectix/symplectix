@@ -64,21 +64,10 @@ _http_archives = {
     },
     "openssl": {
         "build_file": "//x/openssl:BUILD.openssl.bazel",
-        "sha256": "cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8",
-        "strip_prefix": "openssl-1.1.1w",
+        "sha256": "83c7329fe52c850677d75e5d0b0ca245309b97e8ecbcfdc1dfdc4ab9fac35b39",
+        "strip_prefix": "openssl-3.2.1",
         "urls": [
-            "https://mirror.bazel.build/www.openssl.org/source/openssl-1.1.1w.tar.gz",
-            "https://www.openssl.org/source/openssl-1.1.1w.tar.gz",
-            "https://github.com/openssl/openssl/archive/OpenSSL_1_1_1w.tar.gz",
-        ],
-    },
-    "nasm": {
-        "build_file": "//x/openssl:BUILD.nasm.bazel",
-        "sha256": "f5c93c146f52b4f1664fa3ce6579f961a910e869ab0dae431bd871bdd2584ef2",
-        "strip_prefix": "nasm-2.16.01",
-        "urls": [
-            "https://mirror.bazel.build/www.nasm.us/pub/nasm/releasebuilds/2.16.01/win64/nasm-2.16.01-win64.zip",
-            "https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.16.01-win64.zip",
+            "https://www.openssl.org/source/openssl-3.2.1.tar.gz",
         ],
     },
     "rules_perl": {
