@@ -35,7 +35,7 @@ struct Corpus {
 }
 
 impl Prep {
-    pub(crate) async fn run(&self) -> anyhow::Result<()> {
+    pub(crate) async fn run(self) -> anyhow::Result<()> {
         match &self.command {
             Command::Corpus(corpus) => {
                 fs::create_dir_all(&corpus.output).with_context(|| {

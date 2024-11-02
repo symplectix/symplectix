@@ -18,6 +18,7 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     deps = [
+        "//process/entrypoint/fsutil",
         "@crates//:anyhow",
         "@crates//:clap",
         "@crates//:futures",
@@ -30,25 +31,14 @@ rust_library(
 )
 
 rust_binary(
-    name = "process_wrapper",
-    srcs = ["src/bin/process_wrapper.rs"],
-    deps = [
-        ":entrypoint",
-        "@crates//:anyhow",
-        "@crates//:clap",
-        "@crates//:tokio",
-        "@crates//:tracing",
-        "@crates//:tracing-subscriber",
-    ],
-)
-
-rust_binary(
     name = "coordinator",
     srcs = ["src/bin/coordinator.rs"],
     deps = [
         ":entrypoint",
+        "//process/entrypoint/fsutil",
         "@crates//:anyhow",
         "@crates//:clap",
+        "@crates//:futures",
         "@crates//:tokio",
         "@crates//:tracing",
         "@crates//:tracing-subscriber",

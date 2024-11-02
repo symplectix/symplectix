@@ -15,8 +15,8 @@ enum Command {
 }
 
 impl Fuzz {
-    async fn run(&self) -> anyhow::Result<()> {
-        match &self.command {
+    async fn run(self) -> anyhow::Result<()> {
+        match self.command {
             Command::Run(f) => f.run().await,
             Command::Prep(p) => p.run().await,
         }
