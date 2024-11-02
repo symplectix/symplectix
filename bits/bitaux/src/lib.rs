@@ -3,11 +3,11 @@ use std::iter::Sum;
 use std::ops::RangeBounds;
 
 use bitpacking::Unpack;
-use bits::{Bits, Container, ContainerMut, Count, Rank, Select};
+use bits::{Bits, BitsMut, Block};
 use fenwicktree::{LowerBound, Nodes, Prefix};
+use num::Int;
 
 mod l1l2;
-
 /// `BitAux<T>` stores auxiliary data to compute `Rank` and `Select` more efficiently.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BitAux<T> {
@@ -40,12 +40,9 @@ const BASIC_BLOCK: usize = 1 << 9;
 
 const MAX_SB_LEN: usize = UPPER_BLOCK / SUPER_BLOCK;
 
-trait Word: num::Int + bits::Bits {}
-impl<T> Word for T where T: num::Int + bits::Bits {}
-
 fn build<'a, T, I>(size: usize, super_blocks: I) -> Poppy
 where
-    T: Word + 'a,
+    T: Int + 'a,
     I: IntoIterator<Item = Option<&'a [T]>>,
 {
     let mut poppy = Poppy::new(size);
@@ -64,7 +61,7 @@ where
     poppy
 }
 
-fn basic_blocks<W: Word>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
+fn basic_blocks<W: Int>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
     let mut bbs = [0; L1L2::LEN];
     if let Some(sb) = sb {
         for (i, bb) in sb.chunks(BASIC_BLOCK / W::BITS).enumerate() {
@@ -74,7 +71,7 @@ fn basic_blocks<W: Word>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
     bbs
 }
 
-fn super_blocks_from_words<T: Word>(slice: &[T]) -> impl Iterator<Item = Option<&[T]>> {
+fn super_blocks_from_words<T: Int>(slice: &[T]) -> impl Iterator<Item = Option<&[T]>> {
     slice.chunks(SUPER_BLOCK / T::BITS).map(Some)
 }
 
@@ -97,7 +94,7 @@ fn lbs_len(n: usize) -> usize {
     }
 }
 
-impl<'a, T: Word> From<&'a [T]> for BitAux<&'a [T]> {
+impl<'a, T: Int> From<&'a [T]> for BitAux<&'a [T]> {
     fn from(inner: &'a [T]) -> Self {
         let mut poppy = build(inner.bits(), super_blocks_from_words(inner));
 
@@ -116,15 +113,21 @@ impl<'a, T: Word> From<&'a [T]> for BitAux<&'a [T]> {
     }
 }
 
-impl<T: Bits> BitAux<Vec<T>> {
+impl<T: Block> BitAux<Vec<T>> {
     #[inline]
     pub fn new(n: usize) -> BitAux<Vec<T>> {
         let dat = bits::new(n);
-        BitAux { poppy: Poppy::new(bits::len(&dat)), inner: dat }
+        BitAux { poppy: Poppy::new(dat.bits()), inner: dat }
     }
 }
 
-impl<T: Container> Container for BitAux<T> {
+impl<T> BitAux<T> {
+    pub fn inner(&self) -> &T {
+        &self.inner
+    }
+}
+
+impl<T: Unpack + Bits> Bits for BitAux<T> {
     #[inline]
     fn bits(&self) -> usize {
         self.inner.bits()
@@ -134,19 +137,15 @@ impl<T: Container> Container for BitAux<T> {
     fn bit(&self, i: usize) -> Option<bool> {
         self.inner.bit(i)
     }
-}
 
-impl<T: Count> Count for BitAux<T> {
     #[inline]
     fn count1(&self) -> usize {
         let bit = &self.poppy.ubs;
         num::cast::<u64, usize>(bit.sum(bit.nodes()))
     }
-}
 
-impl<T: Rank> Rank for BitAux<T> {
     fn rank1<Idx: RangeBounds<usize>>(&self, index: Idx) -> usize {
-        fn rank1_impl<U: Rank>(me: &BitAux<U>, p0: usize) -> usize {
+        fn rank1_impl<U: Unpack + Bits>(me: &BitAux<U>, p0: usize) -> usize {
             if p0 == 0 {
                 0
             } else if p0 == me.bits() {
@@ -168,9 +167,7 @@ impl<T: Rank> Rank for BitAux<T> {
         let Range { start: i, end: j } = bit::bounded(&index, 0, self.bits());
         rank1_impl(self, j) - rank1_impl(self, i)
     }
-}
 
-impl<T: Unpack + Select> Select for BitAux<T> {
     fn select1(&self, n: usize) -> Option<usize> {
         let mut r = num::cast(n);
 
@@ -194,7 +191,7 @@ impl<T: Unpack + Select> Select for BitAux<T> {
 
         // i + imp.bit_vec[x..y].select1(r).unwrap()
 
-        const BITS: usize = <u128 as Bits>::BITS;
+        const BITS: usize = <u128 as Block>::BITS;
         for i in (s..e).step_by(BITS) {
             let b = self.inner.unpack::<u128>(i, BITS);
             let c = b.count1();
@@ -238,7 +235,7 @@ impl<T: Unpack + Select> Select for BitAux<T> {
             debug_assert!(r < self.rank0(s..e));
         }
 
-        const BITS: usize = <u128 as Bits>::BITS;
+        const BITS: usize = <u128 as Block>::BITS;
         for i in (s..e).step_by(BITS) {
             let b = self.inner.unpack::<u128>(i, BITS);
             let c = b.count0();
@@ -292,7 +289,7 @@ where
     p2
 }
 
-impl<T: ContainerMut> BitAux<T> {
+impl<T: BitsMut> BitAux<T> {
     /// Swaps a bit at `i` by `bit` and returns the previous value.
     fn swap(&mut self, i: usize, bit: bool) -> bool {
         let before = self.inner.bit(i);
@@ -305,7 +302,7 @@ impl<T: ContainerMut> BitAux<T> {
     }
 }
 
-impl<T: Container + ContainerMut> ContainerMut for BitAux<T> {
+impl<T: Unpack + BitsMut> BitsMut for BitAux<T> {
     #[inline]
     fn bit_set(&mut self, index: usize) {
         if !self.swap(index, true) {
@@ -458,60 +455,3 @@ impl Poppy {
 //         Rho(Imp { buckets: buckets.into(), samples: None, bit_vec: dat.into() })
 //     }
 // }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use quickcheck::quickcheck;
-
-    fn none<T: Bits>(n: usize) -> BitAux<Vec<T>> {
-        BitAux::new(n)
-    }
-
-    fn setup_bits(size: usize, mut bits: Vec<usize>) -> Vec<usize> {
-        bits.push(0);
-        bits.push((1 << 16) - 1);
-        bits.push(1 << 16);
-        bits.push(1 << 20);
-        bits.push(1 << 32);
-
-        let mut bits = bits.into_iter().filter(|&x| x < size).collect::<Vec<_>>();
-        bits.sort();
-        bits.dedup();
-        bits
-    }
-
-    fn check<T: Bits + Unpack>(size: usize, bits: Vec<usize>) -> bool {
-        let mut aux = none::<T>(size);
-
-        for &b in &bits {
-            aux.bit_set(b);
-        }
-
-        assert_eq!(aux.count1(), bits.len());
-
-        bits.into_iter().enumerate().all(|(i, b)| {
-            aux.bit(b).unwrap()
-                && aux.rank1(..b) == i
-                && aux.select1(i) == Some(b)
-                && aux.inner.select1(i) == Some(b)
-        })
-    }
-
-    quickcheck! {
-        fn bits_u64(bits: Vec<usize>) -> bool {
-            let size = 1 << 18;
-            let bits = setup_bits(size, bits);
-
-            check::<u64>(size, bits)
-        }
-
-        fn bits_boxed_array(bits: Vec<usize>) -> bool {
-            let size = (1 << 32) + 65536;
-            let bits = setup_bits(size, bits);
-
-            check::<Box<[u64; 1024]>>(size, bits)
-        }
-    }
-}

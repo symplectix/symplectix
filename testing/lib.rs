@@ -5,7 +5,17 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use once_cell::sync::Lazy;
+use runfiles::Runfiles;
+
 pub use tempfile::TempDir;
+
+// The local repository's workspace name.
+pub static WORKSPACE: Lazy<String> = Lazy::new(|| {
+    env::var("TEST_WORKSPACE").expect("fetching the environment variable 'TEST_WORKSPACE'")
+});
+
+static RUNFILES: Lazy<Runfiles> =
+    Lazy::new(|| Runfiles::create().expect("runfiles can not be created"));
 
 // Signifies test executable is being driven by bazel test.
 // https://bazel.build/reference/test-encyclopedia
@@ -22,6 +32,11 @@ pub static TMPDIR: Lazy<String> =
 
 fn in_bazel_test() -> bool {
     *BAZEL_TEST
+}
+
+/// Returns the runtime path of a runfile, assuming the path is from the workspace root.
+pub fn rlocation(path: impl AsRef<Path>) -> PathBuf {
+    RUNFILES.rlocation(Path::new(WORKSPACE.as_str()).join(path))
 }
 
 /// Create a new temporary directory in [`TMPDIR`].
@@ -82,5 +97,15 @@ impl TempDirExt for TempDir {
         };
 
         fs::create_dir_all(dir).and_then(|_| options.open(&filepath)).map(|file| (file, filepath))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn worspace() {
+        assert_eq!(RUNFILES.current_repository(), *WORKSPACE);
     }
 }

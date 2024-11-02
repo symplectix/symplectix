@@ -1,24 +1,19 @@
-load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:private"])
 
 rust_library(
     name = "bit",
-    srcs = ["lib.rs"],
+    srcs = ["bit.rs"],
     visibility = ["//bits:__subpackages__"],
 )
 
 rust_test(
-    name = "cfg_test",
+    name = "bit_unit_test",
     crate = ":bit",
 )
 
 rust_doc_test(
-    name = "doc_test",
-    crate = ":bit",
-)
-
-rust_doc(
-    name = "doc",
+    name = "bit_doc_test",
     crate = ":bit",
 )

@@ -4,10 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 rust_library(
     name = "entrypoint",
-    srcs = glob([
-        "*.rs",
-        "tests/*.rs",
-    ]),
+    srcs = glob(["src/**/*.rs"]),
     # will not work as expected on windows
     target_compatible_with = select({
         "@platforms//os:linux": [],

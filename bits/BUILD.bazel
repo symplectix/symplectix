@@ -1,42 +1,39 @@
-load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test", "rust_test_suite")
+load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test", "rust_test_suite")
 
 package(default_visibility = ["//visibility:private"])
 
 rust_library(
     name = "bits",
-    srcs = glob(
-        ["src/*.rs"],
-        exclude = ["src/*_test.rs"],
-    ),
+    srcs = glob(["src/**/*.rs"]),
     visibility = ["//visibility:public"],
-    deps = ["//bits/bit"],
-)
-
-rust_test_suite(
-    name = "tests",
-    srcs = glob(["src/*_test.rs"]),
-    proc_macro_deps = [
-        "@crates//:quickcheck_macros",
-    ],
     deps = [
-        ":bits",
-        "//bits/bitaux",
-        "//num",
-        "@crates//:quickcheck",
+        "//bits/bit",
     ],
 )
 
 rust_test(
-    name = "cfg_test",
+    name = "bits_unit_test",
     crate = ":bits",
 )
 
 rust_doc_test(
-    name = "doc_test",
+    name = "bits_doc_test",
     crate = ":bits",
 )
 
-rust_doc(
-    name = "doc",
-    crate = ":bits",
+rust_test_suite(
+    name = "integration",
+    srcs = glob(["tests/**/*.rs"]),
+    proc_macro_deps = [
+        "@crates//:quickcheck_macros",
+    ],
+    rustc_flags = [
+        "-Copt-level=3",
+    ],
+    deps = [
+        ":bits",
+        "//bits/bitaux",
+        "//bits/bitpacking",
+        "@crates//:quickcheck",
+    ],
 )

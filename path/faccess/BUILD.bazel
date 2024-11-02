@@ -1,10 +1,10 @@
-load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
 rust_library(
     name = "faccess",
-    srcs = ["faccess_unix.rs"],
+    srcs = ["faccess.rs"],
     # not compatible with windows
     target_compatible_with = select({
         "@platforms//os:linux": [],
@@ -18,24 +18,20 @@ rust_library(
 )
 
 rust_test(
-    name = "faccess_test",
+    name = "faccess_unit_test",
     crate = ":faccess",
     data = [
-        "faccess_unix.rs",
+        "faccess.rs",
         "//:.clippy.toml",
         "//:.rustfmt.toml",
     ],
     deps = [
+        "//testing",
         "@rules_rust//tools/runfiles",
     ],
 )
 
 rust_doc_test(
     name = "faccess_doc_test",
-    crate = ":faccess",
-)
-
-rust_doc(
-    name = "faccess_doc",
     crate = ":faccess",
 )

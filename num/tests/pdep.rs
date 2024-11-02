@@ -1,7 +1,5 @@
 use core::fmt::Debug;
-
-use bits::Lsb;
-use num::Int;
+use num::*;
 
 trait Pdep {
     fn pdep(self, mask: Self) -> Self;
@@ -52,9 +50,9 @@ unsafe fn pdep_u64_bmi2(n: u64, mask: u64) -> u64 {
     unsafe { _pdep_u64(n, mask) }
 }
 
-fn _pdep<T: Int + num::Arith + num::BitwiseAssign + bits::Bits + Lsb>(data: T, mut mask: T) -> T {
+fn _pdep<T: Int>(data: T, mut mask: T) -> T {
     let mut dest = T::ZERO;
-    for i in 0..<T as bits::Bits>::BITS {
+    for i in 0..<T as bits::Block>::BITS {
         if !mask.any() {
             break;
         }
@@ -68,7 +66,7 @@ fn _pdep<T: Int + num::Arith + num::BitwiseAssign + bits::Bits + Lsb>(data: T, m
 
 fn pdep_test<T>(s: T, m: T, o: T)
 where
-    T: Int + num::Arith + num::BitwiseAssign + bits::Bits + Lsb + Pdep + Debug,
+    T: Int + Pdep + Debug,
 {
     assert_eq!(s.pdep(m), o);
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

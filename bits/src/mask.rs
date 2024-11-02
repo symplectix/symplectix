@@ -69,11 +69,11 @@ pub(crate) fn compare<X, Y>(
 
 mod impl_mask {
     use super::Mask;
-    use crate::Bits;
+    use crate::Block;
     use std::borrow::Cow;
     use std::{iter::Enumerate, slice};
 
-    impl<'a, T: Bits> Mask for &'a [T] {
+    impl<'a, T: Block> Mask for &'a [T] {
         type Bits = Cow<'a, T>;
         type Iter = Blocks<'a, T>;
         fn into_mask(self) -> Self::Iter {
@@ -85,7 +85,7 @@ mod impl_mask {
         blocks: Enumerate<slice::Iter<'a, T>>,
     }
 
-    impl<'a, T: Bits> Iterator for Blocks<'a, T> {
+    impl<'a, T: Block> Iterator for Blocks<'a, T> {
         type Item = (usize, Cow<'a, T>);
         #[inline]
         fn next(&mut self) -> Option<Self::Item> {

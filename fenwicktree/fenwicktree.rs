@@ -1,8 +1,9 @@
 //! 1-indexed FenwickTree (BinaryIndexedTree).
 
-use num::Int;
 use std::iter::Sum;
 use std::ops::{AddAssign, Sub, SubAssign};
+
+use num::Int;
 
 pub use index::{children, prefix, search, update};
 
@@ -78,20 +79,19 @@ pub fn pop<T: Node + SubAssign>(bit: &mut Vec<T>) -> Option<T> {
 }
 
 mod index {
-    use bits::{Lsb, Msb};
     use core::iter::{successors, Successors};
     use core::ops::{Add, Sub};
     use num::Int;
 
     // The next node to be updated can be found by adding the node size `n.lsb()`.
     #[inline]
-    pub(crate) fn next_for_update<T: Int + Add + Lsb>(i: T) -> <T as Add>::Output {
+    pub(crate) fn next_for_update<T: Int + Add>(i: T) -> <T as Add>::Output {
         i + i.lsb()
     }
 
     // The next node to be queried can be found by subtracting the node size `n.lsb()`.
     #[inline]
-    pub(crate) fn next_for_prefix<T: Int + Sub + Lsb>(i: T) -> <T as Sub>::Output {
+    pub(crate) fn next_for_prefix<T: Int + Sub>(i: T) -> <T as Sub>::Output {
         i - i.lsb()
     }
 
@@ -180,7 +180,7 @@ where
     fn lower_bound(&self, mut w: U) -> usize {
         assert!(!self.is_empty());
 
-        if Int::is_zero(&w) {
+        if !w.any() {
             return 0;
         }
 

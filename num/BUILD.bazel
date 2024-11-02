@@ -1,18 +1,18 @@
-load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test", "rust_test_suite")
 
 package(default_visibility = ["//visibility:private"])
 
 rust_library(
     name = "num",
-    srcs = glob(
-        ["*.rs"],
-        exclude = ["*_test.rs"],
-    ),
+    srcs = glob(["src/**/*.rs"]),
     visibility = ["//visibility:public"],
+    deps = [
+        "//bits",
+    ],
 )
 
 rust_test(
-    name = "num_test",
+    name = "num_unit_test",
     crate = ":num",
 )
 
@@ -21,7 +21,15 @@ rust_doc_test(
     crate = ":num",
 )
 
-rust_doc(
-    name = "num_doc",
-    crate = ":num",
+rust_test_suite(
+    name = "integration",
+    srcs = glob(["tests/**/*.rs"]),
+    proc_macro_deps = [
+        "@crates//:quickcheck_macros",
+    ],
+    deps = [
+        ":num",
+        "//bits",
+        "@crates//:quickcheck",
+    ],
 )

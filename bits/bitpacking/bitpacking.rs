@@ -2,16 +2,13 @@
 //! This library should not be used to compress/decompress a large array.
 //! Consider using [`quickwit-oss/bitpacking`](https://github.com/quickwit-oss/bitpacking) in such cases.
 
-use bits::{Bits, Container, ContainerMut};
+use bits::{Bits, BitsMut};
 use num::Int;
 
-pub trait Block: Int + Bits {}
-impl<T: Int + Bits> Block for T {}
-
-pub trait Pack: ContainerMut {
+pub trait Pack: BitsMut {
     /// Writes `N` bits in `[i, i+N)`.
     #[doc(hidden)]
-    fn pack<T: Block>(&mut self, i: usize, n: usize, bits: T) {
+    fn pack<T: Int>(&mut self, i: usize, n: usize, bits: T) {
         debug_assert!(i < self.bits() && n <= T::BITS);
 
         for b in i..i + n {
@@ -22,7 +19,7 @@ pub trait Pack: ContainerMut {
     }
 }
 
-pub trait Unpack: Container {
+pub trait Unpack: Bits {
     /// Reads `n` bits from `i`, and returns it as the lowest `n` bits of `Int`.
     ///
     /// # Examples
@@ -37,7 +34,7 @@ pub trait Unpack: Container {
     /// assert_eq!(bits.unpack::<u8>(30, len), 0b0010);
     /// ```
     #[doc(hidden)]
-    fn unpack<T: Block>(&self, i: usize, n: usize) -> T {
+    fn unpack<T: Int>(&self, i: usize, n: usize) -> T {
         debug_assert!(i < self.bits() && n <= T::BITS);
 
         let mut bits = T::empty();
@@ -66,7 +63,7 @@ macro_rules! ints_impl_packing {
 ints_impl_packing!(u8 u16 u32 u64 u128 usize);
 ints_impl_packing!(i8 i16 i32 i64 i128 isize);
 
-impl<B: Bits + Unpack> Unpack for [B] {
+impl<B: bits::Block + Unpack> Unpack for [B] {
     // #[doc(hidden)]
     // fn varint<T: Block>(&self, i: usize, n: usize) -> T {
     //     use crate::index;
@@ -84,7 +81,7 @@ impl<B: Bits + Unpack> Unpack for [B] {
     // }
 }
 
-impl<B: Bits + Pack> Pack for [B] {
+impl<B: bits::Block + Pack> Pack for [B] {
     // #[doc(hidden)]
     // fn put_varint<T: Block>(&mut self, i: usize, n: usize, int: T) {
     //     use crate::index;
@@ -103,7 +100,7 @@ impl<B: Bits + Pack> Pack for [B] {
 macro_rules! impl_unpack {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn unpack<I: Block>(&self, i: usize, n: usize) -> I {
+        fn unpack<I: Int>(&self, i: usize, n: usize) -> I {
             <$X as Unpack>::unpack(self$(.$method())?, i, n)
         }
     }
@@ -112,7 +109,7 @@ macro_rules! impl_unpack {
 macro_rules! impl_pack {
     ($X:ty $(, $method:ident )?) => {
         #[inline]
-        fn pack<I: Block>(&mut self, i: usize, n: usize, int: I) {
+        fn pack<I: Int>(&mut self, i: usize, n: usize, int: I) {
             <$X as Pack>::pack(self$(.$method())?, i, n, int)
         }
     }
