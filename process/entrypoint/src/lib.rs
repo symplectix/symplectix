@@ -1,22 +1,17 @@
-// TODO: Wait all descendant processes to ensure there are no children left behind.
-// Currently, the spawned child is the only process to be waited before exiting.
-//
-// It is viable to wait all descendant processes by calling
-// waitpid(-1, NULL, WNOHANG) every time SIGCHLD arrives.
-// The concern is that tokio::process::Child relies on SIGCHLD to get woken up.
-
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::io;
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::{Command as StdCommand, ExitStatus, Stdio};
+use std::ptr;
 use std::time::Duration;
 
 use clap::Parser;
 use tokio::process;
 use tokio::signal::unix::{signal, SignalKind};
 use tokio::time;
+use tracing::{error, trace};
 
 #[derive(Debug, Clone, Parser)]
 pub struct Entrypoint {
@@ -44,6 +39,7 @@ pub struct Entrypoint {
 #[derive(Debug)]
 pub struct Process {
     child: process::Child,
+    child_id: u32,
     timeout: Option<Duration>,
 }
 
@@ -87,6 +83,22 @@ pub async fn wait(mut process: Process) -> Result {
         Err(Error::ExitedUnsuccessfully(exit_status))
     } else {
         Ok(())
+    }
+}
+
+unsafe fn kill(pid: libc::pid_t, signal: libc::c_int) -> io::Result<()> {
+    if libc::kill(pid, signal) == 0 {
+        Ok(())
+    } else {
+        Err(io::Error::last_os_error())
+    }
+}
+
+unsafe fn killpg(pid: libc::pid_t, signal: libc::c_int) -> io::Result<()> {
+    if libc::killpg(pid, signal) == 0 {
+        Ok(())
+    } else {
+        Err(io::Error::last_os_error())
     }
 }
 
@@ -150,11 +162,13 @@ impl Entrypoint {
         cmd.env_clear().envs(env::vars().filter(|(key, _)| self.envs.contains(key)));
 
         // Put the child into a new process group.
+        // A process group ID of 0 will use the process ID as the PGID.
         cmd.process_group(0);
 
         let child = process::Command::from(cmd).spawn()?;
+        let child_id = child.id().expect("fetching child pid before polling should not fail");
         let timeout = self.timeout;
-        Ok(Process { child, timeout })
+        Ok(Process { child, child_id, timeout })
     }
 }
 
@@ -172,17 +186,19 @@ impl Process {
         }
     }
 
-    /// Stops the whole process group, and waits the child exits.
+    /// Stops and waits the process, including whole descendant processes.
     #[tracing::instrument(skip(self))]
     pub async fn stop(&mut self, gracefully: bool) -> io::Result<ExitStatus> {
-        if gracefully {
-            self.killpg(libc::SIGTERM);
-            time::sleep(Duration::from_millis(50)).await;
+        // Notify the spawned process to be terminated.
+        unsafe {
+            if gracefully {
+                _ = kill(self.child_id as libc::c_int, libc::SIGTERM);
+                time::sleep(Duration::from_millis(50)).await;
+            }
+            _ = kill(self.child_id as libc::c_int, libc::SIGKILL);
         }
 
-        self.killpg(libc::SIGKILL);
-
-        loop {
+        let status = loop {
             match self.child.try_wait()? {
                 // The exit status is not available at this time. The child may still be running.
                 // SIGKILL is sent just before entering the loop, but this happens because
@@ -191,20 +207,50 @@ impl Process {
                 None => continue,
                 Some(status) => break Ok(status),
             }
+        };
+
+        // If processes except the spawned one exists, reap them all here.
+        unsafe {
+            self.reap();
         }
+
+        status
     }
 
-    /// Sends signal to a process group.
-    fn killpg(&self, signal: libc::c_int) {
-        // The child already has been polled to completion.
-        let Some(id) = self.child.id() else { return };
-        let id = id as libc::c_int;
+    /// Waits all descendant processes to ensure there are no children left behind.
+    unsafe fn reap(&self) {
+        _ = killpg(self.child_id as libc::c_int, libc::SIGKILL);
 
-        // The killpg() function returns 0 if successful;
-        // otherwise -1 is returned and the global variable errno is set to indicate the error.
-        let killed = unsafe { libc::killpg(id, signal) };
-        let last_os_error = (killed == -1).then_some(format!("{}", io::Error::last_os_error()));
-        tracing::trace!(pgid = id, signal, killed, last_os_error);
+        loop {
+            // The WNOHANG option is used to indicate that the call should not block
+            // if there are no processes that wish to report status.
+            let pid = libc::waitpid(-1, ptr::null_mut(), libc::WNOHANG);
+            // If this Error was constructed via last_os_error or from_raw_os_error,
+            // then this function will return Some, otherwise it will return None.
+            let err = io::Error::last_os_error().raw_os_error().unwrap();
+
+            match (pid, err) {
+                // If there are no children not previously awaited, with errno set to ECHILD.
+                (-1, libc::ECHILD) => {
+                    // No more children, we are done.
+                    trace!(pid, err, "no children to be reaped");
+                    return;
+                }
+
+                (_, libc::EINTR) => {
+                    // This likely can't happen since we are calling libc::waitpid with WNOHANG.
+                    trace!(pid, err, "got interrupted, try again");
+                    continue;
+                }
+
+                // The pid is 0 when WNOHANG is specified and there are no stopped or exited children.
+                // Otherwise, the process ID of the child represents a stopped or terminated child process.
+                (pid, err) => {
+                    trace!(pid, err, "continue reaping");
+                    continue;
+                }
+            }
+        }
     }
 }
 
