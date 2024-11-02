@@ -36,16 +36,16 @@ rules_foreign_cc_dependencies()
 
 http_archive(
     name = "rules_rust",
-    sha256 = "872b04538ca20dad94791c348623f079ba93daf274c1d57ae6bfe0930ec77f0d",
+    sha256 = "7fb9b4fe1a6fb4341bdf7c623e619460ecc0f52d5061cc56abc750111fba8a87",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.6.0/rules_rust-v0.6.0.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/releases/download/0.6.0/rules_rust-v0.6.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.7.0/rules_rust-v0.7.0.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/releases/download/0.7.0/rules_rust-v0.7.0.tar.gz",
     ],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
 
-_RUST_VERSION = "1.61.0"
+_RUST_VERSION = "1.62.0"
 
 _RUST_EDITION = "2021"
 
@@ -64,11 +64,12 @@ rust_register_toolchains(
 # rust_wasm_bindgen_repositories()
 
 load("@rules_rust//crate_universe:defs.bzl", "crates_repository", "splicing_config")
-load("//:crates.bzl", "crates")
+load("//build/rust:crates.bzl", "crates")
 
 crates_repository(
     name = "crates",
-    lockfile = "//:crates.lock",
+    cargo_lockfile = "//build/rust:Cargo.Bazel.lock",
+    lockfile = "//build/rust:crates.lock",
     packages = crates,
     rust_version = _RUST_VERSION,
     splicing_config = splicing_config(
