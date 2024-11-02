@@ -80,6 +80,9 @@ _packages = {
     "prost-types": crate.spec(
         version = "0",
     ),
+    "prost-reflect": crate.spec(
+        version = "0",
+    ),
     "protoc-gen-prost": crate.spec(
         version = "0",
     ),

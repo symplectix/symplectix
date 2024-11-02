@@ -2,7 +2,7 @@ load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 
 rust_binary(
-    name = "empty_file_generator",
+    name = "message_descriptor_dump_generator",
     srcs = ["main.rs"],
     rustc_flags = [
         "-Copt-level=3",
@@ -12,14 +12,14 @@ rust_binary(
         "//protobuf/protoc_plugin",
         "@crates//:anyhow",
         "@crates//:prost",
+        "@crates//:prost-reflect",
         "@crates//:prost-types",
     ],
 )
 
 proto_plugin(
-    name = "empty_file",
-    # {protopath} gets replaced with relative path to each .proto file
-    outputs = ["{protopath}.empty"],
-    tool = ":empty_file_generator",
+    name = "message_descriptor_dump",
+    outputs = ["{protopath}.message_descriptor_dump"],
+    tool = ":message_descriptor_dump_generator",
     visibility = ["//visibility:public"],
 )

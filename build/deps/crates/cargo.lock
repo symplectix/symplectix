@@ -567,6 +567,7 @@ dependencies = [
  "openssl",
  "openssl-sys",
  "prost",
+ "prost-reflect",
  "prost-types",
  "protoc-gen-prost",
  "protoc-gen-tonic",
@@ -1515,6 +1516,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "prost-reflect"
+version = "0.11.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "000e1e05ebf7b26e1eba298e66fe4eee6eb19c567d0ffb35e0dd34231cdac4c8"
+dependencies = [
+ "once_cell",
+ "prost",
+ "prost-types",
 ]
 
 [[package]]

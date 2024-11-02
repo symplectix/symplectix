@@ -5,16 +5,13 @@ load(
     "proto_compile_impl",
 )
 
-empty_file_compile = rule(
+message_descriptor_dump_compile = rule(
     implementation = proto_compile_impl,
     attrs = dict(
         proto_compile_attrs,
-        # List of protoc plugins to apply
         _plugins = attr.label_list(
             providers = [ProtoPluginInfo],
-            default = [
-                Label("//protobuf/protoc_plugin/empty_file"),
-            ],
+            default = [Label("//protobuf/protoc_plugin/message_descriptor_dump")],
         ),
     ),
     toolchains = [str(Label("@rules_proto_grpc//protobuf:toolchain_type"))],
