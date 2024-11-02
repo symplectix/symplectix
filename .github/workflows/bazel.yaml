@@ -28,6 +28,10 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
+      - name: Run buildifier
+        run: |
+          bazel run //:buildifier/check
+
       - name: Build
         run: |
           bazel build //...
@@ -35,7 +39,3 @@ jobs:
       - name: Test
         run: |
           bazel test //...
-
-      - name: Run buildifier
-        run: |
-          bazel run //:buildifier/check

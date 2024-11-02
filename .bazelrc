@@ -54,11 +54,3 @@ build --@rules_rust//:rustfmt.toml=//build/rust:rustfmt.toml
 build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build --output_groups=+clippy_checks
 build --@rules_rust//:clippy.toml=//build/rust:clippy.toml
-
-# Remote
-import %workspace%/.bazelrc.remote
-
-# CI
-import %workspace%/.bazelrc.ci
-
-try-import %workspace%/.bazelrc.user

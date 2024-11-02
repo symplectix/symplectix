@@ -1,4 +1,0 @@
-# vi: ft=conf
-
-# build:ci --build_metadata=ROLE=CI
-# build:ci --config=remote
