@@ -11,7 +11,7 @@ message_descriptor_dump_compile = rule(
         proto_compile_attrs,
         _plugins = attr.label_list(
             providers = [ProtoPluginInfo],
-            default = [Label("//protobuf/protoc_plugin:message_descriptor_dump")],
+            default = [Label("//protobuf/protoc_plugin/proto_descriptor_dump:message_descriptor_dump")],
         ),
     ),
     toolchains = [str(Label("@rules_proto_grpc//protobuf:toolchain_type"))],

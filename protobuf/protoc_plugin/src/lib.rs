@@ -1,34 +1,29 @@
 use std::io;
 use std::io::{Read, Write};
 
-use anyhow::Context;
 use prost::Message;
 use prost_reflect::{DescriptorPool, FileDescriptor};
 use prost_types::{
-    compiler::code_generator_response as codegen_response,
+    compiler::code_generator_response::{Feature, File},
     compiler::{CodeGeneratorRequest, CodeGeneratorResponse},
     FileDescriptorSet,
 };
 
-pub trait CodeGenerator {
+pub trait GenCode {
     fn gen_code(&self, req: CodeGeneratorRequest) -> CodeGeneratorResponse;
 }
 
-pub trait FileGenerator {
-    fn gen_file(
-        &self,
-        target_proto: &str,
-        file_desc: &FileDescriptor,
-    ) -> Result<codegen_response::File, String>;
+pub trait GenFile {
+    fn gen_file(&self, target_proto: &str, fd: &FileDescriptor) -> Result<File, String>;
 }
 
-impl<T: FileGenerator> CodeGenerator for T {
+impl<T: GenFile> GenCode for T {
     fn gen_code(&self, req: CodeGeneratorRequest) -> CodeGeneratorResponse {
         let pool = create_descriptor_pool(&req);
 
         let mut response = CodeGeneratorResponse {
             error: None,
-            supported_features: Some(codegen_response::Feature::Proto3Optional as u64),
+            supported_features: Some(Feature::Proto3Optional as u64),
             file: Vec::with_capacity(req.file_to_generate.len()),
         };
 
@@ -55,15 +50,15 @@ fn create_descriptor_pool(req: &CodeGeneratorRequest) -> DescriptorPool {
     DescriptorPool::from_file_descriptor_set(fd_set).expect("failed to create descriptor pool")
 }
 
-pub fn run<T: CodeGenerator>(generator: T) -> anyhow::Result<()> {
+pub fn gen_code<T: GenCode>(generator: T) -> anyhow::Result<()> {
     let mut buf = Vec::with_capacity(1 << 10);
-    let n = io::stdin().read_to_end(&mut buf).context("failed to read proto message from stdin")?;
+    let n = io::stdin().read_to_end(&mut buf)?;
     let req = CodeGeneratorRequest::decode(&buf[..n])?;
 
     let resp = generator.gen_code(req);
 
     buf.clear();
-    resp.encode(&mut buf).context("failed to encode a response message")?;
+    resp.encode(&mut buf)?;
 
     Ok(io::stdout().write_all(&buf)?)
 }

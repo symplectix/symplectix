@@ -1,5 +1,4 @@
-load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
-load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 rust_library(
     name = "protoc_plugin",
@@ -12,34 +11,3 @@ rust_library(
         "@crates//:prost-types",
     ],
 )
-
-[
-    [
-        proto_plugin(
-            name = plugin["name"],
-            outputs = ["{{protopath}}.{}".format(plugin["name"])],
-            tool = ":{}_generator".format(plugin["name"]),
-            visibility = ["//visibility:public"],
-        ),
-        rust_binary(
-            name = "{}_generator".format(plugin["name"]),
-            srcs = ["{}_generator.rs".format(plugin["name"])],
-            rustc_flags = [
-                "-Copt-level=3",
-                "-Cdebuginfo=2",
-            ],
-            deps = [
-                ":protoc_plugin",
-                "@crates//:anyhow",
-                "@crates//:prost",
-                "@crates//:prost-reflect",
-                "@crates//:prost-types",
-            ],
-        ),
-    ]
-    for plugin in [
-        {
-            "name": "message_descriptor_dump",
-        },
-    ]
-]
