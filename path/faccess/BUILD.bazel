@@ -19,6 +19,7 @@ rust_library(
 
 rust_test(
     name = "faccess_rs_lib_test",
+    timeout = "short",
     crate = ":faccess_rs",
     data = [
         "faccess.rs",
@@ -33,5 +34,6 @@ rust_test(
 
 rust_doc_test(
     name = "faccess_rs_doc_test",
+    timeout = "short",
     crate = ":faccess_rs",
 )

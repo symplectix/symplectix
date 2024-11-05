@@ -14,5 +14,6 @@ rust_library(
 
 rust_test(
     name = "testing_rs_lib_test",
+    timeout = "short",
     crate = ":testing_rs",
 )

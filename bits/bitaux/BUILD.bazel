@@ -20,10 +20,12 @@ rust_library(
 
 rust_test(
     name = "bitaux_rs_lib_test",
+    timeout = "short",
     crate = ":bitaux_rs",
 )
 
 rust_doc_test(
     name = "bitaux_rs_doc_test",
+    timeout = "short",
     crate = ":bitaux_rs",
 )

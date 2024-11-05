@@ -1,37 +1,36 @@
-startup --output_user_root=/tmp/ci/
-
-# Use a directory on the file system as a remote cache.
-# By default, Bazel has a build cache per workspace which keeps only the latest version
-# of any target. Dish cache is useful for sharing build artifacts when switching branches
-# and/or working on multiple workspaces of the same project, such as multiple checkouts.
-#
-# Since Bazel does not garbage-collect the directory,
-# you might want to automate a periodic cleanup of this directory.
-#
-# https://bazel.build/remote/caching#disk-cache
-build --disk_cache=/tmp/ci/
-fetch --disk_cache=/tmp/ci/
+# TODO: Flip the default setting
+# To upload locally executed action results to the remote cache.
+# build --remote_upload_local_results
 
 # UI for cleaner CI output
-common --color=no
-common --curses=no
-common --show_timestamps
+
+# Only show progress every 60 seconds on CI.
+# - print often enough to show that the build isn't stuck
+# - but not so often that we produce a long log file that requires a lot of scrolling
+#
+# https://bazel.build/reference/command-line-reference#flag--show_progress_rate_limit
+build --show_progress_rate_limit=60
+
+# Use colors to highlight output on the screen. Set to `no` if your CI does not display colors.
+# https://bazel.build/docs/user-manual#color
+build --color=yes
+
+# Use cursor controls in screen output.
+# Docs: https://bazel.build/docs/user-manual#curses
+build --curses=yes
+
+# The terminal width in columns. Configure this to override the default value based on what your CI system renders.
+# https://github.com/bazelbuild/bazel/blob/1af61b21df99edc2fc66939cdf14449c2661f873/src/main/java/com/google/devtools/build/lib/runtime/UiOptions.java#L151
+build --terminal_columns=120
 
 build --config=verbose
 build --config=clippy
 build --config=rustfmt
 
-# Disable sandoxing in CI for a while.
-#
-# TODO: Enable sandboxing.
-# Since Bazel 7, the details are unknown, but builds in sandbox has
-# started to fail with an error that process_wrapper.sh does not exist.
-build --spawn_strategy=local
-
 build:testing --config=stable
-build:testing --config=opt
+build:testing --config=release
 build:testing --config=strip
 
-build:fuzzing --config=nightly
-build:fuzzing --config=dbg
-build:fuzzing --build_tag_filters=+fuzzing
+# build:fuzzing --config=nightly
+# build:fuzzing --config=dbg
+# build:fuzzing --build_tag_filters=+fuzzing

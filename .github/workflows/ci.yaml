@@ -33,31 +33,20 @@ jobs:
           cache-name: bazel-cache
         with:
           path: |
-            /tmp/ci
             ~/.cache/bazel
             ~/.cache/bazelisk
           key: ${{ matrix.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ matrix.os}}-${{ env.cache-name }}-
 
-      # The openssl out_lib_dir should be lib64 on a ubuntu-22.04 instance.
-      # The default value is 'lib'.
-      - name: Set environment variables
-        run: |
-          if [[ ${{ matrix.os }} =~ ^ubuntu.*$ ]]; then
-            echo "BAZEL_COMMAND_ARGS=--@openssl//:out_lib_dir=lib64" >> $GITHUB_ENV
-          else
-            echo "BAZEL_COMMAND_ARGS=--@openssl//:out_lib_dir=lib" >> $GITHUB_ENV
-          fi
-
       - name: Create .bazelrc for actions
         run: cp .github/bazelrc .bazelrc.local
 
       - name: Build
-        run: bazel build --config=testing $BAZEL_COMMAND_ARGS //...
+        run: bazel build --config=testing //...
 
       - name: Test
-        run: bazel test --config=testing $BAZEL_COMMAND_ARGS //...
+        run: bazel test --config=testing //...
 
       # TODO: Test fuzzing targets
       # - name: Fuzz
-      #   run: bazel build --config=fuzzing $BAZEL_COMMAND_ARGS //...
+      #   run: bazel build --config=fuzzing //...

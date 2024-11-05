@@ -11,7 +11,7 @@ filegroup(
 
 string_flag(
     name = "out_lib_dir",
-    build_setting_default = "lib",
+    build_setting_default = "lib64",
 )
 
 config_setting(

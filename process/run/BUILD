@@ -46,6 +46,7 @@ rust_doc_test(
 
 go_test(
     name = "run_test",
+    timeout = "short",
     srcs = ["run_test.go"],
     data = [
         "//process/run/cmd:orphan",
@@ -88,6 +89,7 @@ oci_load(
 
 container_structure_test(
     name = "container_structure_test",
+    timeout = "short",
     configs = ["testdata/container_structure_test.yaml"],
     image = ":image",
     tags = [

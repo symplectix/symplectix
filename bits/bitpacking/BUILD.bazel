@@ -11,16 +11,19 @@ rust_library(
 
 rust_test(
     name = "bitpacking_rs_lib_test",
+    timeout = "short",
     crate = ":bitpacking_rs",
 )
 
 rust_doc_test(
     name = "bitpacking_rs_doc_test",
+    timeout = "short",
     crate = ":bitpacking_rs",
 )
 
 rust_test_suite(
     name = "bitpacking_rs_tests",
+    timeout = "short",
     srcs = glob(["*_test.rs"]),
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
