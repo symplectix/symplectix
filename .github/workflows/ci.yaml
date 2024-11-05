@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  ValidatePR:
+  Validate:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
@@ -18,7 +18,7 @@ jobs:
         run: |
           [[ "${{ github.event.pull_request.title }}" =~ ^[a-z]{1}[a-z/_-]*:\ [a-z]{1}.*[^.]$ ]]
 
-  Testing:
+  Bazel:
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
@@ -28,7 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
+        id: restore-bazel-cache
         env:
           cache-name: bazel-cache
         with:
@@ -38,7 +39,7 @@ jobs:
           key: ${{ matrix.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ matrix.os}}-${{ env.cache-name }}-
 
-      - name: Create .bazelrc for actions
+      - name: Setup
         run: cp .github/bazelrc .bazelrc.local
 
       - name: Build
@@ -50,3 +51,11 @@ jobs:
       # TODO: Test fuzzing targets
       # - name: Fuzz
       #   run: bazel build --config=fuzzing //...
+
+      - uses: actions/cache/save@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.cache/bazel
+            ~/.cache/bazelisk
+          key: ${{ steps.restore-bazel-cache.outputs.cache-primary-key }}
