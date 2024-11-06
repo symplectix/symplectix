@@ -1,0 +1,26 @@
+# Use a directory on the file system as a remote cache.
+# By default, Bazel has a build cache per workspace which keeps only the latest version
+# of any target. Disk cache is useful for sharing build artifacts when switching branches
+# and/or working on multiple workspaces of the same project, such as multiple checkouts.
+#
+# Since Bazel does not garbage-collect the directory,
+# you might want to automate a periodic cleanup of this directory.
+#
+# https://bazel.build/remote/caching#disk-cache
+common --disk_cache=~/.cache/bazel/disk/
+
+# The repository cache is shared between all workspaces and installed versions of bazel.
+# https://bazel.build/run/build#repository-cache
+common --repository_cache=~/.cache/bazel/repository/
+
+# Collect garbage entries from the disk cache.
+#
+# https://bazel.build/reference/command-line-reference#flag--experimental_disk_cache_gc_max_size
+# https://bazel.build/reference/command-line-reference#flag--experimental_disk_cache_gc_max_age
+build --experimental_disk_cache_gc_max_size=20G
+build --experimental_disk_cache_gc_max_age=14d
+
+# Do not upload locally executed action results to the remote cache by default
+# so local builds cannot poison the remote cache.
+# https://bazel.build/reference/command-line-reference#flag--remote_upload_local_results
+build --noremote_upload_local_results

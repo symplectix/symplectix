@@ -1,0 +1,9 @@
+build:macos --action_env=CC=clang
+build:macos --action_env=CXX=clang++
+build:macos --@openssl//:out_lib_dir=lib
+
+# htts://github.com/bazelbuild/rules_foreign_cc/issues/1186
+build:macos --host_action_env=CFLAGS=-Wno-int-conversion
+build:macos --action_env=CFLAGS=-Wno-int-conversion
+build:macos --host_action_env=CXXFLAGS=-Wno-int-conversion
+build:macos --action_env=CXXFLAGS=-Wno-int-conversion

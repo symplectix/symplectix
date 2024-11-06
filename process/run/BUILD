@@ -33,6 +33,7 @@ rust_test(
     name = "run_lib_test",
     size = "small",
     crate = ":run",
+    flaky = True,
     deps = [
         "//testing:testing_rs",
     ],

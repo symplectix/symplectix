@@ -41,13 +41,13 @@ jobs:
           restore-keys: ${{ matrix.os}}-${{ env.cache-name }}-
 
       - name: Setup
-        run: cp .github/bazelrc .bazelrc.local
+        run: cp .github/workflows/ci.bazelrc .bazelrc.local
 
       - name: Build
-        run: bazel build --config=testing //...
+        run: bazel build //...
 
       - name: Test
-        run: bazel test --config=testing //...
+        run: bazel test //...
 
       # TODO: Test fuzzing targets
       # - name: Fuzz

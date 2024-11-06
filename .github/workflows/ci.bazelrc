@@ -26,11 +26,8 @@ build --terminal_columns=120
 build --config=verbose
 build --config=clippy
 build --config=rustfmt
-
-build:testing --config=stable
-build:testing --config=release
-build:testing --config=strip
+build --config=stable
+build --config=dev
 
 # build:fuzzing --config=nightly
-# build:fuzzing --config=dbg
 # build:fuzzing --build_tag_filters=+fuzzing
