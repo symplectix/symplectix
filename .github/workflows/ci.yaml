@@ -1,11 +1,11 @@
 name: CI
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches:
       - main
-
-  push:
+  pull_request:
     branches:
       - main
 
@@ -34,7 +34,8 @@ jobs:
           cache-name: bazel-cache
         with:
           path: |
-            ~/.cache/bazel
+            ~/.cache/bazel/disk
+            ~/.cache/bazel/repository
             ~/.cache/bazelisk
           key: ${{ matrix.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ matrix.os}}-${{ env.cache-name }}-
