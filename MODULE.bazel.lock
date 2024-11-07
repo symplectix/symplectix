@@ -121,6 +121,8 @@
     "https://bcr.bazel.build/modules/rules_license/0.0.8/MODULE.bazel": "5669c6fe49b5134dbf534db681ad3d67a2d49cfc197e4a95f1ca2fd7f3aebe96",
     "https://bcr.bazel.build/modules/rules_license/1.0.0/MODULE.bazel": "a7fda60eefdf3d8c827262ba499957e4df06f659330bbe6cdbdb975b768bb65c",
     "https://bcr.bazel.build/modules/rules_license/1.0.0/source.json": "a52c89e54cc311196e478f8382df91c15f7a2bfdf4c6cd0e2675cc2ff0b56efb",
+    "https://bcr.bazel.build/modules/rules_multitool/0.15.0/MODULE.bazel": "76f8bf0ebade291b360d17a19255f4bc24579fc8d9fdb64257701ba4fd2f0edf",
+    "https://bcr.bazel.build/modules/rules_multitool/0.15.0/source.json": "f93e9a7b3093c87edaec7343f0cdcdd692e15d3542c5e479c9b035411cd92756",
     "https://bcr.bazel.build/modules/rules_nodejs/5.8.2/MODULE.bazel": "6bc03c8f37f69401b888023bf511cb6ee4781433b0cb56236b2e55a21e3a026a",
     "https://bcr.bazel.build/modules/rules_nodejs/5.8.2/source.json": "6e82cf5753d835ea18308200bc79b9c2e782efe2e2a4edc004a9162ca93382ca",
     "https://bcr.bazel.build/modules/rules_oci/2.0.0/MODULE.bazel": "5d5cf1932238b009f874d5a9f214bbedf5d8cec8e5028e083f1147726876572f",
@@ -1369,6 +1371,98 @@
             "rules_foreign_cc~",
             "rules_foreign_cc",
             "rules_foreign_cc~"
+          ]
+        ]
+      }
+    },
+    "@@rules_multitool~//multitool:extension.bzl%multitool": {
+      "general": {
+        "bzlTransitiveDigest": "50oSxJwiC6yH4r9YjU0zWaADkhmXkwzGWWIVDbwhQe8=",
+        "usagesDigest": "e/H9MIz+97Zo2T0UWfgOanYNd5NUrMOOcpCm+sdjnXE=",
+        "recordedFileInputs": {
+          "@@//tools/multitool/multitool.lock.json": "053d88aa3aead70a12919ae69636b38058c85e64c6d4fca575ef3e4f0eb54874"
+        },
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "multitool.ch-remote.linux_x86_64": {
+            "bzlFile": "@@rules_multitool~//multitool/private:multitool.bzl",
+            "ruleClassName": "tool_repo",
+            "attributes": {
+              "tool_name": "ch-remote",
+              "binary": "{\"cpu\":\"x86_64\",\"kind\":\"file\",\"os\":\"linux\",\"sha256\":\"3e9fbf1f8b566ec49d1a17306cebeed5536d78addddbc260f618e53eab13d10e\",\"url\":\"https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/ch-remote-static\"}"
+            }
+          },
+          "multitool.ch-remote.linux_arm64": {
+            "bzlFile": "@@rules_multitool~//multitool/private:multitool.bzl",
+            "ruleClassName": "tool_repo",
+            "attributes": {
+              "tool_name": "ch-remote",
+              "binary": "{\"cpu\":\"arm64\",\"kind\":\"file\",\"os\":\"linux\",\"sha256\":\"f1cd6056380f8aa35a7c58fa894dca44ccc2ac2c025a0304e1c094be56b3e505\",\"url\":\"https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/ch-remote-static-aarch64\"}"
+            }
+          },
+          "multitool.cloud-hypervisor.linux_x86_64": {
+            "bzlFile": "@@rules_multitool~//multitool/private:multitool.bzl",
+            "ruleClassName": "tool_repo",
+            "attributes": {
+              "tool_name": "cloud-hypervisor",
+              "binary": "{\"cpu\":\"x86_64\",\"kind\":\"file\",\"os\":\"linux\",\"sha256\":\"537d1cbc1d4d3646099618f3b6f2b711116ad1ed8c8bc909a1a689417c7430aa\",\"url\":\"https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/cloud-hypervisor-static\"}"
+            }
+          },
+          "multitool.cloud-hypervisor.linux_arm64": {
+            "bzlFile": "@@rules_multitool~//multitool/private:multitool.bzl",
+            "ruleClassName": "tool_repo",
+            "attributes": {
+              "tool_name": "cloud-hypervisor",
+              "binary": "{\"cpu\":\"arm64\",\"kind\":\"file\",\"os\":\"linux\",\"sha256\":\"0a5deebf301ec84ac2db5ae0b28acb481cf5fafbaaf9a3f0444e57a6907cb8a3\",\"url\":\"https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/cloud-hypervisor-static-aarch64\"}"
+            }
+          },
+          "multitool.firecracker.linux_x86_64": {
+            "bzlFile": "@@rules_multitool~//multitool/private:multitool.bzl",
+            "ruleClassName": "tool_repo",
+            "attributes": {
+              "tool_name": "firecracker",
+              "binary": "{\"cpu\":\"x86_64\",\"file\":\"release-v1.9.1-x86_64/firecracker-v1.9.1-x86_64\",\"kind\":\"archive\",\"os\":\"linux\",\"sha256\":\"88d89221063ee4021b539a4fea4567642f4eecfb5d52eec04cd3390833f7f3de\",\"type\":\"tgz\",\"url\":\"https://github.com/firecracker-microvm/firecracker/releases/download/v1.9.1/firecracker-v1.9.1-x86_64.tgz\"}"
+            }
+          },
+          "multitool.firecracker.linux_arm64": {
+            "bzlFile": "@@rules_multitool~//multitool/private:multitool.bzl",
+            "ruleClassName": "tool_repo",
+            "attributes": {
+              "tool_name": "firecracker",
+              "binary": "{\"cpu\":\"arm64\",\"file\":\"release-v1.9.1-aarch64/firecracker-v1.9.1-aarch64\",\"kind\":\"archive\",\"os\":\"linux\",\"sha256\":\"c1fbfa76e875f6a49ebda6914356d752fd863f278bee4cced69ba8e40eb84517\",\"type\":\"tgz\",\"url\":\"https://github.com/firecracker-microvm/firecracker/releases/download/v1.9.1/firecracker-v1.9.1-aarch64.tgz\"}"
+            }
+          },
+          "multitool": {
+            "bzlFile": "@@rules_multitool~//multitool/private:multitool.bzl",
+            "ruleClassName": "_multitool_hub",
+            "attributes": {
+              "lockfiles": [
+                "@@//tools/multitool:multitool.lock.json"
+              ]
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "bazel_features~",
+            "bazel_features_globals",
+            "bazel_features~~version_extension~bazel_features_globals"
+          ],
+          [
+            "bazel_features~",
+            "bazel_features_version",
+            "bazel_features~~version_extension~bazel_features_version"
+          ],
+          [
+            "rules_multitool~",
+            "bazel_features",
+            "bazel_features~"
+          ],
+          [
+            "rules_multitool~",
+            "bazel_tools",
+            "bazel_tools"
           ]
         ]
       }

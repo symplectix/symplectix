@@ -1,0 +1,61 @@
+{
+  "$schema": "https://raw.githubusercontent.com/theoremlp/rules_multitool/main/lockfile.schema.json",
+  "firecracker": {
+    "binaries": [
+      {
+        "kind": "archive",
+        "url": "https://github.com/firecracker-microvm/firecracker/releases/download/v1.9.1/firecracker-v1.9.1-x86_64.tgz",
+        "file": "release-v1.9.1-x86_64/firecracker-v1.9.1-x86_64",
+        "type": "tgz",
+        "sha256": "88d89221063ee4021b539a4fea4567642f4eecfb5d52eec04cd3390833f7f3de",
+        "os": "linux",
+        "cpu": "x86_64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/firecracker-microvm/firecracker/releases/download/v1.9.1/firecracker-v1.9.1-aarch64.tgz",
+        "file": "release-v1.9.1-aarch64/firecracker-v1.9.1-aarch64",
+        "type": "tgz",
+        "sha256": "c1fbfa76e875f6a49ebda6914356d752fd863f278bee4cced69ba8e40eb84517",
+        "os": "linux",
+        "cpu": "arm64"
+      }
+    ]
+  },
+  "cloud-hypervisor": {
+    "binaries": [
+      {
+        "kind": "file",
+        "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/cloud-hypervisor-static",
+        "sha256": "537d1cbc1d4d3646099618f3b6f2b711116ad1ed8c8bc909a1a689417c7430aa",
+        "os": "linux",
+        "cpu": "x86_64"
+      },
+      {
+        "kind": "file",
+        "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/cloud-hypervisor-static-aarch64",
+        "sha256": "0a5deebf301ec84ac2db5ae0b28acb481cf5fafbaaf9a3f0444e57a6907cb8a3",
+        "os": "linux",
+        "cpu": "arm64"
+      }
+    ]
+  },
+  "ch-remote": {
+    "binaries": [
+      {
+        "kind": "file",
+        "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/ch-remote-static",
+        "sha256": "3e9fbf1f8b566ec49d1a17306cebeed5536d78addddbc260f618e53eab13d10e",
+        "os": "linux",
+        "cpu": "x86_64"
+      },
+      {
+        "kind": "file",
+        "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/ch-remote-static-aarch64",
+        "sha256": "f1cd6056380f8aa35a7c58fa894dca44ccc2ac2c025a0304e1c094be56b3e505",
+        "os": "linux",
+        "cpu": "arm64"
+      }
+    ]
+  }
+}
