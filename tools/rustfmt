@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec bazel run --config=rustfmt @rules_rust//tools/rustfmt "${@}"

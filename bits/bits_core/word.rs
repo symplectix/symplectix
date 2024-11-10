@@ -1,5 +1,6 @@
-use crate::Bits;
 use std::ops::{Range, RangeBounds};
+
+use crate::Bits;
 
 /// Integer with a fixed-sized bits.
 pub trait Word: num::PrimInt + crate::Block {
@@ -89,10 +90,10 @@ impl WordSelectHelper for u32 {
 
 impl WordSelectHelper for u128 {
     /// ```
-    /// # use bits::{Bits, BitsMut};
+    /// # use bits_core::{Bits, BitsMut};
     /// let mut n: u128 = 0;
     /// for i in (0..128).step_by(2) {
-    ///     n.bit_set(i);
+    ///     n.set1(i);
     /// }
     /// assert_eq!(n.select1(60), Some(120));
     /// assert_eq!(n.select1(61), Some(122));
@@ -170,8 +171,8 @@ macro_rules! impls_for_word {
             }
 
             #[inline]
-            fn bit(&self, i: usize) -> Option<bool> {
-                (i < self.bits()).then(|| (*self & (1 << i)) != 0)
+            fn test(&self, i: usize) -> Option<bool> {
+                (i < Bits::bits(self)).then(|| (*self & (1 << i)) != 0)
             }
 
             #[inline]
@@ -185,18 +186,18 @@ macro_rules! impls_for_word {
             }
 
             #[inline]
-            fn all(this: &Self) -> bool {
-                *this == !0
+            fn all(&self) -> bool {
+                *self == !0
             }
 
             #[inline]
-            fn any(this: &Self) -> bool {
-                *this != 0
+            fn any(&self) -> bool {
+                *self != 0
             }
 
             #[inline]
             fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
-                let Range { start: i, end: j } = bit::bounded(&r, 0, self.bits());
+                let Range { start: i, end: j } = bit::bounded(&r, 0, Bits::bits(self));
                 (*self & mask!($Ty, i, j)).count1()
             }
 
@@ -218,11 +219,11 @@ macro_rules! impls_for_word {
 
         impl crate::BitsMut for $Ty {
             #[inline]
-            fn bit_set(&mut self, i: usize) {
+            fn set1(&mut self, i: usize) {
                 *self |= 1 << i;
             }
             #[inline]
-            fn bit_clear(&mut self, i: usize) {
+            fn set0(&mut self, i: usize) {
                 *self &= !(1 << i);
             }
         }

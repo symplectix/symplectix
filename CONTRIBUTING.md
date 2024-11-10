@@ -4,7 +4,7 @@
 
 > [!tip] To (re-)generate the rust-project.json
 >
->     bazel run @rules_rust//tools/rust_analyzer:gen_rust_project
+>     tools/gen-rust-project
 
 ## Go
 

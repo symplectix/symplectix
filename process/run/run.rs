@@ -1,14 +1,13 @@
-use std::env;
 use std::ffi::OsString;
-use std::io;
 use std::os::unix::process::{CommandExt, ExitStatusExt};
 use std::path::PathBuf;
-use std::process;
 use std::process::{ExitCode, ExitStatus, Stdio};
 use std::sync::Arc;
 use std::time::Duration;
+use std::{env, io, process};
 
-use futures::{future, prelude::*};
+use futures::future;
+use futures::prelude::*;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::signal::unix::{signal, SignalKind};
 use tokio::time;
@@ -121,11 +120,7 @@ impl Command {
     fn dry_run(self: &Arc<Self>) -> io::Result<WaitStatus> {
         info!("[DRYRUN] {:?}", self);
 
-        Ok(WaitStatus {
-            exit_status: ExitStatus::from_raw(0),
-            exit_reason: ExitReasons::default(),
-            cmd: self.clone(),
-        })
+        Ok(WaitStatus { exit_status: ExitStatus::from_raw(0), exit_reason: ExitReasons::default(), cmd: self.clone() })
     }
 
     #[tracing::instrument(skip(self))]
@@ -154,10 +149,9 @@ impl Command {
 
             wait_for(&self.hook.wait_for).await.map_err(|err| match err {
                 SpawnError::Io(io_err) => io_err,
-                SpawnError::FoundErrFile(path) => io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!("found an error file at {}", path.display()),
-                ),
+                SpawnError::FoundErrFile(path) => {
+                    io::Error::new(io::ErrorKind::InvalidData, format!("found an error file at {}", path.display()))
+                }
             })?;
 
             #[cfg(target_os = "linux")]
@@ -232,11 +226,10 @@ impl ProcessInner {
                 let mut cause = ExitReasons::default();
                 let mut _interrupted = 0;
 
-                let to_wait_status =
-                    |exit_status: ExitStatus, mut cause: ExitReasons, cmd| -> WaitStatus {
-                        cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
-                        WaitStatus { exit_status, exit_reason: cause, cmd: Arc::clone(cmd) }
-                    };
+                let to_wait_status = |exit_status: ExitStatus, mut cause: ExitReasons, cmd| -> WaitStatus {
+                    cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
+                    WaitStatus { exit_status, exit_reason: cause, cmd: Arc::clone(cmd) }
+                };
 
                 let result = loop {
                     tokio::select! {

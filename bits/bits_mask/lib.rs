@@ -1,6 +1,20 @@
-use core::cmp::Ordering;
+use std::borrow::Cow;
+use std::cmp::Ordering;
+use std::iter::Enumerate;
+use std::slice;
 
-pub use crate::{and::And, not::Not, or::Or, xor::Xor};
+use bits_core::{Bits, Block};
+
+pub mod helper;
+
+mod and;
+mod not;
+mod or;
+mod xor;
+pub use and::*;
+pub use not::*;
+pub use or::*;
+pub use xor::*;
 
 pub trait Mask: Sized {
     type Bits;
@@ -67,31 +81,23 @@ pub(crate) fn compare<X, Y>(
     }
 }
 
-mod impl_mask {
-    use super::Mask;
-    use crate::{Bits, Block};
-
-    use std::borrow::Cow;
-    use std::{iter::Enumerate, slice};
-
-    impl<'a, T: Block> Mask for &'a [T] {
-        type Bits = Cow<'a, T>;
-        type Iter = Blocks<'a, T>;
-        fn into_mask(self) -> Self::Iter {
-            Blocks { blocks: self.iter().enumerate() }
-        }
+impl<'a, T: Block> Mask for &'a [T] {
+    type Bits = Cow<'a, T>;
+    type Iter = Blocks<'a, T>;
+    fn into_mask(self) -> Self::Iter {
+        Blocks { blocks: self.iter().enumerate() }
     }
+}
 
-    pub struct Blocks<'a, T> {
-        blocks: Enumerate<slice::Iter<'a, T>>,
-    }
+pub struct Blocks<'a, T> {
+    blocks: Enumerate<slice::Iter<'a, T>>,
+}
 
-    impl<'a, T: Block> Iterator for Blocks<'a, T> {
-        type Item = (usize, Cow<'a, T>);
-        #[inline]
-        fn next(&mut self) -> Option<Self::Item> {
-            self.blocks.find_map(|(i, b)| Bits::any(b).then(|| (i, Cow::Borrowed(b))))
-        }
+impl<'a, T: Block> Iterator for Blocks<'a, T> {
+    type Item = (usize, Cow<'a, T>);
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        self.blocks.find_map(|(i, b)| Bits::any(b).then(|| (i, Cow::Borrowed(b))))
     }
 }
 

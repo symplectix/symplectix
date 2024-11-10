@@ -12,9 +12,8 @@ struct GenMessageDescriptorDump {}
 impl protoc_plugin::GenFile for GenMessageDescriptorDump {
     fn gen_file(&self, target_proto: &str, fd: &FileDescriptor) -> Result<File, String> {
         let file_name = {
-            let stem = target_proto
-                .strip_suffix(".proto")
-                .ok_or_else(|| format!("unexpected proto '{}'", target_proto))?;
+            let stem =
+                target_proto.strip_suffix(".proto").ok_or_else(|| format!("unexpected proto '{}'", target_proto))?;
             format!("{}.message_descriptor_dump", stem)
         };
 

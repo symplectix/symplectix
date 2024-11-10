@@ -2,7 +2,8 @@ use std::process::{ExitCode, Termination};
 use std::sync::Arc;
 
 use anyhow::Context;
-use tracing_subscriber::{prelude::*, EnvFilter};
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::EnvFilter;
 
 struct Exit(anyhow::Result<()>);
 
@@ -25,12 +26,7 @@ async fn main() -> Exit {
 
 async fn run_proc() -> anyhow::Result<()> {
     tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::fmt::layer()
-                .with_writer(std::io::stderr)
-                .with_target(false)
-                .without_time(),
-        )
+        .with(tracing_subscriber::fmt::layer().with_writer(std::io::stderr).with_target(false).without_time())
         .with(EnvFilter::from_env("RUN_LOG"))
         .init();
 

@@ -29,8 +29,7 @@ where
 
 impl Command {
     fn timeout(mut self: Arc<Self>, duration: Duration) -> Arc<Self> {
-        Arc::make_mut(&mut self).timeout =
-            crate::Timeout { kill_after: Some(duration), is_ok: false };
+        Arc::make_mut(&mut self).timeout = crate::Timeout { kill_after: Some(duration), is_ok: false };
         self
     }
 }
@@ -51,8 +50,7 @@ async fn not_executable() {
 #[tokio::test]
 async fn exit() {
     for i in 1..256 {
-        let exit =
-            command(["sh", "-c", &format!("exit {}", &i.to_string())]).spawn().await.unwrap();
+        let exit = command(["sh", "-c", &format!("exit {}", &i.to_string())]).spawn().await.unwrap();
         let status = exit.wait().await.expect("failed to wait");
 
         let Err(err) = status.exit_ok() else {
@@ -128,10 +126,7 @@ async fn wait_for_files() {
     let more_oks = create_files(&temp_dir, vec!["0"]);
     oks.extend_from_slice(&more_oks);
 
-    match wait_for(&oks)
-        .await
-        .expect_err("should be an error if '0' and '0.err' exist at the same time")
-    {
+    match wait_for(&oks).await.expect_err("should be an error if '0' and '0.err' exist at the same time") {
         SpawnError::FoundErrFile(p) => {
             assert_eq!(p, err[0]);
         }
@@ -141,10 +136,7 @@ async fn wait_for_files() {
     }
 
     fs::remove_file(&more_oks[0]).unwrap();
-    match wait_for(&oks)
-        .await
-        .expect_err("should be an error because the error file '0.err' present")
-    {
+    match wait_for(&oks).await.expect_err("should be an error because the error file '0.err' present") {
         SpawnError::FoundErrFile(p) => {
             assert_eq!(p, err[0]);
         }

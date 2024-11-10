@@ -2,17 +2,17 @@
 //! This library should not be used to compress/decompress a large array.
 //! Consider using [`quickwit-oss/bitpacking`](https://github.com/quickwit-oss/bitpacking) in such cases.
 
-use bits::{Bits, BitsMut, Word};
+use bits_core::{Bits, BitsMut, Block, Word};
 
 pub trait Pack: BitsMut {
     /// Writes `N` bits in `[i, i+N)`.
     #[doc(hidden)]
     fn pack<T: Word>(&mut self, i: usize, n: usize, bits: T) {
-        debug_assert!(i < self.bits() && n <= T::BITS);
+        debug_assert!(i < Bits::bits(self) && n <= T::BITS);
 
         for b in i..i + n {
-            if bits.bit(b - i).unwrap_or_default() {
-                self.bit_set(b);
+            if Bits::test(&bits, b - i).unwrap_or_default() {
+                self.set1(b);
             }
         }
     }
@@ -24,7 +24,7 @@ pub trait Unpack: Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitpacking::Unpack;
+    /// # use bits_pack::Unpack;
     /// let bits: &[u16] = &[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001];
     /// let len = 4;
     /// assert_eq!(bits.unpack::<u8>(0, len), 0b0011);
@@ -34,12 +34,12 @@ pub trait Unpack: Bits {
     /// ```
     #[doc(hidden)]
     fn unpack<T: Word>(&self, i: usize, n: usize) -> T {
-        debug_assert!(i < self.bits() && n <= T::BITS);
+        debug_assert!(i < Bits::bits(self) && n <= T::BITS);
 
         let mut bits = T::empty();
         for b in i..i + n {
-            if self.bit(b).unwrap_or_default() {
-                bits.bit_set(b - i);
+            if Bits::test(self, b).unwrap_or_default() {
+                bits.set1(b - i);
             }
         }
         bits
@@ -61,7 +61,7 @@ macro_rules! ints_impl_packing {
 }
 ints_impl_packing!(u8 u16 u32 u64 u128 usize);
 
-impl<B: bits::Block + Unpack> Unpack for [B] {
+impl<B: Block + Unpack> Unpack for [B] {
     // #[doc(hidden)]
     // fn varint<T: Block>(&self, i: usize, n: usize) -> T {
     //     use crate::index;
@@ -79,7 +79,7 @@ impl<B: bits::Block + Unpack> Unpack for [B] {
     // }
 }
 
-impl<B: bits::Block + Pack> Pack for [B] {
+impl<B: Block + Pack> Pack for [B] {
     // #[doc(hidden)]
     // fn put_varint<T: Block>(&mut self, i: usize, n: usize, int: T) {
     //     use crate::index;
@@ -131,10 +131,11 @@ where
 }
 
 mod impl_alloc {
-    use super::*;
     use std::borrow::{Cow, ToOwned};
     use std::boxed::Box;
     use std::vec::Vec;
+
+    use super::*;
 
     impl<T: ?Sized + Unpack> Unpack for Box<T> {
         impl_unpack!(T);

@@ -5,7 +5,8 @@ use std::process::ExitStatus;
 use std::sync::LazyLock;
 
 use tokio::signal::unix::{signal, SignalKind};
-use tokio::sync::broadcast::{self, error::SendError};
+use tokio::sync::broadcast;
+use tokio::sync::broadcast::error::SendError;
 use tokio::task;
 use tracing::{error, trace};
 
@@ -44,10 +45,7 @@ impl Reaper<Result<usize, Infallible>> {
                                     trace!("got interrupted, continue reaping");
                                 }
                                 errno => {
-                                    error!(
-                                        errno,
-                                        "an error is detected or a caught signal aborts the call"
-                                    );
+                                    error!(errno, "an error is detected or a caught signal aborts the call");
                                     // break;
                                 }
                             }

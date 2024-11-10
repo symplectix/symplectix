@@ -1,8 +1,9 @@
 //! Checks accessibility of a file.
 
-use bitflags::bitflags;
 use std::ffi::OsStr;
 use std::io;
+
+use bitflags::bitflags;
 
 bitflags! {
     pub struct Mode: libc::c_int {
@@ -15,10 +16,10 @@ bitflags! {
 
 #[cfg(unix)]
 pub fn check<P: AsRef<OsStr>>(path: P, mode: Mode) -> io::Result<()> {
-    use libc::faccessat;
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
 
+    use libc::faccessat;
     // Perform access checks using the effective user and group IDs.
     // By default, faccessat() uses the real IDs.
     #[cfg(not(target_os = "android"))]
@@ -41,8 +42,9 @@ pub fn check<P: AsRef<OsStr>>(path: P, mode: Mode) -> io::Result<()> {
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use testing::rlocation;
+
+    use super::*;
 
     #[test]
     fn faccessat_runfiles() {

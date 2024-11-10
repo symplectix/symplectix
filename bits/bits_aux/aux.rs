@@ -2,72 +2,70 @@ use std::cmp;
 use std::iter::Sum;
 use std::ops::RangeBounds;
 
-use bitpacking::Unpack;
-use bits::{Bits, BitsMut, Block, Word};
+use bits_core::{Bits, BitsMut, Block, Word};
+use bits_pack::Unpack;
 use fenwicktree::{LowerBound, Nodes, Prefix};
 
 mod l1l2;
-/// `BitAux<T>` stores auxiliary data to compute `Rank` and `Select` more efficiently.
+
+/// `Pop<T>` stores auxiliary data to compute `Rank` and `Select` more efficiently.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BitAux<T> {
-    poppy: Poppy,
-    inner: T,
+pub struct Pop<T> {
+    aux: Aux,
+    repr: T,
 }
 
+// pub type PopVec<T> = Pop<Vec<T>>;
+
+// Modified a little to build a binary indexed tree, instead of accumulating.
 // * [Space-Efficient, High-Performance Rank & Select Structures on Uncompressed Bit Sequences](https://www.cs.cmu.edu/~dga/papers/zhou-sea2013.pdf)
-// * [Engineering Compact Data Structures for Rank and Select Queries on Bit Vectors](https://arxiv.org/pdf/2206.01149)
-//
-// Current implementations are based on the former,
-// but modified a little to build a binary indexed tree, instead of accumulating.
 //
 // It seems good to try the latter to see if efficiency improves.
-// At least space efficiency is likely to improve.
+// * [Engineering Compact Data Structures for Rank and Select Queries on Bit Vectors](https://arxiv.org/pdf/2206.01149)
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct Poppy {
+struct Aux {
     ubs: Vec<u64>,
-    lbs: Vec<L1L2>,
+    lbs: Vec<l1l2::L1L2>,
 }
-
-#[derive(Copy, Clone, Default, PartialEq, Eq)]
-struct L1L2(u64);
 
 const UPPER_BLOCK: usize = 1 << 32;
 
-const SUPER_BLOCK: usize = 1 << 11;
-
-const BASIC_BLOCK: usize = 1 << 9;
+const SUPER_BLOCK: usize = 1 << 11; // 4 basic blocks
+const BASIC_BLOCK: usize = 1 << 9; // 512 bits block
 
 const MAX_SB_LEN: usize = UPPER_BLOCK / SUPER_BLOCK;
 
-fn build<'a, T, I>(size: usize, super_blocks: I) -> Poppy
+fn build<'a, T, I>(size: usize, super_blocks: I) -> Aux
 where
     T: Word + 'a,
     I: IntoIterator<Item = Option<&'a [T]>>,
 {
-    let mut poppy = Poppy::new(size);
+    let mut aux = Aux::new(size);
 
     for (i, sb) in super_blocks.into_iter().enumerate() {
-        let bbs = basic_blocks(sb);
-        let sum = bbs.iter().sum::<u64>();
+        let (bbs, sum) = basic_blocks(sb);
 
         let (q, r) = (i / MAX_SB_LEN, i % MAX_SB_LEN);
 
         // +1 to skip dummy index
-        poppy.ubs[q + 1] += sum;
-        poppy.lb_mut(q)[r + 1] = L1L2::merge([sum, bbs[0], bbs[1], bbs[2]]);
+        aux.ubs[q + 1] += sum;
+        aux.lb_mut(q)[r + 1] = l1l2::L1L2::merge([sum, bbs[0], bbs[1], bbs[2]]);
     }
 
-    poppy
+    aux
 }
 
-fn basic_blocks<W: Word>(sb: Option<&[W]>) -> [u64; L1L2::LEN] {
-    let mut bbs = [0; L1L2::LEN];
+fn basic_blocks<W: Word>(sb: Option<&[W]>) -> ([u64; l1l2::LEN], u64) {
+    let mut bbs = [0; l1l2::LEN];
+    let mut sum = 0;
     if let Some(sb) = sb {
         for (i, bb) in sb.chunks(BASIC_BLOCK / W::BITS).enumerate() {
-            bbs[i] = bb.count1() as u64;
+            let count1 = bb.count1() as u64;
+            bbs[i] = count1;
+            sum += count1;
         }
     }
-    bbs
+    (bbs, sum)
 }
 
 fn super_blocks_from_words<T: Word>(slice: &[T]) -> impl Iterator<Item = Option<&[T]>> {
@@ -93,94 +91,94 @@ fn lbs_len(n: usize) -> usize {
     }
 }
 
-impl<'a, T: Word> From<&'a [T]> for BitAux<&'a [T]> {
-    fn from(inner: &'a [T]) -> Self {
-        let mut poppy = build(inner.bits(), super_blocks_from_words(inner));
+impl<'a, T: Word> From<&'a [T]> for Pop<&'a [T]> {
+    fn from(repr: &'a [T]) -> Self {
+        let mut aux = build(Bits::bits(repr), super_blocks_from_words(repr));
 
         // TODO: should be in the [`build`] loop.
         {
             // initialize upper_blocks as a binary index tree
-            fenwicktree::build(&mut poppy.ubs);
+            fenwicktree::build(&mut aux.ubs);
 
             // initialize lower_blocks as a binary index tree
-            for q in 0..poppy.lb_parts() {
-                fenwicktree::build(poppy.lb_mut(q));
+            for q in 0..aux.lb_parts() {
+                fenwicktree::build(aux.lb_mut(q));
             }
         }
 
-        BitAux { poppy, inner }
+        Pop { aux, repr }
     }
 }
 
-impl<T: Block> BitAux<Vec<T>> {
+impl<T: Block> Pop<Vec<T>> {
     #[inline]
-    pub fn new(n: usize) -> BitAux<Vec<T>> {
-        let dat = bits::new(n);
-        BitAux { poppy: Poppy::new(dat.bits()), inner: dat }
+    pub fn new(n: usize) -> Pop<Vec<T>> {
+        let repr = bits_core::make(n);
+        Pop { aux: Aux::new(Bits::bits(&repr)), repr }
     }
 }
 
-impl<T> BitAux<T> {
+impl<T> Pop<T> {
     pub fn inner(&self) -> &T {
-        &self.inner
+        &self.repr
     }
 }
 
-impl<T: Unpack + Bits> Bits for BitAux<T> {
+impl<T: Unpack + Bits> Bits for Pop<T> {
     #[inline]
     fn bits(&self) -> usize {
-        self.inner.bits()
+        Bits::bits(&self.repr)
     }
 
     #[inline]
-    fn bit(&self, i: usize) -> Option<bool> {
-        self.inner.bit(i)
+    fn test(&self, i: usize) -> Option<bool> {
+        Bits::test(&self.repr, i)
     }
 
     #[inline]
     fn count1(&self) -> usize {
-        let bit = &self.poppy.ubs;
-        num::cast::<u64, usize>(bit.sum(bit.nodes())).expect("failed to cast from u64 to usize")
+        let ubs = &self.aux.ubs;
+        num::cast::<u64, usize>(ubs.sum(ubs.nodes())).expect("failed to cast from u64 to usize")
     }
 
     fn rank1<Idx: RangeBounds<usize>>(&self, index: Idx) -> usize {
-        fn rank1_impl<U: Unpack + Bits>(me: &BitAux<U>, p0: usize) -> usize {
+        fn rank1_impl<U: Unpack + Bits>(me: &Pop<U>, p0: usize) -> usize {
             if p0 == 0 {
                 0
-            } else if p0 == me.bits() {
+            } else if p0 == Bits::bits(me) {
                 me.count1()
             } else {
                 let (q0, r0) = (p0 / UPPER_BLOCK, p0 % UPPER_BLOCK);
                 let (q1, r1) = (r0 / SUPER_BLOCK, r0 % SUPER_BLOCK);
                 let (q2, r2) = (r1 / BASIC_BLOCK, r1 % BASIC_BLOCK);
 
-                let hi = &me.poppy.ubs;
-                let lo = me.poppy.lb(q0);
+                let hi = &me.aux.ubs;
+                let lo = me.aux.lb(q0);
                 let c0: u64 = hi.sum(q0);
                 let c1: u64 = lo.sum(q1);
-                let c2 = lo[q1 + 1].l2(q2);
+                let c2 = lo[q1 + 1].l2_sum(q2);
                 num::cast::<_, usize>(c0 + c1 + c2).expect("failed to cast from u64 to usize")
-                    + me.inner.rank1(p0 - r2..p0)
+                    + me.repr.rank1(p0 - r2..p0)
             }
         }
         use std::ops::Range;
-        let Range { start: i, end: j } = bit::bounded(&index, 0, self.bits());
-        rank1_impl(self, j) - rank1_impl(self, i)
+        let Range { start, end } = bit::bounded(&index, 0, Bits::bits(self));
+        rank1_impl(self, end) - rank1_impl(self, start)
     }
 
     fn select1(&self, n: usize) -> Option<usize> {
         let mut r = num::cast(n).expect("failed to cast from usize to u64");
 
         let (s, e) = {
-            let p0 = find_l0(&self.poppy.ubs[..], &mut r)?;
-            let lo = self.poppy.lb(p0);
+            let p0 = find_l0(&self.aux.ubs[..], &mut r)?;
+            let lo = self.aux.lb(p0);
             let p1 = find_l1(lo, &mut r);
             let ll = lo[p1 + 1];
-            let l2 = [ll.l2_0(), ll.l2_1(), ll.l2_2()];
+            let l2 = [ll.l2::<0>(), ll.l2::<1>(), ll.l2::<2>()];
             let p2 = find_l2(&l2, &mut r);
 
             let s = p0 * UPPER_BLOCK + p1 * SUPER_BLOCK + p2 * BASIC_BLOCK;
-            (s, cmp::min(s + BASIC_BLOCK, self.bits()))
+            (s, cmp::min(s + BASIC_BLOCK, Bits::bits(self)))
         };
 
         let mut r = r as usize;
@@ -193,7 +191,7 @@ impl<T: Unpack + Bits> Bits for BitAux<T> {
 
         const BITS: usize = <u128 as Block>::BITS;
         for i in (s..e).step_by(BITS) {
-            let b = self.inner.unpack::<u128>(i, BITS);
+            let b = self.repr.unpack::<u128>(i, BITS);
             let c = b.count1();
             if r < c {
                 // #[cfg(test)]
@@ -216,17 +214,17 @@ impl<T: Unpack + Bits> Bits for BitAux<T> {
             const UB: u64 = UPPER_BLOCK as u64;
             const SB: u64 = SUPER_BLOCK as u64;
             const BB: u64 = BASIC_BLOCK as u64;
-            let hi_complemented = fenwicktree::complement(&self.poppy.ubs[..], UB);
+            let hi_complemented = fenwicktree::complement(&self.aux.ubs[..], UB);
             let p0 = find_l0(&hi_complemented, &mut r)?;
-            let lo = self.poppy.lb(p0);
+            let lo = self.aux.lb(p0);
             let lo_complemented = fenwicktree::complement(lo, SB);
             let p1 = find_l1(&lo_complemented, &mut r);
             let ll = lo[p1 + 1];
-            let l2 = [BB - ll.l2_0(), BB - ll.l2_1(), BB - ll.l2_2()];
+            let l2 = [BB - ll.l2::<0>(), BB - ll.l2::<1>(), BB - ll.l2::<2>()];
             let p2 = find_l2(&l2, &mut r);
 
             let s = p0 * UPPER_BLOCK + p1 * SUPER_BLOCK + p2 * BASIC_BLOCK;
-            (s, cmp::min(s + BASIC_BLOCK, self.bits()))
+            (s, cmp::min(s + BASIC_BLOCK, Bits::bits(self)))
         };
 
         let mut r = r as usize;
@@ -237,7 +235,7 @@ impl<T: Unpack + Bits> Bits for BitAux<T> {
 
         const BITS: usize = <u128 as Block>::BITS;
         for i in (s..e).step_by(BITS) {
-            let b = self.inner.unpack::<u128>(i, BITS);
+            let b = self.repr.unpack::<u128>(i, BITS);
             let c = b.count0();
             if r < c {
                 return Some(i + b.select0(r).unwrap());
@@ -289,51 +287,51 @@ where
     p2
 }
 
-impl<T: BitsMut> BitAux<T> {
+impl<T: BitsMut> Pop<T> {
     /// Swaps a bit at `i` by `bit` and returns the previous value.
     fn swap(&mut self, i: usize, bit: bool) -> bool {
-        let before = self.inner.bit(i);
+        let before = Bits::test(&self.repr, i);
         if bit {
-            self.inner.bit_set(i);
+            self.repr.set1(i);
         } else {
-            self.inner.bit_clear(i);
+            self.repr.set0(i);
         }
         before.unwrap_or(false)
     }
 }
 
-impl<T: Unpack + BitsMut> BitsMut for BitAux<T> {
+impl<T: Unpack + BitsMut> BitsMut for Pop<T> {
     #[inline]
-    fn bit_set(&mut self, index: usize) {
+    fn set1(&mut self, index: usize) {
         if !self.swap(index, true) {
-            self.poppy.incr(index, 1);
+            self.aux.incr(index, 1);
         }
     }
 
     #[inline]
-    fn bit_clear(&mut self, index: usize) {
+    fn set0(&mut self, index: usize) {
         if self.swap(index, false) {
-            self.poppy.decr(index, 1);
+            self.aux.decr(index, 1);
         }
     }
 }
 
-impl Poppy {
-    fn new(n: usize) -> Poppy {
+impl Aux {
+    fn new(n: usize) -> Aux {
         let ubs = vec![0; ubs_len(n)];
-        let lbs = vec![L1L2(0); lbs_len(n)];
-        Poppy { ubs, lbs }
+        let lbs = vec![l1l2::L1L2::zero(); lbs_len(n)];
+        Aux { ubs, lbs }
     }
 
     #[inline]
-    fn lb(&self, i: usize) -> &[L1L2] {
+    fn lb(&self, i: usize) -> &[l1l2::L1L2] {
         let s = (MAX_SB_LEN + 1) * i;
         let e = cmp::min(s + (MAX_SB_LEN + 1), self.lbs.len());
         &self.lbs[s..e]
     }
 
     #[inline]
-    fn lb_mut(&mut self, i: usize) -> &mut [L1L2] {
+    fn lb_mut(&mut self, i: usize) -> &mut [l1l2::L1L2] {
         let s = (MAX_SB_LEN + 1) * i;
         let e = cmp::min(s + (MAX_SB_LEN + 1), self.lbs.len());
         &mut self.lbs[s..e]
@@ -365,11 +363,11 @@ impl Poppy {
         // Update L2 array which is interleaved into L1
         let sb = q1 + 1; // +1 because fenwick doesn't use index 0
         let bb = r1 / BASIC_BLOCK + 1; // +1 to skip index 0 which is for L1
-        if bb < L1L2::LEN {
+        if bb < l1l2::LEN {
             lo[sb] = {
-                let mut arr = L1L2::split(lo[sb]);
+                let mut arr = l1l2::L1L2::split(lo[sb]);
                 arr[bb] += delta;
-                L1L2::merge(arr)
+                l1l2::L1L2::merge(arr)
             };
         }
     }
@@ -388,11 +386,11 @@ impl Poppy {
 
         let sb = q1 + 1;
         let bb = r1 / BASIC_BLOCK + 1;
-        if bb < L1L2::LEN {
+        if bb < l1l2::LEN {
             lo[sb] = {
-                let mut arr = L1L2::split(lo[sb]);
+                let mut arr = l1l2::L1L2::split(lo[sb]);
                 arr[bb] -= delta;
-                L1L2::merge(arr)
+                l1l2::L1L2::merge(arr)
             };
         }
     }

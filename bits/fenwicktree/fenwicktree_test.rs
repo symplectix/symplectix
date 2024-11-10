@@ -3,7 +3,7 @@ extern crate quickcheck_macros;
 
 use std::{iter, ops};
 
-use bits::Word;
+use bits_core::Word;
 use fenwicktree::{Incr, LowerBound, Nodes, Prefix};
 
 #[test]
@@ -188,10 +188,7 @@ fn next_index_for_update() {
         0b_0010_0000_0000_0000_0000_0000, // 2097152
     ];
 
-    assert_eq!(
-        fenwicktree::update(indices[0], indices[indices.len() - 1] + 1).collect::<Vec<_>>(),
-        &indices[0..]
-    );
+    assert_eq!(fenwicktree::update(indices[0], indices[indices.len() - 1] + 1).collect::<Vec<_>>(), &indices[0..]);
 }
 
 #[test]

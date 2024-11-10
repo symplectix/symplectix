@@ -1,40 +1,39 @@
 load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test", "rust_test_suite")
 
 rust_library(
-    name = "bitpacking_rs",
-    srcs = ["bitpacking.rs"],
-    crate_name = "bitpacking",
-    crate_root = "bitpacking.rs",
+    name = "fenwicktree",
+    srcs = ["fenwicktree.rs"],
     visibility = ["//bits:__subpackages__"],
-    deps = ["//bits:bits_rs"],
+    deps = [
+        "//bits/bits_core",
+    ],
 )
 
 rust_test(
-    name = "bitpacking_rs_lib_test",
+    name = "fenwicktree_lib_test",
     timeout = "short",
-    crate = ":bitpacking_rs",
+    crate = ":fenwicktree",
 )
 
 rust_doc_test(
-    name = "bitpacking_rs_doc_test",
+    name = "fenwicktree_doc_test",
     timeout = "short",
-    crate = ":bitpacking_rs",
+    crate = ":fenwicktree",
 )
 
 rust_test_suite(
-    name = "bitpacking_rs_tests",
+    name = "fenwicktree_tests",
     timeout = "short",
     srcs = glob(["*_test.rs"]),
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
     rustc_flags = [
-        "-Copt-level=3",
+        "-Coverflow-checks=off",
     ],
     deps = [
-        "//bits:bits_rs",
-        "//bits/bitaux:bitaux_rs",
-        "//bits/bitpacking:bitpacking_rs",
+        ":fenwicktree",
+        "//bits/bits_core",
         "@crates//:quickcheck",
     ],
 )
