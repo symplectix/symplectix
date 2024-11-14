@@ -3,7 +3,7 @@ extern crate quickcheck_macros;
 
 use std::{iter, ops};
 
-use bits_core::Word;
+use bits_core::word::Word;
 use fenwicktree::{Incr, LowerBound, Nodes, Prefix};
 
 #[test]
@@ -105,7 +105,7 @@ fn prefix() {
 }
 
 fn build<T: Word + ops::AddAssign>(mut vec: Vec<T>) -> Vec<T> {
-    vec.insert(0, T::ZERO); // ensure vec.len() > 0
+    vec.insert(0, T::_0); // ensure vec.len() > 0
     fenwicktree::build(&mut vec);
     vec
 }

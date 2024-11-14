@@ -2,6 +2,8 @@ use std::borrow::{Cow, ToOwned};
 use std::boxed::Box;
 use std::vec::Vec;
 
+use crate::Bits;
+
 pub trait Assign<That: ?Sized> {
     fn and(a: &mut Self, b: &That);
     fn not(a: &mut Self, b: &That);
@@ -32,6 +34,51 @@ macro_rules! impl_Assign_for_word {
     )*)
 }
 impl_Assign_for_word!(u8 u16 u32 u64 u128);
+
+impl<A, B> Assign<Bits<B>> for Bits<A>
+where
+    A: Assign<B>,
+{
+    fn and(this: &mut Self, that: &Bits<B>) {
+        let this = this.as_mut_slice();
+        let that = that.as_slice();
+
+        assert_eq!(this.len(), that.len());
+        for (v1, v2) in this.iter_mut().zip(that) {
+            Assign::and(v1, v2);
+        }
+    }
+
+    fn not(this: &mut Self, that: &Bits<B>) {
+        let this = this.as_mut_slice();
+        let that = that.as_slice();
+
+        assert_eq!(this.len(), that.len());
+        for (v1, v2) in this.iter_mut().zip(that) {
+            Assign::not(v1, v2);
+        }
+    }
+
+    fn or(this: &mut Self, that: &Bits<B>) {
+        let this = this.as_mut_slice();
+        let that = that.as_slice();
+
+        assert_eq!(this.len(), that.len());
+        for (v1, v2) in this.iter_mut().zip(that) {
+            Assign::or(v1, v2);
+        }
+    }
+
+    fn xor(this: &mut Self, that: &Bits<B>) {
+        let this = this.as_mut_slice();
+        let that = that.as_slice();
+
+        assert_eq!(this.len(), that.len());
+        for (v1, v2) in this.iter_mut().zip(that) {
+            Assign::xor(v1, v2);
+        }
+    }
+}
 
 impl<A, B> Assign<[B]> for [A]
 where

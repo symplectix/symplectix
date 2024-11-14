@@ -1,31 +1,30 @@
 use core::cmp::Ordering::*;
 use core::iter::{Fuse, Peekable};
 
-use crate::{helper, Mask};
+use super::{compare, helper, Mask};
 
-pub struct And<A, B> {
+pub struct Not<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct Intersection<A: Iterator, B: Iterator> {
+pub struct Difference<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
 
-// impl<A: Bits, B: Bits> Bits for And<A, B> {
-//     /// This could be an incorrect value, different from the consumed result.
+// impl<A: Bits, B: Bits> Bits for AndNot<A, B> {
 //     #[inline]
 //     fn len(this: &Self) -> usize {
-//         cmp::min(Bits::len(&this.a), Bits::len(&this.b))
+//         Bits::len(&this.a)
 //     }
 //     #[inline]
 //     fn test(this: &Self, i: usize) -> bool {
-//         Bits::test(&this.a, i) && Bits::test(&this.b, i)
+//         Bits::test(&this.a, i) & !Bits::test(&this.b, i)
 //     }
 // }
 
-impl<A, B> IntoIterator for And<A, B>
+impl<A, B> IntoIterator for Not<A, B>
 where
     Self: Mask,
 {
@@ -37,45 +36,42 @@ where
     }
 }
 
-impl<A: Mask, B: Mask> Mask for And<A, B>
+impl<A: Mask, B: Mask> Mask for Not<A, B>
 where
     A::Bits: helper::Assign<B::Bits>,
 {
     type Bits = A::Bits;
-    type Iter = Intersection<A::Iter, B::Iter>;
+    type Iter = Difference<A::Iter, B::Iter>;
+    #[inline]
     fn into_mask(self) -> Self::Iter {
-        Intersection { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+        Difference { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
     }
 }
 
-impl<A, B, T, U> Iterator for Intersection<A, B>
+impl<A, B, S1, S2> Iterator for Difference<A, B>
 where
-    A: Iterator<Item = (usize, T)>,
-    B: Iterator<Item = (usize, U)>,
-    T: helper::Assign<U>,
+    A: Iterator<Item = (usize, S1)>,
+    B: Iterator<Item = (usize, S2)>,
+    S1: helper::Assign<S2>,
 {
-    type Item = (usize, T);
-
+    type Item = (usize, S1);
     fn next(&mut self) -> Option<Self::Item> {
-        // let Intersection { mut a, mut b } = self;
         let a = &mut self.a;
         let b = &mut self.b;
         loop {
-            match Ord::cmp(&a.peek()?.0, &b.peek()?.0) {
-                Less => {
-                    a.next();
-                }
+            match compare(a.peek(), b.peek(), Less, Less) {
+                Less => return a.next(),
                 Equal => {
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    helper::Assign::and(&mut s1, &s2);
-                    break Some((i, s1));
+                    helper::Assign::not(&mut s1, &s2);
+                    return Some((i, s1));
                 }
                 Greater => {
                     b.next();
                 }
-            }
+            };
         }
     }
 }

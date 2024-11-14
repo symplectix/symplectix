@@ -1,12 +1,44 @@
-use std::ops::{Range, RangeBounds};
+use std::fmt;
+use std::ops::{self, Range, RangeBounds};
 
-use crate::Bits;
+use crate::block::*;
+use crate::{Bits, Block};
 
 /// Integer with a fixed-sized bits.
-pub trait Word: num::PrimInt + crate::Block {
-    const ZERO: Self;
+pub trait Word:
+    num::PrimInt
+    + fmt::Debug
+    + fmt::Display
+    + fmt::Binary
+    + fmt::LowerHex
+    + fmt::UpperHex
+    + ops::Not<Output = Self>
+    + ops::BitAnd<Output = Self>
+    + ops::BitOr<Output = Self>
+    + ops::BitXor<Output = Self>
+    + ops::BitAndAssign
+    + ops::BitOrAssign
+    + ops::BitXorAssign
+    + ops::Shl<usize, Output = Self>
+    + ops::Shr<usize, Output = Self>
+    + ops::ShlAssign<usize>
+    + ops::ShrAssign<usize>
+    + Block
+    + BlockMut
+    + Count
+    + Rank
+    + Excess
+    + Select
+    + Pack
+{
+    #[doc(hidden)]
+    const BITS_MINUS_1: u32;
 
-    const ONE: Self;
+    #[doc(hidden)]
+    const _0: Self;
+
+    #[doc(hidden)]
+    const _1: Self;
 
     /// Least significant set bit (right most set bit).
     fn lsb(self) -> Self;
@@ -90,7 +122,7 @@ impl WordSelectHelper for u32 {
 
 impl WordSelectHelper for u128 {
     /// ```
-    /// # use bits_core::{Bits, BitsMut};
+    /// # use bits_core::block::*;
     /// let mut n: u128 = 0;
     /// for i in (0..128).step_by(2) {
     ///     n.set1(i);
@@ -100,18 +132,12 @@ impl WordSelectHelper for u128 {
     /// ```
     #[inline]
     fn select1(self, c: usize) -> Option<usize> {
-        let this: [u64; 2] = [self as u64, (self >> 64) as u64];
-        this.select1(c)
+        let this = [self as u64, (self >> 64) as u64];
+        Bits::new(&this).select1(c)
     }
 }
 
 impl WordSelectHelper for usize {
-    #[cfg(target_pointer_width = "16")]
-    #[inline]
-    fn select1(self, c: usize) -> Option<usize> {
-        (self as u16).select_word(c)
-    }
-
     #[cfg(target_pointer_width = "32")]
     #[inline]
     fn select1(self, c: usize) -> Option<usize> {
@@ -144,9 +170,11 @@ macro_rules! mask {
 macro_rules! impls_for_word {
     ($( $Ty:ty )*) => ($(
         impl Word for $Ty {
-            const ZERO: Self = 0;
+            const _0: Self = 0;
 
-            const ONE: Self = 1;
+            const _1: Self = 1;
+
+            const BITS_MINUS_1: u32 = <$Ty>::BITS - 1;
 
             #[inline]
             fn lsb(self) -> Self {
@@ -158,23 +186,38 @@ macro_rules! impls_for_word {
                 if self == 0 {
                     0
                 } else {
-                    let max = Self::BITS - 1;
-                    1 << (max - self.leading_zeros())
+                    Self::_1 << (Self::BITS_MINUS_1 - self.leading_zeros())
                 }
             }
+
         }
 
-        impl crate::Bits for $Ty {
+        impl Block for $Ty {
+            const BITS: usize = <$Ty>::BITS as usize;
+
             #[inline]
-            fn bits(&self) -> usize {
-                <Self as crate::Block>::BITS
+            fn empty() -> Self {
+                0
             }
 
             #[inline]
             fn test(&self, i: usize) -> Option<bool> {
-                (i < Bits::bits(self)).then(|| (*self & (1 << i)) != 0)
+                (i < <$Ty as Block>::BITS).then(|| (*self & (1 << i)) != 0)
             }
+        }
 
+        impl BlockMut for $Ty {
+            #[inline]
+            fn set1(&mut self, i: usize) {
+                *self |= 1 << i;
+            }
+            #[inline]
+            fn set0(&mut self, i: usize) {
+                *self &= !(1 << i);
+            }
+        }
+
+        impl Count for $Ty {
             #[inline]
             fn count1(&self) -> usize {
                 self.count_ones() as usize
@@ -194,10 +237,12 @@ macro_rules! impls_for_word {
             fn any(&self) -> bool {
                 *self != 0
             }
+        }
 
+        impl Rank for $Ty {
             #[inline]
             fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
-                let Range { start: i, end: j } = bit::bounded(&r, 0, Bits::bits(self));
+                let Range { start: i, end: j } = bit::bounded(&r, 0, <$Ty as Block>::BITS);
                 (*self & mask!($Ty, i, j)).count1()
             }
 
@@ -205,7 +250,9 @@ macro_rules! impls_for_word {
             fn rank0<R: RangeBounds<usize>>(&self, r: R) -> usize {
                 (!*self).rank1(r)
             }
+        }
 
+        impl Select for $Ty {
             #[inline]
             fn select1(&self, n: usize) -> Option<usize> {
                 <Self as WordSelectHelper>::select1(*self, n)
@@ -217,23 +264,28 @@ macro_rules! impls_for_word {
             }
         }
 
-        impl crate::BitsMut for $Ty {
-            #[inline]
-            fn set1(&mut self, i: usize) {
-                *self |= 1 << i;
-            }
-            #[inline]
-            fn set0(&mut self, i: usize) {
-                *self &= !(1 << i);
-            }
-        }
+        impl Pack for $Ty {
+            fn pack<T: Word>(&mut self, i: usize, n: usize, bits: T) {
+                debug_assert!(i < <$Ty as Block>::BITS && n <= T::BITS);
 
-        impl crate::Block for $Ty {
-            const BITS: usize = <$Ty>::BITS as usize;
+                if n > 0 /*&& bits.any()*/ {
+                    let n = n.clamp(1, T::BITS);
+                    let w = T::BITS - n;
+                    let m1 = num::cast::<T, $Ty>(( bits << w) >> w).expect("bug");
+                    let m0 = num::cast::<T, $Ty>((!bits << w) >> w).expect("bug");
+                    *self |= m1<<i;
+                    *self &= !(m0<<i);
+                }
+            }
 
-            #[inline]
-            fn empty() -> Self {
-                0
+            fn unpack<T: Word>(&self, i: usize, n: usize) -> T {
+                if n > 0 {
+                    let n = n.clamp(1, T::BITS) as u32;
+                    let mask = !Self::empty() >> (Self::BITS - n);
+                    num::cast::<$Ty, T>((*self >> i) & mask).expect("bug")
+                } else {
+                    T::empty()
+                }
             }
         }
     )*)

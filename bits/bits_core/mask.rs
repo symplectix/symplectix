@@ -1,20 +1,21 @@
+mod and;
+mod not;
+mod or;
+mod xor;
+
+pub mod helper;
+
 use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::iter::Enumerate;
 use std::slice;
 
-use bits_core::{Bits, Block};
-
-pub mod helper;
-
-mod and;
-mod not;
-mod or;
-mod xor;
 pub use and::*;
 pub use not::*;
 pub use or::*;
 pub use xor::*;
+
+use crate::block::{Block, Count};
 
 pub trait Mask: Sized {
     type Bits;
@@ -81,7 +82,7 @@ pub(crate) fn compare<X, Y>(
     }
 }
 
-impl<'a, T: Block> Mask for &'a [T] {
+impl<'a, T: Block + Count> Mask for &'a [T] {
     type Bits = Cow<'a, T>;
     type Iter = Blocks<'a, T>;
     fn into_mask(self) -> Self::Iter {
@@ -93,11 +94,11 @@ pub struct Blocks<'a, T> {
     blocks: Enumerate<slice::Iter<'a, T>>,
 }
 
-impl<'a, T: Block> Iterator for Blocks<'a, T> {
+impl<'a, T: Block + Count> Iterator for Blocks<'a, T> {
     type Item = (usize, Cow<'a, T>);
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        self.blocks.find_map(|(i, b)| Bits::any(b).then(|| (i, Cow::Borrowed(b))))
+        self.blocks.find_map(|(i, b)| Count::any(b).then(|| (i, Cow::Borrowed(b))))
     }
 }
 

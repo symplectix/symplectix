@@ -1,7 +1,7 @@
 use core::cmp::Ordering::*;
 use core::iter::{Fuse, Peekable};
 
-use crate::{helper, Mask};
+use super::{compare, helper, Mask};
 
 pub struct Or<A, B> {
     pub(crate) a: A,
@@ -59,7 +59,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         let x = &mut self.a;
         let y = &mut self.b;
-        match crate::compare(x.peek(), y.peek(), Greater, Less) {
+        match compare(x.peek(), y.peek(), Greater, Less) {
             Less => x.next(),
             Equal => {
                 let (i, mut l) = x.next().expect("unreachable");

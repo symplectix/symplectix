@@ -1,4 +1,4 @@
-use bits::Mask;
+use bits::mask::Mask;
 
 #[test]
 fn a_and_b() {

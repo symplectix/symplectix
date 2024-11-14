@@ -1,7 +1,7 @@
 use core::cmp::Ordering::*;
 use core::iter::{Fuse, Peekable};
 
-use crate::{helper, Mask};
+use super::{compare, helper, Mask};
 
 pub struct Xor<A, B> {
     pub(crate) a: A,
@@ -60,7 +60,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         let a = &mut self.a;
         let b = &mut self.b;
-        match crate::compare(a.peek(), b.peek(), Greater, Less) {
+        match compare(a.peek(), b.peek(), Greater, Less) {
             Less => a.next(),
             Equal => {
                 let (i, mut l) = a.next().expect("unreachable");

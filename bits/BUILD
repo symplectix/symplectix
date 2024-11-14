@@ -1,5 +1,5 @@
 load("@rules_go//go:def.bzl", "go_library", "go_test")
-load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library", "rust_test", "rust_test_suite")
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_doc_test", "rust_library", "rust_test", "rust_test_suite")
 
 rust_library(
     name = "bits",
@@ -10,9 +10,9 @@ rust_library(
     visibility = ["//visibility:public"],
     deps = [
         "//bits/bits_aux",
+        "//bits/bits_buf",
         "//bits/bits_core",
-        "//bits/bits_mask",
-        "//bits/roaring_block",
+        "//bits/smallset",
         "@crates//:num",
     ],
 )
@@ -29,6 +29,11 @@ rust_doc_test(
     crate = ":bits",
 )
 
+rust_doc(
+    name = "bits_doc",
+    crate = ":bits",
+)
+
 rust_test_suite(
     name = "bits_tests",
     timeout = "short",
@@ -38,8 +43,8 @@ rust_test_suite(
     ],
     deps = [
         ":bits",
-        "//bits/bits_pack",
         "@crates//:quickcheck",
+        "@crates//:rand",
     ],
 )
 

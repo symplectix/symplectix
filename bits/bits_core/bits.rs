@@ -1,21 +1,95 @@
-use std::borrow::Cow;
+use std::borrow::ToOwned;
+use std::mem;
 use std::ops::{Range, RangeBounds};
 
-use crate::Block;
+use crate::block::{BlockMut, Count, Excess, Pack, Rank, Select};
+use crate::{BitVec, Block, Word};
 
-pub trait Bits {
+#[derive(Hash, Debug)]
+#[repr(transparent)]
+pub struct Bits<T> {
+    pub(crate) data: [T],
+}
+
+impl<T: Clone> ToOwned for Bits<T> {
+    type Owned = BitVec<T>;
+
+    #[inline]
+    fn to_owned(&self) -> Self::Owned {
+        BitVec { data: self.data.to_vec() }
+    }
+}
+
+impl<T> Bits<T> {
+    #[inline]
+    pub(crate) fn from_slice(slice: &[T]) -> &Bits<T> {
+        unsafe { mem::transmute(slice) }
+    }
+
+    #[inline]
+    pub(crate) fn from_slice_mut(slice: &mut [T]) -> &mut Bits<T> {
+        unsafe { mem::transmute(slice) }
+    }
+
+    pub fn new<A>(data: &A) -> &Bits<T>
+    where
+        A: ?Sized + AsRef<[T]>,
+    {
+        Bits::from_slice(data.as_ref())
+    }
+
+    pub fn new_mut<A>(data: &mut A) -> &mut Bits<T>
+    where
+        A: ?Sized + AsMut<[T]>,
+    {
+        Bits::from_slice_mut(data.as_mut())
+    }
+
+    #[inline]
+    pub fn as_slice(&self) -> &[T] {
+        &self.data
+    }
+
+    #[inline]
+    pub fn as_mut_slice(&mut self) -> &mut [T] {
+        &mut self.data
+    }
+
+    #[inline]
+    pub fn copy_from_slice(&mut self, that: &Bits<T>)
+    where
+        T: Copy,
+    {
+        self.data.copy_from_slice(&that.data)
+    }
+
+    pub fn into_vec(self: Box<Bits<T>>) -> BitVec<T> {
+        BitVec {
+            data: unsafe {
+                let len = self.data.len();
+                let ptr = Box::into_raw(self) as *mut [T] as *mut T;
+                Vec::from_raw_parts(ptr, len, len)
+            },
+        }
+    }
+}
+
+impl<T: Block> Bits<T> {
     /// Returns the number of bits.
     ///
     /// # Tests
     ///
     /// ```
     /// # use bits_core::Bits;
-    /// let v: &[u8] = &[0, 0, 0];
-    /// let w: &[u8] = &[];
+    /// let v: &Bits<u8> = Bits::new(&[0, 0, 0]);
+    /// let w: &Bits<u8> = Bits::new(&[]);
     /// assert_eq!(v.bits(), 24);
     /// assert_eq!(w.bits(), 0);
     /// ```
-    fn bits(&self) -> usize;
+    #[inline]
+    pub const fn bits(&self) -> usize {
+        T::BITS * self.data.len()
+    }
 
     /// Returns a bit at the given index `i`.
     /// When i is out of bounds, returns **None**.
@@ -24,30 +98,54 @@ pub trait Bits {
     ///
     /// ```
     /// # use bits_core::Bits;
-    /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
+    /// let v: &Bits<u64> = Bits::new(&[0b00000101, 0b01100011, 0b01100000]);
     /// assert_eq!(v.test(0),   Some(true));
     /// assert_eq!(v.test(64),  Some(true));
     /// assert_eq!(v.test(128), Some(false));
     /// assert_eq!(v.test(200), None);
     /// ```
-    fn test(&self, i: usize) -> Option<bool>;
+    #[inline]
+    pub fn test(&self, i: usize) -> Option<bool> {
+        let (i, o) = bit::addr(i, T::BITS);
+        self.data.get(i).map(|b| b.test(o).expect("index out of bounds"))
+    }
+}
 
+impl<T: BlockMut> Bits<T> {
+    /// Enables the bit at the given index `i`.
+    #[inline]
+    pub fn set1(&mut self, i: usize) {
+        assert!(i < self.bits());
+        let (i, o) = bit::addr(i, T::BITS);
+        self.data[i].set1(o)
+    }
+
+    /// Disables the bit at the given index `i`.
+    #[inline]
+    pub fn set0(&mut self, i: usize) {
+        assert!(i < self.bits());
+        let (i, o) = bit::addr(i, T::BITS);
+        self.data[i].set0(o)
+    }
+}
+
+impl<T: Block + Count> Bits<T> {
     /// Counts the occurrences of `1`.
     ///
     /// # Examples
     ///
     /// ```
     /// # use bits_core::Bits;
-    /// let a: &[u64] = &[];
-    /// let b: &[u64] = &[0, 0, 0];
-    /// let c: &[u64] = &[0, 1, 3];
+    /// let a: &Bits<u64> = Bits::new(&[]);
+    /// let b: &Bits<u64> = Bits::new(&[0, 0, 0]);
+    /// let c: &Bits<u64> = Bits::new(&[0, 1, 3]);
     /// assert_eq!(a.count1(), 0);
     /// assert_eq!(b.count1(), 0);
     /// assert_eq!(c.count1(), 3);
     /// ```
     #[inline]
-    fn count1(&self) -> usize {
-        self.bits() - self.count0()
+    pub fn count1(&self) -> usize {
+        self.data.iter().map(|b| b.count1()).sum()
     }
 
     /// Counts the occurrences of `0`.
@@ -56,16 +154,16 @@ pub trait Bits {
     ///
     /// ```
     /// # use bits_core::Bits;
-    /// let a: &[u64] = &[];
-    /// let b: &[u64] = &[0, 0, 0];
-    /// let c: &[u64] = &[0, 1, 3];
+    /// let a: &Bits<u64> = Bits::new(&[]);
+    /// let b: &Bits<u64> = Bits::new(&[0, 0, 0]);
+    /// let c: &Bits<u64> = Bits::new(&[0, 1, 3]);
     /// assert_eq!(a.count0(), 0);
     /// assert_eq!(b.count0(), 192);
     /// assert_eq!(c.count0(), 189);
     /// ```
     #[inline]
-    fn count0(&self) -> usize {
-        self.bits() - self.count1()
+    pub fn count0(&self) -> usize {
+        self.data.iter().map(|b| b.count0()).sum()
     }
 
     /// Returns true if all bits are enabled. An empty bits should return true.
@@ -74,16 +172,16 @@ pub trait Bits {
     ///
     /// ```
     /// # use bits_core::Bits;
-    /// let a: &[u64] = &[0, 0, 0];
-    /// let b: &[u64] = &[];
-    /// let c: &[u64] = &[!0, !0, !0];
+    /// let a: &Bits<u64> = Bits::new(&[0, 0, 0]);
+    /// let b: &Bits<u64> = Bits::new(&[]);
+    /// let c: &Bits<u64> = Bits::new(&[!0, !0, !0]);
     /// assert!(!a.all());
     /// assert!( b.all());
     /// assert!( c.all());
     /// ```
     #[inline]
-    fn all(&self) -> bool {
-        self.bits() == 0 || self.count0() == 0
+    pub fn all(&self) -> bool {
+        self.data.iter().all(|b| b.all())
     }
 
     /// Returns true if any bits are enabled. An empty bits should return false.
@@ -92,177 +190,24 @@ pub trait Bits {
     ///
     /// ```
     /// # use bits_core::Bits;
-    /// let b1: &[u64] = &[];
-    /// let b2: &[u64] = &[0, 0, 0];
-    /// let b3: &[u64] = &[!0, !0, !0];
-    /// let b4: &[u64] = &[0, 0, 1];
+    /// let b1: &Bits<u64> = Bits::new(&[]);
+    /// let b2: &Bits<u64> = Bits::new(&[0, 0, 0]);
+    /// let b3: &Bits<u64> = Bits::new(&[!0, !0, !0]);
+    /// let b4: &Bits<u64> = Bits::new(&[0, 0, 1]);
     /// assert!(!b1.any());
     /// assert!(!b2.any());
     /// assert!( b3.any());
     /// assert!( b4.any());
     /// ```
     #[inline]
-    fn any(&self) -> bool {
-        self.bits() != 0 && self.count1() > 0
+    pub fn any(&self) -> bool {
+        self.data.iter().any(|b| b.any())
     }
+}
 
+impl<T: Block + Rank> Bits<T> {
     /// Counts occurrences of `1` in the given range.
-    #[inline]
-    fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
-        let r = bit::bounded(&r, 0, self.bits());
-        r.len() - self.rank0(r)
-    }
-
-    /// Counts occurrences of `0` in the given range.
-    #[inline]
-    fn rank0<R: RangeBounds<usize>>(&self, r: R) -> usize {
-        let r = bit::bounded(&r, 0, self.bits());
-        r.len() - self.rank1(r)
-    }
-
-    #[inline]
-    fn excess1<R: RangeBounds<usize>>(&self, r: R) -> Option<usize> {
-        excess_helper::ranks(self, r).excess1()
-    }
-
-    #[inline]
-    fn excess0<R: RangeBounds<usize>>(&self, r: R) -> Option<usize> {
-        excess_helper::ranks(self, r).excess0()
-    }
-
-    /// Returns the position of the n-th 1, indexed starting from zero.
-    /// `n` must be less than `self.count1()`, otherwise returns `None`.
-    #[inline]
-    fn select1(&self, n: usize) -> Option<usize> {
-        select_helper::search1(self, n)
-    }
-
-    // #[inline]
-    // fn select1_from(&self, i: usize, n: usize) -> Option<usize> {
-    //     self.select1(self.rank1(..i) + n).map(|pos| pos - i)
-    // }
-
-    /// Returns the position of the n-th 0, indexed starting from zero.
-    /// `n` must be less than `self.count0()`, otherwise returns `None`.
-    #[inline]
-    fn select0(&self, n: usize) -> Option<usize> {
-        select_helper::search0(self, n)
-    }
-
-    // #[inline]
-    // fn select0_from(&self, i: usize, n: usize) -> Option<usize> {
-    //     self.select0(self.rank0(..i) + n).map(|pos| pos - i)
-    // }
-}
-
-mod excess_helper {
-    use std::ops::RangeBounds;
-
-    use crate::Bits;
-
-    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-    pub(crate) struct Ranks {
-        rank0: usize,
-        rank1: usize,
-    }
-
-    /// Computes `rank0` and `rank1` at a time.
-    pub(crate) fn ranks<T, R>(b: &T, r: R) -> Ranks
-    where
-        T: ?Sized + Bits,
-        R: RangeBounds<usize>,
-    {
-        let r = bit::bounded(&r, 0, b.bits());
-        let len = r.len();
-        let rank1 = b.rank1(r);
-        let rank0 = len - rank1;
-        Ranks { rank0, rank1 }
-    }
-
-    impl Ranks {
-        #[inline]
-        pub(crate) fn excess1(self) -> Option<usize> {
-            let Ranks { rank0, rank1 } = self;
-            rank1.checked_sub(rank0)
-        }
-
-        #[inline]
-        pub(crate) fn excess0(self) -> Option<usize> {
-            let Ranks { rank0, rank1 } = self;
-            rank0.checked_sub(rank1)
-        }
-    }
-}
-
-mod select_helper {
-    use crate::Bits;
-
-    /// Binary search to find and return the smallest index k in `[i, j)` at which f(k) is true,
-    /// assuming that on the range `[i, j)`, f(k) == true implies f(k+1) == true.
-    ///
-    /// Returns the first true index, if there is no such index, returns `j`.
-    fn binary_search(mut l: usize, mut r: usize, p: impl Fn(usize) -> bool) -> usize {
-        while l < r {
-            let m = l + (r - l) / 2;
-            if p(m) {
-                r = m; // -> f(r) == true
-            } else {
-                l = m + 1; // -> f(l-1) == false
-            }
-        }
-        l // f(l-1) == false && f(l) (= f(r)) == true
-    }
-
-    #[inline]
-    pub(crate) fn search1<T>(bs: &T, n: usize) -> Option<usize>
-    where
-        T: ?Sized + Bits,
-    {
-        (n < bs.count1()).then(|| binary_search(0, bs.bits(), |k| bs.rank1(..k) > n) - 1)
-    }
-
-    #[inline]
-    pub(crate) fn search0<T>(bs: &T, n: usize) -> Option<usize>
-    where
-        T: ?Sized + Bits,
-    {
-        (n < bs.count0()).then(|| binary_search(0, bs.bits(), |k| bs.rank0(..k) > n) - 1)
-    }
-}
-
-impl<B: Block> Bits for [B] {
-    #[inline]
-    fn bits(&self) -> usize {
-        B::BITS * self.len()
-    }
-
-    #[inline]
-    fn test(&self, i: usize) -> Option<bool> {
-        let (i, o) = bit::addr(i, B::BITS);
-        self.get(i).map(|b| Bits::test(b, o).expect("index out of bounds"))
-    }
-
-    #[inline]
-    fn count1(&self) -> usize {
-        self.iter().map(Bits::count1).sum()
-    }
-
-    #[inline]
-    fn count0(&self) -> usize {
-        self.iter().map(Bits::count0).sum()
-    }
-
-    #[inline]
-    fn all(&self) -> bool {
-        self.iter().all(Bits::all)
-    }
-
-    #[inline]
-    fn any(&self) -> bool {
-        self.iter().any(Bits::any)
-    }
-
-    fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
+    pub fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
         let Range { start, end } = bit::bounded(&r, 0, self.bits());
 
         // TODO: benchmark
@@ -274,34 +219,71 @@ impl<B: Block> Bits for [B] {
         //     })
         //     .sum()
 
-        if self.is_empty() {
+        if self.data.is_empty() {
             return 0;
         }
-        let (i, p) = bit::addr(start, B::BITS);
-        let (j, q) = bit::addr(end, B::BITS);
+        let (i, p) = bit::addr(start, T::BITS);
+        let (j, q) = bit::addr(end, T::BITS);
         if i == j {
-            self[i].rank1(p..q)
+            self.data[i].rank1(p..q)
         } else {
-            self[i].rank1(p..) + self[i + 1..j].count1() + self.get(j).map_or(0, |b| b.rank1(..q))
+            self.data[i].rank1(p..)
+                + Bits::new(&self.data[i + 1..j]).count1()
+                + self.data.get(j).map_or(0, |b| b.rank1(..q))
         }
     }
 
-    fn select1(&self, mut n: usize) -> Option<usize> {
-        for (i, b) in self.iter().enumerate() {
+    /// Counts occurrences of `0` in the given range.
+    #[inline]
+    pub fn rank0<R: RangeBounds<usize>>(&self, r: R) -> usize {
+        let r = bit::bounded(&r, 0, self.bits());
+        r.len() - self.rank1(r)
+    }
+}
+
+impl<T: Block + Excess> Bits<T> {
+    fn ranks<R: RangeBounds<usize>>(&self, r: R) -> (usize, usize) {
+        let r = bit::bounded(&r, 0, self.bits());
+        let len = r.len();
+        let rank1 = self.rank1(r);
+        let rank0 = len - rank1;
+        (rank0, rank1)
+    }
+
+    #[inline]
+    pub fn excess1<R: RangeBounds<usize>>(&self, r: R) -> Option<usize> {
+        let (rank0, rank1) = self.ranks(r);
+        rank1.checked_sub(rank0)
+    }
+
+    #[inline]
+    pub fn excess0<R: RangeBounds<usize>>(&self, r: R) -> Option<usize> {
+        let (rank0, rank1) = self.ranks(r);
+        rank0.checked_sub(rank1)
+    }
+}
+
+impl<T: Block + Select> Bits<T> {
+    /// Returns the position of the n-th 1, indexed starting from zero.
+    /// `n` must be less than `self.count1()`, otherwise returns `None`.
+    pub fn select1(&self, mut n: usize) -> Option<usize> {
+        for (i, b) in self.data.iter().enumerate() {
             let count = b.count1();
             if n < count {
-                return Some(i * B::BITS + b.select1(n).expect("select1(n) must be ok"));
+                return Some(i * T::BITS + b.select1(n).expect("select1(n) must be ok"));
             }
             n -= count;
         }
         None
     }
 
-    fn select0(&self, mut n: usize) -> Option<usize> {
-        for (i, b) in self.iter().enumerate() {
+    /// Returns the position of the n-th 0, indexed starting from zero.
+    /// `n` must be less than `self.count0()`, otherwise returns `None`.
+    pub fn select0(&self, mut n: usize) -> Option<usize> {
+        for (i, b) in self.data.iter().enumerate() {
             let count = b.count0();
             if n < count {
-                return Some(i * B::BITS + b.select0(n).expect("select0(n) must be ok"));
+                return Some(i * T::BITS + b.select0(n).expect("select0(n) must be ok"));
             }
             n -= count;
         }
@@ -309,88 +291,70 @@ impl<B: Block> Bits for [B] {
     }
 }
 
-macro_rules! impl_Bits {
-    ($X:ty $(, $method:ident )?) => {
-        #[inline]
-        fn bits(&self) -> usize {
-            <$X as Bits>::bits(self$(.$method())?)
-        }
+fn range_over<T: Block>(s: usize, e: usize, mut f: impl FnMut(usize, usize, usize) -> bool) {
+    assert!(s <= e);
+    if s == e {
+        return;
+    }
 
-        #[inline]
-        fn test(&self, i: usize) -> Option<bool> {
-            <$X as Bits>::test(self$(.$method())?, i)
-        }
+    let (q0, r0) = bit::addr(s, T::BITS);
+    let (q1, r1) = bit::addr(e, T::BITS);
 
-        #[inline]
-        fn count1(&self) -> usize {
-            <$X as Bits>::count1(self$(.$method())?)
-        }
+    if q0 == q1 {
+        f(q0, r0, r1);
+        return;
+    }
 
-        #[inline]
-        fn count0(&self) -> usize {
-            <$X as Bits>::count0(self$(.$method())?)
-        }
-
-        #[inline]
-        fn all(&self) -> bool {
-            <$X as Bits>::all(self$(.$method())?)
-        }
-
-        #[inline]
-        fn any(&self) -> bool {
-            <$X as Bits>::any(self$(.$method())?)
-        }
-
-        #[inline]
-        fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
-            <$X as Bits>::rank1(self$(.$method())?, r)
-        }
-
-        #[inline]
-        fn rank0<R: RangeBounds<usize>>(&self, r: R) -> usize {
-            <$X as Bits>::rank0(self$(.$method())?, r)
-        }
-
-        #[inline]
-        fn select1(&self, n: usize) -> Option<usize> {
-            <$X as Bits>::select1(self$(.$method())?, n)
-        }
-
-        #[inline]
-        fn select0(&self, n: usize) -> Option<usize> {
-            <$X as Bits>::select0(self$(.$method())?, n)
+    use std::iter::{once, repeat};
+    for (index, cur) in (q0..q1).zip(once(r0).chain(repeat(0))) {
+        if !f(index, cur, T::BITS) {
+            return;
         }
     }
+
+    f(q1, 0, r1);
 }
 
-impl<'a, T: ?Sized + Bits> Bits for &'a T {
-    impl_Bits!(T);
-}
+impl<B: Block + Pack> Bits<B> {
+    /// Writes `n` bits of the given to `[i, i+n)`.
+    pub fn pack<T: Word>(&mut self, i: usize, n: usize, bits: T) {
+        let mut cur = 0;
+        range_over::<B>(i, i + n, |idx, s, e| {
+            (idx < self.data.len())
+                .then(|| {
+                    let len = e - s;
+                    self.data[idx].pack::<T>(s, len, bits.unpack(cur, len));
+                    cur += len;
+                })
+                .is_some()
+        });
+    }
 
-impl<B, const N: usize> Bits for [B; N]
-where
-    [B]: Bits,
-{
-    impl_Bits!([B], as_ref);
-}
-
-impl<B> Bits for Vec<B>
-where
-    [B]: Bits,
-{
-    impl_Bits!([B]);
-}
-
-impl<T> Bits for Box<T>
-where
-    T: ?Sized + Bits,
-{
-    impl_Bits!(T);
-}
-
-impl<'a, T> Bits for Cow<'a, T>
-where
-    T: ?Sized + ToOwned + Bits,
-{
-    impl_Bits!(T, as_ref);
+    /// Reads `n` bits from `i`, and returns it as the lowest `n` bits of `T`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bits_core::Bits;
+    /// let bits: &Bits<u16> = Bits::new(&[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001]);
+    /// let len = 4;
+    /// assert_eq!(bits.unpack::<u8>(0,  len), 0b0011);
+    /// assert_eq!(bits.unpack::<u8>(8,  len), 0b0001);
+    /// assert_eq!(bits.unpack::<u8>(14, len), 0b0111);
+    /// assert_eq!(bits.unpack::<u8>(30, len), 0b0010);
+    /// ```
+    pub fn unpack<T: Word>(&self, i: usize, n: usize) -> T {
+        let mut cur = 0;
+        let mut out = T::empty();
+        range_over::<B>(i, i + n, |idx, s, e| {
+            (idx < self.data.len() && cur < T::BITS)
+                .then(|| {
+                    let len = e - s;
+                    out |= self.data[idx].unpack::<T>(s, len) << cur;
+                    cur += len;
+                })
+                .is_some()
+        });
+        out
+    }
 }

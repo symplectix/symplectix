@@ -11,7 +11,6 @@ rust_library(
     deps = [
         "//bits/bit",
         "//bits/bits_core",
-        "//bits/bits_pack",
         "//bits/fenwicktree",
         "@crates//:num",
     ],

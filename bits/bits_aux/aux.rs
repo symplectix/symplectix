@@ -2,8 +2,9 @@ use std::cmp;
 use std::iter::Sum;
 use std::ops::RangeBounds;
 
-use bits_core::{Bits, BitsMut, Block, Word};
-use bits_pack::Unpack;
+use bits_core::block::{Block, *};
+use bits_core::word::Word;
+use bits_core::{BitVec, Bits};
 use fenwicktree::{LowerBound, Nodes, Prefix};
 
 mod l1l2;
@@ -12,7 +13,7 @@ mod l1l2;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pop<T> {
     aux: Aux,
-    repr: T,
+    repr: BitVec<T>,
 }
 
 // pub type PopVec<T> = Pop<Vec<T>>;
@@ -60,7 +61,7 @@ fn basic_blocks<W: Word>(sb: Option<&[W]>) -> ([u64; l1l2::LEN], u64) {
     let mut sum = 0;
     if let Some(sb) = sb {
         for (i, bb) in sb.chunks(BASIC_BLOCK / W::BITS).enumerate() {
-            let count1 = bb.count1() as u64;
+            let count1 = Bits::new(bb).count1() as u64;
             bbs[i] = count1;
             sum += count1;
         }
@@ -91,9 +92,9 @@ fn lbs_len(n: usize) -> usize {
     }
 }
 
-impl<'a, T: Word> From<&'a [T]> for Pop<&'a [T]> {
-    fn from(repr: &'a [T]) -> Self {
-        let mut aux = build(Bits::bits(repr), super_blocks_from_words(repr));
+impl<T: Word> From<Vec<T>> for Pop<T> {
+    fn from(repr: Vec<T>) -> Self {
+        let mut aux = build(Bits::new(&repr).bits(), super_blocks_from_words(&repr));
 
         // TODO: should be in the [`build`] loop.
         {
@@ -106,46 +107,55 @@ impl<'a, T: Word> From<&'a [T]> for Pop<&'a [T]> {
             }
         }
 
-        Pop { aux, repr }
+        Pop { aux, repr: BitVec::from(repr) }
     }
 }
 
-impl<T: Block> Pop<Vec<T>> {
+impl<T: Block> Pop<T> {
     #[inline]
-    pub fn new(n: usize) -> Pop<Vec<T>> {
-        let repr = bits_core::make(n);
-        Pop { aux: Aux::new(Bits::bits(&repr)), repr }
+    pub fn new(n: usize) -> Pop<T> {
+        let repr = BitVec::new(n);
+        Pop { aux: Aux::new(repr.bits()), repr }
     }
 }
 
 impl<T> Pop<T> {
-    pub fn inner(&self) -> &T {
+    pub fn inner(&self) -> &Bits<T> {
         &self.repr
     }
 }
 
-impl<T: Unpack + Bits> Bits for Pop<T> {
+impl<T: Block> Pop<T> {
     #[inline]
-    fn bits(&self) -> usize {
-        Bits::bits(&self.repr)
+    pub fn bits(&self) -> usize {
+        self.repr.bits()
     }
 
     #[inline]
-    fn test(&self, i: usize) -> Option<bool> {
-        Bits::test(&self.repr, i)
+    pub fn test(&self, i: usize) -> Option<bool> {
+        self.repr.test(i)
     }
+}
 
+impl<T: Block> Pop<T> {
     #[inline]
-    fn count1(&self) -> usize {
+    pub fn count1(&self) -> usize {
         let ubs = &self.aux.ubs;
         num::cast::<u64, usize>(ubs.sum(ubs.nodes())).expect("failed to cast from u64 to usize")
     }
 
-    fn rank1<Idx: RangeBounds<usize>>(&self, index: Idx) -> usize {
-        fn rank1_impl<U: Unpack + Bits>(me: &Pop<U>, p0: usize) -> usize {
+    #[inline]
+    pub fn count0(&self) -> usize {
+        self.bits() - self.count1()
+    }
+}
+
+impl<T: Block + Rank> Pop<T> {
+    pub fn rank1<Idx: RangeBounds<usize>>(&self, index: Idx) -> usize {
+        fn rank1_impl<U: Block + Rank>(me: &Pop<U>, p0: usize) -> usize {
             if p0 == 0 {
                 0
-            } else if p0 == Bits::bits(me) {
+            } else if p0 == me.bits() {
                 me.count1()
             } else {
                 let (q0, r0) = (p0 / UPPER_BLOCK, p0 % UPPER_BLOCK);
@@ -162,11 +172,19 @@ impl<T: Unpack + Bits> Bits for Pop<T> {
             }
         }
         use std::ops::Range;
-        let Range { start, end } = bit::bounded(&index, 0, Bits::bits(self));
+        let Range { start, end } = bit::bounded(&index, 0, self.bits());
         rank1_impl(self, end) - rank1_impl(self, start)
     }
 
-    fn select1(&self, n: usize) -> Option<usize> {
+    #[inline]
+    pub fn rank0<R: RangeBounds<usize>>(&self, r: R) -> usize {
+        let r = bit::bounded(&r, 0, self.bits());
+        r.len() - self.rank1(r)
+    }
+}
+
+impl<T: Block + Select + Pack> Pop<T> {
+    pub fn select1(&self, n: usize) -> Option<usize> {
         let mut r = num::cast(n).expect("failed to cast from usize to u64");
 
         let (s, e) = {
@@ -178,7 +196,7 @@ impl<T: Unpack + Bits> Bits for Pop<T> {
             let p2 = find_l2(&l2, &mut r);
 
             let s = p0 * UPPER_BLOCK + p1 * SUPER_BLOCK + p2 * BASIC_BLOCK;
-            (s, cmp::min(s + BASIC_BLOCK, Bits::bits(self)))
+            (s, cmp::min(s + BASIC_BLOCK, self.bits()))
         };
 
         let mut r = r as usize;
@@ -207,7 +225,7 @@ impl<T: Unpack + Bits> Bits for Pop<T> {
         unreachable!()
     }
 
-    fn select0(&self, n: usize) -> Option<usize> {
+    pub fn select0(&self, n: usize) -> Option<usize> {
         let mut r = num::cast(n).expect("failed to cast from usize to u64");
 
         let (s, e) = {
@@ -224,7 +242,7 @@ impl<T: Unpack + Bits> Bits for Pop<T> {
             let p2 = find_l2(&l2, &mut r);
 
             let s = p0 * UPPER_BLOCK + p1 * SUPER_BLOCK + p2 * BASIC_BLOCK;
-            (s, cmp::min(s + BASIC_BLOCK, Bits::bits(self)))
+            (s, cmp::min(s + BASIC_BLOCK, self.bits()))
         };
 
         let mut r = r as usize;
@@ -287,10 +305,10 @@ where
     p2
 }
 
-impl<T: BitsMut> Pop<T> {
+impl<T: Block + BlockMut> Pop<T> {
     /// Swaps a bit at `i` by `bit` and returns the previous value.
     fn swap(&mut self, i: usize, bit: bool) -> bool {
-        let before = Bits::test(&self.repr, i);
+        let before = self.repr.test(i);
         if bit {
             self.repr.set1(i);
         } else {
@@ -300,16 +318,16 @@ impl<T: BitsMut> Pop<T> {
     }
 }
 
-impl<T: Unpack + BitsMut> BitsMut for Pop<T> {
+impl<T: Block + BlockMut> Pop<T> {
     #[inline]
-    fn set1(&mut self, index: usize) {
+    pub fn set1(&mut self, index: usize) {
         if !self.swap(index, true) {
             self.aux.incr(index, 1);
         }
     }
 
     #[inline]
-    fn set0(&mut self, index: usize) {
+    pub fn set0(&mut self, index: usize) {
         if self.swap(index, false) {
             self.aux.decr(index, 1);
         }
