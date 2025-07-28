@@ -18,14 +18,6 @@ http_archive(
     ],
 )
 
-http_archive(
-    name = "openssl",
-    build_file = "//crypto/openssl:BUILD.openssl.bazel",
-    integrity = "sha256-LopAsBl5r+i+C7+z3l3BxnCf7bRtbInBDaEUq1/D0oE=",
-    strip_prefix = "openssl-3.3.2",
-    urls = ["https://www.openssl.org/source/openssl-3.3.2.tar.gz"],
-)
-
 # Constraint values for specifying platforms and toolchains
 bazel_dep(name = "platforms", version = "0.0.10")
 
@@ -77,9 +69,6 @@ bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
 # Build rules for interfacing with "foreign" (non-Bazel) build systems
 # (CMake, configure-make, GNU Make, boost, ninja, Meson).
 bazel_dep(name = "rules_foreign_cc", version = "0.12.0")
-
-# Perl rules, to build OpenSSL
-bazel_dep(name = "rules_perl", version = "0.2.3.bcr.1")
 
 # Rules for creating packages (zip, tar, deb, rpm, ...)
 bazel_dep(name = "rules_pkg", version = "1.0.1")
@@ -151,21 +140,6 @@ crate.spec(
 crate.spec(
     package = "openssl-sys",
     version = "0.9.101",
-)
-crate.annotation(
-    build_script_data = [
-        "@openssl//:openssl_dir",
-        "@openssl//:openssl",
-    ],
-    # https://github.com/sfackler/rust-openssl/tree/master/openssl-sys/build
-    build_script_data_glob = ["build/**/*.c"],
-    build_script_env = {
-        "OPENSSL_DIR": "$(execpath @openssl//:openssl_dir)",
-        "OPENSSL_STATIC": "1",
-    },
-    crate = "openssl-sys",
-    data = ["@openssl"],
-    deps = ["@openssl"],
 )
 
 # Serializing and Deserializing data structures
