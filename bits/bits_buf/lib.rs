@@ -1,9 +1,9 @@
 use std::ops::RangeBounds;
 
+use bits_core::Bits;
 use bits_core::block::*;
 use bits_core::mask::helper;
 use bits_core::word::Word;
-use bits_core::Bits;
 
 #[derive(Debug, Default, Clone)]
 pub struct Buf<T: private::Array>(Option<Box<T>>);

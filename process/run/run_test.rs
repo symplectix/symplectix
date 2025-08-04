@@ -7,7 +7,7 @@ use std::time::Duration;
 use testing::TempDirExt;
 use tokio::task;
 
-use super::{wait_for, SpawnError};
+use super::{SpawnError, wait_for};
 use crate::Command;
 
 fn command<I, T>(argv: I) -> Arc<Command>

@@ -1,7 +1,7 @@
 use core::cmp::Ordering::*;
 use core::iter::{Fuse, Peekable};
 
-use super::{compare, helper, Mask};
+use super::{Mask, compare, helper};
 
 pub struct Xor<A, B> {
     pub(crate) a: A,

@@ -1,6 +1,6 @@
 #![no_main]
 
-use libfuzzer_sys::{fuzz_target, Corpus};
+use libfuzzer_sys::{Corpus, fuzz_target};
 
 fuzz_target!(|data: &[u8]| -> Corpus {
     if data.is_empty() {

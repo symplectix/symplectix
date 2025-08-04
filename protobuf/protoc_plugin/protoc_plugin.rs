@@ -3,9 +3,9 @@ use std::io::{Read, Write};
 
 use prost::Message;
 use prost_reflect::{DescriptorPool, FileDescriptor};
+use prost_types::FileDescriptorSet;
 use prost_types::compiler::code_generator_response::{Feature, File};
 use prost_types::compiler::{CodeGeneratorRequest, CodeGeneratorResponse};
-use prost_types::FileDescriptorSet;
 
 pub trait GenCode {
     fn gen_code(&self, req: CodeGeneratorRequest) -> CodeGeneratorResponse;

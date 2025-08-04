@@ -1,8 +1,8 @@
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
 
-use bits::block::*;
 use bits::BitVec;
+use bits::block::*;
 use rand::prelude::*;
 
 fn pack_unpacked_imp<const N: usize>(orig: Vec<u32>) {

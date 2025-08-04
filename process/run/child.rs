@@ -68,21 +68,9 @@ impl Child {
 }
 
 pub(crate) fn kill(pid: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
-    unsafe {
-        if libc::kill(pid, sig) == 0 {
-            Ok(())
-        } else {
-            Err(io::Error::last_os_error())
-        }
-    }
+    unsafe { if libc::kill(pid, sig) == 0 { Ok(()) } else { Err(io::Error::last_os_error()) } }
 }
 
 fn killpg(grp: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
-    unsafe {
-        if libc::killpg(grp, sig) == 0 {
-            Ok(())
-        } else {
-            Err(io::Error::last_os_error())
-        }
-    }
+    unsafe { if libc::killpg(grp, sig) == 0 { Ok(()) } else { Err(io::Error::last_os_error()) } }
 }

@@ -2,8 +2,8 @@ use std::process::{ExitCode, Termination};
 use std::sync::Arc;
 
 use anyhow::Context;
-use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
+use tracing_subscriber::prelude::*;
 
 struct Exit(anyhow::Result<()>);
 
