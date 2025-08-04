@@ -19,11 +19,11 @@ pub fn check<P: AsRef<OsStr>>(path: P, mode: Mode) -> io::Result<()> {
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
 
-    use libc::faccessat;
     // Perform access checks using the effective user and group IDs.
     // By default, faccessat() uses the real IDs.
     #[cfg(not(target_os = "android"))]
     use libc::AT_EACCESS;
+    use libc::faccessat;
 
     // Android does not support AT_EACCESS.
     // https://android.googlesource.com/platform/bionic/+/master/libc/bionic/faccessat.cpp#45

@@ -78,7 +78,7 @@ pub fn pop<T: Node + SubAssign>(bit: &mut Vec<T>) -> Option<T> {
 }
 
 mod index {
-    use core::iter::{successors, Successors};
+    use core::iter::{Successors, successors};
     use core::ops::{Add, Sub};
 
     use bits_core::word::Word;

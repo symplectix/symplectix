@@ -4,7 +4,7 @@ use std::os::unix::process::ExitStatusExt;
 use std::process::ExitStatus;
 use std::sync::LazyLock;
 
-use tokio::signal::unix::{signal, SignalKind};
+use tokio::signal::unix::{SignalKind, signal};
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::error::SendError;
 use tokio::task;
@@ -111,11 +111,7 @@ impl RecvError {
     }
 
     pub fn lagged(&self) -> Option<u64> {
-        if let broadcast::error::RecvError::Lagged(n) = self.0 {
-            Some(n)
-        } else {
-            None
-        }
+        if let broadcast::error::RecvError::Lagged(n) = self.0 { Some(n) } else { None }
     }
 }
 

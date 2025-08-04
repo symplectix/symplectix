@@ -9,7 +9,7 @@ use std::{env, io, process};
 use futures::future;
 use futures::prelude::*;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::signal::unix::{signal, SignalKind};
+use tokio::signal::unix::{SignalKind, signal};
 use tokio::time;
 use tracing::{error, info, trace};
 
@@ -297,11 +297,7 @@ impl WaitStatus {
         let exit_success = self.exit_status.success();
         let timedout_but_ok = self.exit_reason.timedout && self.cmd.timeout.is_ok;
 
-        if exit_success || timedout_but_ok {
-            Ok(())
-        } else {
-            Err(WaitStatusError(self.clone()))
-        }
+        if exit_success || timedout_but_ok { Ok(()) } else { Err(WaitStatusError(self.clone())) }
     }
 }
 
