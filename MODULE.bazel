@@ -19,10 +19,10 @@ http_archive(
 )
 
 # Constraint values for specifying platforms and toolchains
-bazel_dep(name = "platforms", version = "0.0.11")
+bazel_dep(name = "platforms", version = "1.0.0")
 
 # Common functions and rules for Bazel
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "bazel_skylib", version = "1.8.1")
 
 # Libraries and rules for constructing rules and BUILD files
 bazel_dep(name = "aspect_bazel_lib", version = "2.9.1")
@@ -46,7 +46,7 @@ use_repo(multitool, "multitool")
 bazel_dep(name = "buildifier_prebuilt", version = "8.2.0.2", dev_dependency = True)
 
 # Protocol Buffers - Google's data interchange format
-bazel_dep(name = "protobuf", version = "29.0")
+bazel_dep(name = "protobuf", version = "31.1")
 
 # Build Protobuf and gRPC code from proto_library
 bazel_dep(name = "rules_proto_grpc", version = "5.5.0")
@@ -56,23 +56,25 @@ bazel_dep(name = "rules_proto_grpc", version = "5.5.0")
 # bazel_dep(name = "rules_proto_grpc_cc", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_go", version = "<version number here>")
 
-# Non-hermetic C++ rules
-#
+# C++ rules
 # An auto-detecting toolchain that expects to find tools installed on the host machine.
-# bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_cc", version = "0.1.4")
 
 # Build rules for interfacing with "foreign" (non-Bazel) build systems
 # (CMake, configure-make, GNU Make, boost, ninja, Meson).
-bazel_dep(name = "rules_foreign_cc", version = "0.12.0")
+bazel_dep(name = "rules_foreign_cc", version = "0.14.0")
 
 # Rules for creating packages (zip, tar, deb, rpm, ...)
-bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "rules_pkg", version = "1.1.0")
 
 # Rust rules for Bazel
-bazel_dep(name = "rules_rust", version = "0.52.0")
+RULES_RUST_VERSION = "0.63.0"
+
+bazel_dep(name = "rules_rust", version = RULES_RUST_VERSION)
+bazel_dep(name = "rules_rust_prost", version = RULES_RUST_VERSION)
 
 # Go rules for Bazel
-bazel_dep(name = "rules_go", version = "0.50.1")
+bazel_dep(name = "rules_go", version = "0.55.1")
 
 # Generate BUILD.bazel for Bazel
 #
