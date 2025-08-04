@@ -19,7 +19,7 @@ http_archive(
 )
 
 # Constraint values for specifying platforms and toolchains
-bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "platforms", version = "0.0.11")
 
 # Common functions and rules for Bazel
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
@@ -43,18 +43,13 @@ multitool.hub(lockfile = "//tools/multitool:multitool.lock.json")
 use_repo(multitool, "multitool")
 
 # Prebuilt binaries for buildifier and buildozer
-bazel_dep(name = "buildifier_prebuilt", version = "7.3.1", dev_dependency = True)
+bazel_dep(name = "buildifier_prebuilt", version = "8.2.0.2", dev_dependency = True)
 
 # Protocol Buffers - Google's data interchange format
-bazel_dep(name = "protobuf", version = "28.2")
-
-# Pre-built protoc binary toolchain for Bazel
-#
-# https://github.com/aspect-build/toolchains_protoc/releases
-bazel_dep(name = "toolchains_protoc", version = "0.3.3")
+bazel_dep(name = "protobuf", version = "29.0")
 
 # Build Protobuf and gRPC code from proto_library
-bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
+bazel_dep(name = "rules_proto_grpc", version = "5.5.0")
 # bazel_dep(name = "rules_proto_grpc_doc", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_grpcgateway", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_buf", version = "<version number here>")
