@@ -1,0 +1,34 @@
+load("//build:py.bzl", "py")
+
+py.library(
+    name = "ruff",
+    srcs = [
+        "__init__.py",
+        "_exec.py",
+    ],
+    data = [
+        "//:pyproject",
+        "@pypi//ruff:extracted_whl_files",
+    ],
+    deps = [
+        "@pypi//bazel_runfiles",
+    ],
+)
+
+[
+    py.binary(
+        name = action,
+        srcs = ["ruff.py"],
+        args = [action],
+        data = ["@pypi//ruff:extracted_whl_files"],
+        env = {
+            "RUFF_EXTRACTED_WHL_FILES": "$(locations @pypi//ruff:extracted_whl_files)",
+        },
+        main = "tools/ruff/ruff.py",
+        deps = [":ruff"],
+    )
+    for action in [
+        "check",
+        "format",
+    ]
+]

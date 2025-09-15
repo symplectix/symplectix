@@ -7,7 +7,7 @@
 # Consider skipping bazel_tools@_ from lockfile: https://github.com/bazelbuild/bazel/issues/19971
 # MODULE.bazel.lock
 
-### Direnv
+### Temporary directory
 /tmp
 
 ### Direnv
@@ -22,3 +22,7 @@
 .devcontainer/exec.sh
 .devcontainer/build.json
 .devcontainer/up.json
+
+### Python
+venv
+.ruff_cache

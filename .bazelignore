@@ -1,7 +1,10 @@
 .devcontainer
 .direnv
+.helix
 .git
 .github
+.ruff_cache
 .vscode
 target
 tmp
+venv

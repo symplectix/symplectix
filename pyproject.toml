@@ -1,0 +1,33 @@
+[project]
+name = "symplectix"
+version = "0.0.0"
+
+dependencies = [
+  "bazel-runfiles==1.6.1",
+  "ruff==0.13.0",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length    = 120
+indent-width   = 4
+
+[tool.ruff.format]
+quote-style  = "double"
+indent-style = "space"
+line-ending  = "auto"
+
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  # Using this rule alongside the formatter may cause conflicts.
+  # The formatter enforces consistent use of trailing commas, making the rule redundant.
+  "COM812",
+  # Allow packages that are missing an __init__.py file.
+  "INP001",
+]
+fixable = ["ALL"]
+pydocstyle.convention = "google"
