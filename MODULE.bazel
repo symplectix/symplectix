@@ -58,7 +58,7 @@ bazel_dep(name = "rules_proto_grpc", version = "5.5.0")
 
 # C++ rules
 # An auto-detecting toolchain that expects to find tools installed on the host machine.
-bazel_dep(name = "rules_cc", version = "0.1.4")
+bazel_dep(name = "rules_cc", version = "0.2.4")
 
 # Build rules for interfacing with "foreign" (non-Bazel) build systems
 # (CMake, configure-make, GNU Make, boost, ninja, Meson).
@@ -68,7 +68,7 @@ bazel_dep(name = "rules_foreign_cc", version = "0.14.0")
 bazel_dep(name = "rules_pkg", version = "1.1.0")
 
 # Rust rules for Bazel
-RULES_RUST_VERSION = "0.63.0"
+RULES_RUST_VERSION = "0.65.0"
 
 bazel_dep(name = "rules_rust", version = RULES_RUST_VERSION)
 bazel_dep(name = "rules_rust_prost", version = RULES_RUST_VERSION)
@@ -108,7 +108,7 @@ bazel_dep(name = "container_structure_test", version = "1.19.1")
 
 RUST_EDITION = "2024"
 
-RUST_VERSION = "1.88.0"
+RUST_VERSION = "1.90.0"
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(

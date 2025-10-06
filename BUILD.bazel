@@ -1,5 +1,5 @@
 load("@gazelle//:def.bzl", "gazelle")
-load("//build:uv.bzl", "uv")
+load("//bazel:uv.bzl", "uv")
 
 exports_files([
     "WORKSPACE",

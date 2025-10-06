@@ -1,4 +1,4 @@
-load("//build:py.bzl", "py")
+load("//bazel:py.bzl", "py")
 
 py.library(
     name = "ruff",
