@@ -220,7 +220,7 @@ impl ProcessInner {
                 let mut sigterm = signal(SignalKind::terminate())?;
                 let mut sigint = signal(SignalKind::interrupt())?;
 
-                let stderr = child.stderr().unwrap();
+                let stderr = child.stderr().take().unwrap();
                 let mut stderr = BufReader::new(stderr).lines();
 
                 let mut cause = ExitReasons::default();
