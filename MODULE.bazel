@@ -143,11 +143,7 @@ crate.annotation(
 # OpenSSL bindings for Rust
 crate.spec(
     package = "openssl",
-    version = "0.10.64",
-)
-crate.spec(
-    package = "openssl-sys",
-    version = "0.9.101",
+    version = "0.10.74",
 )
 
 # Serializing and Deserializing data structures
@@ -172,7 +168,7 @@ crate.spec(
 crate.spec(
     features = ["full"],
     package = "tokio",
-    version = "1.40",
+    version = "1.48",
 )
 
 # Tracing
@@ -191,13 +187,17 @@ crate.spec(
 # )
 
 # Protobuf support for Rust
+tonic_version = "0.12"
+
+prost_version = "0.13"
+
 crate.spec(
     package = "prost",
-    version = "0.13",
+    version = prost_version,
 )
 crate.spec(
     package = "prost-types",
-    version = "0.13",
+    version = prost_version,
 )
 crate.spec(
     package = "prost-reflect",
@@ -205,23 +205,23 @@ crate.spec(
 )
 crate.spec(
     package = "tonic",
-    version = "0.12",
+    version = tonic_version,
 )
 crate.spec(
     package = "tonic-build",
-    version = "0.12",
+    version = tonic_version,
 )
 crate.spec(
     package = "tonic-types",
-    version = "0.12",
+    version = tonic_version,
 )
 crate.spec(
     package = "tonic-health",
-    version = "0.12",
+    version = tonic_version,
 )
 crate.spec(
     package = "tonic-reflection",
-    version = "0.12",
+    version = tonic_version,
 )
 
 # Proroc plugins for Prost/Tonic
@@ -251,7 +251,7 @@ crate.spec(
         "serde",
     ],
     package = "smallvec",
-    version = "2.0.0-alpha.7",
+    version = "2.0.0-alpha.11",
 )
 
 # A tree-sitter binding
@@ -259,11 +259,11 @@ crate.spec(
 # https://tree-sitter.github.io/tree-sitter/
 crate.spec(
     package = "tree-sitter",
-    version = "0.24",
+    version = "0.25",
 )
 crate.spec(
     package = "tree-sitter-cli",
-    version = "0.24",
+    version = "0.25",
 )
 crate.annotation(
     crate = "tree-sitter-cli",
@@ -273,7 +273,7 @@ crate.annotation(
 # Rust grammar for tree-sitter
 crate.spec(
     package = "tree-sitter-rust",
-    version = "0.23",
+    version = "0.24",
 )
 
 # Arguments parsing
@@ -333,7 +333,7 @@ crate.spec(
 # Random number generator
 crate.spec(
     package = "rand",
-    version = "0.8",
+    version = "0.9",
 )
 
 # For testing
@@ -352,7 +352,7 @@ crate.spec(
 )
 crate.spec(
     package = "libfuzzer-sys",
-    version = "0.4.0",
+    version = "0.4",
 )
 
 # Generates a repo @crates from the defined spec tags.
