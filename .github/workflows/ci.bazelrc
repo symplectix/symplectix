@@ -27,7 +27,7 @@ build --config=verbose
 build --config=clippy
 build --config=rustfmt
 build --config=stable
-build --config=dev
+build --config=release
 
 # build:fuzzing --config=nightly
 # build:fuzzing --build_tag_filters=+fuzzing
