@@ -8,9 +8,8 @@ dependencies = [
 ]
 
 [tool.ruff]
-target-version = "py313"
-line-length    = 120
-indent-width   = 4
+line-length  = 120
+indent-width = 4
 
 [tool.ruff.format]
 quote-style  = "double"
@@ -21,13 +20,23 @@ docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint]
-select = ["ALL"]
+select = [
+  "ALL",
+]
 ignore = [
   # Using this rule alongside the formatter may cause conflicts.
   # The formatter enforces consistent use of trailing commas, making the rule redundant.
   "COM812",
+  # Allow passing a string literal to exceptions.
+  "EM101",
   # Allow packages that are missing an __init__.py file.
   "INP001",
+  # Allow specifying long messages outside the exception class.
+  "TRY003",
 ]
-fixable = ["ALL"]
-pydocstyle.convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
