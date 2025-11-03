@@ -5,18 +5,20 @@ version = "0.0.0"
 dependencies = [
   "bazel-runfiles==1.6.1",
   "ruff==0.14.3",
+  "mypy==1.18.2",
 ]
 
 [tool.ruff]
-line-length  = 120
-indent-width = 4
+target-version = "py313"
+line-length    = 120
+indent-width   = 4
 
 [tool.ruff.format]
 quote-style  = "double"
 indent-style = "space"
 line-ending  = "auto"
 
-docstring-code-format = true
+docstring-code-format      = true
 docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint]
@@ -40,3 +42,11 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.mypy]
+python_version = "3.13"
+exclude = [
+    "bazel-*",
+    "venv",
+]
+strict = true
