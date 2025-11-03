@@ -25,4 +25,5 @@
 
 ### Python
 venv
+.mypy_cache
 .ruff_cache
