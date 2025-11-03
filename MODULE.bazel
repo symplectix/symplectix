@@ -36,12 +36,6 @@ use_repo(
     "yq_toolchains",
 )
 
-bazel_dep(name = "rules_multitool", version = "0.15.0")
-
-multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")
-multitool.hub(lockfile = "//tools/multitool:multitool.lock.json")
-use_repo(multitool, "multitool")
-
 # Prebuilt binaries for buildifier and buildozer
 bazel_dep(name = "buildifier_prebuilt", version = "8.2.0.2", dev_dependency = True)
 

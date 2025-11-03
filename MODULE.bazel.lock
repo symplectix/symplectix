@@ -65,7 +65,6 @@
     "https://bcr.bazel.build/modules/bazel_skylib/1.8.2/MODULE.bazel": "69ad6927098316848b34a9142bcc975e018ba27f08c4ff403f50c1b6e646ca67",
     "https://bcr.bazel.build/modules/bazel_skylib/1.8.2/source.json": "34a3c8bcf233b835eb74be9d628899bb32999d3e0eadef1947a0a562a2b16ffb",
     "https://bcr.bazel.build/modules/buildifier_prebuilt/6.4.0/MODULE.bazel": "37389c6b5a40c59410b4226d3bb54b08637f393d66e2fa57925c6fcf68e64bf4",
-    "https://bcr.bazel.build/modules/buildifier_prebuilt/7.3.1/MODULE.bazel": "537faf0ad9f5892910074b8e43b4c91c96f1d5d86b6ed04bdbe40cf68aa48b68",
     "https://bcr.bazel.build/modules/buildifier_prebuilt/8.2.0.2/MODULE.bazel": "a9b689711d5b69f9db741649b218c119b9fdf82924ba390415037e09798edd03",
     "https://bcr.bazel.build/modules/buildifier_prebuilt/8.2.0.2/source.json": "51eb0a4b38aaaeab7fa64361576d616c4d8bfd0f17a0a10184aeab7084d79f8e",
     "https://bcr.bazel.build/modules/buildozer/7.1.2/MODULE.bazel": "2e8dd40ede9c454042645fd8d8d0cd1527966aa5c919de86661e62953cd73d84",
@@ -198,8 +197,7 @@
     "https://bcr.bazel.build/modules/rules_license/1.0.0/MODULE.bazel": "a7fda60eefdf3d8c827262ba499957e4df06f659330bbe6cdbdb975b768bb65c",
     "https://bcr.bazel.build/modules/rules_license/1.0.0/source.json": "a52c89e54cc311196e478f8382df91c15f7a2bfdf4c6cd0e2675cc2ff0b56efb",
     "https://bcr.bazel.build/modules/rules_multitool/0.11.0/MODULE.bazel": "8d9dda78d2398e136300d3ef4fbcc89ede7c32c158d8c016fa7d032df41c4aaf",
-    "https://bcr.bazel.build/modules/rules_multitool/0.15.0/MODULE.bazel": "76f8bf0ebade291b360d17a19255f4bc24579fc8d9fdb64257701ba4fd2f0edf",
-    "https://bcr.bazel.build/modules/rules_multitool/0.15.0/source.json": "f93e9a7b3093c87edaec7343f0cdcdd692e15d3542c5e479c9b035411cd92756",
+    "https://bcr.bazel.build/modules/rules_multitool/0.11.0/source.json": "0b86574a1eaff37c33aafaff095ea16d6ac846beb94ffc74c4fcf626f8f80681",
     "https://bcr.bazel.build/modules/rules_nodejs/5.8.2/MODULE.bazel": "6bc03c8f37f69401b888023bf511cb6ee4781433b0cb56236b2e55a21e3a026a",
     "https://bcr.bazel.build/modules/rules_oci/2.2.6/MODULE.bazel": "2ba6ddd679269e00aeffe9ca04faa2d0ca4129650982c9246d0d459fe2da47d9",
     "https://bcr.bazel.build/modules/rules_oci/2.2.6/source.json": "94e7decb8f95d9465b0bbea71c65064cd16083be1350c7468f131818641dc4a5",
@@ -835,105 +833,77 @@
     },
     "@@rules_multitool+//multitool:extension.bzl%multitool": {
       "general": {
-        "bzlTransitiveDigest": "y9HVV3Yhb2HUykJnzFeKxODbmAIciQFOb4evIvbHS64=",
-        "usagesDigest": "00J90WgylXevkv59thfiVbzMQ3Ji7Tdhv0pNQ3aJQtg=",
-        "recordedFileInputs": {
-          "@@//tools/multitool/multitool.lock.json": "053d88aa3aead70a12919ae69636b38058c85e64c6d4fca575ef3e4f0eb54874",
-          "@@rules_uv+//uv/private/uv.lock.json": "164beb93205ad1674c0d5b2de1221e91405b270b334bc7e2e3a8cbecb435afe4"
-        },
+        "bzlTransitiveDigest": "wPwfRycbKPZ2fVryvOnd1aVxOdV96v+Td8NIqdiOoD8=",
+        "usagesDigest": "kX6IFLUIxLITBcRXm6NrTaFodNqORPtSXjVJwo6JT80=",
+        "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
-          "multitool.ch-remote.linux_x86_64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
+          "multitool.linux_arm64": {
+            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%_env_specific_tools",
             "attributes": {
-              "tool_name": "ch-remote",
-              "binary": "{\"cpu\":\"x86_64\",\"kind\":\"file\",\"os\":\"linux\",\"sha256\":\"3e9fbf1f8b566ec49d1a17306cebeed5536d78addddbc260f618e53eab13d10e\",\"url\":\"https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/ch-remote-static\"}"
+              "lockfiles": [
+                "@@rules_uv+//uv/private:uv.lock.json"
+              ],
+              "os": "linux",
+              "cpu": "arm64"
             }
           },
-          "multitool.ch-remote.linux_arm64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
+          "multitool.linux_x86_64": {
+            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%_env_specific_tools",
             "attributes": {
-              "tool_name": "ch-remote",
-              "binary": "{\"cpu\":\"arm64\",\"kind\":\"file\",\"os\":\"linux\",\"sha256\":\"f1cd6056380f8aa35a7c58fa894dca44ccc2ac2c025a0304e1c094be56b3e505\",\"url\":\"https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/ch-remote-static-aarch64\"}"
+              "lockfiles": [
+                "@@rules_uv+//uv/private:uv.lock.json"
+              ],
+              "os": "linux",
+              "cpu": "x86_64"
             }
           },
-          "multitool.cloud-hypervisor.linux_x86_64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
+          "multitool.macos_arm64": {
+            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%_env_specific_tools",
             "attributes": {
-              "tool_name": "cloud-hypervisor",
-              "binary": "{\"cpu\":\"x86_64\",\"kind\":\"file\",\"os\":\"linux\",\"sha256\":\"537d1cbc1d4d3646099618f3b6f2b711116ad1ed8c8bc909a1a689417c7430aa\",\"url\":\"https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/cloud-hypervisor-static\"}"
+              "lockfiles": [
+                "@@rules_uv+//uv/private:uv.lock.json"
+              ],
+              "os": "macos",
+              "cpu": "arm64"
             }
           },
-          "multitool.cloud-hypervisor.linux_arm64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
+          "multitool.macos_x86_64": {
+            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%_env_specific_tools",
             "attributes": {
-              "tool_name": "cloud-hypervisor",
-              "binary": "{\"cpu\":\"arm64\",\"kind\":\"file\",\"os\":\"linux\",\"sha256\":\"0a5deebf301ec84ac2db5ae0b28acb481cf5fafbaaf9a3f0444e57a6907cb8a3\",\"url\":\"https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/v42.0/cloud-hypervisor-static-aarch64\"}"
+              "lockfiles": [
+                "@@rules_uv+//uv/private:uv.lock.json"
+              ],
+              "os": "macos",
+              "cpu": "x86_64"
             }
           },
-          "multitool.firecracker.linux_x86_64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
+          "multitool.windows_arm64": {
+            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%_env_specific_tools",
             "attributes": {
-              "tool_name": "firecracker",
-              "binary": "{\"cpu\":\"x86_64\",\"file\":\"release-v1.9.1-x86_64/firecracker-v1.9.1-x86_64\",\"kind\":\"archive\",\"os\":\"linux\",\"sha256\":\"88d89221063ee4021b539a4fea4567642f4eecfb5d52eec04cd3390833f7f3de\",\"type\":\"tgz\",\"url\":\"https://github.com/firecracker-microvm/firecracker/releases/download/v1.9.1/firecracker-v1.9.1-x86_64.tgz\"}"
+              "lockfiles": [
+                "@@rules_uv+//uv/private:uv.lock.json"
+              ],
+              "os": "windows",
+              "cpu": "arm64"
             }
           },
-          "multitool.firecracker.linux_arm64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
+          "multitool.windows_x86_64": {
+            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%_env_specific_tools",
             "attributes": {
-              "tool_name": "firecracker",
-              "binary": "{\"cpu\":\"arm64\",\"file\":\"release-v1.9.1-aarch64/firecracker-v1.9.1-aarch64\",\"kind\":\"archive\",\"os\":\"linux\",\"sha256\":\"c1fbfa76e875f6a49ebda6914356d752fd863f278bee4cced69ba8e40eb84517\",\"type\":\"tgz\",\"url\":\"https://github.com/firecracker-microvm/firecracker/releases/download/v1.9.1/firecracker-v1.9.1-aarch64.tgz\"}"
-            }
-          },
-          "multitool.uv.linux_arm64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
-            "attributes": {
-              "tool_name": "uv",
-              "binary": "{\"cpu\":\"arm64\",\"file\":\"uv-aarch64-unknown-linux-musl/uv\",\"kind\":\"archive\",\"os\":\"linux\",\"sha256\":\"1c6045bec4d5ca17777dd271401a0407c5acad79f74fd38f35c31ca64c689808\",\"url\":\"https://github.com/astral-sh/uv/releases/download/0.8.11/uv-aarch64-unknown-linux-musl.tar.gz\"}"
-            }
-          },
-          "multitool.uv.linux_x86_64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
-            "attributes": {
-              "tool_name": "uv",
-              "binary": "{\"cpu\":\"x86_64\",\"file\":\"uv-x86_64-unknown-linux-gnu/uv\",\"kind\":\"archive\",\"os\":\"linux\",\"sha256\":\"0c6078318332c100d7d9988ea99144b534e40adef2958aa314a9f7c7b8516ed7\",\"url\":\"https://github.com/astral-sh/uv/releases/download/0.8.11/uv-x86_64-unknown-linux-gnu.tar.gz\"}"
-            }
-          },
-          "multitool.uv.macos_arm64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
-            "attributes": {
-              "tool_name": "uv",
-              "binary": "{\"cpu\":\"arm64\",\"file\":\"uv-aarch64-apple-darwin/uv\",\"kind\":\"archive\",\"os\":\"macos\",\"sha256\":\"c9e74f779a65798057bca2ff328d5c9952f458391e220c3d3216d7a03a338d9f\",\"url\":\"https://github.com/astral-sh/uv/releases/download/0.8.11/uv-aarch64-apple-darwin.tar.gz\"}"
-            }
-          },
-          "multitool.uv.macos_x86_64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
-            "attributes": {
-              "tool_name": "uv",
-              "binary": "{\"cpu\":\"x86_64\",\"file\":\"uv-x86_64-apple-darwin/uv\",\"kind\":\"archive\",\"os\":\"macos\",\"sha256\":\"7ed76b0cc314fa0cb6dd7ae99379efd3cf8fc14d71af8d71b0b5238582c7958d\",\"url\":\"https://github.com/astral-sh/uv/releases/download/0.8.11/uv-x86_64-apple-darwin.tar.gz\"}"
-            }
-          },
-          "multitool.uv.windows_arm64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
-            "attributes": {
-              "tool_name": "uv",
-              "binary": "{\"cpu\":\"arm64\",\"file\":\"uv.exe\",\"kind\":\"archive\",\"os\":\"windows\",\"sha256\":\"09c6cc8c511d166dc12c9e56ce06c92de928a2e5bad14fc079654901dc8ea114\",\"url\":\"https://github.com/astral-sh/uv/releases/download/0.8.11/uv-aarch64-pc-windows-msvc.zip\"}"
-            }
-          },
-          "multitool.uv.windows_x86_64": {
-            "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%tool_repo",
-            "attributes": {
-              "tool_name": "uv",
-              "binary": "{\"cpu\":\"x86_64\",\"file\":\"uv.exe\",\"kind\":\"archive\",\"os\":\"windows\",\"sha256\":\"3e802b69307b10f228c8f1d096bd5721ac37a133bf33672f9fcc46a58dd5c920\",\"url\":\"https://github.com/astral-sh/uv/releases/download/0.8.11/uv-x86_64-pc-windows-msvc.zip\"}"
+              "lockfiles": [
+                "@@rules_uv+//uv/private:uv.lock.json"
+              ],
+              "os": "windows",
+              "cpu": "x86_64"
             }
           },
           "multitool": {
             "repoRuleId": "@@rules_multitool+//multitool/private:multitool.bzl%_multitool_hub",
             "attributes": {
               "lockfiles": [
-                "@@rules_uv+//uv/private:uv.lock.json",
-                "@@//tools/multitool:multitool.lock.json"
+                "@@rules_uv+//uv/private:uv.lock.json"
               ]
             }
           }
@@ -953,11 +923,6 @@
             "rules_multitool+",
             "bazel_features",
             "bazel_features+"
-          ],
-          [
-            "rules_multitool+",
-            "bazel_tools",
-            "bazel_tools"
           ]
         ]
       }
