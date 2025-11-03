@@ -17,7 +17,7 @@ pub const fn addr(i: usize, b: usize) -> (usize, usize) {
 /// Calculates the minimum number of blocks to store `n` bits.
 #[inline]
 pub const fn blocks(n: usize, b: usize) -> usize {
-    n / b + (n % b > 0) as usize
+    n / b + (n.is_multiple_of(b) as usize)
 }
 
 /// A utility to clamp the given range, which is possibly unbounded, into a bounded one.
