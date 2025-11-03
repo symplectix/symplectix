@@ -68,7 +68,7 @@ bazel_dep(name = "rules_rust", version = rules_rust_version)
 bazel_dep(name = "rules_rust_prost", version = rules_rust_version)
 
 # Python rules for Bazel
-bazel_dep(name = "rules_python", version = "1.6.1")
+bazel_dep(name = "rules_python", version = "1.6.3")
 bazel_dep(name = "rules_uv", version = "0.88.0")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
