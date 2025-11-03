@@ -45,7 +45,7 @@ pub trait Mask: Sized {
     }
 }
 
-impl<'inner, 'outer, T: ?Sized> Mask for &'outer &'inner T
+impl<'inner, T: ?Sized> Mask for &&'inner T
 where
     &'inner T: Mask,
 {

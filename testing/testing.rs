@@ -87,7 +87,7 @@ impl TempDirExt for TempDir {
 
         let filepath = self.path().join(path);
         let Some(dir) = filepath.parent() else {
-            return Err(io::Error::new(io::ErrorKind::Other, format!("no parent '{}'", filepath.display())));
+            return Err(io::Error::other(format!("no parent '{}'", filepath.display())));
         };
 
         fs::create_dir_all(dir).and_then(|_| options.open(&filepath)).map(|file| (file, filepath))
