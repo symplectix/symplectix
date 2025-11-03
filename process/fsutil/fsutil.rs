@@ -7,10 +7,10 @@ use tokio::fs;
 async fn create_dirs_if_missing<P: AsRef<Path>>(path: P) -> io::Result<()> {
     let path = path.as_ref();
 
-    if let Some(dir) = path.parent() {
-        if !dir.as_os_str().is_empty() {
-            return fs::create_dir_all(dir).await;
-        }
+    if let Some(dir) = path.parent()
+        && !dir.as_os_str().is_empty()
+    {
+        return fs::create_dir_all(dir).await;
     };
 
     Ok(())
