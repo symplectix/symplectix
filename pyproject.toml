@@ -4,7 +4,7 @@ version = "0.0.0"
 
 dependencies = [
   "bazel-runfiles==1.6.1",
-  "ruff==0.13.0",
+  "ruff==0.14.3",
 ]
 
 [tool.ruff]
