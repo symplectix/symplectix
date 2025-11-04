@@ -25,7 +25,7 @@ impl<T: Node> Nodes for [T] {
     }
 }
 
-impl<'a, T: ?Sized + Nodes> Nodes for &'a T {
+impl<T: ?Sized + Nodes> Nodes for &T {
     type Node = <T as Nodes>::Node;
     fn nodes(&self) -> usize {
         <T as Nodes>::nodes(self)
@@ -186,11 +186,11 @@ where
 
         let mut i = 0;
         search(self.nodes()).for_each(|d| {
-            if let Some(v) = self.get(i + d).copied() {
-                if v < w {
-                    w -= v;
-                    i += d;
-                }
+            if let Some(v) = self.get(i + d).copied()
+                && v < w
+            {
+                w -= v;
+                i += d;
             }
         });
 

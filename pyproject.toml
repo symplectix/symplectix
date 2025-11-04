@@ -1,0 +1,52 @@
+[project]
+name = "symplectix"
+version = "0.0.0"
+
+dependencies = [
+  "bazel-runfiles==1.6.1",
+  "ruff==0.14.3",
+  "mypy==1.18.2",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length    = 120
+indent-width   = 4
+
+[tool.ruff.format]
+quote-style  = "double"
+indent-style = "space"
+line-ending  = "auto"
+
+docstring-code-format      = true
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint]
+select = [
+  "ALL",
+]
+ignore = [
+  # Using this rule alongside the formatter may cause conflicts.
+  # The formatter enforces consistent use of trailing commas, making the rule redundant.
+  "COM812",
+  # Allow passing a string literal to exceptions.
+  "EM101",
+  # Allow packages that are missing an __init__.py file.
+  "INP001",
+  # Allow specifying long messages outside the exception class.
+  "TRY003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.13"
+exclude = [
+    "bazel-*",
+    "venv",
+]
+strict = true

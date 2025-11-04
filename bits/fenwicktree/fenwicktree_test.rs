@@ -147,7 +147,7 @@ fn sum_x_eq_vec_sum(vec: Vec<u64>) -> bool {
 #[quickcheck]
 fn lower_bound_sum(vec: Vec<u16>) -> bool {
     let tr = build(vec.clone());
-    (0..=vec.iter().sum::<u16>()).map(Into::into).all(|w| {
+    (0..=vec.iter().sum::<u16>()).all(|w| {
         let i = tr.lower_bound(w);
         let sum: u64 = fenwicktree::prefix(i).map(|i| Into::<u64>::into(tr[i])).sum();
         sum >= w.into()

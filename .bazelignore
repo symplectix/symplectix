@@ -1,7 +1,11 @@
 .devcontainer
 .direnv
+.helix
 .git
 .github
+.mypy_cache
+.ruff_cache
 .vscode
 target
 tmp
+venv

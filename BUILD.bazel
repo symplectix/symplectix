@@ -1,9 +1,27 @@
 load("@gazelle//:def.bzl", "gazelle")
+load("//bazel:uv.bzl", "uv")
 
 exports_files([
     "WORKSPACE",
     ".clippy.toml",
     ".rustfmt.toml",
 ])
+
+filegroup(
+    name = "pyproject",
+    srcs = ["pyproject.toml"],
+    visibility = ["//:__subpackages__"],
+)
+
+uv.pip_compile(
+    name = "pip_compile",
+    requirements_in = "//:pyproject",
+    requirements_txt = "//:requirements.txt",
+)
+
+uv.create_venv(
+    name = "create_venv",
+    requirements_txt = "//:requirements.txt",
+)
 
 gazelle(name = "gazelle")

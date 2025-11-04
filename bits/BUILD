@@ -37,7 +37,12 @@ rust_doc(
 rust_test_suite(
     name = "bits_tests",
     timeout = "short",
-    srcs = glob(["src/**/*_test.rs"]),
+    srcs = [
+        "src/bits_test.rs",
+        "src/mask_test.rs",
+        "src/pack_test.rs",
+        "src/word_test.rs",
+    ],
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],

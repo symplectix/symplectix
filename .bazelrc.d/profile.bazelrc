@@ -39,10 +39,12 @@ build:strip --@rules_rust//rust/settings:extra_rustc_flag=-Cstrip=debuginfo
 build:dev --compilation_mode=opt
 build:dev --config=debuginfo
 build:dev --@rules_rust//rust/settings:extra_rustc_flag=-Clto=fat
+build:dev --@rules_rust//rust/settings:extra_rustc_flag=-Cembed-bitcode=yes
 build:dev --@rules_rust//rust/settings:extra_rustc_flag=-Ccodegen-units=16
 
 build:release --compilation_mode=opt
 build:release --config=nodebuginfo
 build:release --@rules_rust//rust/settings:extra_rustc_flag=-Clto=fat
+build:release --@rules_rust//rust/settings:extra_rustc_flag=-Cembed-bitcode=yes
 build:release --@rules_rust//rust/settings:extra_rustc_flag=-Ccodegen-units=1
 build:release --@rules_rust//rust/settings:extra_rustc_flag=-Coverflow-checks=off

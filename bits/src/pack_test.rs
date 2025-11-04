@@ -25,7 +25,7 @@ fn unpack_packed_imp<const N: usize>(values: Vec<u16>, mut rng: impl Rng) {
     let mut bits = BitVec::<u64>::new(65536);
 
     for val in values {
-        let i = rng.gen_range(0..65536 - N);
+        let i = rng.random_range(0..65536 - N);
         bits.pack(i, N, val);
         let unpacked = bits.unpack::<u16>(i, N);
 
@@ -38,7 +38,7 @@ fn unpack_packed_imp<const N: usize>(values: Vec<u16>, mut rng: impl Rng) {
 
 #[quickcheck]
 fn unpack_packed(orig: Vec<u16>) {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     unpack_packed_imp::<14>(orig, &mut rng);
 }
 
