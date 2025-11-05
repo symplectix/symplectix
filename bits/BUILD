@@ -59,7 +59,7 @@ go_library(
         ["*.go"],
         exclude = ["*_test.go"],
     ),
-    importpath = "github.com/symplectix/symplectix/bits",
+    importpath = "github.com/symplectix/syx/bits",
     visibility = ["//bits:__subpackages__"],
 )
 

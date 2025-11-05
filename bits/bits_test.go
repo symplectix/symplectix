@@ -4,7 +4,7 @@ import (
 	"iter"
 	"testing"
 
-	"github.com/symplectix/symplectix/bits"
+	"github.com/symplectix/syx/bits"
 )
 
 var (

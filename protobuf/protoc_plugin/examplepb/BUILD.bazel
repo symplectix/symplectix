@@ -23,7 +23,7 @@ rust_prost_library(
 go_proto_library(
     name = "examplepb_go",
     compilers = ["@rules_go//proto:go_grpc"],
-    importpath = "github.com/symplectix/symplectix/protobuf/protoc_plugin/examplepb",
+    importpath = "github.com/symplectix/syx/protobuf/protoc_plugin/examplepb",
     protos = [":examplepb"],
 )
 

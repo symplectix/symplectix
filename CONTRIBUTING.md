@@ -1,4 +1,4 @@
-# Contributing to symplectix
+# Contributing to syx
 
 ## Rust
 

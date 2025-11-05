@@ -48,21 +48,21 @@ mod test {
 
     #[test]
     fn faccessat_runfiles() {
-        assert!(check(rlocation("symplectix/.rustfmt.toml"), Mode::EXISTS).is_ok());
-        assert!(check(rlocation("symplectix/.clippy.toml"), Mode::EXISTS).is_ok());
-        assert!(check(rlocation("symplectix/path/faccess/faccess.rs"), Mode::EXISTS).is_ok());
+        assert!(check(rlocation("syx/.rustfmt.toml"), Mode::EXISTS).is_ok());
+        assert!(check(rlocation("syx/.clippy.toml"), Mode::EXISTS).is_ok());
+        assert!(check(rlocation("syx/path/faccess/faccess.rs"), Mode::EXISTS).is_ok());
 
-        assert!(check(rlocation("symplectix/.rustfmt.toml"), Mode::READ).is_ok());
-        assert!(check(rlocation("symplectix/.clippy.toml"), Mode::READ).is_ok());
-        assert!(check(rlocation("symplectix/path/faccess/faccess.rs"), Mode::READ).is_ok());
+        assert!(check(rlocation("syx/.rustfmt.toml"), Mode::READ).is_ok());
+        assert!(check(rlocation("syx/.clippy.toml"), Mode::READ).is_ok());
+        assert!(check(rlocation("syx/path/faccess/faccess.rs"), Mode::READ).is_ok());
 
         // See about --spawn_strategy at .bazelrc.
-        // assert!(check(rlocation("symplectix/.rustfmt.toml"), Mode::WRITE).is_err());
-        // assert!(check(rlocation("symplectix/.clippy.toml"), Mode::WRITE).is_err());
-        // assert!(check(rlocation("symplectix/path/faccess/faccess.rs"), Mode::WRITE).is_err());
+        // assert!(check(rlocation("syx/.rustfmt.toml"), Mode::WRITE).is_err());
+        // assert!(check(rlocation("syx/.clippy.toml"), Mode::WRITE).is_err());
+        // assert!(check(rlocation("syx/path/faccess/faccess.rs"), Mode::WRITE).is_err());
 
-        assert!(check(rlocation("symplectix/.rustfmt.toml"), Mode::EXECUTE).is_err());
-        assert!(check(rlocation("symplectix/.clippy.toml"), Mode::EXECUTE).is_err());
-        assert!(check(rlocation("symplectix/path/faccess/faccess.rs"), Mode::EXECUTE).is_err());
+        assert!(check(rlocation("syx/.rustfmt.toml"), Mode::EXECUTE).is_err());
+        assert!(check(rlocation("syx/.clippy.toml"), Mode::EXECUTE).is_err());
+        assert!(check(rlocation("syx/path/faccess/faccess.rs"), Mode::EXECUTE).is_err());
     }
 }

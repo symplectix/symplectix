@@ -41,7 +41,7 @@ jobs:
           restore-keys: ${{ matrix.os}}-${{ env.cache-name }}-
 
       - name: Setup
-        run: cp .github/workflows/ci.bazelrc .bazelrc.local
+        run: cp bazel/bazelrc/ci.bazelrc .bazelrc.local
 
       - name: Build
         run: bazel build //...

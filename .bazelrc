@@ -1,11 +1,30 @@
 # https://bazel.build/reference/command-line-reference
 
-import %workspace%/.bazelrc.d/benice.bazelrc
-import %workspace%/.bazelrc.d/cache.bazelrc
-import %workspace%/.bazelrc.d/lint.bazelrc
-import %workspace%/.bazelrc.d/macos.bazelrc
-import %workspace%/.bazelrc.d/profile.bazelrc
-import %workspace%/.bazelrc.d/verbose.bazelrc
+import %workspace%/bazel/bazelrc/preset.bazelrc
+import %workspace%/bazel/bazelrc/profile.bazelrc
+
+# Use a directory on the file system as a remote cache.
+# By default, Bazel has a build cache per workspace which keeps only the latest version
+# of any target. Disk cache is useful for sharing build artifacts when switching branches
+# and/or working on multiple workspaces of the same project, such as multiple checkouts.
+#
+# Since Bazel does not garbage-collect the directory,
+# you might want to automate a periodic cleanup of this directory.
+common:ci --disk_cache=~/.cache/bazel/disk/
+
+# The repository cache is shared between all workspaces and installed versions of bazel.
+# https://bazel.build/run/build#repository-cache
+common:ci --repository_cache=~/.cache/bazel/repository/
+
+# Collect garbage entries from the disk cache.
+#
+# https://bazel.build/reference/command-line-reference#flag--experimental_disk_cache_gc_max_size
+# https://bazel.build/reference/command-line-reference#flag--experimental_disk_cache_gc_max_age
+build --experimental_disk_cache_gc_max_size=20G
+build --experimental_disk_cache_gc_max_age=14d
+
+# Enable the protoc toolchain support, introduced in Bazel 7.
+common --incompatible_enable_proto_toolchain_resolution
 
 # https://bazel.build/docs/user-manual#workspace_status
 common:stamp --stamp --workspace_status_command=stamp/buildinfo.sh
@@ -18,6 +37,24 @@ common:stamp --stamp --workspace_status_command=stamp/buildinfo.sh
 #
 # https://bazel.build/rules/lib/globals/module
 common --experimental_isolated_extension_usages
+
+# rustfmt
+build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
+build:rustfmt --output_groups=+rustfmt_checks
+build:rustfmt --@rules_rust//rust/settings:rustfmt.toml=//:.rustfmt.toml
+
+# clippy
+build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
+build:clippy --output_groups=+clippy_checks
+build:clippy --@rules_rust//rust/settings:clippy.toml=//:.clippy.toml
+
+build:macos --action_env=CC=clang
+build:macos --action_env=CXX=clang++
+# https://github.com/bazelbuild/rules_foreign_cc/issues/1186
+build:macos --host_action_env=CFLAGS=-Wno-int-conversion
+build:macos --action_env=CFLAGS=-Wno-int-conversion
+build:macos --host_action_env=CXXFLAGS=-Wno-int-conversion
+build:macos --action_env=CXXFLAGS=-Wno-int-conversion
 
 # Load extra bazel settings if any.
 try-import %workspace%/.bazelrc.local

@@ -1,4 +1,4 @@
-module github.com/symplectix/symplectix
+module github.com/symplectix/syx
 
 go 1.23.2
 

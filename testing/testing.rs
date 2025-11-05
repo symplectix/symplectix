@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn worspace() {
-        assert_eq!(rlocation("symplectix").join(".rustfmt.toml"), rlocation("symplectix/.rustfmt.toml"),);
+        assert_eq!(rlocation("syx").join(".rustfmt.toml"), rlocation("syx/.rustfmt.toml"),);
         assert_eq!(rlocation("rules_rust").join(".rustfmt.toml"), rlocation("rules_rust/.rustfmt.toml"),);
         assert_eq!(rlocation("rules_rust").join(".clippy.toml"), rlocation("rules_rust/.clippy.toml"),);
     }
