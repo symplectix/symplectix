@@ -1,9 +1,4 @@
-# TODO: Migrate external dependencies from WORKSPACE to MODULE.bazel
-# Bazel now uses Bzlmod by default to manage external dependencies.
-#
-# https://bazel.build/external/module
-# https://registry.bazel.build/
-module(name = "symplectix")
+module(name = "syx")
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 

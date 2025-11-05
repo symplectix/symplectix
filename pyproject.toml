@@ -1,5 +1,5 @@
 [project]
-name = "symplectix"
+name = "syx"
 version = "0.0.0"
 
 dependencies = [
