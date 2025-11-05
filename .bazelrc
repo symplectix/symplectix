@@ -1,14 +1,7 @@
 # https://bazel.build/reference/command-line-reference
 
 import %workspace%/bazel/bazelrc/preset.bazelrc
-
-import %workspace%/.bazelrc.d/lint.bazelrc
-import %workspace%/.bazelrc.d/macos.bazelrc
-import %workspace%/.bazelrc.d/profile.bazelrc
-import %workspace%/.bazelrc.d/verbose.bazelrc
-
-# Enable the protoc toolchain support, introduced in Bazel 7.
-common --incompatible_enable_proto_toolchain_resolution
+import %workspace%/bazel/bazelrc/profile.bazelrc
 
 # Use a directory on the file system as a remote cache.
 # By default, Bazel has a build cache per workspace which keeps only the latest version
@@ -17,13 +10,11 @@ common --incompatible_enable_proto_toolchain_resolution
 #
 # Since Bazel does not garbage-collect the directory,
 # you might want to automate a periodic cleanup of this directory.
-#
-# https://bazel.build/remote/caching#disk-cache
-common --disk_cache=~/cache/bazel/disk/
+common:ci --disk_cache=~/.cache/bazel/disk/
 
 # The repository cache is shared between all workspaces and installed versions of bazel.
 # https://bazel.build/run/build#repository-cache
-common --repository_cache=~/cache/bazel/repository/
+common:ci --repository_cache=~/.cache/bazel/repository/
 
 # Collect garbage entries from the disk cache.
 #
@@ -31,6 +22,9 @@ common --repository_cache=~/cache/bazel/repository/
 # https://bazel.build/reference/command-line-reference#flag--experimental_disk_cache_gc_max_age
 build --experimental_disk_cache_gc_max_size=20G
 build --experimental_disk_cache_gc_max_age=14d
+
+# Enable the protoc toolchain support, introduced in Bazel 7.
+common --incompatible_enable_proto_toolchain_resolution
 
 # https://bazel.build/docs/user-manual#workspace_status
 common:stamp --stamp --workspace_status_command=stamp/buildinfo.sh
@@ -53,9 +47,6 @@ build:rustfmt --@rules_rust//rust/settings:rustfmt.toml=//:.rustfmt.toml
 build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build:clippy --output_groups=+clippy_checks
 build:clippy --@rules_rust//rust/settings:clippy.toml=//:.clippy.toml
-
-build:lint --config=clippy
-build:lint --config=rustfmt
 
 build:macos --action_env=CC=clang
 build:macos --action_env=CXX=clang++

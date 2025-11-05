@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	runRloc    = must(runfiles.Rlocation("symplectix/process/run/cmd/run"))
-	orphanRloc = must(runfiles.Rlocation("symplectix/process/run/cmd/orphan"))
+	runRloc    = must(runfiles.Rlocation("syx/process/run/cmd/run"))
+	orphanRloc = must(runfiles.Rlocation("syx/process/run/cmd/orphan"))
 )
 
 var run = &runCmd{

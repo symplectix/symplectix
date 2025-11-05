@@ -34,14 +34,14 @@ jobs:
           cache-name: bazel-cache
         with:
           path: |
-            ~/cache/bazel/disk
-            ~/cache/bazel/repository
-            ~/cache/bazelisk
+            ~/.cache/bazel/disk
+            ~/.cache/bazel/repository
+            ~/.cache/bazelisk
           key: ${{ matrix.os }}-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ matrix.os}}-${{ env.cache-name }}-
 
       - name: Setup
-        run: cp .github/workflows/ci.bazelrc .bazelrc.local
+        run: cp bazel/bazelrc/ci.bazelrc .bazelrc.local
 
       - name: Build
         run: bazel build //...
@@ -57,6 +57,6 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           path: |
-            ~/cache/bazel
-            ~/cache/bazelisk
+            ~/.cache/bazel
+            ~/.cache/bazelisk
           key: ${{ steps.restore-bazel-cache.outputs.cache-primary-key }}
