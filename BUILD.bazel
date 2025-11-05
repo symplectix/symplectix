@@ -7,15 +7,15 @@ exports_files([
     ".rustfmt.toml",
 ])
 
-filegroup(
-    name = "pyproject",
-    srcs = ["pyproject.toml"],
-    visibility = ["//:__subpackages__"],
-)
+# filegroup(
+#     name = "pyproject",
+#     srcs = ["pyproject.toml"],
+#     visibility = ["//:__subpackages__"],
+# )
 
 uv.pip_compile(
     name = "pip_compile",
-    requirements_in = "//:pyproject",
+    requirements_in = "//:pyproject.toml",
     requirements_txt = "//:requirements.txt",
 )
 

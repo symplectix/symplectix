@@ -13,6 +13,13 @@ http_archive(
     ],
 )
 
+# Convenience for setting groups of related Bazel flags
+bazel_dep(
+    name = "bazelrc-preset.bzl",
+    version = "1.5.1",
+    dev_dependency = True,
+)
+
 # Constraint values for specifying platforms and toolchains
 bazel_dep(name = "platforms", version = "1.0.0")
 
@@ -129,11 +136,11 @@ crate.spec(
     package = "libz-sys",
     version = "1.1",
 )
-crate.annotation(
-    crate = "libz-sys",
-    gen_build_script = "off",
-    deps = ["@zlib"],
-)
+# crate.annotation(
+#     crate = "libz-sys",
+#     gen_build_script = "off",
+#     deps = ["@zlib//:zlib"],
+# )
 
 # OpenSSL bindings for Rust
 crate.spec(
