@@ -96,6 +96,17 @@ startup --host_jvm_args="-DBAZEL_TRACK_SOURCE_DIRECTORIES=1"
 common --incompatible_default_to_explicit_init_py
 # Docs: https://registry.build/flag/bazel@8.3.1?filter=incompatible_default_to_explicit_init_py
 
+# Set default value of `allow_empty` to `False` in `glob()`. This prevents a common mistake when
+# attempting to use `glob()` to match files in a subdirectory that is opaque to the current package
+# because it contains a BUILD file. See https://github.com/bazelbuild/bazel/issues/8195.
+common --incompatible_disallow_empty_glob
+# Docs: https://registry.build/flag/bazel@8.3.1?filter=incompatible_disallow_empty_glob
+
+# Allow exclusive tests to run in the sandbox. Fixes a bug where Bazel doesn't enable sandboxing for
+# tests with `tags=["exclusive"]`.
+test --incompatible_exclusive_test_sandboxed
+# Docs: https://registry.build/flag/bazel@8.3.1?filter=incompatible_exclusive_test_sandboxed
+
 # Make builds more reproducible by using a static value for PATH and not inheriting LD_LIBRARY_PATH.
 # Use `--action_env=ENV_VARIABLE` if you want to inherit specific variables from the environment where Bazel runs.
 # Note that doing so can prevent cross-user caching if a shared cache is used.
@@ -203,3 +214,21 @@ test:ci --test_summary="terse"
 # Set to a high value to allow tests to complete even if they take longer than expected.
 common:debug --test_timeout=9999
 # Docs: https://registry.build/flag/bazel@8.3.1?filter=test_timeout
+
+# If set to true, each Linux sandbox will have its own dedicated empty directory mounted as /tmp rather than
+# sharing /tmp with the host filesystem. Use --sandbox_add_mount_pair=/tmp to keep seeing the host's /tmp in all sandboxes.
+build --incompatible_sandbox_hermetic_tmp
+# Docs: https://registry.build/flag/bazel@8.3.1?filter=incompatible_sandbox_hermetic_tmp
+
+# Change the current hostname to 'localhost' for sandboxed actions.
+build --sandbox_fake_hostname
+# Docs: https://registry.build/flag/bazel@8.3.1?filter=sandbox_fake_hostname
+
+# Change the current username to 'nobody' for sandboxed actions.
+build --sandbox_fake_username
+# Docs: https://registry.build/flag/bazel@8.3.1?filter=sandbox_fake_username
+
+# If true, print additional warnings when the actual test execution time does not match the timeout
+# defined by the test (whether implied or explicit).
+test --test_verbose_timeout_warnings
+# Docs: https://registry.build/flag/bazel@8.3.1?filter=test_verbose_timeout_warnings
