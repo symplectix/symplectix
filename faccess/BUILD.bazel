@@ -1,0 +1,35 @@
+load("//bazel:py.bzl", "pip")
+load("//bazel:rust.bzl", "rust")
+
+rust.library(
+    name = "faccess",
+    srcs = [
+        "faccess.rs",
+    ],
+    deps = [
+        "@crates//:bitflags",
+        "@crates//:libc",
+    ],
+)
+
+rust.tests(
+    name = "faccess_tests",
+    timeout = "short",
+    srcs = [
+        "tests/runfiles.rs",
+    ],
+    data = [
+        ":ruff_whl",
+        "@pypi//ruff:extracted_whl_files",
+    ],
+    deps = [
+        ":faccess",
+        "//testing:testing_rs",
+        "@rules_rust//tools/runfiles",
+    ],
+)
+
+pip.whl_filegroup(
+    name = "ruff_whl",
+    whl = "@pypi//ruff:whl",
+)
