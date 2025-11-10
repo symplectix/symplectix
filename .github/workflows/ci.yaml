@@ -21,7 +21,9 @@ jobs:
   Bazel:
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os:
+          # - ubuntu-22.04
+          - ubuntu-24.04
 
     runs-on: ${{ matrix.os }}
 
@@ -34,20 +36,16 @@ jobs:
           cache-name: bazel-cache
         with:
           path: |
-            ~/.cache/bazel/disk
-            ~/.cache/bazel/repository
+            ~/.cache/bazel
             ~/.cache/bazelisk
           key: ${{ matrix.os }}-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ matrix.os}}-${{ env.cache-name }}-
-
-      - name: Setup
-        run: cp bazel/bazelrc/ci.bazelrc .bazelrc.local
+          restore-keys: ${{ matrix.os }}-${{ env.cache-name }}-
 
       - name: Build
-        run: bazel build //...
+        run: bazel build --config=ci //...
 
       - name: Test
-        run: bazel test //...
+        run: bazel test --config=ci //...
 
       # TODO: Test fuzzing targets
       # - name: Fuzz
