@@ -5,22 +5,24 @@ build --@rules_rust//rust/settings:extra_exec_rustc_flags=-Copt-level=3
 
 build:stable --platforms=//platforms:stable
 build:stable --@rules_rust//rust/toolchain/channel=stable
-
 # Some tools like sanitizers depend on nightly.
 # https://github.com/bazelbuild/rules_rust/blob/main/rust/toolchain/channel/BUILD.bazel
 build:nightly --platforms=//platforms:nightly
 build:nightly --@rules_rust//rust/toolchain/channel=nightly
 
-build:debuginfo --@rules_rust//rust/settings:extra_rustc_flag=-Cdebuginfo=2
-build:debuginfo --@rules_rust//rust/settings:extra_rustc_flag=-Cdebug-assertions=on
+# rustfmt
+build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
+build:rustfmt --output_groups=+rustfmt_checks
+build:rustfmt --@rules_rust//rust/settings:rustfmt.toml=//:.rustfmt.toml
 
-build:nodebuginfo --@rules_rust//rust/settings:extra_rustc_flag=-Cdebuginfo=0
-build:nodebuginfo --@rules_rust//rust/settings:extra_rustc_flag=-Cdebug-assertions=off
+# clippy
+build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
+build:clippy --output_groups=+clippy_checks
+build:clippy --@rules_rust//rust/settings:clippy.toml=//:.clippy.toml
 
 # Controls whether Bazel will strip debugging information from all binaries and shared libraries,
 # by invoking the linker with the -Wl,--strip-debug option.
 build:strip --strip=always
-
 # Controls stripping of debuginfo and similar auxiliary data from binaries during linking.
 # * debuginfo
 #   debuginfo sections and debuginfo symbols from the symbol table section are stripped at link time
@@ -31,16 +33,22 @@ build:strip --strip=always
 #   as well if the linker supports it.
 build:strip --@rules_rust//rust/settings:extra_rustc_flag=-Cstrip=debuginfo
 
-
 # compilation_mode to rustc codegen options
 # fastbuild: -Copt-level=0 -Cdebuginfo=0
 # dbg:       -Copt-level=0 -Cdebuginfo=2
 # opt:       -Copt-level=3 -Cdebuginfo=0
+
+build:debuginfo --@rules_rust//rust/settings:extra_rustc_flag=-Cdebuginfo=2
+build:debuginfo --@rules_rust//rust/settings:extra_rustc_flag=-Cdebug-assertions=on
+
+build:nodebuginfo --@rules_rust//rust/settings:extra_rustc_flag=-Cdebuginfo=0
+build:nodebuginfo --@rules_rust//rust/settings:extra_rustc_flag=-Cdebug-assertions=off
+
 build:dev --compilation_mode=opt
 build:dev --config=debuginfo
 build:dev --@rules_rust//rust/settings:extra_rustc_flag=-Clto=fat
 build:dev --@rules_rust//rust/settings:extra_rustc_flag=-Cembed-bitcode=yes
-build:dev --@rules_rust//rust/settings:extra_rustc_flag=-Ccodegen-units=16
+build:dev --@rules_rust//rust/settings:extra_rustc_flag=-Ccodegen-units=1
 
 build:release --compilation_mode=opt
 build:release --config=nodebuginfo
@@ -48,3 +56,8 @@ build:release --@rules_rust//rust/settings:extra_rustc_flag=-Clto=fat
 build:release --@rules_rust//rust/settings:extra_rustc_flag=-Cembed-bitcode=yes
 build:release --@rules_rust//rust/settings:extra_rustc_flag=-Ccodegen-units=1
 build:release --@rules_rust//rust/settings:extra_rustc_flag=-Coverflow-checks=off
+
+build:ci --config=clippy
+build:ci --config=rustfmt
+build:ci --config=stable
+build:ci --config=dev
