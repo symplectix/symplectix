@@ -20,7 +20,6 @@ rust.tests(
     ],
     data = [
         ":ruff_whl",
-        "@pypi//ruff:extracted_whl_files",
     ],
     deps = [
         ":faccess",
