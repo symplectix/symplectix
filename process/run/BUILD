@@ -18,7 +18,7 @@ rust_library(
     visibility = ["//visibility:public"],
     deps = [
         "//process/fsutil:fsutil_rs",
-        "//process/reaper",
+        "//reaper",
         "@crates//:clap",
         "@crates//:futures",
         "@crates//:humantime",
