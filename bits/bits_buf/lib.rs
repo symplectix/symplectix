@@ -1,3 +1,6 @@
+#![allow(missing_docs)]
+//! bits_buf provides bits::Block impls.
+
 use std::ops::RangeBounds;
 
 use bits_core::Bits;
@@ -5,6 +8,8 @@ use bits_core::block::*;
 use bits_core::mask::helper;
 use bits_core::word::Word;
 
+/// Buf is just a wrap of an array A, and can be
+/// used as a fixed size of bits block.
 #[derive(Debug, Default, Clone)]
 pub struct Buf<T: private::Array>(Option<Box<T>>);
 

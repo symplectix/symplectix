@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::convert::Infallible;
 use std::io;
 use std::os::unix::process::ExitStatusExt;

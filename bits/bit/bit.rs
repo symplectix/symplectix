@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use core::iter::successors;
 use core::ops::{Bound, Range, RangeBounds};
 

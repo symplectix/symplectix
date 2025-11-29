@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 //! Checks accessibility of a file.
 
 use std::ffi::OsStr;

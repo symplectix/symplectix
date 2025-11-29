@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use prost_reflect::FileDescriptor;
 use prost_types::compiler::code_generator_response::File;
 

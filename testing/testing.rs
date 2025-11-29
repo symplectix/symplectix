@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock as Lazy;
