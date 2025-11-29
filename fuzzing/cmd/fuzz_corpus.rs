@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::fs;
 use std::io::BufReader;
 use std::io::prelude::*;

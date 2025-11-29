@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 mod bit_vec;
 mod bits;
 pub mod block;

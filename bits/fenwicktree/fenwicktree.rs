@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 //! 1-indexed FenwickTree (BinaryIndexedTree).
 
 use std::iter::Sum;

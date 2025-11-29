@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::ffi::OsString;
 use std::os::unix::process::{CommandExt, ExitStatusExt};
 use std::path::PathBuf;

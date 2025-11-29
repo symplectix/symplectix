@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use std::cmp::Ordering::{self, Equal as EQ, Greater as GT, Less as LT};
 use std::iter::Peekable;
 use std::ops::{Deref, DerefMut, Range, RangeBounds};

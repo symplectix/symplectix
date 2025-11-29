@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use std::cmp;
 use std::iter::Sum;
 use std::ops::RangeBounds;
