@@ -4,3 +4,13 @@ rust.library(
     name = "mung",
     srcs = ["mung.rs"],
 )
+
+rust.tests(
+    name = "test_suite",
+    srcs = [
+        "iter_test.rs",
+    ],
+    deps = [
+        ":mung",
+    ],
+)

@@ -10,6 +10,40 @@ pub trait Adapter<T> {
 
     /// Creates the actual adapter type.
     fn apply(self, that: T) -> Self::Adapted;
+
+    /// Composes two adapters into a single adapter.
+    fn compose<F>(self, f: F) -> Compose<Self, F>
+    where
+        Self: Sized,
+    {
+        Compose::new(self, f)
+    }
+}
+
+/// Composes two adapters into a single adapter.
+#[derive(Clone, Debug)]
+pub struct Compose<F, G> {
+    f: F,
+    g: G,
+}
+
+impl<F, G> Compose<F, G> {
+    /// Constructs a composing adapter.
+    pub fn new(f: F, g: G) -> Self {
+        Compose { f, g }
+    }
+}
+
+impl<F, G, T> Adapter<T> for Compose<F, G>
+where
+    F: Adapter<T>,
+    G: Adapter<F::Adapted>,
+{
+    type Adapted = G::Adapted;
+
+    fn apply(self, that: T) -> Self::Adapted {
+        self.g.apply(self.f.apply(that))
+    }
 }
 
 /// Mapping function adapter.
@@ -25,10 +59,10 @@ impl<F> Map<F> {
     }
 }
 
-impl<T, F, X> Adapter<T> for Map<F>
+impl<T, F, A> Adapter<T> for Map<F>
 where
     T: iter::Iterator,
-    F: FnMut(T::Item) -> X,
+    F: FnMut(T::Item) -> A,
 {
     type Adapted = iter::Map<T, F>;
 
