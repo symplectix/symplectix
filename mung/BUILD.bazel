@@ -1,0 +1,6 @@
+load("//bazel:rust.bzl", "rust")
+
+rust.library(
+    name = "mung",
+    srcs = ["mung.rs"],
+)
