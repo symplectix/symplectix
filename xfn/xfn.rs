@@ -2,11 +2,13 @@
 //! experimental implementations of transduer in rust.
 
 /// A reducer adapter, a.k.a "Transducer".
-pub trait Adapter<Rf> {
+pub trait Adapter<Rf>: Chain {
     type Adapted;
 
     fn apply(self, rf: Rf) -> Self::Adapted;
+}
 
+pub trait Chain {
     fn compose<T>(self, that: T) -> Compose<Self, T>
     where
         Self: Sized,
@@ -62,6 +64,7 @@ where
         self.b.apply(self.a.apply(rf))
     }
 }
+impl<A, B> Chain for Compose<A, B> {}
 
 pub struct Map<F> {
     mapper: F,
@@ -82,6 +85,7 @@ impl<Rf, F> Adapter<Rf> for Map<F> {
         MapReducer { rf, mapper: self.mapper }
     }
 }
+impl<F> Chain for Map<F> {}
 
 impl<Rf, F, Acc, A, B> Reducer<Acc, A> for MapReducer<Rf, F>
 where
