@@ -29,14 +29,12 @@ pub trait Adapter<Rf> {
     // }
 }
 
-pub trait Reducer<T> {
-    type Acc;
-
+pub trait Reducer<Acc, T> {
     /// Invoked when reducing.
-    fn step(&mut self, acc: Self::Acc, v: T) -> Step<Self::Acc>;
+    fn step(&mut self, acc: Acc, v: T) -> Step<Acc>;
 
     /// Invoked when reducing has completed.
-    fn done(&mut self, acc: Self::Acc) -> Self::Acc;
+    fn done(&mut self, acc: Acc) -> Acc;
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -85,18 +83,18 @@ impl<Rf, F> Adapter<Rf> for Map<F> {
     }
 }
 
-impl<Rf, F, A, B> Reducer<A> for MapReducer<Rf, F>
+impl<Rf, F, Acc, A, B> Reducer<Acc, A> for MapReducer<Rf, F>
 where
-    Rf: Reducer<B>,
+    Rf: Reducer<Acc, B>,
     F: FnMut(A) -> B,
 {
-    type Acc = Rf::Acc;
+    // type Acc = Rf::Acc;
 
-    fn step(&mut self, acc: Self::Acc, v: A) -> Step<Self::Acc> {
+    fn step(&mut self, acc: Acc, v: A) -> Step<Acc> {
         self.rf.step(acc, (self.mapper)(v))
     }
 
-    fn done(&mut self, acc: Self::Acc) -> Self::Acc {
+    fn done(&mut self, acc: Acc) -> Acc {
         self.rf.done(acc)
     }
 }
