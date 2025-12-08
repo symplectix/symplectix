@@ -19,7 +19,7 @@ impl xf::Reducer<Vec<i32>, i32> for Conj {
 
 #[test]
 fn test_map() {
-    let mut rf = xf::map(|x| x + 1).map(|x| x % 2).apply(Conj);
+    let mut rf = xf::map(|x| x + 1).map(|x| x + 1).map(|x| x % 2).apply(Conj);
     let mut acc = Vec::with_capacity(10);
     for i in 0..5 {
         match rf.step(acc, i) {
@@ -32,5 +32,5 @@ fn test_map() {
             }
         }
     }
-    assert_eq!(vec![1, 0, 1, 0, 1], acc);
+    assert_eq!(vec![0, 1, 0, 1, 0], acc);
 }

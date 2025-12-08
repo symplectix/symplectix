@@ -2,27 +2,25 @@
 //! experimental implementations of transduer in rust.
 
 /// A reducer adapter, a.k.a "Transducer".
-pub trait Adapter<Rf>: Chain {
+pub trait Adapter<Rf>: Compose {
     type Adapted;
 
     fn apply(self, rf: Rf) -> Self::Adapted;
 }
 
-pub trait Chain {
-    fn compose<T>(self, that: T) -> Compose<T, Self>
+pub trait Compose {
+    fn comp<T>(self, that: T) -> Comp<Self, T>
     where
         Self: Sized,
     {
-        // compose(self, that)
-        compose(that, self)
+        comp(self, that)
     }
 
-    fn map<F>(self, f: F) -> Compose<Map<F>, Self>
+    fn map<F>(self, f: F) -> Comp<Self, Map<F>>
     where
         Self: Sized,
     {
-        // compose(self, map(f))
-        compose(map(f), self)
+        comp(self, map(f))
     }
 
     // fn filter<P>(self, p: P) -> Compose<Self, Filter<P>>
@@ -47,26 +45,27 @@ pub enum Step<T> {
     Next(T),
 }
 
-pub struct Compose<A, B> {
+pub struct Comp<A, B> {
     a: A,
     b: B,
 }
-pub fn compose<A, B>(a: A, b: B) -> Compose<A, B> {
-    Compose { a, b }
+
+fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
+    Comp { a, b }
 }
 
-impl<Rf, A, B> Adapter<Rf> for Compose<A, B>
+impl<Rf, A, B> Adapter<Rf> for Comp<A, B>
 where
-    A: Adapter<Rf>,
-    B: Adapter<A::Adapted>,
+    A: Adapter<B::Adapted>,
+    B: Adapter<Rf>,
 {
-    type Adapted = B::Adapted;
+    type Adapted = A::Adapted;
 
     fn apply(self, rf: Rf) -> Self::Adapted {
-        self.b.apply(self.a.apply(rf))
+        self.a.apply(self.b.apply(rf))
     }
 }
-impl<A, B> Chain for Compose<A, B> {}
+impl<A, B> Compose for Comp<A, B> {}
 
 pub struct Map<F> {
     mapper: F,
@@ -87,7 +86,7 @@ impl<Rf, F> Adapter<Rf> for Map<F> {
         MapReducer { rf, mapper: self.mapper }
     }
 }
-impl<F> Chain for Map<F> {}
+impl<F> Compose for Map<F> {}
 
 impl<Rf, F, Acc, A, B> Reducer<Acc, A> for MapReducer<Rf, F>
 where
