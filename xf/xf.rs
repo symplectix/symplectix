@@ -9,18 +9,20 @@ pub trait Adapter<Rf>: Chain {
 }
 
 pub trait Chain {
-    fn compose<T>(self, that: T) -> Compose<Self, T>
+    fn compose<T>(self, that: T) -> Compose<T, Self>
     where
         Self: Sized,
     {
-        compose(self, that)
+        // compose(self, that)
+        compose(that, self)
     }
 
-    fn map<F>(self, f: F) -> Compose<Self, Map<F>>
+    fn map<F>(self, f: F) -> Compose<Map<F>, Self>
     where
         Self: Sized,
     {
-        compose(self, map(f))
+        // compose(self, map(f))
+        compose(map(f), self)
     }
 
     // fn filter<P>(self, p: P) -> Compose<Self, Filter<P>>
