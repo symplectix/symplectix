@@ -1,16 +1,16 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "xfn",
-    srcs = ["xfn.rs"],
+    name = "xf",
+    srcs = ["xf.rs"],
 )
 
 rust.tests(
     name = "test_suite",
     srcs = [
-        "xfn_test.rs",
+        "xf_test.rs",
     ],
     deps = [
-        ":xfn",
+        ":xf",
     ],
 )
