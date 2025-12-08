@@ -31,9 +31,13 @@ fn dec(x: i32) -> i32 {
 #[test]
 fn test_map() {
     let add = Add;
-    let mut map = xfn::map(inc).apply(add);
-    // let mut map = xfn::map(inc).map(dec).apply(add);
-    // let mut map = <xfn::Map<_> as xfn::Adapter<Add>>::map::<_>(xfn::map(inc), inc).apply(add);
-    println!("{:?}", map.step(0, 1));
+    // let mut map = xfn::map(inc).apply(add);
+    let mut map1 = xfn::map(inc);
+    // let mut map2 = map1.map(dec);
+    // let mut map3 = map2.map(inc);
+    let mut map2 = <xfn::Map<_> as xfn::Adapter<i32>>::map(map1, dec);
+    let mut map3 = <xfn::Compose<_, _> as xfn::Adapter<Add>>::map(map2, inc);
+    let mut rf = map3.apply(add);
+    println!("{:?}", rf.step(0, 1));
     assert_eq!(1, 0);
 }
