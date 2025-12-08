@@ -41,8 +41,8 @@ pub trait Reducer<Acc, T> {
 
 #[derive(Debug, Copy, Clone)]
 pub enum Step<T> {
-    Done(T),
-    Next(T),
+    Reduced(T),
+    Continue(T),
 }
 
 pub struct Comp<A, B> {

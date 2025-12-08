@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use xf::{Adapter, Chain, Reducer};
+use xf::{Adapter, Compose, Reducer};
 
 pub struct Conj;
 
@@ -9,7 +9,7 @@ impl xf::Reducer<Vec<i32>, i32> for Conj {
 
     fn step(&mut self, mut acc: Vec<i32>, v: i32) -> xf::Step<Vec<i32>> {
         acc.push(v);
-        xf::Step::Next(acc)
+        xf::Step::Continue(acc)
     }
 
     fn done(&mut self, acc: Vec<i32>) -> Vec<i32> {
@@ -23,10 +23,10 @@ fn test_map() {
     let mut acc = Vec::with_capacity(10);
     for i in 0..5 {
         match rf.step(acc, i) {
-            xf::Step::Next(ret) => {
+            xf::Step::Continue(ret) => {
                 acc = ret;
             }
-            xf::Step::Done(ret) => {
+            xf::Step::Reduced(ret) => {
                 acc = rf.done(ret);
                 break;
             }
