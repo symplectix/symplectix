@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
-//! Transducers in rust.
-//! https://clojure.org/reference/transducers
+//! Composable transformations, also known as [transducers].
+//!
+//! [transducers]: https://clojure.org/reference/transducers
 
 mod filter;
 mod map;
@@ -17,6 +18,12 @@ pub trait Reducer<T> {
 
     /// Invoked when reducing has completed.
     fn done(&mut self, acc: Self::Acc) -> Self::Acc;
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum Step<T> {
+    Reduced(T),
+    Continue(T),
 }
 
 /// A reducer adapter, a.k.a "Transducer".
@@ -47,12 +54,6 @@ pub trait Compose {
     {
         comp(self, filter(p))
     }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub enum Step<T> {
-    Reduced(T),
-    Continue(T),
 }
 
 pub struct Comp<A, B> {

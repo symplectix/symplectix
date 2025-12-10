@@ -1,11 +1,11 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "xf",
+    name = "cx",
     srcs = [
+        "cx.rs",
         "filter.rs",
         "map.rs",
-        "xf.rs",
     ],
 )
 
@@ -13,9 +13,9 @@ rust.tests(
     name = "tests",
     size = "small",
     srcs = [
-        "xf_test.rs",
+        "cx_test.rs",
     ],
     deps = [
-        ":xf",
+        ":cx",
     ],
 )
