@@ -3,6 +3,7 @@ load("//bazel:rust.bzl", "rust")
 rust.library(
     name = "xf",
     srcs = [
+        "filter.rs",
         "map.rs",
         "xf.rs",
     ],

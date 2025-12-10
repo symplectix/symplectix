@@ -18,8 +18,8 @@ impl<T> xf::Reducer<T> for PushVec {
 }
 
 #[test]
-fn test_map() {
-    let mut rf = xf::map(|x| x * 2).map(|x| x + 1).map(|x| x % 3).apply(PushVec);
+fn test_map_filter() {
+    let mut rf = xf::map(|x| x * 2).map(|x| x + 1).filter(|x: &i32| x % 3 != 0).apply(PushVec);
     let mut acc = Vec::with_capacity(10);
     for i in 0..5 {
         match rf.step(acc, i) {
@@ -32,5 +32,5 @@ fn test_map() {
             }
         }
     }
-    assert_eq!(vec![1, 0, 2, 1, 0], acc);
+    assert_eq!(vec![1, 2, 1], acc);
 }

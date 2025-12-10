@@ -1,8 +1,23 @@
 #![allow(missing_docs)]
-//! experimental implementations of transduer in rust.
+//! Transducers in rust.
+//! https://clojure.org/reference/transducers
 
+mod filter;
 mod map;
+
+pub use filter::{Filter, filter};
 pub use map::{Map, map};
+
+pub trait Reducer<T> {
+    /// The result of reducing.
+    type Acc;
+
+    /// Invoked when reducing.
+    fn step(&mut self, acc: Self::Acc, v: T) -> Step<Self::Acc>;
+
+    /// Invoked when reducing has completed.
+    fn done(&mut self, acc: Self::Acc) -> Self::Acc;
+}
 
 /// A reducer adapter, a.k.a "Transducer".
 pub trait Adapter<Rf> {
@@ -26,23 +41,12 @@ pub trait Compose {
         comp(self, map(f))
     }
 
-    // fn filter<P>(self, p: P) -> Compose<Self, Filter<P>>
-    // where
-    //     Self: Sized,
-    // {
-    //     compose(self, filter(f))
-    // }
-}
-
-pub trait Reducer<T> {
-    /// The result of reducing.
-    type Acc;
-
-    /// Invoked when reducing.
-    fn step(&mut self, acc: Self::Acc, v: T) -> Step<Self::Acc>;
-
-    /// Invoked when reducing has completed.
-    fn done(&mut self, acc: Self::Acc) -> Self::Acc;
+    fn filter<P>(self, p: P) -> Comp<Self, Filter<P>>
+    where
+        Self: Sized,
+    {
+        comp(self, filter(p))
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -72,34 +76,3 @@ where
     }
 }
 impl<A, B> Compose for Comp<A, B> {}
-
-// pub struct Filter<P> {
-//     predicate: P,
-// }
-// pub fn filter<P>(predicate: P) -> Filter<P> {
-//     Filter { predicate }
-// }
-
-// pub struct FilterReducer<Rf, P> {
-//     rf: Rf,
-//     predicate: P,
-// }
-
-// impl<Rf, P> Adapter<Rf> for Filter<P> {
-//     type Adapted = FilterReducer<Rf, P>;
-
-//     fn apply(self, rf: Rf) -> Self::Adapted {
-//         FilterReducer { rf, predicate: self.predicate }
-//     }
-// }
-
-// impl<Rf, F, T> Reducer<T> for FilterReducer<Rf, F> {
-//     type Acc = ();
-
-//     fn step(self, acc: Self::Acc, v: T) -> Step<Self::Acc> {
-//         unimplemented!()
-//     }
-//     fn done(self, acc: Self::Acc) -> Step<Self::Acc> {
-//         unimplemented!()
-//     }
-// }
