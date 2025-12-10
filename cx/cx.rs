@@ -1,7 +1,9 @@
 #![allow(missing_docs)]
-//! Composable transformations, also known as [transducers].
-//!
-//! [transducers]: https://clojure.org/reference/transducers
+//! Composable left folds.
+
+// Refs:
+// - [transducers](https://clojure.org/reference/transducers)
+// - [foldl](https://hackage.haskell.org/package/foldl)
 
 mod filter;
 mod map;
@@ -9,38 +11,39 @@ mod map;
 pub use filter::{Filter, filter};
 pub use map::{Map, map};
 
-pub trait Reducer<T> {
-    /// The result of reducing.
+/// A left associative fold.
+pub trait Fold<T> {
+    /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
-    /// Invoked when reducing.
-    fn step(&mut self, acc: Self::Acc, v: T) -> Step<Self::Acc>;
+    /// Runs just a one step of folding.
+    fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc>;
 
-    /// Invoked when reducing has completed.
+    /// Invoked when folding is complete.
     fn done(&mut self, acc: Self::Acc) -> Self::Acc;
 }
 
+/// The result of [Fold.step].
 #[derive(Debug, Copy, Clone)]
 pub enum Step<T> {
-    Reduced(T),
-    Continue(T),
+    /// Keep folding.
+    Yield(T),
+    /// Folding has completed.
+    Return(T),
 }
 
-/// A reducer adapter, a.k.a "Transducer".
-pub trait Adapter<Rf> {
-    type Reducer;
+/// An adapter that creates a new [Fold] from the given one.
+pub trait Adapter<Fl>: Chain {
+    /// An another [Fold].
+    type Fold;
 
-    fn apply(self, rf: Rf) -> Self::Reducer;
+    /// Creates a new [Fold] from the given one.
+    fn apply(self, fold: Fl) -> Self::Fold;
 }
 
-pub trait Compose {
-    fn comp<T>(self, that: T) -> Comp<Self, T>
-    where
-        Self: Sized,
-    {
-        comp(self, that)
-    }
-
+/// Provides utilities to chain [Adapter]s.
+pub trait Chain {
+    /// Composes self and [`map(f)`].
     fn map<F>(self, f: F) -> Comp<Self, Map<F>>
     where
         Self: Sized,
@@ -48,6 +51,7 @@ pub trait Compose {
         comp(self, map(f))
     }
 
+    /// Composes self and [`filter(p)`].
     fn filter<P>(self, p: P) -> Comp<Self, Filter<P>>
     where
         Self: Sized,
@@ -56,24 +60,25 @@ pub trait Compose {
     }
 }
 
+fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
+    Comp { a, b }
+}
+
+/// Comp is an adapter of [Adapter]s.
 pub struct Comp<A, B> {
     a: A,
     b: B,
 }
 
-fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
-    Comp { a, b }
-}
-
-impl<Rf, A, B> Adapter<Rf> for Comp<A, B>
+impl<Fl, A, B> Adapter<Fl> for Comp<A, B>
 where
-    A: Adapter<B::Reducer>,
-    B: Adapter<Rf>,
+    A: Adapter<B::Fold>,
+    B: Adapter<Fl>,
 {
-    type Reducer = A::Reducer;
+    type Fold = A::Fold;
 
-    fn apply(self, rf: Rf) -> Self::Reducer {
+    fn apply(self, rf: Fl) -> Self::Fold {
         self.a.apply(self.b.apply(rf))
     }
 }
-impl<A, B> Compose for Comp<A, B> {}
+impl<A, B> Chain for Comp<A, B> {}

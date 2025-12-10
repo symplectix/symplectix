@@ -1,15 +1,15 @@
 #![allow(missing_docs)]
 
-use cx::{Adapter, Compose, Reducer};
+use cx::{Adapter, Chain, Fold};
 
 struct PushVec;
 
-impl<T> Reducer<T> for PushVec {
+impl<T> Fold<T> for PushVec {
     type Acc = Vec<T>;
 
     fn step(&mut self, mut acc: Self::Acc, v: T) -> cx::Step<Self::Acc> {
         acc.push(v);
-        cx::Step::Continue(acc)
+        cx::Step::Yield(acc)
     }
 
     fn done(&mut self, acc: Self::Acc) -> Self::Acc {
@@ -23,10 +23,10 @@ fn test_map_filter() {
     let mut acc = vec![0];
     for i in 0..20 {
         match rf.step(acc, i) {
-            cx::Step::Continue(ret) => {
+            cx::Step::Yield(ret) => {
                 acc = ret;
             }
-            cx::Step::Reduced(ret) => {
+            cx::Step::Return(ret) => {
                 acc = rf.done(ret);
                 break;
             }

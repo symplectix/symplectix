@@ -1,4 +1,4 @@
-use crate::{Adapter, Compose, Reducer, Step};
+use crate::{Chain, Adapter, Fold, Step};
 
 pub fn map<F>(f: F) -> Map<F> {
     Map { mapper: f }
@@ -8,29 +8,29 @@ pub struct Map<F> {
     mapper: F,
 }
 
-pub struct MapReducer<Rf, F> {
+pub struct MapFold<Rf, F> {
     rf: Rf,
     mapper: F,
 }
 
 impl<Rf, F> Adapter<Rf> for Map<F> {
-    type Reducer = MapReducer<Rf, F>;
+    type Fold = MapFold<Rf, F>;
 
-    fn apply(self, rf: Rf) -> Self::Reducer {
-        MapReducer { rf, mapper: self.mapper }
+    fn apply(self, rf: Rf) -> Self::Fold {
+        MapFold { rf, mapper: self.mapper }
     }
 }
-impl<F> Compose for Map<F> {}
+impl<F> Chain for Map<F> {}
 
-impl<Rf, F, A, B> Reducer<A> for MapReducer<Rf, F>
+impl<Rf, F, A, B> Fold<A> for MapFold<Rf, F>
 where
-    Rf: Reducer<B>,
+    Rf: Fold<B>,
     F: FnMut(A) -> B,
 {
     type Acc = Rf::Acc;
 
-    fn step(&mut self, acc: Self::Acc, v: A) -> Step<Self::Acc> {
-        self.rf.step(acc, (self.mapper)(v))
+    fn step(&mut self, acc: Self::Acc, input: A) -> Step<Self::Acc> {
+        self.rf.step(acc, (self.mapper)(input))
     }
 
     fn done(&mut self, acc: Self::Acc) -> Self::Acc {
