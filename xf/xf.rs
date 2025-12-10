@@ -1,11 +1,14 @@
 #![allow(missing_docs)]
 //! experimental implementations of transduer in rust.
 
-/// A reducer adapter, a.k.a "Transducer".
-pub trait Adapter<Rf>: Compose {
-    type Adapted;
+mod map;
+pub use map::{Map, map};
 
-    fn apply(self, rf: Rf) -> Self::Adapted;
+/// A reducer adapter, a.k.a "Transducer".
+pub trait Adapter<Rf> {
+    type Reducer;
+
+    fn apply(self, rf: Rf) -> Self::Reducer;
 }
 
 pub trait Compose {
@@ -31,12 +34,15 @@ pub trait Compose {
     // }
 }
 
-pub trait Reducer<Acc, T> {
+pub trait Reducer<T> {
+    /// The result of reducing.
+    type Acc;
+
     /// Invoked when reducing.
-    fn step(&mut self, acc: Acc, v: T) -> Step<Acc>;
+    fn step(&mut self, acc: Self::Acc, v: T) -> Step<Self::Acc>;
 
     /// Invoked when reducing has completed.
-    fn done(&mut self, acc: Acc) -> Acc;
+    fn done(&mut self, acc: Self::Acc) -> Self::Acc;
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -56,53 +62,16 @@ fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
 
 impl<Rf, A, B> Adapter<Rf> for Comp<A, B>
 where
-    A: Adapter<B::Adapted>,
+    A: Adapter<B::Reducer>,
     B: Adapter<Rf>,
 {
-    type Adapted = A::Adapted;
+    type Reducer = A::Reducer;
 
-    fn apply(self, rf: Rf) -> Self::Adapted {
+    fn apply(self, rf: Rf) -> Self::Reducer {
         self.a.apply(self.b.apply(rf))
     }
 }
 impl<A, B> Compose for Comp<A, B> {}
-
-pub struct Map<F> {
-    mapper: F,
-}
-pub fn map<F>(f: F) -> Map<F> {
-    Map { mapper: f }
-}
-
-pub struct MapReducer<Rf, F> {
-    rf: Rf,
-    mapper: F,
-}
-
-impl<Rf, F> Adapter<Rf> for Map<F> {
-    type Adapted = MapReducer<Rf, F>;
-
-    fn apply(self, rf: Rf) -> Self::Adapted {
-        MapReducer { rf, mapper: self.mapper }
-    }
-}
-impl<F> Compose for Map<F> {}
-
-impl<Rf, F, Acc, A, B> Reducer<Acc, A> for MapReducer<Rf, F>
-where
-    Rf: Reducer<Acc, B>,
-    F: FnMut(A) -> B,
-{
-    // type Acc = Rf::Acc;
-
-    fn step(&mut self, acc: Acc, v: A) -> Step<Acc> {
-        self.rf.step(acc, (self.mapper)(v))
-    }
-
-    fn done(&mut self, acc: Acc) -> Acc {
-        self.rf.done(acc)
-    }
-}
 
 // pub struct Filter<P> {
 //     predicate: P,

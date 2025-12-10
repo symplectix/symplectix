@@ -2,24 +2,24 @@
 
 use xf::{Adapter, Compose, Reducer};
 
-pub struct Conj;
+struct PushVec;
 
-impl xf::Reducer<Vec<i32>, i32> for Conj {
-    // type Acc = i32;
+impl<T> xf::Reducer<T> for PushVec {
+    type Acc = Vec<T>;
 
-    fn step(&mut self, mut acc: Vec<i32>, v: i32) -> xf::Step<Vec<i32>> {
+    fn step(&mut self, mut acc: Self::Acc, v: T) -> xf::Step<Self::Acc> {
         acc.push(v);
         xf::Step::Continue(acc)
     }
 
-    fn done(&mut self, acc: Vec<i32>) -> Vec<i32> {
+    fn done(&mut self, acc: Self::Acc) -> Self::Acc {
         acc
     }
 }
 
 #[test]
 fn test_map() {
-    let mut rf = xf::map(|x| x + 1).map(|x| x + 1).map(|x| x % 2).apply(Conj);
+    let mut rf = xf::map(|x| x * 2).map(|x| x + 1).map(|x| x % 3).apply(PushVec);
     let mut acc = Vec::with_capacity(10);
     for i in 0..5 {
         match rf.step(acc, i) {
@@ -32,5 +32,5 @@ fn test_map() {
             }
         }
     }
-    assert_eq!(vec![0, 1, 0, 1, 0], acc);
+    assert_eq!(vec![1, 0, 2, 1, 0], acc);
 }
