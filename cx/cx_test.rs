@@ -12,7 +12,7 @@ impl<T> Fold<T> for PushVec {
         cx::Step::Yield(acc)
     }
 
-    fn done(&mut self, acc: Self::Acc) -> Self::Acc {
+    fn done(self, acc: Self::Acc) -> Self::Acc {
         acc
     }
 }

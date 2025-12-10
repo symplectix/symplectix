@@ -32,7 +32,7 @@ where
     fn step(&mut self, acc: Self::Acc, v: T) -> Step<Self::Acc> {
         if (self.predicate)(&v) { self.rf.step(acc, v) } else { Step::Yield(acc) }
     }
-    fn done(&mut self, acc: Self::Acc) -> Self::Acc {
+    fn done(self, acc: Self::Acc) -> Self::Acc {
         self.rf.done(acc)
     }
 }

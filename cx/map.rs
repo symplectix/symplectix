@@ -1,4 +1,4 @@
-use crate::{Chain, Adapter, Fold, Step};
+use crate::{Adapter, Chain, Fold, Step};
 
 pub fn map<F>(f: F) -> Map<F> {
     Map { mapper: f }
@@ -33,7 +33,7 @@ where
         self.rf.step(acc, (self.mapper)(input))
     }
 
-    fn done(&mut self, acc: Self::Acc) -> Self::Acc {
+    fn done(self, acc: Self::Acc) -> Self::Acc {
         self.rf.done(acc)
     }
 }

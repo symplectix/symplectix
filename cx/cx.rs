@@ -20,7 +20,7 @@ pub trait Fold<T> {
     fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc>;
 
     /// Invoked when folding is complete.
-    fn done(&mut self, acc: Self::Acc) -> Self::Acc;
+    fn done(self, acc: Self::Acc) -> Self::Acc;
 }
 
 /// The result of [Fold.step].
