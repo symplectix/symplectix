@@ -57,7 +57,7 @@ pub enum Step<T> {
 }
 
 /// An adapter that creates a new [StepFn] from the given one.
-pub trait Xform<Sf> {
+pub trait Xform<Sf>: Chain {
     /// A new step function created by apply.
     type StepFn;
 
@@ -65,43 +65,28 @@ pub trait Xform<Sf> {
     fn apply(self, step_fn: Sf) -> Self::StepFn;
 }
 
-#[derive(Debug)]
-pub struct Fold<Sf> {
-    sf: Sf,
-}
-
-#[derive(Debug)]
-pub struct Prep<Xf> {
-    xf: Xf,
-}
-
-impl<Xf> Prep<Xf> {
-    pub fn apply<Sf>(self, step_fn: Sf) -> Fold<Xf::StepFn>
+pub trait Chain {
+    fn map<F>(self, f: F) -> Comp<Self, Map<F>>
     where
-        Xf: Xform<Sf>,
+        Self: Sized,
     {
-        Fold { sf: self.xf.apply(step_fn) }
+        comp(self, Map::new(f))
     }
 
-    pub(crate) fn new(xf: Xf) -> Self {
-        Prep { xf }
-    }
-
-    pub fn map<F>(self, f: F) -> Prep<Comp<Xf, Map<F>>> {
-        Prep::new(comp(self.xf, Map::new(f)))
-    }
-
-    pub fn filter<P>(self, predicate: P) -> Prep<Comp<Xf, Filter<P>>> {
-        Prep::new(comp(self.xf, Filter::new(predicate)))
+    fn filter<P>(self, predicate: P) -> Comp<Self, Filter<P>>
+    where
+        Self: Sized,
+    {
+        comp(self, Filter::new(predicate))
     }
 }
 
-pub fn map<F>(f: F) -> Prep<Map<F>> {
-    Prep::new(Map::new(f))
+pub fn map<F>(f: F) -> Map<F> {
+    Map::new(f)
 }
 
-pub fn filter<P>(predicate: P) -> Prep<Filter<P>> {
-    Prep::new(Filter::new(predicate))
+pub fn filter<P>(predicate: P) -> Filter<P> {
+    Filter::new(predicate)
 }
 
 fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
@@ -125,37 +110,4 @@ where
         self.a.apply(self.b.apply(rf))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::{Step, StepFn, Xform};
-
-    struct PushVec;
-
-    impl<T> StepFn<T> for PushVec {
-        type Acc = Vec<T>;
-
-        fn step(&mut self, mut acc: Self::Acc, v: T) -> Step<Self::Acc> {
-            acc.push(v);
-            Step::Yield(acc)
-        }
-    }
-
-    #[test]
-    fn test_map_filter_step() {
-        let mut acc = vec![];
-        let mut fold = super::map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec);
-        for i in 0..20 {
-            match fold.sf.step(acc, i) {
-                Step::Yield(ret) => {
-                    acc = ret;
-                }
-                Step::Break(ret) => {
-                    acc = fold.sf.done(ret);
-                    break;
-                }
-            }
-        }
-        assert_eq!(acc, vec![11, 13, 15, 17, 19]);
-    }
-}
+impl<A, B> Chain for Comp<A, B> {}
