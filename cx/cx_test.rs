@@ -11,10 +11,6 @@ impl<T> Fold<T> for PushVec {
         acc.push(v);
         cx::Step::Yield(acc)
     }
-
-    fn done(self, acc: Self::Acc) -> Self::Acc {
-        acc
-    }
 }
 
 #[test]
@@ -26,7 +22,7 @@ fn test_map_filter() {
             cx::Step::Yield(ret) => {
                 acc = ret;
             }
-            cx::Step::Return(ret) => {
+            cx::Step::Break(ret) => {
                 acc = rf.done(ret);
                 break;
             }

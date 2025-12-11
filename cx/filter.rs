@@ -1,38 +1,40 @@
 use crate::{Adapter, Chain, Fold, Step};
 
 pub fn filter<P>(predicate: P) -> Filter<P> {
-    Filter { predicate }
+    Filter { pred: predicate }
 }
 
 pub struct Filter<P> {
-    predicate: P,
+    pred: P,
 }
 
-pub struct FilterFold<Rf, P> {
-    rf: Rf,
-    predicate: P,
+pub struct FilterFold<F, P> {
+    fold: F,
+    pred: P,
 }
 
-impl<Rf, P> Adapter<Rf> for Filter<P> {
-    type Fold = FilterFold<Rf, P>;
+impl<F, P> Adapter<F> for Filter<P> {
+    type Fold = FilterFold<F, P>;
 
-    fn apply(self, rf: Rf) -> Self::Fold {
-        FilterFold { rf, predicate: self.predicate }
+    fn apply(self, fold: F) -> Self::Fold {
+        FilterFold { fold, pred: self.pred }
     }
 }
 impl<P> Chain for Filter<P> {}
 
-impl<Rf, P, T> Fold<T> for FilterFold<Rf, P>
+impl<F, P, T> Fold<T> for FilterFold<F, P>
 where
-    Rf: Fold<T>,
+    F: Fold<T>,
     P: FnMut(&T) -> bool,
 {
-    type Acc = Rf::Acc;
+    type Acc = F::Acc;
 
-    fn step(&mut self, acc: Self::Acc, v: T) -> Step<Self::Acc> {
-        if (self.predicate)(&v) { self.rf.step(acc, v) } else { Step::Yield(acc) }
+    #[inline]
+    fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc> {
+        if (self.pred)(&input) { self.fold.step(acc, input) } else { Step::Yield(acc) }
     }
+
     fn done(self, acc: Self::Acc) -> Self::Acc {
-        self.rf.done(acc)
+        self.fold.done(acc)
     }
 }

@@ -9,8 +9,20 @@ rust.library(
     ],
 )
 
+rust.test(
+    name = "xf_test",
+    timeout = "short",
+    crate = ":cx",
+)
+
+rust.doc_test(
+    name = "xf_doc_test",
+    timeout = "short",
+    crate = ":cx",
+)
+
 rust.tests(
-    name = "tests",
+    name = "xf_suite",
     size = "small",
     srcs = [
         "cx_test.rs",
