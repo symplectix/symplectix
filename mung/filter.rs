@@ -1,4 +1,4 @@
-use crate::{Chain, Step, StepFn, Xform};
+use crate::{Step, StepFn, Xform};
 
 #[derive(Debug)]
 pub struct Filter<P> {
@@ -22,7 +22,6 @@ impl<Sf, P> Xform<Sf> for Filter<P> {
         FilterStep { sf: step_fn, pred: self.pred }
     }
 }
-impl<P> Chain for Filter<P> {}
 
 impl<Sf, P, T> StepFn<T> for FilterStep<Sf, P>
 where

@@ -1,4 +1,4 @@
-use crate::{Chain, Step, StepFn, Xform};
+use crate::{Step, StepFn, Xform};
 
 #[derive(Debug)]
 pub struct Map<F> {
@@ -22,7 +22,6 @@ impl<Sf, F> Xform<Sf> for Map<F> {
         MapStep { sf: step_fn, mapf: self.mapf }
     }
 }
-impl<F> Chain for Map<F> {}
 
 impl<Sf, F, A, B> StepFn<A> for MapStep<Sf, F>
 where
