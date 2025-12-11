@@ -4,8 +4,8 @@ rust.library(
     name = "mung",
     srcs = [
         "filter.rs",
-        "map.rs",
         "lib.rs",
+        "map.rs",
     ],
 )
 
@@ -21,13 +21,13 @@ rust.doc_test(
     crate = ":mung",
 )
 
-# rust.tests(
-#     name = "mung_suite",
-#     size = "small",
-#     srcs = [
-#         "tests/mung_test.rs",
-#     ],
-#     deps = [
-#         ":mung",
-#     ],
-# )
+rust.tests(
+    name = "mung_suite",
+    size = "small",
+    srcs = [
+        "mung_test.rs",
+    ],
+    deps = [
+        ":mung",
+    ],
+)
