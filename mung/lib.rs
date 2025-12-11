@@ -71,39 +71,37 @@ pub struct Fold<Sf> {
 }
 
 #[derive(Debug)]
-pub struct Folding<Xf> {
+pub struct Prep<Xf> {
     xf: Xf,
 }
 
-impl<Xf> Folding<Xf> {
+impl<Xf> Prep<Xf> {
     pub fn apply<Sf>(self, step_fn: Sf) -> Fold<Xf::StepFn>
     where
         Xf: Xform<Sf>,
     {
         Fold { sf: self.xf.apply(step_fn) }
     }
-}
 
-impl<Xf> Folding<Xf> {
     pub(crate) fn new(xf: Xf) -> Self {
-        Folding { xf }
+        Prep { xf }
     }
 
-    pub fn map<F>(self, f: F) -> Folding<Comp<Xf, Map<F>>> {
-        Folding::new(comp(self.xf, Map::new(f)))
+    pub fn map<F>(self, f: F) -> Prep<Comp<Xf, Map<F>>> {
+        Prep::new(comp(self.xf, Map::new(f)))
     }
 
-    pub fn filter<P>(self, predicate: P) -> Folding<Comp<Xf, Filter<P>>> {
-        Folding::new(comp(self.xf, Filter::new(predicate)))
+    pub fn filter<P>(self, predicate: P) -> Prep<Comp<Xf, Filter<P>>> {
+        Prep::new(comp(self.xf, Filter::new(predicate)))
     }
 }
 
-pub fn map<F>(f: F) -> Folding<Map<F>> {
-    Folding::new(Map::new(f))
+pub fn map<F>(f: F) -> Prep<Map<F>> {
+    Prep::new(Map::new(f))
 }
 
-pub fn filter<P>(predicate: P) -> Folding<Filter<P>> {
-    Folding::new(Filter::new(predicate))
+pub fn filter<P>(predicate: P) -> Prep<Filter<P>> {
+    Prep::new(Filter::new(predicate))
 }
 
 fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
