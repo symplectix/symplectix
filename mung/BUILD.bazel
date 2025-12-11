@@ -1,33 +1,33 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "cx",
+    name = "mung",
     srcs = [
-        "cx.rs",
         "filter.rs",
         "map.rs",
+        "lib.rs",
     ],
 )
 
 rust.test(
-    name = "xf_test",
+    name = "mung_test",
     timeout = "short",
-    crate = ":cx",
+    crate = ":mung",
 )
 
 rust.doc_test(
-    name = "xf_doc_test",
+    name = "mung_doc_test",
     timeout = "short",
-    crate = ":cx",
+    crate = ":mung",
 )
 
 rust.tests(
-    name = "xf_suite",
+    name = "mung_suite",
     size = "small",
     srcs = [
-        "cx_test.rs",
+        "mung_test.rs",
     ],
     deps = [
-        ":cx",
+        ":mung",
     ],
 )

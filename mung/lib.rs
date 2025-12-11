@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+#![allow(missing_domung)]
 //! Composable transformations.
 
 // Refs:
@@ -26,7 +26,7 @@ pub trait Fold<T> {
     /// You must call `done` exactly once.
     ///
     /// ```compile_fail
-    /// # use cx::{Adapter, Fold, Step};
+    /// # use mung::{Adapter, Fold, Step};
     /// # struct SomeFoldFunction();
     /// # impl Fold<i32> for SomeFoldFunction {
     /// #     type Acc = usize;
