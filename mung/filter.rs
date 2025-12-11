@@ -34,6 +34,7 @@ where
         if (self.pred)(&input) { self.fold.step(acc, input) } else { Step::Yield(acc) }
     }
 
+    #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc {
         self.fold.done(acc)
     }

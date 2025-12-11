@@ -34,6 +34,7 @@ where
         self.fold.step(acc, (self.mapf)(input))
     }
 
+    #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc {
         self.fold.done(acc)
     }
