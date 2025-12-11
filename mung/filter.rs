@@ -1,4 +1,4 @@
-use crate::xfn::{Step, StepFn, Xform};
+use crate::{Step, StepFn, Xform};
 
 #[derive(Debug)]
 pub struct Filter<P> {
