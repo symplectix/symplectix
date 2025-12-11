@@ -9,8 +9,8 @@
 mod filter;
 mod map;
 
-pub use filter::{Filter, filter};
-pub use map::{Map, map};
+pub use filter::Filter;
+pub use map::Map;
 
 /// A fold step function.
 pub trait StepFn<T> {
@@ -57,7 +57,7 @@ pub enum Step<T> {
 }
 
 /// An adapter that creates a new [StepFn] from the given one.
-pub trait Xform<Sf>: Chain {
+pub trait Xform<Sf> {
     /// A new step function created by apply.
     type StepFn;
 
@@ -65,23 +65,45 @@ pub trait Xform<Sf>: Chain {
     fn apply(self, step_fn: Sf) -> Self::StepFn;
 }
 
-/// Provides combinators to chain [Adapter]s.
-pub trait Chain {
-    /// Composes self and [`map(f)`].
-    fn map<F>(self, f: F) -> Comp<Self, Map<F>>
+#[derive(Debug)]
+pub struct Fold<Sf> {
+    sf: Sf,
+}
+
+#[derive(Debug)]
+pub struct Folding<Xf> {
+    xf: Xf,
+}
+
+impl<Xf> Folding<Xf> {
+    pub fn apply<Sf>(self, step_fn: Sf) -> Fold<Xf::StepFn>
     where
-        Self: Sized,
+        Xf: Xform<Sf>,
     {
-        comp(self, map(f))
+        Fold { sf: self.xf.apply(step_fn) }
+    }
+}
+
+impl<Xf> Folding<Xf> {
+    pub(crate) fn new(xf: Xf) -> Self {
+        Folding { xf }
     }
 
-    /// Composes self and [`filter(p)`].
-    fn filter<P>(self, p: P) -> Comp<Self, Filter<P>>
-    where
-        Self: Sized,
-    {
-        comp(self, filter(p))
+    pub fn map<F>(self, f: F) -> Folding<Comp<Xf, Map<F>>> {
+        Folding::new(comp(self.xf, Map::new(f)))
     }
+
+    pub fn filter<P>(self, predicate: P) -> Folding<Comp<Xf, Filter<P>>> {
+        Folding::new(comp(self.xf, Filter::new(predicate)))
+    }
+}
+
+pub fn map<F>(f: F) -> Folding<Map<F>> {
+    Folding::new(Map::new(f))
+}
+
+pub fn filter<P>(predicate: P) -> Folding<Filter<P>> {
+    Folding::new(Filter::new(predicate))
 }
 
 fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
@@ -105,4 +127,37 @@ where
         self.a.apply(self.b.apply(rf))
     }
 }
-impl<A, B> Chain for Comp<A, B> {}
+
+#[cfg(test)]
+mod tests {
+    use super::{Step, StepFn, Xform};
+
+    struct PushVec;
+
+    impl<T> StepFn<T> for PushVec {
+        type Acc = Vec<T>;
+
+        fn step(&mut self, mut acc: Self::Acc, v: T) -> Step<Self::Acc> {
+            acc.push(v);
+            Step::Yield(acc)
+        }
+    }
+
+    #[test]
+    fn test_map_filter_step() {
+        let mut acc = vec![];
+        let mut fold = super::map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec);
+        for i in 0..20 {
+            match fold.sf.step(acc, i) {
+                Step::Yield(ret) => {
+                    acc = ret;
+                }
+                Step::Break(ret) => {
+                    acc = fold.sf.done(ret);
+                    break;
+                }
+            }
+        }
+        assert_eq!(acc, vec![11, 13, 15, 17, 19]);
+    }
+}
