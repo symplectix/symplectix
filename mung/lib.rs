@@ -1,4 +1,4 @@
-#![allow(missing_domung)]
+#![allow(missing_docs)]
 //! Composable transformations.
 
 // Refs:

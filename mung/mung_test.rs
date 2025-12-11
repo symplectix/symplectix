@@ -1,4 +1,4 @@
-#![allow(missing_domung)]
+#![allow(missing_docs)]
 
 use mung::{Adapter, Chain, Fold};
 
@@ -15,18 +15,18 @@ impl<T> Fold<T> for PushVec {
 
 #[test]
 fn test_map_filter() {
-    let mut rf = mung::filter(|x: &i32| *x > 5).map(|x| x * 2).map(|x| x + 1).filter(|x: &i32| *x < 20).apply(PushVec);
-    let mut acc = vec![0];
+    let mut fold = mung::map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec);
+    let mut acc = vec![];
     for i in 0..20 {
-        match rf.step(acc, i) {
+        match fold.step(acc, i) {
             mung::Step::Yield(ret) => {
                 acc = ret;
             }
             mung::Step::Break(ret) => {
-                acc = rf.done(ret);
+                acc = fold.done(ret);
                 break;
             }
         }
     }
-    assert_eq!(acc, vec![0, 13, 15, 17, 19]);
+    assert_eq!(acc, vec![11, 13, 15, 17, 19]);
 }
