@@ -1,10 +1,10 @@
 #![allow(missing_docs)]
 
-use mung::{Adapter, Chain, Fold};
+use mung::{Chain, StepFn, Xform};
 
 struct PushVec;
 
-impl<T> Fold<T> for PushVec {
+impl<T> StepFn<T> for PushVec {
     type Acc = Vec<T>;
 
     fn step(&mut self, mut acc: Self::Acc, v: T) -> mung::Step<Self::Acc> {
@@ -14,16 +14,16 @@ impl<T> Fold<T> for PushVec {
 }
 
 #[test]
-fn test_map_filter() {
-    let mut fold = mung::map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec);
+fn test_map_filter_step() {
+    let mut sf = mung::map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec);
     let mut acc = vec![];
     for i in 0..20 {
-        match fold.step(acc, i) {
+        match sf.step(acc, i) {
             mung::Step::Yield(ret) => {
                 acc = ret;
             }
             mung::Step::Break(ret) => {
-                acc = fold.done(ret);
+                acc = sf.done(ret);
                 break;
             }
         }

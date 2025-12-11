@@ -13,7 +13,7 @@ pub use filter::{Filter, filter};
 pub use map::{Map, map};
 
 /// A fold step function.
-pub trait Fold<T> {
+pub trait StepFn<T> {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
@@ -26,17 +26,17 @@ pub trait Fold<T> {
     /// You must call `done` exactly once.
     ///
     /// ```compile_fail
-    /// # use mung::{Adapter, Fold, Step};
-    /// # struct SomeFoldFunction();
-    /// # impl Fold<i32> for SomeFoldFunction {
+    /// # use mung::StepFn;
+    /// # struct SomeStepFn();
+    /// # impl StepFn<i32> for SomeStepFn {
     /// #     type Acc = usize;
-    /// #     fn step(&mut self, mut acc: Self::Acc, _i: i32) -> Step<Self::Acc> {
-    /// #         Step::Yield(acc + 1)
+    /// #     fn step(&mut self, mut acc: Self::Acc, _i: i32) -> mung::Step<Self::Acc> {
+    /// #         mung::Step::Yield(acc + 1)
     /// #     }
     /// # }
-    /// let fold = SomeFoldFunction();
-    /// fold.done(0);
-    /// fold.done(0);
+    /// let f = SomeStepFn();
+    /// f.done(0);
+    /// f.done(0);
     /// ```
     #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc
@@ -56,13 +56,13 @@ pub enum Step<T> {
     Break(T),
 }
 
-/// An adapter that creates a new [Fold] from the given one.
-pub trait Adapter<F>: Chain {
-    /// The output of [Adapter.apply].
-    type Fold;
+/// An adapter that creates a new [StepFn] from the given one.
+pub trait Xform<Sf>: Chain {
+    /// A new step function created by apply.
+    type StepFn;
 
-    /// Creates a new [Fold] from the given one.
-    fn apply(self, fold: F) -> Self::Fold;
+    /// Creates a new [StepFn] from the given one.
+    fn apply(self, step_fn: Sf) -> Self::StepFn;
 }
 
 /// Provides combinators to chain [Adapter]s.
@@ -94,14 +94,14 @@ pub struct Comp<A, B> {
     b: B,
 }
 
-impl<Fl, A, B> Adapter<Fl> for Comp<A, B>
+impl<Fl, A, B> Xform<Fl> for Comp<A, B>
 where
-    A: Adapter<B::Fold>,
-    B: Adapter<Fl>,
+    A: Xform<B::StepFn>,
+    B: Xform<Fl>,
 {
-    type Fold = A::Fold;
+    type StepFn = A::StepFn;
 
-    fn apply(self, rf: Fl) -> Self::Fold {
+    fn apply(self, rf: Fl) -> Self::StepFn {
         self.a.apply(self.b.apply(rf))
     }
 }

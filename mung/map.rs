@@ -1,4 +1,4 @@
-use crate::{Adapter, Chain, Fold, Step};
+use crate::{Chain, Step, StepFn, Xform};
 
 pub fn map<F>(f: F) -> Map<F> {
     Map { mapf: f }
@@ -8,34 +8,34 @@ pub struct Map<F> {
     mapf: F,
 }
 
-pub struct MapFold<F, MapF> {
-    fold: F,
+pub struct MapStep<Sf, MapF> {
+    sf: Sf,
     mapf: MapF,
 }
 
-impl<F, MapF> Adapter<F> for Map<MapF> {
-    type Fold = MapFold<F, MapF>;
+impl<Sf, F> Xform<Sf> for Map<F> {
+    type StepFn = MapStep<Sf, F>;
 
-    fn apply(self, fold: F) -> Self::Fold {
-        MapFold { fold, mapf: self.mapf }
+    fn apply(self, step_fn: Sf) -> Self::StepFn {
+        MapStep { sf: step_fn, mapf: self.mapf }
     }
 }
 impl<F> Chain for Map<F> {}
 
-impl<F, MapF, A, B> Fold<A> for MapFold<F, MapF>
+impl<Sf, F, A, B> StepFn<A> for MapStep<Sf, F>
 where
-    F: Fold<B>,
-    MapF: FnMut(A) -> B,
+    Sf: StepFn<B>,
+    F: FnMut(A) -> B,
 {
-    type Acc = F::Acc;
+    type Acc = Sf::Acc;
 
     #[inline]
     fn step(&mut self, acc: Self::Acc, input: A) -> Step<Self::Acc> {
-        self.fold.step(acc, (self.mapf)(input))
+        self.sf.step(acc, (self.mapf)(input))
     }
 
     #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc {
-        self.fold.done(acc)
+        self.sf.done(acc)
     }
 }

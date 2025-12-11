@@ -1,4 +1,4 @@
-use crate::{Adapter, Chain, Fold, Step};
+use crate::{Chain, Step, StepFn, Xform};
 
 pub fn filter<P>(predicate: P) -> Filter<P> {
     Filter { pred: predicate }
@@ -8,34 +8,34 @@ pub struct Filter<P> {
     pred: P,
 }
 
-pub struct FilterFold<F, P> {
-    fold: F,
+pub struct FilterStep<Sf, P> {
+    sf: Sf,
     pred: P,
 }
 
-impl<F, P> Adapter<F> for Filter<P> {
-    type Fold = FilterFold<F, P>;
+impl<Sf, P> Xform<Sf> for Filter<P> {
+    type StepFn = FilterStep<Sf, P>;
 
-    fn apply(self, fold: F) -> Self::Fold {
-        FilterFold { fold, pred: self.pred }
+    fn apply(self, step_fn: Sf) -> Self::StepFn {
+        FilterStep { sf: step_fn, pred: self.pred }
     }
 }
 impl<P> Chain for Filter<P> {}
 
-impl<F, P, T> Fold<T> for FilterFold<F, P>
+impl<Sf, P, T> StepFn<T> for FilterStep<Sf, P>
 where
-    F: Fold<T>,
+    Sf: StepFn<T>,
     P: FnMut(&T) -> bool,
 {
-    type Acc = F::Acc;
+    type Acc = Sf::Acc;
 
     #[inline]
     fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc> {
-        if (self.pred)(&input) { self.fold.step(acc, input) } else { Step::Yield(acc) }
+        if (self.pred)(&input) { self.sf.step(acc, input) } else { Step::Yield(acc) }
     }
 
     #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc {
-        self.fold.done(acc)
+        self.sf.done(acc)
     }
 }
