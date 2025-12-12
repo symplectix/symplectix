@@ -1,4 +1,4 @@
-use crate::{Step, Fold, XFn};
+use crate::{Step, StepFn, XFn};
 
 #[derive(Debug)]
 pub struct Filter<P> {
@@ -23,9 +23,9 @@ impl<Sf, P> XFn<Sf> for Filter<P> {
     }
 }
 
-impl<Sf, P, T> Fold<T> for FilterStep<Sf, P>
+impl<Sf, P, T> StepFn<T> for FilterStep<Sf, P>
 where
-    Sf: Fold<T>,
+    Sf: StepFn<T>,
     P: FnMut(&T) -> bool,
 {
     type Acc = Sf::Acc;

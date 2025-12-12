@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 pub use filter::Filter;
 pub use map::Map;
 
-pub trait Fold<T> {
+pub trait StepFn<T> {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
@@ -34,13 +34,13 @@ pub trait Fold<T> {
     }
 }
 
-impl<T, A, B> Fold<T> for (A, B)
+impl<T, A, B> StepFn<T> for (A, B)
 where
     T: Clone,
-    A: Fold<T>,
-    B: Fold<T>,
+    A: StepFn<T>,
+    B: StepFn<T>,
 {
-    type Acc = (<A as Fold<T>>::Acc, <B as Fold<T>>::Acc);
+    type Acc = (<A as StepFn<T>>::Acc, <B as StepFn<T>>::Acc);
 
     fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc> {
         let a = self.0.step(acc.0, input.clone());
@@ -124,7 +124,7 @@ fn id<T>() -> Id<T> {
 
 impl<Sf, T> XFn<Sf> for Id<T>
 where
-    Sf: Fold<T>,
+    Sf: StepFn<T>,
 {
     type StepFn = Sf;
 
@@ -158,11 +158,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{Fold, Step, XFn};
+    use super::{Step, StepFn, XFn};
 
     struct PushVec;
 
-    impl<T> Fold<T> for PushVec {
+    impl<T> StepFn<T> for PushVec {
         type Acc = Vec<T>;
 
         fn step(&mut self, mut acc: Self::Acc, input: T) -> Step<Self::Acc> {
@@ -173,7 +173,7 @@ mod tests {
 
     struct ConsVec;
 
-    impl<T> Fold<T> for ConsVec {
+    impl<T> StepFn<T> for ConsVec {
         type Acc = Vec<T>;
 
         fn step(&mut self, mut acc: Self::Acc, input: T) -> Step<Self::Acc> {
