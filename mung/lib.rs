@@ -165,12 +165,13 @@ where
 #[cfg(test)]
 mod tests {
     use std::borrow::{Borrow, ToOwned};
+    use std::collections::VecDeque;
 
     use super::{Fold, Step, Xform, XformFn};
 
-    struct PushVec;
+    struct Conj;
 
-    impl<T> Fold<T> for PushVec
+    impl<T> Fold<T> for Conj
     where
         T: ToOwned,
     {
@@ -185,19 +186,19 @@ mod tests {
         }
     }
 
-    struct ConsVec;
+    struct Cons;
 
-    impl<T> Fold<T> for ConsVec
+    impl<T> Fold<T> for Cons
     where
         T: ToOwned,
     {
-        type Acc = Vec<T::Owned>;
+        type Acc = VecDeque<T::Owned>;
 
         fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> Step<Self::Acc>
         where
             Q: Borrow<T>,
         {
-            acc.insert(0, input.borrow().to_owned());
+            acc.push_front(input.borrow().to_owned());
             Step::Yield(acc)
         }
     }
@@ -205,10 +206,10 @@ mod tests {
     #[test]
     fn test_map_filter_step() {
         let mut fold = (
-            Xform::id().map(|x: &i32| x + 1).filter(|x: &i32| *x % 2 == 0).apply(ConsVec),
-            Xform::id().map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(PushVec),
+            Xform::id().map(|x: &i32| x + 1).filter(|x: &i32| *x % 2 == 0).apply(Cons),
+            Xform::id().map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(Conj),
         );
-        let mut acc = (vec![], vec![]);
+        let mut acc = (VecDeque::with_capacity(10), vec![]);
         for i in 0..10 {
             match fold.step(acc, &i) {
                 Step::Yield(ret) => {
@@ -220,6 +221,6 @@ mod tests {
                 }
             }
         }
-        assert_eq!(acc, (vec![10, 8, 6, 4, 2], vec![-1, 1, 3, 5, 7]));
+        assert_eq!(acc, (VecDeque::from([10, 8, 6, 4, 2]), vec![-1, 1, 3, 5, 7]));
     }
 }
