@@ -1,4 +1,4 @@
-use crate::{Step, StepFn, XFn};
+use crate::{Fold, Step, XformFn};
 
 #[derive(Debug)]
 pub struct Map<F> {
@@ -10,22 +10,23 @@ impl<F> Map<F> {
     }
 }
 
-pub struct MapStep<Sf, MapF> {
+impl<Sf, F> XformFn<Sf> for Map<F> {
+    type Fold = MapFold<Sf, F>;
+
+    fn apply(self, sf: Sf) -> Self::Fold {
+        MapFold { sf, mapf: self.mapf }
+    }
+}
+
+#[derive(Debug)]
+pub struct MapFold<Sf, MapF> {
     sf: Sf,
     mapf: MapF,
 }
 
-impl<Sf, F> XFn<Sf> for Map<F> {
-    type StepFn = MapStep<Sf, F>;
-
-    fn apply(self, step_fn: Sf) -> Self::StepFn {
-        MapStep { sf: step_fn, mapf: self.mapf }
-    }
-}
-
-impl<Sf, F, A, B> StepFn<A> for MapStep<Sf, F>
+impl<Sf, F, A, B> Fold<A> for MapFold<Sf, F>
 where
-    Sf: StepFn<B>,
+    Sf: Fold<B>,
     F: FnMut(A) -> B,
 {
     type Acc = Sf::Acc;

@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 pub use filter::Filter;
 pub use map::Map;
 
-pub trait StepFn<T> {
+pub trait Fold<T> {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
@@ -34,13 +34,22 @@ pub trait StepFn<T> {
     }
 }
 
-impl<T, A, B> StepFn<T> for (A, B)
+/// The result of [Fold.step].
+#[derive(Debug, Copy, Clone)]
+pub enum Step<T> {
+    /// Keep folding.
+    Yield(T),
+    /// Stop folding.
+    Break(T),
+}
+
+impl<T, A, B> Fold<T> for (A, B)
 where
     T: Clone,
-    A: StepFn<T>,
-    B: StepFn<T>,
+    A: Fold<T>,
+    B: Fold<T>,
 {
-    type Acc = (<A as StepFn<T>>::Acc, <B as StepFn<T>>::Acc);
+    type Acc = (<A as Fold<T>>::Acc, <B as Fold<T>>::Acc);
 
     fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc> {
         let a = self.0.step(acc.0, input.clone());
@@ -58,37 +67,31 @@ where
     }
 }
 
-/// The result of [Fold.step].
-#[derive(Debug, Copy, Clone)]
-pub enum Step<T> {
-    /// Keep folding.
-    Yield(T),
-    /// Stop folding.
-    Break(T),
-}
-
+// Xform exists only to compose xf and an another XformFn.
 #[derive(Debug)]
 pub struct Xform<Xf> {
     xf: Xf,
 }
 
-/// An adapter that creates a new [StepFn] from the given one.
-pub trait XFn<Sf> {
+/// An adapter that creates a new [Fold] from the given one.
+pub trait XformFn<Sf> {
     /// A new step function created by apply.
-    type StepFn;
+    type Fold;
 
-    /// Creates a new [StepFn] from the given one.
-    fn apply(self, step_fn: Sf) -> Self::StepFn;
+    /// Creates a new [Fold] from the given one.
+    fn apply(self, sf: Sf) -> Self::Fold;
 }
 
-fn xform<T>() -> Xform<Id<T>> {
-    Xform { xf: id() }
+impl<T> Xform<Id<T>> {
+    fn id() -> Self {
+        Xform { xf: id() }
+    }
 }
 
 impl<Xf> Xform<Xf> {
-    fn apply<Sf>(self, step_fn: Sf) -> Xf::StepFn
+    fn apply<Sf>(self, step_fn: Sf) -> Xf::Fold
     where
-        Xf: XFn<Sf>,
+        Xf: XformFn<Sf>,
     {
         self.xf.apply(step_fn)
     }
@@ -122,14 +125,14 @@ fn id<T>() -> Id<T> {
 //     }
 // }
 
-impl<Sf, T> XFn<Sf> for Id<T>
+impl<Sf, T> XformFn<Sf> for Id<T>
 where
-    Sf: StepFn<T>,
+    Sf: Fold<T>,
 {
-    type StepFn = Sf;
+    type Fold = Sf;
 
     #[inline]
-    fn apply(self, step_fn: Sf) -> Self::StepFn {
+    fn apply(self, step_fn: Sf) -> Self::Fold {
         step_fn
     }
 }
@@ -144,25 +147,25 @@ pub struct Comp<A, B> {
     b: B,
 }
 
-impl<Sf, A, B> XFn<Sf> for Comp<A, B>
+impl<Sf, A, B> XformFn<Sf> for Comp<A, B>
 where
-    A: XFn<B::StepFn>,
-    B: XFn<Sf>,
+    A: XformFn<B::Fold>,
+    B: XformFn<Sf>,
 {
-    type StepFn = A::StepFn;
+    type Fold = A::Fold;
 
-    fn apply(self, rf: Sf) -> Self::StepFn {
+    fn apply(self, rf: Sf) -> Self::Fold {
         self.a.apply(self.b.apply(rf))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Step, StepFn, XFn};
+    use super::{Fold, Step, Xform, XformFn};
 
     struct PushVec;
 
-    impl<T> StepFn<T> for PushVec {
+    impl<T> Fold<T> for PushVec {
         type Acc = Vec<T>;
 
         fn step(&mut self, mut acc: Self::Acc, input: T) -> Step<Self::Acc> {
@@ -173,7 +176,7 @@ mod tests {
 
     struct ConsVec;
 
-    impl<T> StepFn<T> for ConsVec {
+    impl<T> Fold<T> for ConsVec {
         type Acc = Vec<T>;
 
         fn step(&mut self, mut acc: Self::Acc, input: T) -> Step<Self::Acc> {
@@ -185,8 +188,8 @@ mod tests {
     #[test]
     fn test_map_filter_step() {
         let mut fold = (
-            super::xform().map(|x| x + 1).filter(|x: &i32| *x % 2 == 0).apply(ConsVec),
-            super::xform().map(|x| x - 1).filter(|x: &i32| *x % 2 != 0).apply(PushVec),
+            Xform::id().map(|x| x + 1).filter(|x: &i32| *x % 2 == 0).apply(ConsVec),
+            Xform::id().map(|x| x - 1).filter(|x: &i32| *x % 2 != 0).apply(PushVec),
         );
         let mut acc = (vec![], vec![]);
         for i in 0..10 {

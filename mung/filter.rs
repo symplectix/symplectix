@@ -1,4 +1,4 @@
-use crate::{Step, StepFn, XFn};
+use crate::{Fold, Step, XformFn};
 
 #[derive(Debug)]
 pub struct Filter<P> {
@@ -10,22 +10,23 @@ impl<P> Filter<P> {
     }
 }
 
-pub struct FilterStep<Sf, P> {
+impl<Sf, P> XformFn<Sf> for Filter<P> {
+    type Fold = FilterFold<Sf, P>;
+
+    fn apply(self, sf: Sf) -> Self::Fold {
+        FilterFold { sf, pred: self.pred }
+    }
+}
+
+#[derive(Debug)]
+pub struct FilterFold<Sf, P> {
     sf: Sf,
     pred: P,
 }
 
-impl<Sf, P> XFn<Sf> for Filter<P> {
-    type StepFn = FilterStep<Sf, P>;
-
-    fn apply(self, step_fn: Sf) -> Self::StepFn {
-        FilterStep { sf: step_fn, pred: self.pred }
-    }
-}
-
-impl<Sf, P, T> StepFn<T> for FilterStep<Sf, P>
+impl<Sf, P, T> Fold<T> for FilterFold<Sf, P>
 where
-    Sf: StepFn<T>,
+    Sf: Fold<T>,
     P: FnMut(&T) -> bool,
 {
     type Acc = Sf::Acc;
