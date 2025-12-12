@@ -9,6 +9,8 @@
 mod filter;
 mod map;
 
+use std::marker::PhantomData;
+
 pub use filter::Filter;
 pub use map::Map;
 
@@ -63,12 +65,12 @@ pub enum Step<T> {
 }
 
 #[derive(Debug)]
-pub struct Prep<Xf> {
+pub struct Xform<Xf> {
     xf: Xf,
 }
 
 /// An adapter that creates a new [StepFn] from the given one.
-pub trait Xform<Sf> {
+pub trait XFn<Sf> {
     /// A new step function created by apply.
     type StepFn;
 
@@ -76,37 +78,57 @@ pub trait Xform<Sf> {
     fn apply(self, step_fn: Sf) -> Self::StepFn;
 }
 
-impl<Xf> Prep<Xf> {
+fn xform<T>() -> Xform<Id<T>> {
+    Xform { xf: id() }
+}
+
+impl<Xf> Xform<Xf> {
     fn apply<Sf>(self, step_fn: Sf) -> Xf::StepFn
     where
-        Xf: Xform<Sf>,
+        Xf: XFn<Sf>,
     {
         self.xf.apply(step_fn)
     }
 
-    fn new(xf: Xf) -> Self {
-        Prep { xf }
+    fn comp<That>(self, that: That) -> Xform<Comp<Xf, That>> {
+        Xform { xf: comp(self.xf, that) }
     }
 
-    fn comp<That>(self, that: That) -> Prep<Comp<Xf, That>> {
-        Prep::new(comp(self.xf, that))
-    }
-
-    pub fn map<F>(self, f: F) -> Prep<Comp<Xf, Map<F>>> {
+    pub fn map<F>(self, f: F) -> Xform<Comp<Xf, Map<F>>> {
         self.comp(Map::new(f))
     }
 
-    pub fn filter<P>(self, pred: P) -> Prep<Comp<Xf, Filter<P>>> {
+    pub fn filter<P>(self, pred: P) -> Xform<Comp<Xf, Filter<P>>> {
         self.comp(Filter::new(pred))
     }
 }
 
-pub fn map<F>(f: F) -> Prep<Map<F>> {
-    Prep::new(Map::new(f))
+pub struct Id<T>(PhantomData<T>);
+
+fn id<T>() -> Id<T> {
+    Id(PhantomData)
 }
 
-pub fn filter<P>(pred: P) -> Prep<Filter<P>> {
-    Prep::new(Filter::new(pred))
+// impl<T> StepFn<T> for Id<T> {
+//     type Acc = T;
+//     fn step(&mut self, _acc: Self::Acc, input: T) -> Step<Self::Acc> {
+//         input
+//     }
+//     fn done(self, acc: Self::Acc) -> Self::Acc {
+//         acc
+//     }
+// }
+
+impl<Sf, T> XFn<Sf> for Id<T>
+where
+    Sf: StepFn<T>,
+{
+    type StepFn = Sf;
+
+    #[inline]
+    fn apply(self, step_fn: Sf) -> Self::StepFn {
+        step_fn
+    }
 }
 
 fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
@@ -119,21 +141,21 @@ pub struct Comp<A, B> {
     b: B,
 }
 
-impl<Fl, A, B> Xform<Fl> for Comp<A, B>
+impl<Sf, A, B> XFn<Sf> for Comp<A, B>
 where
-    A: Xform<B::StepFn>,
-    B: Xform<Fl>,
+    A: XFn<B::StepFn>,
+    B: XFn<Sf>,
 {
     type StepFn = A::StepFn;
 
-    fn apply(self, rf: Fl) -> Self::StepFn {
+    fn apply(self, rf: Sf) -> Self::StepFn {
         self.a.apply(self.b.apply(rf))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Step, StepFn, Xform};
+    use super::{Step, StepFn, XFn};
 
     struct PushVec;
 
@@ -148,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_map_filter_step() {
-        let mut fold = super::map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec);
+        let mut fold = super::xform().map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec);
         let mut acc = vec![];
         for i in 0..20 {
             match fold.step(acc, i) {

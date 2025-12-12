@@ -1,4 +1,4 @@
-use crate::{Step, StepFn, Xform};
+use crate::{Step, StepFn, XFn};
 
 #[derive(Debug)]
 pub struct Map<F> {
@@ -15,7 +15,7 @@ pub struct MapStep<Sf, MapF> {
     mapf: MapF,
 }
 
-impl<Sf, F> Xform<Sf> for Map<F> {
+impl<Sf, F> XFn<Sf> for Map<F> {
     type StepFn = MapStep<Sf, F>;
 
     fn apply(self, step_fn: Sf) -> Self::StepFn {

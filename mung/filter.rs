@@ -1,4 +1,4 @@
-use crate::{Step, StepFn, Xform};
+use crate::{Step, StepFn, XFn};
 
 #[derive(Debug)]
 pub struct Filter<P> {
@@ -15,7 +15,7 @@ pub struct FilterStep<Sf, P> {
     pred: P,
 }
 
-impl<Sf, P> Xform<Sf> for Filter<P> {
+impl<Sf, P> XFn<Sf> for Filter<P> {
     type StepFn = FilterStep<Sf, P>;
 
     fn apply(self, step_fn: Sf) -> Self::StepFn {
