@@ -185,11 +185,11 @@ mod tests {
     #[test]
     fn test_map_filter_step() {
         let mut fold = (
-            super::xform().map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(ConsVec),
-            super::xform().map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec),
+            super::xform().map(|x| x + 1).filter(|x: &i32| *x % 2 == 0).apply(ConsVec),
+            super::xform().map(|x| x - 1).filter(|x: &i32| *x % 2 != 0).apply(PushVec),
         );
         let mut acc = (vec![], vec![]);
-        for i in 0..20 {
+        for i in 0..10 {
             match fold.step(acc, i) {
                 Step::Yield(ret) => {
                     acc = ret;
@@ -200,6 +200,6 @@ mod tests {
                 }
             }
         }
-        assert_eq!(acc, (vec![19, 17, 15, 13, 11], vec![11, 13, 15, 17, 19]));
+        assert_eq!(acc, (vec![10, 8, 6, 4, 2], vec![-1, 1, 3, 5, 7]));
     }
 }
