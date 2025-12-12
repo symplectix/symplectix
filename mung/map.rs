@@ -1,4 +1,4 @@
-use crate::{Step, StepFn, XFn};
+use crate::{Fold, Step, XFn};
 
 #[derive(Debug)]
 pub struct Map<F> {
@@ -23,9 +23,9 @@ impl<Sf, F> XFn<Sf> for Map<F> {
     }
 }
 
-impl<Sf, F, A, B> StepFn<A> for MapStep<Sf, F>
+impl<Sf, F, A, B> Fold<A> for MapStep<Sf, F>
 where
-    Sf: StepFn<B>,
+    Sf: Fold<B>,
     F: FnMut(A) -> B,
 {
     type Acc = Sf::Acc;

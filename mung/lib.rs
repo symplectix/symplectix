@@ -14,14 +14,7 @@ use std::marker::PhantomData;
 pub use filter::Filter;
 pub use map::Map;
 
-#[derive(Debug)]
-pub struct Fold<Sf> {
-    // A step function of this fold.
-    sf: Sf,
-}
-
-/// A fold step function.
-pub trait StepFn<T> {
+pub trait Fold<T> {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
@@ -29,29 +22,39 @@ pub trait StepFn<T> {
     fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc>;
 
     /// Invoked when folding is complete.
-    /// By default, done just returns acc.
     ///
-    /// You must call `done` exactly once.
-    ///
-    /// ```compile_fail
-    /// # use mung::StepFn;
-    /// # struct SomeStepFn();
-    /// # impl StepFn<i32> for SomeStepFn {
-    /// #     type Acc = usize;
-    /// #     fn step(&mut self, mut acc: Self::Acc, _i: i32) -> mung::Step<Self::Acc> {
-    /// #         mung::Step::Yield(acc + 1)
-    /// #     }
-    /// # }
-    /// let f = SomeStepFn();
-    /// f.done(0);
-    /// f.done(0);
-    /// ```
+    /// - By default, done just returns acc.
+    /// - You must call `done` exactly once.
     #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc
     where
         Self: Sized,
     {
         acc
+    }
+}
+
+impl<T, A, B> Fold<T> for (A, B)
+where
+    T: Clone,
+    A: Fold<T>,
+    B: Fold<T>,
+{
+    type Acc = (<A as Fold<T>>::Acc, <B as Fold<T>>::Acc);
+
+    fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc> {
+        let a = self.0.step(acc.0, input.clone());
+        let b = self.1.step(acc.1, input);
+        match (a, b) {
+            (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
+            (Step::Break(a), Step::Yield(b)) => Step::Break((a, b)),
+            (Step::Yield(a), Step::Break(b)) => Step::Break((a, b)),
+            (Step::Break(a), Step::Break(b)) => Step::Break((a, b)),
+        }
+    }
+
+    fn done(self, acc: Self::Acc) -> Self::Acc {
+        (self.0.done(acc.0), self.1.done(acc.1))
     }
 }
 
@@ -121,7 +124,7 @@ fn id<T>() -> Id<T> {
 
 impl<Sf, T> XFn<Sf> for Id<T>
 where
-    Sf: StepFn<T>,
+    Sf: Fold<T>,
 {
     type StepFn = Sf;
 
@@ -155,23 +158,37 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{Step, StepFn, XFn};
+    use super::{Fold, Step, XFn};
 
     struct PushVec;
 
-    impl<T> StepFn<T> for PushVec {
+    impl<T> Fold<T> for PushVec {
         type Acc = Vec<T>;
 
-        fn step(&mut self, mut acc: Self::Acc, v: T) -> Step<Self::Acc> {
-            acc.push(v);
+        fn step(&mut self, mut acc: Self::Acc, input: T) -> Step<Self::Acc> {
+            acc.push(input);
+            Step::Yield(acc)
+        }
+    }
+
+    struct ConsVec;
+
+    impl<T> Fold<T> for ConsVec {
+        type Acc = Vec<T>;
+
+        fn step(&mut self, mut acc: Self::Acc, input: T) -> Step<Self::Acc> {
+            acc.insert(0, input);
             Step::Yield(acc)
         }
     }
 
     #[test]
     fn test_map_filter_step() {
-        let mut fold = super::xform().map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec);
-        let mut acc = vec![];
+        let mut fold = (
+            super::xform().map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(ConsVec),
+            super::xform().map(|x| x * 2 + 1).filter(|x: &i32| 10 < *x && *x < 20).apply(PushVec),
+        );
+        let mut acc = (vec![], vec![]);
         for i in 0..20 {
             match fold.step(acc, i) {
                 Step::Yield(ret) => {
@@ -183,6 +200,6 @@ mod tests {
                 }
             }
         }
-        assert_eq!(acc, vec![11, 13, 15, 17, 19]);
+        assert_eq!(acc, (vec![11, 13, 15, 17, 19], vec![11, 13, 15, 17, 19]));
     }
 }
