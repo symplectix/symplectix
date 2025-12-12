@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use crate::{Fold, Step, XformFn};
 
 #[derive(Debug)]
@@ -32,8 +34,11 @@ where
     type Acc = Sf::Acc;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc> {
-        if (self.pred)(&input) { self.sf.step(acc, input) } else { Step::Yield(acc) }
+    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    where
+        Q: Borrow<T>,
+    {
+        if (self.pred)(input.borrow()) { self.sf.step(acc, input) } else { Step::Yield(acc) }
     }
 
     #[inline]

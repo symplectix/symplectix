@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use crate::{Fold, Step, XformFn};
 
 #[derive(Debug)]
@@ -27,13 +29,17 @@ pub struct MapFold<Sf, MapF> {
 impl<Sf, F, A, B> Fold<A> for MapFold<Sf, F>
 where
     Sf: Fold<B>,
-    F: FnMut(A) -> B,
+    F: FnMut(&A) -> B,
 {
     type Acc = Sf::Acc;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, input: A) -> Step<Self::Acc> {
-        self.sf.step(acc, (self.mapf)(input))
+    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    where
+        Q: Borrow<A>,
+    {
+        let mapped = (self.mapf)(input.borrow());
+        self.sf.step(acc, &mapped)
     }
 
     #[inline]

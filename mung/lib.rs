@@ -9,6 +9,7 @@
 mod filter;
 mod map;
 
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 
 pub use filter::Filter;
@@ -19,7 +20,9 @@ pub trait Fold<T> {
     type Acc;
 
     /// Runs just a one step of folding.
-    fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc>;
+    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    where
+        Q: Borrow<T>;
 
     /// Invoked when folding is complete.
     ///
@@ -45,16 +48,16 @@ pub enum Step<T> {
 
 impl<T, A, B> Fold<T> for (A, B)
 where
-    T: Clone,
     A: Fold<T>,
     B: Fold<T>,
 {
     type Acc = (<A as Fold<T>>::Acc, <B as Fold<T>>::Acc);
 
-    fn step(&mut self, acc: Self::Acc, input: T) -> Step<Self::Acc> {
-        let a = self.0.step(acc.0, input.clone());
-        let b = self.1.step(acc.1, input);
-        match (a, b) {
+    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    where
+        Q: Borrow<T>,
+    {
+        match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
             (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
             (Step::Break(a), Step::Yield(b)) => Step::Break((a, b)),
             (Step::Yield(a), Step::Break(b)) => Step::Break((a, b)),
@@ -161,26 +164,40 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::{Borrow, ToOwned};
+
     use super::{Fold, Step, Xform, XformFn};
 
     struct PushVec;
 
-    impl<T> Fold<T> for PushVec {
-        type Acc = Vec<T>;
+    impl<T> Fold<T> for PushVec
+    where
+        T: ToOwned,
+    {
+        type Acc = Vec<T::Owned>;
 
-        fn step(&mut self, mut acc: Self::Acc, input: T) -> Step<Self::Acc> {
-            acc.push(input);
+        fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+        where
+            Q: Borrow<T>,
+        {
+            acc.push(input.borrow().to_owned());
             Step::Yield(acc)
         }
     }
 
     struct ConsVec;
 
-    impl<T> Fold<T> for ConsVec {
-        type Acc = Vec<T>;
+    impl<T> Fold<T> for ConsVec
+    where
+        T: ToOwned,
+    {
+        type Acc = Vec<T::Owned>;
 
-        fn step(&mut self, mut acc: Self::Acc, input: T) -> Step<Self::Acc> {
-            acc.insert(0, input);
+        fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+        where
+            Q: Borrow<T>,
+        {
+            acc.insert(0, input.borrow().to_owned());
             Step::Yield(acc)
         }
     }
@@ -188,12 +205,12 @@ mod tests {
     #[test]
     fn test_map_filter_step() {
         let mut fold = (
-            Xform::id().map(|x| x + 1).filter(|x: &i32| *x % 2 == 0).apply(ConsVec),
-            Xform::id().map(|x| x - 1).filter(|x: &i32| *x % 2 != 0).apply(PushVec),
+            Xform::id().map(|x: &i32| x + 1).filter(|x: &i32| *x % 2 == 0).apply(ConsVec),
+            Xform::id().map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(PushVec),
         );
         let mut acc = (vec![], vec![]);
         for i in 0..10 {
-            match fold.step(acc, i) {
+            match fold.step(acc, &i) {
                 Step::Yield(ret) => {
                     acc = ret;
                 }
