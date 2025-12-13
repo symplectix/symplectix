@@ -4,9 +4,11 @@ rust.library(
     name = "ano",
     srcs = [
         "ano.rs",
-        "filter.rs",
-        "map.rs",
-        "either.rs",
+        # "filter.rs",
+        "fold.rs",
+        "xf.rs",
+        # "map.rs",
+        # "either.rs",
     ],
 )
 
