@@ -1,34 +1,34 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "mung",
+    name = "ano",
     srcs = [
+        "ano.rs",
         "filter.rs",
-        "lib.rs",
         "map.rs",
         "either.rs",
     ],
 )
 
 rust.test(
-    name = "mung_test",
+    name = "ano_test",
     timeout = "short",
-    crate = ":mung",
+    crate = ":ano",
 )
 
 rust.doc_test(
-    name = "mung_doc_test",
+    name = "ano_doc_test",
     timeout = "short",
-    crate = ":mung",
+    crate = ":ano",
 )
 
 rust.tests(
-    name = "mung_suite",
+    name = "ano_suite",
     size = "small",
     srcs = [
-        "mung_test.rs",
+        "ano_test.rs",
     ],
     deps = [
-        ":mung",
+        ":ano",
     ],
 )
