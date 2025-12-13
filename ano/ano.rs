@@ -13,12 +13,12 @@ use std::marker::PhantomData;
 // xforms
 mod filter;
 mod map;
-pub use filter::Filter;
-pub use map::Map;
+use filter::FilterXf;
+use map::MapXf;
 
 // foldings
 mod either;
-pub use either::Either;
+use either::Either;
 
 pub trait Fold<T> {
     /// The accumulator, used to store the intermediate result while folding.
@@ -84,12 +84,12 @@ where
 
 // Xform exists only to compose xf and an another XformFn.
 #[derive(Debug)]
-pub struct Xform<Xf> {
+pub struct Prep<Xf> {
     xf: Xf,
 }
 
 /// An adapter that creates a new [Fold] from the given one.
-pub trait XformFn<Sf> {
+pub trait Xform<Sf> {
     /// A new step function created by apply.
     type Fold;
 
@@ -97,30 +97,30 @@ pub trait XformFn<Sf> {
     fn apply(self, sf: Sf) -> Self::Fold;
 }
 
-impl<T> Xform<Id<T>> {
+impl<T> Prep<Id<T>> {
     fn id() -> Self {
-        Xform { xf: id() }
+        Prep { xf: id() }
     }
 }
 
-impl<Xf> Xform<Xf> {
+impl<Xf> Prep<Xf> {
     fn apply<Sf>(self, step_fn: Sf) -> Xf::Fold
     where
-        Xf: XformFn<Sf>,
+        Xf: Xform<Sf>,
     {
         self.xf.apply(step_fn)
     }
 
-    fn comp<That>(self, that: That) -> Xform<Comp<Xf, That>> {
-        Xform { xf: comp(self.xf, that) }
+    fn comp<That>(self, that: That) -> Prep<Comp<Xf, That>> {
+        Prep { xf: comp(self.xf, that) }
     }
 
-    pub fn map<F>(self, f: F) -> Xform<Comp<Xf, Map<F>>> {
-        self.comp(Map::new(f))
+    pub fn map<F>(self, f: F) -> Prep<Comp<Xf, MapXf<F>>> {
+        self.comp(MapXf::new(f))
     }
 
-    pub fn filter<P>(self, pred: P) -> Xform<Comp<Xf, Filter<P>>> {
-        self.comp(Filter::new(pred))
+    pub fn filter<P>(self, pred: P) -> Prep<Comp<Xf, FilterXf<P>>> {
+        self.comp(FilterXf::new(pred))
     }
 }
 
@@ -140,7 +140,7 @@ fn id<T>() -> Id<T> {
 //     }
 // }
 
-impl<Sf, T> XformFn<Sf> for Id<T>
+impl<Sf, T> Xform<Sf> for Id<T>
 where
     Sf: Fold<T>,
 {
@@ -162,10 +162,10 @@ pub struct Comp<A, B> {
     b: B,
 }
 
-impl<Sf, A, B> XformFn<Sf> for Comp<A, B>
+impl<Sf, A, B> Xform<Sf> for Comp<A, B>
 where
-    A: XformFn<B::Fold>,
-    B: XformFn<Sf>,
+    A: Xform<B::Fold>,
+    B: Xform<Sf>,
 {
     type Fold = A::Fold;
 
@@ -179,7 +179,7 @@ mod tests {
     use std::borrow::{Borrow, ToOwned};
     use std::collections::VecDeque;
 
-    use super::{Fold, Step, Xform, XformFn};
+    use super::{Fold, Prep, Step, Xform};
 
     struct Conj;
 
@@ -217,11 +217,11 @@ mod tests {
 
     #[test]
     fn test_map_filter_step() {
-        let mut fold = Xform::id()
+        let mut fold = Prep::id()
             .map(|x: &i32| x + 1)
             .filter(|x: &i32| *x % 2 == 0)
             .apply(Cons)
-            .either(Xform::id().map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(Conj));
+            .either(Prep::id().map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(Conj));
         let mut acc = (VecDeque::with_capacity(10), vec![]);
         for i in 0..10 {
             match fold.step(acc, &i) {

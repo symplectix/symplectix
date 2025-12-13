@@ -1,32 +1,32 @@
 use std::borrow::Borrow;
 
-use crate::{Fold, Step, XformFn};
+use crate::{Fold, Step, Xform};
 
 #[derive(Debug)]
-pub struct Filter<P> {
+pub struct FilterXf<P> {
     pred: P,
 }
-impl<P> Filter<P> {
+impl<P> FilterXf<P> {
     pub(crate) fn new(pred: P) -> Self {
-        Filter { pred }
+        FilterXf { pred }
     }
 }
 
-impl<Sf, P> XformFn<Sf> for Filter<P> {
-    type Fold = FilterFold<Sf, P>;
+impl<Sf, P> Xform<Sf> for FilterXf<P> {
+    type Fold = Filter<Sf, P>;
 
     fn apply(self, sf: Sf) -> Self::Fold {
-        FilterFold { sf, pred: self.pred }
+        Filter { sf, pred: self.pred }
     }
 }
 
 #[derive(Debug)]
-pub struct FilterFold<Sf, P> {
+pub struct Filter<Sf, P> {
     sf: Sf,
     pred: P,
 }
 
-impl<Sf, P, T> Fold<T> for FilterFold<Sf, P>
+impl<Sf, P, T> Fold<T> for Filter<Sf, P>
 where
     Sf: Fold<T>,
     P: FnMut(&T) -> bool,

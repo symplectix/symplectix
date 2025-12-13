@@ -1,32 +1,32 @@
 use std::borrow::Borrow;
 
-use crate::{Fold, Step, XformFn};
+use crate::{Fold, Step, Xform};
 
 #[derive(Debug)]
-pub struct Map<F> {
+pub struct MapXf<F> {
     mapf: F,
 }
-impl<F> Map<F> {
+impl<F> MapXf<F> {
     pub(crate) fn new(f: F) -> Self {
-        Map { mapf: f }
+        MapXf { mapf: f }
     }
 }
 
-impl<Sf, F> XformFn<Sf> for Map<F> {
-    type Fold = MapFold<Sf, F>;
+impl<Sf, F> Xform<Sf> for MapXf<F> {
+    type Fold = Map<Sf, F>;
 
     fn apply(self, sf: Sf) -> Self::Fold {
-        MapFold { sf, mapf: self.mapf }
+        Map { sf, mapf: self.mapf }
     }
 }
 
 #[derive(Debug)]
-pub struct MapFold<Sf, MapF> {
+pub struct Map<Sf, MapF> {
     sf: Sf,
     mapf: MapF,
 }
 
-impl<Sf, F, A, B> Fold<A> for MapFold<Sf, F>
+impl<Sf, F, A, B> Fold<A> for Map<Sf, F>
 where
     Sf: Fold<B>,
     F: FnMut(&A) -> B,
