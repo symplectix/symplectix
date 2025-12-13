@@ -2,18 +2,23 @@
 //! Composable transformations.
 
 // Refs:
+// - [foldl](https://github.com/Gabriella439/foldl)
+// - [prefolds](https://github.com/effectfully/prefolds)
 // - [transducers](https://clojure.org/reference/transducers)
-// - [cgrand/xforms]: https://github.com/cgrand/xforms
-// - [foldl](https://hackage.haskell.org/package/foldl)
-
-mod filter;
-mod map;
+// - [xforms](https://github.com/cgrand/xforms)
 
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 
+// xforms
+mod filter;
+mod map;
 pub use filter::Filter;
 pub use map::Map;
+
+// foldings
+mod either;
+pub use either::Either;
 
 pub trait Fold<T> {
     /// The accumulator, used to store the intermediate result while folding.
@@ -34,6 +39,13 @@ pub trait Fold<T> {
         Self: Sized,
     {
         acc
+    }
+
+    fn either<That>(self, that: That) -> Either<Self, That>
+    where
+        Self: Sized,
+    {
+        Either(self, that)
     }
 }
 
@@ -205,10 +217,11 @@ mod tests {
 
     #[test]
     fn test_map_filter_step() {
-        let mut fold = (
-            Xform::id().map(|x: &i32| x + 1).filter(|x: &i32| *x % 2 == 0).apply(Cons),
-            Xform::id().map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(Conj),
-        );
+        let mut fold = Xform::id()
+            .map(|x: &i32| x + 1)
+            .filter(|x: &i32| *x % 2 == 0)
+            .apply(Cons)
+            .either(Xform::id().map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(Conj));
         let mut acc = (VecDeque::with_capacity(10), vec![]);
         for i in 0..10 {
             match fold.step(acc, &i) {

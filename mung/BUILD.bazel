@@ -6,6 +6,7 @@ rust.library(
         "filter.rs",
         "lib.rs",
         "map.rs",
+        "either.rs",
     ],
 )
 
