@@ -49,11 +49,16 @@ where
     }
 }
 
+fn mul3(x: &i32) -> i32 {
+    x * 3
+}
+
+fn even(x: &i32) -> bool {
+    x % 2 == 0
+}
+
 #[test]
 fn map_filter_take() {
-    let mul3 = |x: &i32| x * 3;
-    let even = |x: &i32| x % 2 == 0;
-
     let acc = xf::map(mul3).take(5).filter(even).apply(Conj).fold(vec![], 1..);
     assert_eq!(acc, vec![6, 12]);
     let acc = xf::map(mul3).filter(even).take(5).apply(Conj).fold(vec![], 1..);
