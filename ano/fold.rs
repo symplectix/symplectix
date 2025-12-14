@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 
-pub trait Fold<T> {
+pub trait Fold<T>: Sized {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
@@ -14,16 +14,12 @@ pub trait Fold<T> {
     /// - By default, done just returns acc.
     /// - You must call `done` exactly once.
     #[inline]
-    fn done(self, acc: Self::Acc) -> Self::Acc
-    where
-        Self: Sized,
-    {
+    fn done(self, acc: Self::Acc) -> Self::Acc {
         acc
     }
 
     fn fold<I, Q>(mut self, mut acc: Self::Acc, iterable: I) -> Self::Acc
     where
-        Self: Sized,
         I: IntoIterator<Item = Q>,
         Q: Borrow<T>,
     {
