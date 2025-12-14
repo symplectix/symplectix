@@ -1,3 +1,5 @@
+use crate::fold;
+
 // Xform exists only to compose xf and an another XformFn.
 #[derive(Debug)]
 pub struct Fold<Xf> {
@@ -65,9 +67,9 @@ pub struct Map<F> {
     mapf: F,
 }
 impl<Sf, F> Xform<Sf> for Map<F> {
-    type Fold = crate::Map<Sf, F>;
+    type Fold = fold::Map<Sf, F>;
     fn apply(self, sf: Sf) -> Self::Fold {
-        crate::Map::new(sf, self.mapf)
+        fold::Map::new(sf, self.mapf)
     }
 }
 pub fn map<F>(f: F) -> Fold<Map<F>> {
@@ -84,9 +86,9 @@ pub struct Filter<P> {
     pred: P,
 }
 impl<Sf, P> Xform<Sf> for Filter<P> {
-    type Fold = crate::Filter<Sf, P>;
+    type Fold = fold::Filter<Sf, P>;
     fn apply(self, sf: Sf) -> Self::Fold {
-        crate::Filter::new(sf, self.pred)
+        fold::Filter::new(sf, self.pred)
     }
 }
 pub fn filter<P>(pred: P) -> Fold<Filter<P>> {

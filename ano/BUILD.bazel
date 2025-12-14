@@ -4,6 +4,7 @@ rust.library(
     name = "ano",
     srcs = [
         "ano.rs",
+        "fold.rs",
         "xf.rs",
     ],
 )
