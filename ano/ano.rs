@@ -33,6 +33,26 @@ pub trait Fold<T> {
         acc
     }
 
+    fn fold<I, Q>(mut self, mut acc: Self::Acc, iterable: I) -> Self::Acc
+    where
+        Self: Sized,
+        I: IntoIterator<Item = Q>,
+        Q: Borrow<T>,
+    {
+        for i in iterable.into_iter() {
+            match self.step(acc, &i) {
+                Step::Yield(ret) => {
+                    acc = ret;
+                }
+                Step::Break(ret) => {
+                    acc = self.done(ret);
+                    break;
+                }
+            }
+        }
+        acc
+    }
+
     fn either<That>(self, that: That) -> Either<Self, That>
     where
         Self: Sized,

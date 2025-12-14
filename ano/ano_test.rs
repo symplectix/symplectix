@@ -40,22 +40,11 @@ where
 }
 
 #[test]
-fn test_map_filter_step() {
-    let mut f = xf::map(|x: &i32| x + 1)
+fn map_filter_either() {
+    let acc = xf::map(|x: &i32| x + 1)
         .filter(|x: &i32| *x % 2 == 0)
         .apply(Cons)
-        .either(xf::map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(Conj));
-    let mut acc = (VecDeque::with_capacity(10), vec![]);
-    for i in 0..10 {
-        match f.step(acc, &i) {
-            ano::Step::Yield(ret) => {
-                acc = ret;
-            }
-            ano::Step::Break(ret) => {
-                acc = f.done(ret);
-                break;
-            }
-        }
-    }
+        .either(xf::map(|x: &i32| x - 1).filter(|x: &i32| *x % 2 != 0).apply(Conj))
+        .fold((VecDeque::with_capacity(10), vec![]), 0..10);
     assert_eq!(acc, (VecDeque::from([10, 8, 6, 4, 2]), vec![-1, 1, 3, 5, 7]));
 }
