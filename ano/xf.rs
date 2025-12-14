@@ -41,6 +41,10 @@ impl<Xf> Folding<Xf> {
     pub fn filter<P>(self, pred: P) -> Folding<Comp<Xf, Filter<P>>> {
         self.comp(Filter::new(pred))
     }
+
+    pub fn take(self, count: usize) -> Folding<Comp<Xf, Take>> {
+        self.comp(Take::new(count))
+    }
 }
 
 #[derive(Debug)]
@@ -52,7 +56,7 @@ impl<Sf: fold::Fold<T>, T> Xform<Sf> for Id<T> {
         step_fn
     }
 }
-pub fn id<T>() -> Folding<Id<T>> {
+pub fn folding<T>() -> Folding<Id<T>> {
     Folding::new(Id(PhantomData))
 }
 
@@ -112,5 +116,24 @@ pub fn filter<P>(pred: P) -> Folding<Filter<P>> {
 impl<P> Filter<P> {
     fn new(pred: P) -> Self {
         Filter { pred }
+    }
+}
+
+#[derive(Debug)]
+pub struct Take {
+    count: usize,
+}
+impl<Sf> Xform<Sf> for Take {
+    type Fold = fold::Take<Sf>;
+    fn apply(self, sf: Sf) -> Self::Fold {
+        fold::Take::new(sf, self.count)
+    }
+}
+pub fn take(count: usize) -> Folding<Take> {
+    Folding::new(Take::new(count))
+}
+impl Take {
+    fn new(count: usize) -> Self {
+        Take { count }
     }
 }

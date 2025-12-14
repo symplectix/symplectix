@@ -138,6 +138,53 @@ where
 }
 
 #[derive(Debug)]
+pub struct Take<Sf> {
+    sf: Sf,
+    count: usize,
+}
+impl<Sf> Take<Sf> {
+    pub(crate) fn new(sf: Sf, count: usize) -> Self {
+        Take { sf, count }
+    }
+}
+impl<Sf, T> Fold<T> for Take<Sf>
+where
+    Sf: Fold<T>,
+{
+    type Acc = Sf::Acc;
+
+    #[inline]
+    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    where
+        Q: Borrow<T>,
+    {
+        match self.count {
+            #[allow(unreachable_code)]
+            0 => {
+                unreachable!("this should not happen");
+                Step::Break(acc)
+            }
+            1 => {
+                self.count = 0;
+                match self.sf.step(acc, input) {
+                    Step::Yield(a) => Step::Break(a),
+                    Step::Break(a) => Step::Break(a),
+                }
+            }
+            _ => {
+                self.count -= 1;
+                self.sf.step(acc, input)
+            }
+        }
+    }
+
+    #[inline]
+    fn done(self, acc: Self::Acc) -> Self::Acc {
+        self.sf.done(acc)
+    }
+}
+
+#[derive(Debug)]
 pub struct Either<A, B>(pub(crate) A, pub(crate) B);
 impl<T, A, B> Fold<T> for Either<A, B>
 where
