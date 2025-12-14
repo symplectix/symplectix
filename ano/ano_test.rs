@@ -20,6 +20,11 @@ where
         acc.push(input.borrow().to_owned());
         ano::Step::Yield(acc)
     }
+
+    #[inline]
+    fn done(self, acc: Self::Acc) -> Self::Acc {
+        acc
+    }
 }
 
 struct Cons;
@@ -36,6 +41,11 @@ where
     {
         acc.push_front(input.borrow().to_owned());
         ano::Step::Yield(acc)
+    }
+
+    #[inline]
+    fn done(self, acc: Self::Acc) -> Self::Acc {
+        acc
     }
 }
 

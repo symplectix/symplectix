@@ -11,12 +11,8 @@ pub trait Fold<T>: Sized {
 
     /// Invoked when folding is complete.
     ///
-    /// - By default, done just returns acc.
-    /// - You must call `done` exactly once.
-    #[inline]
-    fn done(self, acc: Self::Acc) -> Self::Acc {
-        acc
-    }
+    /// You must call `done` exactly once.
+    fn done(self, acc: Self::Acc) -> Self::Acc;
 
     fn fold<I, Q>(mut self, mut acc: Self::Acc, iterable: I) -> Self::Acc
     where
