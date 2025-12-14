@@ -7,15 +7,15 @@ use ano::{Fold, xf};
 
 struct Conj;
 
-impl<T> ano::Fold<T> for Conj
+impl<In> ano::Fold<In, Vec<In::Owned>> for Conj
 where
-    T: ToOwned,
+    In: ToOwned,
 {
-    type Acc = Vec<T::Owned>;
+    type Acc = Vec<In::Owned>;
 
     fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> ano::Step<Self::Acc>
     where
-        Q: Borrow<T>,
+        Q: Borrow<In>,
     {
         acc.push(input.borrow().to_owned());
         ano::Step::Yield(acc)
@@ -29,15 +29,15 @@ where
 
 struct Cons;
 
-impl<T> ano::Fold<T> for Cons
+impl<In> ano::Fold<In, VecDeque<In::Owned>> for Cons
 where
-    T: ToOwned,
+    In: ToOwned,
 {
-    type Acc = VecDeque<T::Owned>;
+    type Acc = VecDeque<In::Owned>;
 
     fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> ano::Step<Self::Acc>
     where
-        Q: Borrow<T>,
+        Q: Borrow<In>,
     {
         acc.push_front(input.borrow().to_owned());
         ano::Step::Yield(acc)

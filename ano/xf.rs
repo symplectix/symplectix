@@ -48,15 +48,15 @@ impl<Xf> Folding<Xf> {
 }
 
 #[derive(Debug)]
-pub struct Id<T>(PhantomData<T>);
-impl<Sf: fold::Fold<T>, T> Xform<Sf> for Id<T> {
+pub struct Id<In, Out>(PhantomData<(In, Out)>);
+impl<Sf: fold::Fold<In, Out>, In, Out> Xform<Sf> for Id<In, Out> {
     type Fold = Sf;
     #[inline]
     fn apply(self, step_fn: Sf) -> Self::Fold {
         step_fn
     }
 }
-pub fn folding<T>() -> Folding<Id<T>> {
+pub fn folding<In, Out>() -> Folding<Id<In, Out>> {
     Folding::new(Id(PhantomData))
 }
 

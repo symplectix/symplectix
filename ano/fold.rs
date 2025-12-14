@@ -1,36 +1,36 @@
 use std::borrow::Borrow;
 
-pub trait Fold<T>: Sized {
+pub trait Fold<In, Out>: Sized {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
     /// Runs just a one step of folding.
-    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
-        Q: Borrow<T>;
+        T: Borrow<In>;
 
     /// Invoked when folding is complete.
     ///
     /// You must call `done` exactly once.
-    fn done(self, acc: Self::Acc) -> Self::Acc;
+    fn done(self, acc: Self::Acc) -> Out;
 
-    fn fold<I, Q>(mut self, mut acc: Self::Acc, iterable: I) -> Self::Acc
+    fn fold<It, T>(mut self, mut acc: Self::Acc, iterable: It) -> Out
     where
-        I: IntoIterator<Item = Q>,
-        Q: Borrow<T>,
+        It: IntoIterator<Item = T>,
+        T: Borrow<In>,
     {
-        for i in iterable.into_iter() {
-            match self.step(acc, &i) {
+        for item in iterable.into_iter() {
+            match self.step(acc, &item) {
                 Step::Yield(ret) => {
                     acc = ret;
                 }
                 Step::Break(ret) => {
-                    acc = self.done(ret);
+                    acc = ret;
                     break;
                 }
             }
         }
-        acc
+        self.done(acc)
     }
 
     fn either<That>(self, that: That) -> Either<Self, That>
@@ -60,24 +60,24 @@ impl<Sf, F> Map<Sf, F> {
         Map { sf, mapf }
     }
 }
-impl<Sf, F, A, B> Fold<A> for Map<Sf, F>
+impl<Sf, F, A, In, Out> Fold<In, Out> for Map<Sf, F>
 where
-    Sf: Fold<B>,
-    F: FnMut(&A) -> B,
+    Sf: Fold<A, Out>,
+    F: FnMut(&In) -> A,
 {
     type Acc = Sf::Acc;
 
     #[inline]
-    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
-        Q: Borrow<A>,
+        T: Borrow<In>,
     {
         let mapped = (self.mapf)(input.borrow());
         self.sf.step(acc, &mapped)
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> Self::Acc {
+    fn done(self, acc: Self::Acc) -> Out {
         self.sf.done(acc)
     }
 }
@@ -92,23 +92,23 @@ impl<Sf, P> Filter<Sf, P> {
         Filter { sf, pred }
     }
 }
-impl<Sf, P, T> Fold<T> for Filter<Sf, P>
+impl<Sf, P, In, Out> Fold<In, Out> for Filter<Sf, P>
 where
-    Sf: Fold<T>,
-    P: FnMut(&T) -> bool,
+    Sf: Fold<In, Out>,
+    P: FnMut(&In) -> bool,
 {
     type Acc = Sf::Acc;
 
     #[inline]
-    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
-        Q: Borrow<T>,
+        T: Borrow<In>,
     {
         if (self.pred)(input.borrow()) { self.sf.step(acc, input) } else { Step::Yield(acc) }
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> Self::Acc {
+    fn done(self, acc: Self::Acc) -> Out {
         self.sf.done(acc)
     }
 }
@@ -123,23 +123,19 @@ impl<Sf> Take<Sf> {
         Take { sf, count }
     }
 }
-impl<Sf, T> Fold<T> for Take<Sf>
+impl<Sf, In, Out> Fold<In, Out> for Take<Sf>
 where
-    Sf: Fold<T>,
+    Sf: Fold<In, Out>,
 {
     type Acc = Sf::Acc;
 
     #[inline]
-    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
-        Q: Borrow<T>,
+        T: Borrow<In>,
     {
         match self.count {
-            #[allow(unreachable_code)]
-            0 => {
-                unreachable!("this should not happen");
-                Step::Break(acc)
-            }
+            0 => Step::Break(acc),
             1 => {
                 self.count = 0;
                 match self.sf.step(acc, input) {
@@ -155,23 +151,23 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> Self::Acc {
+    fn done(self, acc: Self::Acc) -> Out {
         self.sf.done(acc)
     }
 }
 
 #[derive(Debug)]
 pub struct Either<A, B>(pub(crate) A, pub(crate) B);
-impl<T, A, B> Fold<T> for Either<A, B>
+impl<In, O1, O2, A, B> Fold<In, (O1, O2)> for Either<A, B>
 where
-    A: Fold<T>,
-    B: Fold<T>,
+    A: Fold<In, O1>,
+    B: Fold<In, O2>,
 {
-    type Acc = (<A as Fold<T>>::Acc, <B as Fold<T>>::Acc);
+    type Acc = (<A as Fold<In, O1>>::Acc, <B as Fold<In, O2>>::Acc);
 
-    fn step<Q>(&mut self, acc: Self::Acc, input: &Q) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
-        Q: Borrow<T>,
+        T: Borrow<In>,
     {
         match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
             (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
@@ -182,7 +178,7 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> Self::Acc {
+    fn done(self, acc: Self::Acc) -> (O1, O2) {
         (self.0.done(acc.0), self.1.done(acc.1))
     }
 }
