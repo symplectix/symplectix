@@ -1,13 +1,15 @@
+use std::marker::PhantomData;
+
 use crate::fold;
 
-// Xform exists only to compose xf and an another XformFn.
+// Exists only to compose xf and construct a Fold.
 #[derive(Debug)]
-pub struct Fold<Xf> {
+pub struct Folding<Xf> {
     xf: Xf,
 }
-impl<Xf> Fold<Xf> {
+impl<Xf> Folding<Xf> {
     fn new(xf: Xf) -> Self {
-        Fold { xf }
+        Folding { xf }
     }
 }
 
@@ -20,7 +22,7 @@ pub trait Xform<Sf> {
     fn apply(self, sf: Sf) -> Self::Fold;
 }
 
-impl<Xf> Fold<Xf> {
+impl<Xf> Folding<Xf> {
     pub fn apply<Sf>(self, step_fn: Sf) -> Xf::Fold
     where
         Xf: Xform<Sf>,
@@ -28,17 +30,30 @@ impl<Xf> Fold<Xf> {
         self.xf.apply(step_fn)
     }
 
-    fn comp<That>(self, that: That) -> Fold<Comp<Xf, That>> {
-        Fold { xf: comp(self.xf, that) }
+    fn comp<That>(self, that: That) -> Folding<Comp<Xf, That>> {
+        Folding { xf: comp(self.xf, that) }
     }
 
-    pub fn map<F>(self, f: F) -> Fold<Comp<Xf, Map<F>>> {
+    pub fn map<F>(self, f: F) -> Folding<Comp<Xf, Map<F>>> {
         self.comp(Map::new(f))
     }
 
-    pub fn filter<P>(self, pred: P) -> Fold<Comp<Xf, Filter<P>>> {
+    pub fn filter<P>(self, pred: P) -> Folding<Comp<Xf, Filter<P>>> {
         self.comp(Filter::new(pred))
     }
+}
+
+#[derive(Debug)]
+pub struct Id<T>(PhantomData<T>);
+impl<Sf: fold::Fold<T>, T> Xform<Sf> for Id<T> {
+    type Fold = Sf;
+    #[inline]
+    fn apply(self, step_fn: Sf) -> Self::Fold {
+        step_fn
+    }
+}
+pub fn id<T>() -> Folding<Id<T>> {
+    Folding::new(Id(PhantomData))
 }
 
 /// Comp is an adapter of [Adapter]s.
@@ -72,8 +87,8 @@ impl<Sf, F> Xform<Sf> for Map<F> {
         fold::Map::new(sf, self.mapf)
     }
 }
-pub fn map<F>(f: F) -> Fold<Map<F>> {
-    Fold::new(Map::new(f))
+pub fn map<F>(f: F) -> Folding<Map<F>> {
+    Folding::new(Map::new(f))
 }
 impl<F> Map<F> {
     fn new(mapf: F) -> Map<F> {
@@ -91,8 +106,8 @@ impl<Sf, P> Xform<Sf> for Filter<P> {
         fold::Filter::new(sf, self.pred)
     }
 }
-pub fn filter<P>(pred: P) -> Fold<Filter<P>> {
-    Fold::new(Filter::new(pred))
+pub fn filter<P>(pred: P) -> Folding<Filter<P>> {
+    Folding::new(Filter::new(pred))
 }
 impl<P> Filter<P> {
     fn new(pred: P) -> Self {
