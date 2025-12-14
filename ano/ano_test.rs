@@ -130,7 +130,19 @@ fn map_filter_take() {
 
 #[test]
 fn either() {
-    // let acc = Cons::new(10).either(Conj::new(10)).fold(1..5);
     let acc = <Cons<i32> as Fold<i32, VecDeque<_>>>::either::<Conj<i32>>(Cons::new(10), Conj::new(10)).fold(1..5);
     assert_eq!(acc, (VecDeque::from([4, 3, 2, 1]), vec![1, 2, 3, 4]));
+
+    fn cons() -> impl Fold<i32, VecDeque<i32>> {
+        Cons::<i32>::new(10)
+    }
+    fn conj() -> impl Fold<i32, Vec<i32>> {
+        Conj::<i32>::new(10)
+    }
+    let f = cons().either(conj());
+    let acc = f.fold(1..5);
+    assert_eq!(acc, (VecDeque::from([4, 3, 2, 1]), vec![1, 2, 3, 4]));
+
+    let acc = xf::map(pow2).take(3).apply(Cons::new(10)).either(xf::map(mul3).take(2).apply(Conj::new(10))).fold(1..10);
+    assert_eq!(acc, (VecDeque::from([4, 1]), vec![3, 6]));
 }
