@@ -4,8 +4,36 @@ use std::borrow::{Borrow, ToOwned};
 use std::collections::VecDeque;
 use std::iter::{empty, once};
 use std::marker::PhantomData;
+use std::ops::AddAssign;
 
 use ano::{Fold, xf};
+
+#[derive(Debug)]
+struct Sum<T>(PhantomData<T>);
+impl<A> Sum<A> {
+    fn new() -> Self {
+        Sum(PhantomData)
+    }
+}
+impl<S, A> ano::Fold<A, S> for Sum<S>
+where
+    S: for<'a> AddAssign<&'a A>,
+{
+    type Acc = S;
+
+    #[inline]
+    fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> ano::Step<Self::Acc>
+    where
+        Q: Borrow<A>,
+    {
+        acc += input.borrow();
+        ano::Step::Yield(acc)
+    }
+    #[inline]
+    fn done(self, acc: Self::Acc) -> Self::Acc {
+        acc
+    }
+}
 
 #[derive(Debug)]
 struct Conj<T>(PhantomData<T>);
@@ -130,6 +158,18 @@ fn map_filter_take() {
     assert_eq!(acc, vec![6, 12]);
     let acc = xf::take(5).filter(even).map(mul3).apply(conj()).fold(vec![], 1..);
     assert_eq!(acc, vec![6, 12]);
+}
+
+#[test]
+fn sum() {
+    let acc = xf::map(mul3).take(3).apply(Sum::new()).fold(0, 1..);
+    assert_eq!(acc, 18);
+
+    let f = xf::map(mul3).take(3).apply(Sum::new());
+    let g = xf::map(pow2).take(3).apply(Sum::new());
+    let (fsum, gsum) = f.par(g).fold((0, 0), 1..);
+    assert_eq!(fsum, 18);
+    assert_eq!(gsum, 14);
 }
 
 #[test]

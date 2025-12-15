@@ -37,7 +37,7 @@ pub trait Fold<In, Out>: Sized {
     where
         Self: Sized,
     {
-        Par { a: Fuse { f: self, complete: false }, b: Fuse { f: that, complete: false } }
+        Par(Fuse::new(self), Fuse::new(that))
     }
 
     fn either<That>(self, that: That) -> Either<Self, That>
@@ -162,6 +162,11 @@ struct Fuse<F> {
     f: F,
     complete: bool,
 }
+impl<F> Fuse<F> {
+    fn new(f: F) -> Self {
+        Fuse { f, complete: false }
+    }
+}
 
 impl<In, Out, F> Fold<In, Out> for Fuse<F>
 where
@@ -192,10 +197,7 @@ where
 }
 
 #[derive(Debug)]
-pub struct Par<A, B> {
-    a: Fuse<A>,
-    b: Fuse<B>,
-}
+pub struct Par<A, B>(Fuse<A>, Fuse<B>);
 impl<In, O1, O2, A, B> Fold<In, (O1, O2)> for Par<A, B>
 where
     A: Fold<In, O1>,
@@ -206,7 +208,7 @@ where
     where
         T: Borrow<In>,
     {
-        match (self.a.step(acc.0, input), self.b.step(acc.1, input)) {
+        match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
             (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
             (Step::Break(a), Step::Yield(b)) => Step::Yield((a, b)),
             (Step::Yield(a), Step::Break(b)) => Step::Yield((a, b)),
@@ -215,7 +217,7 @@ where
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> (O1, O2) {
-        (self.a.done(acc.0), self.b.done(acc.1))
+        (self.0.done(acc.0), self.1.done(acc.1))
     }
 }
 
