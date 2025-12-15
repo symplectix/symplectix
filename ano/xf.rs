@@ -7,11 +7,6 @@ use crate::fold;
 pub struct Folding<Xf> {
     xf: Xf,
 }
-impl<Xf> Folding<Xf> {
-    fn new(xf: Xf) -> Self {
-        Folding { xf }
-    }
-}
 
 /// An adapter that creates a new [Fold] from the given one.
 pub trait Xform<Sf> {
@@ -30,8 +25,12 @@ impl<Xf> Folding<Xf> {
         self.xf.apply(step_fn)
     }
 
+    fn new(xf: Xf) -> Self {
+        Folding { xf }
+    }
+
     fn comp<That>(self, that: That) -> Folding<Comp<Xf, That>> {
-        Folding { xf: comp(self.xf, that) }
+        Folding::new(comp(self.xf, that))
     }
 
     pub fn map<F>(self, f: F) -> Folding<Comp<Xf, Map<F>>> {

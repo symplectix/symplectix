@@ -1,30 +1,36 @@
 use std::borrow::Borrow;
 
 pub trait Fold<In, Out>: Sized {
+    /// The accumulator, used to store the intermediate result while folding.
+    type Acc;
+
     /// Runs just a one step of folding.
-    fn step<T>(&mut self, input: &T) -> Step
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
         T: Borrow<In>;
 
     /// Invoked when folding is complete.
     ///
     /// You must call `done` exactly once.
-    fn done(self) -> Out;
+    fn done(self, acc: Self::Acc) -> Out;
 
-    fn fold<It, T>(mut self, iterable: It) -> Out
+    fn fold<It, T>(mut self, mut acc: Self::Acc, iterable: It) -> Out
     where
         It: IntoIterator<Item = T>,
         T: Borrow<In>,
     {
         for item in iterable.into_iter() {
-            match self.step(&item) {
-                Step::Yield => {}
-                Step::Break => {
+            match self.step(acc, &item) {
+                Step::Yield(ret) => {
+                    acc = ret;
+                }
+                Step::Break(ret) => {
+                    acc = ret;
                     break;
                 }
             }
         }
-        self.done()
+        self.done(acc)
     }
 
     fn either<That>(self, that: That) -> Either<Self, That>
@@ -37,11 +43,11 @@ pub trait Fold<In, Out>: Sized {
 
 /// The result of [Fold.step].
 #[derive(Debug, Copy, Clone)]
-pub enum Step {
+pub enum Step<T> {
     /// Keep folding.
-    Yield,
+    Yield(T),
     /// Stop folding.
-    Break,
+    Break(T),
 }
 
 #[derive(Debug)]
@@ -59,18 +65,18 @@ where
     Sf: Fold<A, Out>,
     F: FnMut(&In) -> A,
 {
+    type Acc = Sf::Acc;
     #[inline]
-    fn step<T>(&mut self, input: &T) -> Step
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
         T: Borrow<In>,
     {
         let mapped = (self.mapf)(input.borrow());
-        self.sf.step(&mapped)
+        self.sf.step(acc, &mapped)
     }
-
     #[inline]
-    fn done(self) -> Out {
-        self.sf.done()
+    fn done(self, acc: Self::Acc) -> Out {
+        self.sf.done(acc)
     }
 }
 
@@ -89,17 +95,17 @@ where
     Sf: Fold<In, Out>,
     P: FnMut(&In) -> bool,
 {
+    type Acc = Sf::Acc;
     #[inline]
-    fn step<T>(&mut self, input: &T) -> Step
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
         T: Borrow<In>,
     {
-        if (self.pred)(input.borrow()) { self.sf.step(input) } else { Step::Yield }
+        if (self.pred)(input.borrow()) { self.sf.step(acc, input) } else { Step::Yield(acc) }
     }
-
     #[inline]
-    fn done(self) -> Out {
-        self.sf.done()
+    fn done(self, acc: Self::Acc) -> Out {
+        self.sf.done(acc)
     }
 }
 
@@ -117,28 +123,30 @@ impl<Sf, In, Out> Fold<In, Out> for Take<Sf>
 where
     Sf: Fold<In, Out>,
 {
+    type Acc = Sf::Acc;
     #[inline]
-    fn step<T>(&mut self, input: &T) -> Step
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
         T: Borrow<In>,
     {
         match self.count {
-            0 => Step::Break,
+            0 => Step::Break(acc),
             1 => {
                 self.count = 0;
-                let _step = self.sf.step(input);
-                Step::Break
+                match self.sf.step(acc, input) {
+                    Step::Yield(a) => Step::Break(a),
+                    Step::Break(a) => Step::Break(a),
+                }
             }
             _ => {
                 self.count -= 1;
-                self.sf.step(input)
+                self.sf.step(acc, input)
             }
         }
     }
-
     #[inline]
-    fn done(self) -> Out {
-        self.sf.done()
+    fn done(self, acc: Self::Acc) -> Out {
+        self.sf.done(acc)
     }
 }
 
@@ -149,18 +157,20 @@ where
     A: Fold<In, O1>,
     B: Fold<In, O2>,
 {
-    fn step<T>(&mut self, input: &T) -> Step
+    type Acc = (<A as Fold<In, O1>>::Acc, <B as Fold<In, O2>>::Acc);
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
         T: Borrow<In>,
     {
-        match (self.0.step(input), self.1.step(input)) {
-            (Step::Yield, Step::Yield) => Step::Yield,
-            _ => Step::Break,
+        match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
+            (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
+            (Step::Break(a), Step::Yield(b)) => Step::Break((a, b)),
+            (Step::Yield(a), Step::Break(b)) => Step::Break((a, b)),
+            (Step::Break(a), Step::Break(b)) => Step::Break((a, b)),
         }
     }
-
     #[inline]
-    fn done(self) -> (O1, O2) {
-        (self.0.done(), self.1.done())
+    fn done(self, acc: Self::Acc) -> (O1, O2) {
+        (self.0.done(acc.0), self.1.done(acc.1))
     }
 }
