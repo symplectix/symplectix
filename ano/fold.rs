@@ -1,23 +1,25 @@
 use std::borrow::Borrow;
 
-pub trait Fold<In, Out>: Sized {
+/// Fold represents a left fold computation from a collection of A to B.
+pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
     /// Runs just a one step of folding.
-    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
-        T: Borrow<In>;
+        In: Borrow<A>;
 
     /// Invoked when folding is complete.
     ///
     /// You must call `done` exactly once.
-    fn done(self, acc: Self::Acc) -> Out;
+    fn done(self, acc: Self::Acc) -> B;
 
-    fn fold<It, T>(mut self, mut acc: Self::Acc, iterable: It) -> Out
+    fn fold<It, T>(mut self, mut acc: Self::Acc, iterable: It) -> B
     where
+        Self: Sized,
         It: IntoIterator<Item = T>,
-        T: Borrow<In>,
+        T: Borrow<A>,
     {
         for item in iterable.into_iter() {
             match self.step(acc, &item) {
