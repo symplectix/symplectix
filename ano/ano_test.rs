@@ -133,18 +133,25 @@ fn map_filter_take() {
 }
 
 #[test]
-fn either() {
-    // let acc = <Cons<i32> as Fold<i32, VecDeque<_>>>::either::<Conj<i32>>(Cons::new(10), Conj::new(10)).fold(1..5);
-    // assert_eq!(acc, (VecDeque::from([4, 3, 2, 1]), vec![1, 2, 3, 4]));
+fn par() {
+    let f = cons().par(conj());
+    let acc = f.fold((VecDeque::with_capacity(10), Vec::with_capacity(10)), 1..5);
+    assert_eq!(acc, (VecDeque::from([4, 3, 2, 1]), vec![1, 2, 3, 4]));
 
+    let f = xf::map(pow2).take(3).apply(cons());
+    let g = xf::map(mul3).take(2).apply(conj());
+    let acc = f.par(g).fold((VecDeque::new(), Vec::new()), 1..10);
+    assert_eq!(acc, (VecDeque::from([9, 4, 1]), vec![3, 6]));
+}
+
+#[test]
+fn either() {
     let f = cons().either(conj());
     let acc = f.fold((VecDeque::with_capacity(10), Vec::with_capacity(10)), 1..5);
     assert_eq!(acc, (VecDeque::from([4, 3, 2, 1]), vec![1, 2, 3, 4]));
 
-    let acc = xf::map(pow2)
-        .take(3)
-        .apply(cons())
-        .either(xf::map(mul3).take(2).apply(conj()))
-        .fold((VecDeque::new(), Vec::new()), 1..10);
+    let f = xf::map(pow2).take(3).apply(cons());
+    let g = xf::map(mul3).take(2).apply(conj());
+    let acc = f.either(g).fold((VecDeque::new(), Vec::new()), 1..10);
     assert_eq!(acc, (VecDeque::from([4, 1]), vec![3, 6]));
 }

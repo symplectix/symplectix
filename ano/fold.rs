@@ -33,6 +33,13 @@ pub trait Fold<In, Out>: Sized {
         self.done(acc)
     }
 
+    fn par<That>(self, that: That) -> Par<Self, That>
+    where
+        Self: Sized,
+    {
+        Par { a: Fuse { f: self, complete: false }, b: Fuse { f: that, complete: false } }
+    }
+
     fn either<That>(self, that: That) -> Either<Self, That>
     where
         Self: Sized,
@@ -151,47 +158,43 @@ where
 }
 
 #[derive(Debug)]
-pub struct Par<A, B> {
-    a: (A, bool),
-    b: (B, bool),
+struct Fuse<F> {
+    f: F,
+    complete: bool,
 }
 
-impl<A, B> Par<A, B> {
-    fn a_step<T, In, Out>(&mut self, acc: <A as Fold<In, Out>>::Acc, input: &T) -> Step<<A as Fold<In, Out>>::Acc>
+impl<In, Out, F> Fold<In, Out> for Fuse<F>
+where
+    F: Fold<In, Out>,
+{
+    type Acc = F::Acc;
+
+    fn step<T>(&mut self, acc: <F as Fold<In, Out>>::Acc, input: &T) -> Step<<F as Fold<In, Out>>::Acc>
     where
-        A: Fold<In, Out>,
         T: Borrow<In>,
     {
-        if self.a.1 {
+        if self.complete {
             Step::Break(acc)
         } else {
-            match self.a.0.step(acc, input) {
-                Step::Yield(ret) => Step::Yield(ret),
+            match self.f.step(acc, input) {
                 Step::Break(ret) => {
-                    self.a.1 = true;
+                    self.complete = true;
                     Step::Break(ret)
                 }
+                step => step,
             }
         }
     }
 
-    fn b_step<T, In, Out>(&mut self, acc: <B as Fold<In, Out>>::Acc, input: &T) -> Step<<B as Fold<In, Out>>::Acc>
-    where
-        B: Fold<In, Out>,
-        T: Borrow<In>,
-    {
-        if self.b.1 {
-            Step::Break(acc)
-        } else {
-            match self.b.0.step(acc, input) {
-                Step::Yield(ret) => Step::Yield(ret),
-                Step::Break(ret) => {
-                    self.b.1 = true;
-                    Step::Break(ret)
-                }
-            }
-        }
+    fn done(self, acc: Self::Acc) -> Out {
+        self.f.done(acc)
     }
+}
+
+#[derive(Debug)]
+pub struct Par<A, B> {
+    a: Fuse<A>,
+    b: Fuse<B>,
 }
 impl<In, O1, O2, A, B> Fold<In, (O1, O2)> for Par<A, B>
 where
@@ -203,7 +206,7 @@ where
     where
         T: Borrow<In>,
     {
-        match (self.a_step(acc.0, input), self.b_step(acc.1, input)) {
+        match (self.a.step(acc.0, input), self.b.step(acc.1, input)) {
             (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
             (Step::Break(a), Step::Yield(b)) => Step::Yield((a, b)),
             (Step::Yield(a), Step::Break(b)) => Step::Yield((a, b)),
@@ -212,7 +215,7 @@ where
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> (O1, O2) {
-        (self.a.0.done(acc.0), self.b.0.done(acc.1))
+        (self.a.done(acc.0), self.b.done(acc.1))
     }
 }
 
