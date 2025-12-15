@@ -151,6 +151,72 @@ where
 }
 
 #[derive(Debug)]
+pub struct Par<A, B> {
+    a: (A, bool),
+    b: (B, bool),
+}
+
+impl<A, B> Par<A, B> {
+    fn a_step<T, In, Out>(&mut self, acc: <A as Fold<In, Out>>::Acc, input: &T) -> Step<<A as Fold<In, Out>>::Acc>
+    where
+        A: Fold<In, Out>,
+        T: Borrow<In>,
+    {
+        if self.a.1 {
+            Step::Break(acc)
+        } else {
+            match self.a.0.step(acc, input) {
+                Step::Yield(ret) => Step::Yield(ret),
+                Step::Break(ret) => {
+                    self.a.1 = true;
+                    Step::Break(ret)
+                }
+            }
+        }
+    }
+
+    fn b_step<T, In, Out>(&mut self, acc: <B as Fold<In, Out>>::Acc, input: &T) -> Step<<B as Fold<In, Out>>::Acc>
+    where
+        B: Fold<In, Out>,
+        T: Borrow<In>,
+    {
+        if self.b.1 {
+            Step::Break(acc)
+        } else {
+            match self.b.0.step(acc, input) {
+                Step::Yield(ret) => Step::Yield(ret),
+                Step::Break(ret) => {
+                    self.b.1 = true;
+                    Step::Break(ret)
+                }
+            }
+        }
+    }
+}
+impl<In, O1, O2, A, B> Fold<In, (O1, O2)> for Par<A, B>
+where
+    A: Fold<In, O1>,
+    B: Fold<In, O2>,
+{
+    type Acc = (<A as Fold<In, O1>>::Acc, <B as Fold<In, O2>>::Acc);
+    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
+    where
+        T: Borrow<In>,
+    {
+        match (self.a_step(acc.0, input), self.b_step(acc.1, input)) {
+            (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
+            (Step::Break(a), Step::Yield(b)) => Step::Yield((a, b)),
+            (Step::Yield(a), Step::Break(b)) => Step::Yield((a, b)),
+            (Step::Break(a), Step::Break(b)) => Step::Break((a, b)),
+        }
+    }
+    #[inline]
+    fn done(self, acc: Self::Acc) -> (O1, O2) {
+        (self.a.0.done(acc.0), self.b.0.done(acc.1))
+    }
+}
+
+#[derive(Debug)]
 pub struct Either<A, B>(pub(crate) A, pub(crate) B);
 impl<In, O1, O2, A, B> Fold<In, (O1, O2)> for Either<A, B>
 where
