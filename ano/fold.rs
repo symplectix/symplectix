@@ -199,16 +199,16 @@ where
 }
 
 #[derive(Debug)]
-pub struct Par<A, B>(Fuse<A>, Fuse<B>);
-impl<In, O1, O2, A, B> Fold<In, (O1, O2)> for Par<A, B>
+pub struct Par<F, G>(Fuse<F>, Fuse<G>);
+impl<A, B, C, F, G> Fold<A, (B, C)> for Par<F, G>
 where
-    A: Fold<In, O1>,
-    B: Fold<In, O2>,
+    F: Fold<A, B>,
+    G: Fold<A, C>,
 {
-    type Acc = (<A as Fold<In, O1>>::Acc, <B as Fold<In, O2>>::Acc);
+    type Acc = (<F as Fold<A, B>>::Acc, <G as Fold<A, C>>::Acc);
     fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
-        T: Borrow<In>,
+        T: Borrow<A>,
     {
         match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
             (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
@@ -218,7 +218,7 @@ where
         }
     }
     #[inline]
-    fn done(self, acc: Self::Acc) -> (O1, O2) {
+    fn done(self, acc: Self::Acc) -> (B, C) {
         (self.0.done(acc.0), self.1.done(acc.1))
     }
 }
