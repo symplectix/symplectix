@@ -1,6 +1,7 @@
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 
-use crate as fold;
+use crate::{Fold, Step};
 
 // Exists only to compose xf and construct a Fold.
 #[derive(Debug)]
@@ -48,7 +49,7 @@ impl<Xf> Folding<Xf> {
 
 #[derive(Debug)]
 pub struct Id<In, Out>(PhantomData<(In, Out)>);
-impl<Sf: fold::Fold<In, Out>, In, Out> Xform<Sf> for Id<In, Out> {
+impl<Sf: Fold<In, Out>, In, Out> Xform<Sf> for Id<In, Out> {
     type Fold = Sf;
     #[inline]
     fn apply(self, step_fn: Sf) -> Self::Fold {
@@ -84,18 +85,53 @@ where
 pub struct Map<F> {
     mapf: F,
 }
+
+#[derive(Debug)]
+pub struct MapFold<F, MapF> {
+    f: F,
+    mapf: MapF,
+}
+
 impl<Sf, F> Xform<Sf> for Map<F> {
-    type Fold = fold::Map<Sf, F>;
+    type Fold = MapFold<Sf, F>;
     fn apply(self, sf: Sf) -> Self::Fold {
-        fold::Map::new(sf, self.mapf)
+        MapFold::new(sf, self.mapf)
     }
 }
+
 pub fn map<F>(f: F) -> Folding<Map<F>> {
     Folding::new(Map::new(f))
 }
+
 impl<F> Map<F> {
     fn new(mapf: F) -> Map<F> {
         Map { mapf }
+    }
+}
+
+impl<F, MapF> MapFold<F, MapF> {
+    pub(crate) fn new(f: F, mapf: MapF) -> Self {
+        MapFold { f, mapf }
+    }
+}
+
+impl<A, B, C, F, MapF> Fold<A, C> for MapFold<F, MapF>
+where
+    F: Fold<B, C>,
+    MapF: FnMut(&A) -> B,
+{
+    type Acc = F::Acc;
+    #[inline]
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    where
+        In: Borrow<A>,
+    {
+        let mapped = (self.mapf)(input.borrow());
+        self.f.step(acc, &mapped)
+    }
+    #[inline]
+    fn done(self, acc: Self::Acc) -> C {
+        self.f.done(acc)
     }
 }
 
@@ -103,18 +139,52 @@ impl<F> Map<F> {
 pub struct Filter<P> {
     pred: P,
 }
+
+#[derive(Debug)]
+pub struct FilterFold<F, P> {
+    f: F,
+    pred: P,
+}
+
 impl<Sf, P> Xform<Sf> for Filter<P> {
-    type Fold = fold::Filter<Sf, P>;
+    type Fold = FilterFold<Sf, P>;
     fn apply(self, sf: Sf) -> Self::Fold {
-        fold::Filter::new(sf, self.pred)
+        FilterFold::new(sf, self.pred)
     }
 }
+
 pub fn filter<P>(pred: P) -> Folding<Filter<P>> {
     Folding::new(Filter::new(pred))
 }
+
 impl<P> Filter<P> {
     fn new(pred: P) -> Self {
         Filter { pred }
+    }
+}
+
+impl<F, P> FilterFold<F, P> {
+    pub(crate) fn new(f: F, pred: P) -> Self {
+        FilterFold { f, pred }
+    }
+}
+
+impl<A, B, F, P> Fold<A, B> for FilterFold<F, P>
+where
+    F: Fold<A, B>,
+    P: FnMut(&A) -> bool,
+{
+    type Acc = F::Acc;
+    #[inline]
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    where
+        In: Borrow<A>,
+    {
+        if (self.pred)(input.borrow()) { self.f.step(acc, input) } else { Step::Yield(acc) }
+    }
+    #[inline]
+    fn done(self, acc: Self::Acc) -> B {
+        self.f.done(acc)
     }
 }
 
@@ -122,17 +192,61 @@ impl<P> Filter<P> {
 pub struct Take {
     count: usize,
 }
+
+#[derive(Debug)]
+pub struct TakeFold<F> {
+    f: F,
+    count: usize,
+}
+
 impl<Sf> Xform<Sf> for Take {
-    type Fold = fold::Take<Sf>;
+    type Fold = TakeFold<Sf>;
     fn apply(self, sf: Sf) -> Self::Fold {
-        fold::Take::new(sf, self.count)
+        TakeFold::new(sf, self.count)
     }
 }
+
 pub fn take(count: usize) -> Folding<Take> {
     Folding::new(Take::new(count))
 }
+
 impl Take {
     fn new(count: usize) -> Self {
         Take { count }
+    }
+}
+impl<F> TakeFold<F> {
+    pub(crate) fn new(f: F, count: usize) -> Self {
+        TakeFold { f, count }
+    }
+}
+impl<A, B, F> Fold<A, B> for TakeFold<F>
+where
+    F: Fold<A, B>,
+{
+    type Acc = F::Acc;
+    #[inline]
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    where
+        In: Borrow<A>,
+    {
+        match self.count {
+            0 => Step::Break(acc),
+            1 => {
+                self.count = 0;
+                match self.f.step(acc, input) {
+                    Step::Yield(a) => Step::Break(a),
+                    Step::Break(a) => Step::Break(a),
+                }
+            }
+            _ => {
+                self.count -= 1;
+                self.f.step(acc, input)
+            }
+        }
+    }
+    #[inline]
+    fn done(self, acc: Self::Acc) -> B {
+        self.f.done(acc)
     }
 }
