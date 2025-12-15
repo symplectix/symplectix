@@ -36,6 +36,30 @@ where
 }
 
 #[derive(Debug)]
+struct Count;
+impl Count {
+    fn new() -> Self {
+        Count
+    }
+}
+impl<A> ano::Fold<A, usize> for Count {
+    type Acc = usize;
+
+    #[inline]
+    fn step<In>(&mut self, mut acc: Self::Acc, _input: &In) -> ano::Step<Self::Acc>
+    where
+        In: Borrow<A>,
+    {
+        acc += 1;
+        ano::Step::Yield(acc)
+    }
+    #[inline]
+    fn done(self, acc: Self::Acc) -> Self::Acc {
+        acc
+    }
+}
+
+#[derive(Debug)]
 struct Conj<T>(PhantomData<T>);
 
 impl<In> ano::Fold<In, Vec<In::Owned>> for Conj<In>
@@ -158,6 +182,20 @@ fn map_filter_take() {
     assert_eq!(acc, vec![6, 12]);
     let acc = xf::take(5).filter(even).map(mul3).apply(conj()).fold(vec![], 1..);
     assert_eq!(acc, vec![6, 12]);
+}
+
+#[test]
+fn count() {
+    assert_eq!(0, Count::new().fold(0, empty::<i32>()));
+    assert_eq!(9, Count::new().fold(0, 1..10));
+
+    let acc = xf::take(3).apply(Count::new()).fold(0, 1..);
+    assert_eq!(acc, 3);
+
+    let f = Sum::<usize>::new().par(Count::new());
+    let (sum, count) = f.fold((0, 0), 1..3);
+    assert_eq!(sum, 3);
+    assert_eq!(count, 2);
 }
 
 #[test]
