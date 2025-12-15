@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 
-pub trait Fold<In, Out>: Sized {
+pub trait StepFn<In, Out>: Sized {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
 
@@ -60,9 +60,9 @@ impl<Sf, F> Map<Sf, F> {
         Map { sf, mapf }
     }
 }
-impl<Sf, F, A, In, Out> Fold<In, Out> for Map<Sf, F>
+impl<Sf, F, A, In, Out> StepFn<In, Out> for Map<Sf, F>
 where
-    Sf: Fold<A, Out>,
+    Sf: StepFn<A, Out>,
     F: FnMut(&In) -> A,
 {
     type Acc = Sf::Acc;
@@ -90,9 +90,9 @@ impl<Sf, P> Filter<Sf, P> {
         Filter { sf, pred }
     }
 }
-impl<Sf, P, In, Out> Fold<In, Out> for Filter<Sf, P>
+impl<Sf, P, In, Out> StepFn<In, Out> for Filter<Sf, P>
 where
-    Sf: Fold<In, Out>,
+    Sf: StepFn<In, Out>,
     P: FnMut(&In) -> bool,
 {
     type Acc = Sf::Acc;
@@ -119,9 +119,9 @@ impl<Sf> Take<Sf> {
         Take { sf, count }
     }
 }
-impl<Sf, In, Out> Fold<In, Out> for Take<Sf>
+impl<Sf, In, Out> StepFn<In, Out> for Take<Sf>
 where
-    Sf: Fold<In, Out>,
+    Sf: StepFn<In, Out>,
 {
     type Acc = Sf::Acc;
     #[inline]
@@ -152,12 +152,12 @@ where
 
 #[derive(Debug)]
 pub struct Either<A, B>(pub(crate) A, pub(crate) B);
-impl<In, O1, O2, A, B> Fold<In, (O1, O2)> for Either<A, B>
+impl<In, O1, O2, A, B> StepFn<In, (O1, O2)> for Either<A, B>
 where
-    A: Fold<In, O1>,
-    B: Fold<In, O2>,
+    A: StepFn<In, O1>,
+    B: StepFn<In, O2>,
 {
-    type Acc = (<A as Fold<In, O1>>::Acc, <B as Fold<In, O2>>::Acc);
+    type Acc = (<A as StepFn<In, O1>>::Acc, <B as StepFn<In, O2>>::Acc);
     fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
     where
         T: Borrow<In>,

@@ -5,12 +5,12 @@ use std::collections::VecDeque;
 use std::iter::{empty, once};
 use std::marker::PhantomData;
 
-use ano::{Fold, xf};
+use ano::{StepFn, xf};
 
 #[derive(Debug)]
 struct Conj<T>(PhantomData<T>);
 
-impl<In> ano::Fold<In, Vec<In::Owned>> for Conj<In>
+impl<In> ano::StepFn<In, Vec<In::Owned>> for Conj<In>
 where
     In: ToOwned,
 {
@@ -36,7 +36,7 @@ fn cons<T>() -> Cons<T> {
 #[derive(Debug)]
 struct Cons<T>(PhantomData<T>);
 
-impl<In> ano::Fold<In, VecDeque<In::Owned>> for Cons<In>
+impl<In> ano::StepFn<In, VecDeque<In::Owned>> for Cons<In>
 where
     In: ToOwned,
 {

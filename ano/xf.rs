@@ -48,7 +48,7 @@ impl<Xf> Folding<Xf> {
 
 #[derive(Debug)]
 pub struct Id<In, Out>(PhantomData<(In, Out)>);
-impl<Sf: fold::Fold<In, Out>, In, Out> Xform<Sf> for Id<In, Out> {
+impl<Sf: fold::StepFn<In, Out>, In, Out> Xform<Sf> for Id<In, Out> {
     type Fold = Sf;
     #[inline]
     fn apply(self, step_fn: Sf) -> Self::Fold {

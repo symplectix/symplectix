@@ -11,4 +11,4 @@
 mod fold;
 pub mod xf;
 
-pub use fold::{Fold, Step};
+pub use fold::{Step, StepFn};
