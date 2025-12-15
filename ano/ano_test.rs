@@ -10,27 +10,28 @@ use ano::{Fold, xf};
 
 #[derive(Debug)]
 struct Sum<T>(PhantomData<T>);
-impl<A> Sum<A> {
+impl<T> Sum<T> {
     fn new() -> Self {
         Sum(PhantomData)
     }
 }
-impl<S, A> ano::Fold<A, S> for Sum<S>
+
+impl<A, B> ano::Fold<A, B> for Sum<B>
 where
-    S: for<'a> AddAssign<&'a A>,
+    B: for<'a> AddAssign<&'a A>,
 {
-    type Acc = S;
+    type Acc = B;
 
     #[inline]
-    fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> ano::Step<Self::Acc>
+    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> ano::Step<Self::Acc>
     where
-        Q: Borrow<A>,
+        In: Borrow<A>,
     {
         acc += input.borrow();
         ano::Step::Yield(acc)
     }
     #[inline]
-    fn done(self, acc: Self::Acc) -> Self::Acc {
+    fn done(self, acc: Self::Acc) -> B {
         acc
     }
 }
@@ -62,15 +63,15 @@ impl<A> ano::Fold<A, usize> for Count {
 #[derive(Debug)]
 struct Conj<T>(PhantomData<T>);
 
-impl<In> ano::Fold<In, Vec<In::Owned>> for Conj<In>
+impl<A> ano::Fold<A, Vec<A::Owned>> for Conj<A>
 where
-    In: ToOwned,
+    A: ToOwned,
 {
-    type Acc = Vec<In::Owned>;
+    type Acc = Vec<A::Owned>;
 
-    fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> ano::Step<Self::Acc>
+    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> ano::Step<Self::Acc>
     where
-        Q: Borrow<In>,
+        In: Borrow<A>,
     {
         acc.push(input.borrow().to_owned());
         ano::Step::Yield(acc)
@@ -88,14 +89,14 @@ fn cons<T>() -> Cons<T> {
 #[derive(Debug)]
 struct Cons<T>(PhantomData<T>);
 
-impl<In> ano::Fold<In, VecDeque<In::Owned>> for Cons<In>
+impl<A> ano::Fold<A, VecDeque<A::Owned>> for Cons<A>
 where
-    In: ToOwned,
+    A: ToOwned,
 {
-    type Acc = VecDeque<In::Owned>;
-    fn step<Q>(&mut self, mut acc: Self::Acc, input: &Q) -> ano::Step<Self::Acc>
+    type Acc = VecDeque<A::Owned>;
+    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> ano::Step<Self::Acc>
     where
-        Q: Borrow<In>,
+        In: Borrow<A>,
     {
         acc.push_front(input.borrow().to_owned());
         ano::Step::Yield(acc)

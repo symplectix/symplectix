@@ -60,102 +60,102 @@ pub enum Step<T> {
 }
 
 #[derive(Debug)]
-pub struct Map<Sf, F> {
-    sf: Sf,
-    mapf: F,
+pub struct Map<F, MapF> {
+    f: F,
+    mapf: MapF,
 }
-impl<Sf, F> Map<Sf, F> {
-    pub(crate) fn new(sf: Sf, mapf: F) -> Self {
-        Map { sf, mapf }
+impl<F, MapF> Map<F, MapF> {
+    pub(crate) fn new(f: F, mapf: MapF) -> Self {
+        Map { f, mapf }
     }
 }
-impl<Sf, F, A, In, Out> Fold<In, Out> for Map<Sf, F>
+impl<A, B, C, F, MapF> Fold<A, C> for Map<F, MapF>
 where
-    Sf: Fold<A, Out>,
-    F: FnMut(&In) -> A,
+    F: Fold<B, C>,
+    MapF: FnMut(&A) -> B,
 {
-    type Acc = Sf::Acc;
+    type Acc = F::Acc;
     #[inline]
-    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
-        T: Borrow<In>,
+        In: Borrow<A>,
     {
         let mapped = (self.mapf)(input.borrow());
-        self.sf.step(acc, &mapped)
+        self.f.step(acc, &mapped)
     }
     #[inline]
-    fn done(self, acc: Self::Acc) -> Out {
-        self.sf.done(acc)
+    fn done(self, acc: Self::Acc) -> C {
+        self.f.done(acc)
     }
 }
 
 #[derive(Debug)]
-pub struct Filter<Sf, P> {
-    sf: Sf,
+pub struct Filter<F, P> {
+    f: F,
     pred: P,
 }
-impl<Sf, P> Filter<Sf, P> {
-    pub(crate) fn new(sf: Sf, pred: P) -> Self {
-        Filter { sf, pred }
+impl<F, P> Filter<F, P> {
+    pub(crate) fn new(f: F, pred: P) -> Self {
+        Filter { f, pred }
     }
 }
-impl<Sf, P, In, Out> Fold<In, Out> for Filter<Sf, P>
+impl<A, B, F, P> Fold<A, B> for Filter<F, P>
 where
-    Sf: Fold<In, Out>,
-    P: FnMut(&In) -> bool,
+    F: Fold<A, B>,
+    P: FnMut(&A) -> bool,
 {
-    type Acc = Sf::Acc;
+    type Acc = F::Acc;
     #[inline]
-    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
-        T: Borrow<In>,
+        In: Borrow<A>,
     {
-        if (self.pred)(input.borrow()) { self.sf.step(acc, input) } else { Step::Yield(acc) }
+        if (self.pred)(input.borrow()) { self.f.step(acc, input) } else { Step::Yield(acc) }
     }
     #[inline]
-    fn done(self, acc: Self::Acc) -> Out {
-        self.sf.done(acc)
+    fn done(self, acc: Self::Acc) -> B {
+        self.f.done(acc)
     }
 }
 
 #[derive(Debug)]
-pub struct Take<Sf> {
-    sf: Sf,
+pub struct Take<F> {
+    f: F,
     count: usize,
 }
-impl<Sf> Take<Sf> {
-    pub(crate) fn new(sf: Sf, count: usize) -> Self {
-        Take { sf, count }
+impl<F> Take<F> {
+    pub(crate) fn new(f: F, count: usize) -> Self {
+        Take { f, count }
     }
 }
-impl<Sf, In, Out> Fold<In, Out> for Take<Sf>
+impl<A, B, F> Fold<A, B> for Take<F>
 where
-    Sf: Fold<In, Out>,
+    F: Fold<A, B>,
 {
-    type Acc = Sf::Acc;
+    type Acc = F::Acc;
     #[inline]
-    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
-        T: Borrow<In>,
+        In: Borrow<A>,
     {
         match self.count {
             0 => Step::Break(acc),
             1 => {
                 self.count = 0;
-                match self.sf.step(acc, input) {
+                match self.f.step(acc, input) {
                     Step::Yield(a) => Step::Break(a),
                     Step::Break(a) => Step::Break(a),
                 }
             }
             _ => {
                 self.count -= 1;
-                self.sf.step(acc, input)
+                self.f.step(acc, input)
             }
         }
     }
     #[inline]
-    fn done(self, acc: Self::Acc) -> Out {
-        self.sf.done(acc)
+    fn done(self, acc: Self::Acc) -> B {
+        self.f.done(acc)
     }
 }
 
@@ -170,15 +170,15 @@ impl<F> Fuse<F> {
     }
 }
 
-impl<In, Out, F> Fold<In, Out> for Fuse<F>
+impl<A, B, F> Fold<A, B> for Fuse<F>
 where
-    F: Fold<In, Out>,
+    F: Fold<A, B>,
 {
     type Acc = F::Acc;
 
-    fn step<T>(&mut self, acc: <F as Fold<In, Out>>::Acc, input: &T) -> Step<<F as Fold<In, Out>>::Acc>
+    fn step<In>(&mut self, acc: <F as Fold<A, B>>::Acc, input: &In) -> Step<<F as Fold<A, B>>::Acc>
     where
-        T: Borrow<In>,
+        In: Borrow<A>,
     {
         if self.complete {
             Step::Break(acc)
@@ -193,7 +193,7 @@ where
         }
     }
 
-    fn done(self, acc: Self::Acc) -> Out {
+    fn done(self, acc: Self::Acc) -> B {
         self.f.done(acc)
     }
 }
@@ -224,16 +224,16 @@ where
 }
 
 #[derive(Debug)]
-pub struct Either<A, B>(pub(crate) A, pub(crate) B);
-impl<In, O1, O2, A, B> Fold<In, (O1, O2)> for Either<A, B>
+pub struct Either<F, G>(pub(crate) F, pub(crate) G);
+impl<A, B, C, F, G> Fold<A, (B, C)> for Either<F, G>
 where
-    A: Fold<In, O1>,
-    B: Fold<In, O2>,
+    F: Fold<A, B>,
+    G: Fold<A, C>,
 {
-    type Acc = (<A as Fold<In, O1>>::Acc, <B as Fold<In, O2>>::Acc);
-    fn step<T>(&mut self, acc: Self::Acc, input: &T) -> Step<Self::Acc>
+    type Acc = (<F as Fold<A, B>>::Acc, <G as Fold<A, C>>::Acc);
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
-        T: Borrow<In>,
+        In: Borrow<A>,
     {
         match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
             (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
@@ -243,7 +243,7 @@ where
         }
     }
     #[inline]
-    fn done(self, acc: Self::Acc) -> (O1, O2) {
+    fn done(self, acc: Self::Acc) -> (B, C) {
         (self.0.done(acc.0), self.1.done(acc.1))
     }
 }
