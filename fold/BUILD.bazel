@@ -1,33 +1,32 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "ano",
+    name = "fold",
     srcs = [
-        "ano.rs",
         "fold.rs",
         "xf.rs",
     ],
 )
 
 rust.test(
-    name = "ano_test",
+    name = "fold_test",
     timeout = "short",
-    crate = ":ano",
+    crate = ":fold",
 )
 
 rust.doc_test(
-    name = "ano_doc_test",
+    name = "fold_doc_test",
     timeout = "short",
-    crate = ":ano",
+    crate = ":fold",
 )
 
 rust.tests(
-    name = "ano_suite",
+    name = "suite",
     size = "small",
     srcs = [
-        "ano_test.rs",
+        "fold_test.rs",
     ],
     deps = [
-        ":ano",
+        ":fold",
     ],
 )

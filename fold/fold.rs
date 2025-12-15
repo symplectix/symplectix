@@ -1,3 +1,13 @@
+#![allow(missing_docs)]
+//! Composable transformations.
+
+// Refs:
+// - [foldl](https://github.com/Gabriella439/foldl)
+// - [prefolds](https://github.com/effectfully/prefolds)
+// - [transducers](https://clojure.org/reference/transducers)
+// - [xforms](https://github.com/cgrand/xforms)
+
+pub mod xf;
 use std::borrow::Borrow;
 
 /// Fold represents a left fold computation from a collection of A to B.

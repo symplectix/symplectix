@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::fold;
+use crate as fold;
 
 // Exists only to compose xf and construct a Fold.
 #[derive(Debug)]

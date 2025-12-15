@@ -6,7 +6,7 @@ use std::iter::{empty, once};
 use std::marker::PhantomData;
 use std::ops::AddAssign;
 
-use ano::{Fold, xf};
+use fold::{Fold, xf};
 
 #[derive(Debug)]
 struct Sum<T>(PhantomData<T>);
@@ -16,19 +16,19 @@ impl<T> Sum<T> {
     }
 }
 
-impl<A, B> ano::Fold<A, B> for Sum<B>
+impl<A, B> Fold<A, B> for Sum<B>
 where
     B: for<'a> AddAssign<&'a A>,
 {
     type Acc = B;
 
     #[inline]
-    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> ano::Step<Self::Acc>
+    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> fold::Step<Self::Acc>
     where
         In: Borrow<A>,
     {
         acc += input.borrow();
-        ano::Step::Yield(acc)
+        fold::Step::Yield(acc)
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> B {
@@ -43,16 +43,16 @@ impl Count {
         Count
     }
 }
-impl<A> ano::Fold<A, usize> for Count {
+impl<A> Fold<A, usize> for Count {
     type Acc = usize;
 
     #[inline]
-    fn step<In>(&mut self, mut acc: Self::Acc, _input: &In) -> ano::Step<Self::Acc>
+    fn step<In>(&mut self, mut acc: Self::Acc, _input: &In) -> fold::Step<Self::Acc>
     where
         In: Borrow<A>,
     {
         acc += 1;
-        ano::Step::Yield(acc)
+        fold::Step::Yield(acc)
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc {
@@ -63,18 +63,18 @@ impl<A> ano::Fold<A, usize> for Count {
 #[derive(Debug)]
 struct Conj<T>(PhantomData<T>);
 
-impl<A> ano::Fold<A, Vec<A::Owned>> for Conj<A>
+impl<A> Fold<A, Vec<A::Owned>> for Conj<A>
 where
     A: ToOwned,
 {
     type Acc = Vec<A::Owned>;
 
-    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> ano::Step<Self::Acc>
+    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> fold::Step<Self::Acc>
     where
         In: Borrow<A>,
     {
         acc.push(input.borrow().to_owned());
-        ano::Step::Yield(acc)
+        fold::Step::Yield(acc)
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc {
@@ -89,17 +89,17 @@ fn cons<T>() -> Cons<T> {
 #[derive(Debug)]
 struct Cons<T>(PhantomData<T>);
 
-impl<A> ano::Fold<A, VecDeque<A::Owned>> for Cons<A>
+impl<A> Fold<A, VecDeque<A::Owned>> for Cons<A>
 where
     A: ToOwned,
 {
     type Acc = VecDeque<A::Owned>;
-    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> ano::Step<Self::Acc>
+    fn step<In>(&mut self, mut acc: Self::Acc, input: &In) -> fold::Step<Self::Acc>
     where
         In: Borrow<A>,
     {
         acc.push_front(input.borrow().to_owned());
-        ano::Step::Yield(acc)
+        fold::Step::Yield(acc)
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> Self::Acc {
