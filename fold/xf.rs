@@ -33,8 +33,8 @@ impl<Xf> Folding<Xf> {
         Folding::new(comp(self.xf, that))
     }
 
-    pub fn map<F>(self, f: F) -> Folding<Comp<Xf, Map<F>>> {
-        self.comp(Map::new(f))
+    pub fn map<F>(self, mapf: F) -> Folding<Comp<Xf, Map<F>>> {
+        self.comp(Map::new(mapf))
     }
 
     pub fn filter<P>(self, pred: P) -> Folding<Comp<Xf, Filter<P>>> {

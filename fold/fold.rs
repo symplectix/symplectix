@@ -69,6 +69,36 @@ pub enum Step<T> {
     Break(T),
 }
 
+impl<A, B, F> Fold<A, B> for F
+where
+    F: FnMut(B, &A) -> B,
+{
+    type Acc = B;
+    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    where
+        In: Borrow<A>,
+    {
+        Step::Yield(self(acc, input.borrow()))
+    }
+    fn done(self, acc: B) -> B {
+        acc
+    }
+}
+
+#[inline]
+pub fn count<T>(acc: usize, _input: &T) -> usize {
+    acc + 1
+}
+
+#[inline]
+pub fn sum<A, B>(mut acc: B, input: &A) -> B
+where
+    B: for<'a> std::ops::AddAssign<&'a A>,
+{
+    acc += input;
+    acc
+}
+
 #[derive(Debug)]
 pub struct Map<F, MapF> {
     f: F,
