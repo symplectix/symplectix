@@ -115,6 +115,7 @@ impl<Xf> Folding<Xf> {
 pub fn folding<A, B>() -> Folding<Id<A, B>> {
     Folding::new(Id(PhantomData))
 }
+
 fn comp<F, G>(f: F, g: G) -> Comp<F, G> {
     Comp { f, g }
 }
@@ -241,7 +242,7 @@ where
 }
 
 #[derive(Debug)]
-pub struct Either<F, G>(pub(crate) F, pub(crate) G);
+pub struct Either<F, G>(F, G);
 impl<A, B, C, F, G> Fold<A, (B, C)> for Either<F, G>
 where
     F: Fold<A, B>,
