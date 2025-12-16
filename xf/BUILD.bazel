@@ -1,34 +1,34 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "fold",
+    name = "xf",
     srcs = [
         "filter.rs",
-        "fold.rs",
         "map.rs",
         "take.rs",
+        "xf.rs",
     ],
 )
 
 rust.test(
-    name = "fold_test",
+    name = "xf_test",
     timeout = "short",
-    crate = ":fold",
+    crate = ":xf",
 )
 
 rust.doc_test(
-    name = "fold_doc_test",
+    name = "xf_doc_test",
     timeout = "short",
-    crate = ":fold",
+    crate = ":xf",
 )
 
 rust.tests(
     name = "suite",
     size = "small",
     srcs = [
-        "fold_test.rs",
+        "xf_test.rs",
     ],
     deps = [
-        ":fold",
+        ":xf",
     ],
 )

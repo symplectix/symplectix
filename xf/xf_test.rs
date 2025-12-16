@@ -4,8 +4,7 @@ use std::borrow::ToOwned;
 use std::collections::VecDeque;
 use std::iter::{empty, once};
 
-use fold as xf;
-use fold::Fold;
+use xf::Fold;
 
 #[inline]
 fn conj<A>(mut acc: Vec<A::Owned>, input: &A) -> Vec<A::Owned>
@@ -101,13 +100,13 @@ fn map_filter_take() {
 
 #[test]
 fn count() {
-    assert_eq!(0, fold::count.fold(0, empty::<i32>()));
-    assert_eq!(9, fold::count.fold(0, 1..10));
+    assert_eq!(0, xf::count.fold(0, empty::<i32>()));
+    assert_eq!(9, xf::count.fold(0, 1..10));
 
-    let acc = xf::take(3).apply(fold::count).fold(0, 1..);
+    let acc = xf::take(3).apply(xf::count).fold(0, 1..);
     assert_eq!(acc, 3);
 
-    let f = fold::sum.par(fold::count);
+    let f = xf::sum.par(xf::count);
     let (sum, count) = f.fold((0, 0), 1..3);
     assert_eq!(sum, 3);
     assert_eq!(count, 2);
@@ -115,11 +114,11 @@ fn count() {
 
 #[test]
 fn sum() {
-    let acc = xf::map(mul3).take(3).apply(fold::sum).fold(0, 1..);
+    let acc = xf::map(mul3).take(3).apply(xf::sum).fold(0, 1..);
     assert_eq!(acc, 18);
 
-    let f = xf::map(mul3).take(3).apply(fold::sum);
-    let g = xf::map(pow2).take(3).apply(fold::sum);
+    let f = xf::map(mul3).take(3).apply(xf::sum);
+    let g = xf::map(pow2).take(3).apply(xf::sum);
     let (fsum, gsum) = f.par(g).fold((0, 0), 1..);
     assert_eq!(fsum, 18);
     assert_eq!(gsum, 14);
