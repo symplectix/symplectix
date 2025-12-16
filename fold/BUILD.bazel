@@ -3,8 +3,10 @@ load("//bazel:rust.bzl", "rust")
 rust.library(
     name = "fold",
     srcs = [
+        "filter.rs",
         "fold.rs",
-        "xf.rs",
+        "map.rs",
+        "take.rs",
     ],
 )
 

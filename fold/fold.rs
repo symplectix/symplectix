@@ -10,7 +10,13 @@
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 
-pub mod xf;
+mod filter;
+mod map;
+mod take;
+
+pub use filter::filter;
+pub use map::map;
+pub use take::take;
 
 /// A fold step function.
 pub trait Fold<A, B> {

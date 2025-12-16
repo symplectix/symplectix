@@ -4,7 +4,8 @@ use std::borrow::ToOwned;
 use std::collections::VecDeque;
 use std::iter::{empty, once};
 
-use fold::{Fold, xf};
+use fold as xf;
+use fold::Fold;
 
 #[inline]
 fn conj<A>(mut acc: Vec<A::Owned>, input: &A) -> Vec<A::Owned>
