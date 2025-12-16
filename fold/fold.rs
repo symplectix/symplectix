@@ -102,11 +102,11 @@ where
 #[derive(Debug)]
 struct Fuse<F> {
     f: F,
-    complete: bool,
+    halt: bool,
 }
 impl<F> Fuse<F> {
     fn new(f: F) -> Self {
-        Fuse { f, complete: false }
+        Fuse { f, halt: false }
     }
 }
 
@@ -120,12 +120,12 @@ where
     where
         In: Borrow<A>,
     {
-        if self.complete {
+        if self.halt {
             Step::Break(acc)
         } else {
             match self.f.step(acc, input) {
                 Step::Break(ret) => {
-                    self.complete = true;
+                    self.halt = true;
                     Step::Break(ret)
                 }
                 step => step,
