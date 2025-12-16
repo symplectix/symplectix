@@ -7,8 +7,10 @@
 // - [transducers](https://clojure.org/reference/transducers)
 // - [xforms](https://github.com/cgrand/xforms)
 
-pub mod xf;
 use std::borrow::Borrow;
+use std::marker::PhantomData;
+
+pub mod xf;
 
 /// A fold step function.
 pub trait Fold<A, B> {
@@ -33,10 +35,10 @@ pub trait Fold<A, B> {
     {
         for item in iterable.into_iter() {
             match self.step(acc, &item) {
-                Step::Yield(ret) => {
+                Step::More(ret) => {
                     acc = ret;
                 }
-                Step::Break(ret) => {
+                Step::Halt(ret) => {
                     acc = ret;
                     break;
                 }
@@ -64,9 +66,78 @@ pub trait Fold<A, B> {
 #[derive(Debug, Copy, Clone)]
 pub enum Step<T> {
     /// Keep folding.
-    Yield(T),
+    More(T),
     /// Stop folding.
-    Break(T),
+    Halt(T),
+}
+
+// Exists only to compose xf and construct a Fold.
+#[derive(Debug)]
+pub struct Folding<Xf> {
+    xf: Xf,
+}
+
+/// An adapter that creates a new [Fold] from the given one.
+pub trait Xform<Sf> {
+    /// A new step function created by apply.
+    type Fold;
+
+    /// Creates a new [Fold] from the given one.
+    fn apply(self, fold: Sf) -> Self::Fold;
+
+    // We can't implement adapters (e.g., map, filter) in Xform,
+    // because rustc won't be able to infer the Sf type.
+}
+
+impl<Xf> Folding<Xf> {
+    pub fn apply<F>(self, fold: F) -> Xf::Fold
+    where
+        Xf: Xform<F>,
+    {
+        self.xf.apply(fold)
+    }
+
+    fn new(xf: Xf) -> Self {
+        Folding { xf }
+    }
+
+    fn comp<That>(self, that: That) -> Folding<Comp<Xf, That>> {
+        Folding::new(comp(self.xf, that))
+    }
+}
+
+pub fn folding<A, B>() -> Folding<Id<A, B>> {
+    Folding::new(Id(PhantomData))
+}
+fn comp<F, G>(f: F, g: G) -> Comp<F, G> {
+    Comp { f, g }
+}
+
+#[derive(Debug)]
+pub struct Id<A, B>(PhantomData<(A, B)>);
+impl<A, B, Sf: Fold<A, B>> Xform<Sf> for Id<A, B> {
+    type Fold = Sf;
+    #[inline]
+    fn apply(self, step_fn: Sf) -> Self::Fold {
+        step_fn
+    }
+}
+
+#[derive(Debug)]
+pub struct Comp<F, G> {
+    f: F,
+    g: G,
+}
+impl<Sf, F, G> Xform<Sf> for Comp<F, G>
+where
+    F: Xform<G::Fold>,
+    G: Xform<Sf>,
+{
+    type Fold = F::Fold;
+
+    fn apply(self, rf: Sf) -> Self::Fold {
+        self.f.apply(self.g.apply(rf))
+    }
 }
 
 impl<A, B, F> Fold<A, B> for F
@@ -78,7 +149,7 @@ where
     where
         In: Borrow<A>,
     {
-        Step::Yield(self(acc, input.borrow()))
+        Step::More(self(acc, input.borrow()))
     }
     fn done(self, acc: B) -> B {
         acc
@@ -121,12 +192,12 @@ where
         In: Borrow<A>,
     {
         if self.halt {
-            Step::Break(acc)
+            Step::Halt(acc)
         } else {
             match self.f.step(acc, input) {
-                Step::Break(ret) => {
+                Step::Halt(ret) => {
                     self.halt = true;
-                    Step::Break(ret)
+                    Step::Halt(ret)
                 }
                 step => step,
             }
@@ -151,10 +222,10 @@ where
         T: Borrow<A>,
     {
         match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
-            (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
-            (Step::Break(a), Step::Yield(b)) => Step::Yield((a, b)),
-            (Step::Yield(a), Step::Break(b)) => Step::Yield((a, b)),
-            (Step::Break(a), Step::Break(b)) => Step::Break((a, b)),
+            (Step::More(a), Step::More(b)) => Step::More((a, b)),
+            (Step::Halt(a), Step::More(b)) => Step::More((a, b)),
+            (Step::More(a), Step::Halt(b)) => Step::More((a, b)),
+            (Step::Halt(a), Step::Halt(b)) => Step::Halt((a, b)),
         }
     }
     #[inline]
@@ -176,10 +247,10 @@ where
         In: Borrow<A>,
     {
         match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
-            (Step::Yield(a), Step::Yield(b)) => Step::Yield((a, b)),
-            (Step::Break(a), Step::Yield(b)) => Step::Break((a, b)),
-            (Step::Yield(a), Step::Break(b)) => Step::Break((a, b)),
-            (Step::Break(a), Step::Break(b)) => Step::Break((a, b)),
+            (Step::More(a), Step::More(b)) => Step::More((a, b)),
+            (Step::Halt(a), Step::More(b)) => Step::Halt((a, b)),
+            (Step::More(a), Step::Halt(b)) => Step::Halt((a, b)),
+            (Step::Halt(a), Step::Halt(b)) => Step::Halt((a, b)),
         }
     }
     #[inline]

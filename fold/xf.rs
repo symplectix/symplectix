@@ -1,76 +1,6 @@
 use std::borrow::Borrow;
-use std::marker::PhantomData;
 
-use crate::{Fold, Step};
-
-// Exists only to compose xf and construct a Fold.
-#[derive(Debug)]
-pub struct Folding<Xf> {
-    xf: Xf,
-}
-
-/// An adapter that creates a new [Fold] from the given one.
-pub trait Xform<Sf> {
-    /// A new step function created by apply.
-    type Fold;
-
-    /// Creates a new [Fold] from the given one.
-    fn apply(self, fold: Sf) -> Self::Fold;
-
-    // We can't implement adapters (e.g., map, filter) in Xform,
-    // because rustc won't be able to infer the Sf type.
-}
-
-impl<Xf> Folding<Xf> {
-    pub fn apply<F>(self, fold: F) -> Xf::Fold
-    where
-        Xf: Xform<F>,
-    {
-        self.xf.apply(fold)
-    }
-
-    fn new(xf: Xf) -> Self {
-        Folding { xf }
-    }
-
-    fn comp<That>(self, that: That) -> Folding<Comp<Xf, That>> {
-        Folding::new(comp(self.xf, that))
-    }
-}
-
-#[derive(Debug)]
-pub struct Id<A, B>(PhantomData<(A, B)>);
-impl<A, B, Sf: Fold<A, B>> Xform<Sf> for Id<A, B> {
-    type Fold = Sf;
-    #[inline]
-    fn apply(self, step_fn: Sf) -> Self::Fold {
-        step_fn
-    }
-}
-pub fn folding<A, B>() -> Folding<Id<A, B>> {
-    Folding::new(Id(PhantomData))
-}
-
-/// Comp is an adapter of [Adapter]s.
-#[derive(Debug)]
-pub struct Comp<F, G> {
-    f: F,
-    g: G,
-}
-fn comp<F, G>(f: F, g: G) -> Comp<F, G> {
-    Comp { f, g }
-}
-impl<Sf, F, G> Xform<Sf> for Comp<F, G>
-where
-    F: Xform<G::Fold>,
-    G: Xform<Sf>,
-{
-    type Fold = F::Fold;
-
-    fn apply(self, rf: Sf) -> Self::Fold {
-        self.f.apply(self.g.apply(rf))
-    }
-}
+use crate::{Comp, Fold, Folding, Step, Xform};
 
 #[derive(Debug)]
 pub struct Map<F> {
@@ -182,7 +112,7 @@ where
     where
         In: Borrow<A>,
     {
-        if (self.pred)(input.borrow()) { self.sf.step(acc, input) } else { Step::Yield(acc) }
+        if (self.pred)(input.borrow()) { self.sf.step(acc, input) } else { Step::More(acc) }
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> B {
@@ -238,12 +168,12 @@ where
         In: Borrow<A>,
     {
         match self.count {
-            0 => Step::Break(acc),
+            0 => Step::Halt(acc),
             1 => {
                 self.count = 0;
                 match self.f.step(acc, input) {
-                    Step::Yield(a) => Step::Break(a),
-                    Step::Break(a) => Step::Break(a),
+                    Step::More(a) => Step::Halt(a),
+                    Step::Halt(a) => Step::Halt(a),
                 }
             }
             _ => {
