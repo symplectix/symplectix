@@ -27,7 +27,7 @@ impl<F, MapF> MapSf<F, MapF> {
 
 impl<Rf, F> Xform<Rf> for Map<F> {
     type Fold = MapSf<Rf, F>;
-    fn apply(self, sf: Rf) -> Self::Fold {
+    fn xform(self, sf: Rf) -> Self::Fold {
         MapSf::new(sf, self.mapf)
     }
 }

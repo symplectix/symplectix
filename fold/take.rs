@@ -25,7 +25,7 @@ impl<F> TakeSf<F> {
 
 impl<Sf> Xform<Sf> for Take {
     type Fold = TakeSf<Sf>;
-    fn apply(self, sf: Sf) -> Self::Fold {
+    fn xform(self, sf: Sf) -> Self::Fold {
         TakeSf::new(sf, self.count)
     }
 }

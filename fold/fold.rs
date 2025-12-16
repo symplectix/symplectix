@@ -89,7 +89,7 @@ pub trait Xform<Sf> {
     type Fold;
 
     /// Creates a new [Fold] from the given one.
-    fn apply(self, fold: Sf) -> Self::Fold;
+    fn xform(self, fold: Sf) -> Self::Fold;
 
     // We can't implement adapters (e.g., map, filter) in Xform,
     // because rustc won't be able to infer the Sf type.
@@ -100,7 +100,7 @@ impl<Xf> Folding<Xf> {
     where
         Xf: Xform<F>,
     {
-        self.xf.apply(fold)
+        self.xf.xform(fold)
     }
 
     fn new(xf: Xf) -> Self {
@@ -124,7 +124,7 @@ pub struct Id<A, B>(PhantomData<(A, B)>);
 impl<A, B, Sf: Fold<A, B>> Xform<Sf> for Id<A, B> {
     type Fold = Sf;
     #[inline]
-    fn apply(self, step_fn: Sf) -> Self::Fold {
+    fn xform(self, step_fn: Sf) -> Self::Fold {
         step_fn
     }
 }
@@ -141,8 +141,8 @@ where
 {
     type Fold = F::Fold;
 
-    fn apply(self, rf: Sf) -> Self::Fold {
-        self.f.apply(self.g.apply(rf))
+    fn xform(self, rf: Sf) -> Self::Fold {
+        self.f.xform(self.g.xform(rf))
     }
 }
 

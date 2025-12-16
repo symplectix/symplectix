@@ -27,7 +27,7 @@ impl<F, P> FilterSf<F, P> {
 
 impl<Sf, P> Xform<Sf> for Filter<P> {
     type Fold = FilterSf<Sf, P>;
-    fn apply(self, sf: Sf) -> Self::Fold {
+    fn xform(self, sf: Sf) -> Self::Fold {
         FilterSf::new(sf, self.pred)
     }
 }
