@@ -8,13 +8,16 @@
 // - [xforms](https://github.com/cgrand/xforms)
 
 use std::borrow::Borrow;
-use std::marker::PhantomData;
 
+mod comp;
 mod filter;
+mod identity;
 mod map;
 mod take;
 
+use comp::Comp;
 pub use filter::filter;
+use identity::Identity;
 pub use map::map;
 pub use take::take;
 
@@ -108,43 +111,12 @@ impl<Xf> Folding<Xf> {
     }
 
     fn comp<That>(self, that: That) -> Folding<Comp<Xf, That>> {
-        Folding::new(comp(self.xf, that))
+        Folding::new(Comp::new(self.xf, that))
     }
 }
 
-pub fn folding<A, B>() -> Folding<Id<A, B>> {
-    Folding::new(Id(PhantomData))
-}
-
-fn comp<F, G>(f: F, g: G) -> Comp<F, G> {
-    Comp { f, g }
-}
-
-#[derive(Debug)]
-pub struct Id<A, B>(PhantomData<(A, B)>);
-impl<A, B, Sf: Fold<A, B>> Xform<Sf> for Id<A, B> {
-    type Fold = Sf;
-    #[inline]
-    fn xform(self, step_fn: Sf) -> Self::Fold {
-        step_fn
-    }
-}
-
-#[derive(Debug)]
-pub struct Comp<F, G> {
-    f: F,
-    g: G,
-}
-impl<Sf, F, G> Xform<Sf> for Comp<F, G>
-where
-    F: Xform<G::Fold>,
-    G: Xform<Sf>,
-{
-    type Fold = F::Fold;
-
-    fn xform(self, rf: Sf) -> Self::Fold {
-        self.f.xform(self.g.xform(rf))
-    }
+pub fn folding<A, B>() -> Folding<Identity<A, B>> {
+    Folding::new(Identity::new())
 }
 
 impl<A, B, F> Fold<A, B> for F

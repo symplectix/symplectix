@@ -2,12 +2,7 @@ load("//bazel:rust.bzl", "rust")
 
 rust.library(
     name = "xf",
-    srcs = [
-        "filter.rs",
-        "map.rs",
-        "take.rs",
-        "xf.rs",
-    ],
+    srcs = glob(["*.rs"]),
 )
 
 rust.test(
