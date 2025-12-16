@@ -10,12 +10,15 @@ pub struct Folding<Xf> {
 }
 
 /// An adapter that creates a new [Fold] from the given one.
-pub trait Xform<F> {
+pub trait Xform<Sf> {
     /// A new step function created by apply.
     type Fold;
 
     /// Creates a new [Fold] from the given one.
-    fn apply(self, fold: F) -> Self::Fold;
+    fn apply(self, fold: Sf) -> Self::Fold;
+
+    // We can't implement adapters (e.g., map, filter) in Xform,
+    // because rustc won't be able to infer the Sf type.
 }
 
 impl<Xf> Folding<Xf> {
@@ -33,51 +36,39 @@ impl<Xf> Folding<Xf> {
     fn comp<That>(self, that: That) -> Folding<Comp<Xf, That>> {
         Folding::new(comp(self.xf, that))
     }
-
-    pub fn map<F>(self, mapf: F) -> Folding<Comp<Xf, Map<F>>> {
-        self.comp(Map::new(mapf))
-    }
-
-    pub fn filter<P>(self, pred: P) -> Folding<Comp<Xf, Filter<P>>> {
-        self.comp(Filter::new(pred))
-    }
-
-    pub fn take(self, count: usize) -> Folding<Comp<Xf, Take>> {
-        self.comp(Take::new(count))
-    }
 }
 
 #[derive(Debug)]
-pub struct Id<In, Out>(PhantomData<(In, Out)>);
-impl<Sf: Fold<In, Out>, In, Out> Xform<Sf> for Id<In, Out> {
+pub struct Id<A, B>(PhantomData<(A, B)>);
+impl<A, B, Sf: Fold<A, B>> Xform<Sf> for Id<A, B> {
     type Fold = Sf;
     #[inline]
     fn apply(self, step_fn: Sf) -> Self::Fold {
         step_fn
     }
 }
-pub fn folding<In, Out>() -> Folding<Id<In, Out>> {
+pub fn folding<A, B>() -> Folding<Id<A, B>> {
     Folding::new(Id(PhantomData))
 }
 
 /// Comp is an adapter of [Adapter]s.
 #[derive(Debug)]
-pub struct Comp<A, B> {
-    a: A,
-    b: B,
+pub struct Comp<F, G> {
+    f: F,
+    g: G,
 }
-fn comp<A, B>(a: A, b: B) -> Comp<A, B> {
-    Comp { a, b }
+fn comp<F, G>(f: F, g: G) -> Comp<F, G> {
+    Comp { f, g }
 }
-impl<Sf, A, B> Xform<Sf> for Comp<A, B>
+impl<Sf, F, G> Xform<Sf> for Comp<F, G>
 where
-    A: Xform<B::Fold>,
-    B: Xform<Sf>,
+    F: Xform<G::Fold>,
+    G: Xform<Sf>,
 {
-    type Fold = A::Fold;
+    type Fold = F::Fold;
 
     fn apply(self, rf: Sf) -> Self::Fold {
-        self.a.apply(self.b.apply(rf))
+        self.f.apply(self.g.apply(rf))
     }
 }
 
@@ -86,16 +77,34 @@ pub struct Map<F> {
     mapf: F,
 }
 
-#[derive(Debug)]
-pub struct MapFold<F, MapF> {
-    f: F,
-    mapf: MapF,
+impl<F> Map<F> {
+    fn new(mapf: F) -> Map<F> {
+        Map { mapf }
+    }
 }
 
-impl<Sf, F> Xform<Sf> for Map<F> {
-    type Fold = MapFold<Sf, F>;
-    fn apply(self, sf: Sf) -> Self::Fold {
-        MapFold::new(sf, self.mapf)
+#[derive(Debug)]
+pub struct MapSf<Sf, F> {
+    sf: Sf,
+    mapf: F,
+}
+
+impl<F, MapF> MapSf<F, MapF> {
+    fn new(f: F, mapf: MapF) -> Self {
+        MapSf { sf: f, mapf }
+    }
+}
+
+impl<Rf, F> Xform<Rf> for Map<F> {
+    type Fold = MapSf<Rf, F>;
+    fn apply(self, sf: Rf) -> Self::Fold {
+        MapSf::new(sf, self.mapf)
+    }
+}
+
+impl<Xf> Folding<Xf> {
+    pub fn map<F>(self, mapf: F) -> Folding<Comp<Xf, Map<F>>> {
+        self.comp(Map::new(mapf))
     }
 }
 
@@ -103,35 +112,23 @@ pub fn map<F>(f: F) -> Folding<Map<F>> {
     Folding::new(Map::new(f))
 }
 
-impl<F> Map<F> {
-    fn new(mapf: F) -> Map<F> {
-        Map { mapf }
-    }
-}
-
-impl<F, MapF> MapFold<F, MapF> {
-    pub(crate) fn new(f: F, mapf: MapF) -> Self {
-        MapFold { f, mapf }
-    }
-}
-
-impl<A, B, C, F, MapF> Fold<A, C> for MapFold<F, MapF>
+impl<A, B, C, Sf, F> Fold<A, C> for MapSf<Sf, F>
 where
-    F: Fold<B, C>,
-    MapF: FnMut(&A) -> B,
+    Sf: Fold<B, C>,
+    F: FnMut(&A) -> B,
 {
-    type Acc = F::Acc;
+    type Acc = Sf::Acc;
     #[inline]
     fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
         In: Borrow<A>,
     {
         let mapped = (self.mapf)(input.borrow());
-        self.f.step(acc, &mapped)
+        self.sf.step(acc, &mapped)
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> C {
-        self.f.done(acc)
+        self.sf.done(acc)
     }
 }
 
@@ -140,51 +137,56 @@ pub struct Filter<P> {
     pred: P,
 }
 
-#[derive(Debug)]
-pub struct FilterFold<F, P> {
-    f: F,
-    pred: P,
-}
-
-impl<Sf, P> Xform<Sf> for Filter<P> {
-    type Fold = FilterFold<Sf, P>;
-    fn apply(self, sf: Sf) -> Self::Fold {
-        FilterFold::new(sf, self.pred)
-    }
-}
-
-pub fn filter<P>(pred: P) -> Folding<Filter<P>> {
-    Folding::new(Filter::new(pred))
-}
-
 impl<P> Filter<P> {
     fn new(pred: P) -> Self {
         Filter { pred }
     }
 }
 
-impl<F, P> FilterFold<F, P> {
-    pub(crate) fn new(f: F, pred: P) -> Self {
-        FilterFold { f, pred }
+#[derive(Debug)]
+pub struct FilterSf<Sf, P> {
+    sf: Sf,
+    pred: P,
+}
+
+impl<F, P> FilterSf<F, P> {
+    fn new(f: F, pred: P) -> Self {
+        FilterSf { sf: f, pred }
     }
 }
 
-impl<A, B, F, P> Fold<A, B> for FilterFold<F, P>
+impl<Sf, P> Xform<Sf> for Filter<P> {
+    type Fold = FilterSf<Sf, P>;
+    fn apply(self, sf: Sf) -> Self::Fold {
+        FilterSf::new(sf, self.pred)
+    }
+}
+
+impl<Xf> Folding<Xf> {
+    pub fn filter<P>(self, pred: P) -> Folding<Comp<Xf, Filter<P>>> {
+        self.comp(Filter::new(pred))
+    }
+}
+pub fn filter<P>(pred: P) -> Folding<Filter<P>> {
+    Folding::new(Filter::new(pred))
+}
+
+impl<A, B, Sf, P> Fold<A, B> for FilterSf<Sf, P>
 where
-    F: Fold<A, B>,
+    Sf: Fold<A, B>,
     P: FnMut(&A) -> bool,
 {
-    type Acc = F::Acc;
+    type Acc = Sf::Acc;
     #[inline]
     fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
         In: Borrow<A>,
     {
-        if (self.pred)(input.borrow()) { self.f.step(acc, input) } else { Step::Yield(acc) }
+        if (self.pred)(input.borrow()) { self.sf.step(acc, input) } else { Step::Yield(acc) }
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> B {
-        self.f.done(acc)
+        self.sf.done(acc)
     }
 }
 
@@ -192,35 +194,40 @@ where
 pub struct Take {
     count: usize,
 }
-
-#[derive(Debug)]
-pub struct TakeFold<F> {
-    f: F,
-    count: usize,
-}
-
-impl<Sf> Xform<Sf> for Take {
-    type Fold = TakeFold<Sf>;
-    fn apply(self, sf: Sf) -> Self::Fold {
-        TakeFold::new(sf, self.count)
-    }
-}
-
-pub fn take(count: usize) -> Folding<Take> {
-    Folding::new(Take::new(count))
-}
-
 impl Take {
     fn new(count: usize) -> Self {
         Take { count }
     }
 }
-impl<F> TakeFold<F> {
-    pub(crate) fn new(f: F, count: usize) -> Self {
-        TakeFold { f, count }
+
+#[derive(Debug)]
+pub struct TakeSf<F> {
+    f: F,
+    count: usize,
+}
+impl<F> TakeSf<F> {
+    fn new(f: F, count: usize) -> Self {
+        TakeSf { f, count }
     }
 }
-impl<A, B, F> Fold<A, B> for TakeFold<F>
+
+impl<Sf> Xform<Sf> for Take {
+    type Fold = TakeSf<Sf>;
+    fn apply(self, sf: Sf) -> Self::Fold {
+        TakeSf::new(sf, self.count)
+    }
+}
+
+impl<Xf> Folding<Xf> {
+    pub fn take(self, count: usize) -> Folding<Comp<Xf, Take>> {
+        self.comp(Take::new(count))
+    }
+}
+pub fn take(count: usize) -> Folding<Take> {
+    Folding::new(Take::new(count))
+}
+
+impl<A, B, F> Fold<A, B> for TakeSf<F>
 where
     F: Fold<A, B>,
 {

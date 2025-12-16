@@ -10,7 +10,7 @@
 pub mod xf;
 use std::borrow::Borrow;
 
-/// Fold represents a left fold computation from a collection of A to B.
+/// A fold step function.
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
