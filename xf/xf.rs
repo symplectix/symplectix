@@ -143,12 +143,16 @@ where
     F: FnMut(B, &A) -> B,
 {
     type Acc = B;
+
+    #[inline]
     fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
         In: Borrow<A>,
     {
         Step::More(self(acc, input.borrow()))
     }
+
+    #[inline]
     fn done(self, acc: B) -> B {
         acc
     }
