@@ -25,10 +25,7 @@ rust.doc_test(
 rust.tests(
     name = "suite",
     size = "small",
-    srcs = [
-        "xf_test.rs",
-    ],
-    deps = [
-        ":xf",
-    ],
+    srcs = glob(["tests/*.rs"]),
+    shared_srcs = ["tests/helper.rs"],
+    deps = [":xf"],
 )

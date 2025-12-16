@@ -1,40 +1,7 @@
 #![allow(missing_docs)]
 
-use std::borrow::ToOwned;
-use std::collections::VecDeque;
-use std::iter::{empty, once};
-
-use xf::Fold;
-
-#[inline]
-fn conj<A>(mut acc: Vec<A::Owned>, input: &A) -> Vec<A::Owned>
-where
-    A: ToOwned,
-{
-    acc.push(input.to_owned());
-    acc
-}
-
-#[inline]
-fn cons<A>(mut acc: VecDeque<A::Owned>, input: &A) -> VecDeque<A::Owned>
-where
-    A: ToOwned,
-{
-    acc.push_front(input.to_owned());
-    acc
-}
-
-fn pow2(x: &i32) -> i32 {
-    x.pow(2)
-}
-
-fn mul3(x: &i32) -> i32 {
-    x * 3
-}
-
-fn even(x: &i32) -> bool {
-    x % 2 == 0
-}
+mod helper;
+use helper::*;
 
 #[test]
 fn map() {
@@ -126,24 +93,24 @@ fn sum() {
 
 #[test]
 fn par() {
-    let f = cons.par(conj);
-    let acc = f.fold((VecDeque::with_capacity(10), Vec::with_capacity(10)), 1..5);
-    assert_eq!(acc, (VecDeque::from([4, 3, 2, 1]), vec![1, 2, 3, 4]));
+    let f = conj.par(conj);
+    let acc = f.fold((Vec::with_capacity(10), Vec::with_capacity(10)), 1..5);
+    assert_eq!(acc, (vec![1, 2, 3, 4], vec![1, 2, 3, 4]));
 
-    let f = xf::map(pow2).take(3).apply(cons);
+    let f = xf::map(pow2).take(3).apply(conj);
     let g = xf::map(mul3).take(2).apply(conj);
-    let acc = f.par(g).fold((VecDeque::new(), Vec::new()), 1..10);
-    assert_eq!(acc, (VecDeque::from([9, 4, 1]), vec![3, 6]));
+    let acc = f.par(g).fold((Vec::new(), Vec::new()), 1..10);
+    assert_eq!(acc, (vec![1, 4, 9], vec![3, 6]));
 }
 
 #[test]
 fn either() {
-    let f = cons.either(conj);
-    let acc = f.fold((VecDeque::with_capacity(10), Vec::with_capacity(10)), 1..5);
-    assert_eq!(acc, (VecDeque::from([4, 3, 2, 1]), vec![1, 2, 3, 4]));
+    let f = conj.either(conj);
+    let acc = f.fold((Vec::with_capacity(10), Vec::with_capacity(10)), 1..5);
+    assert_eq!(acc, (vec![1, 2, 3, 4], vec![1, 2, 3, 4]));
 
-    let f = xf::map(pow2).take(3).apply(cons);
+    let f = xf::map(pow2).take(3).apply(conj);
     let g = xf::map(mul3).take(2).apply(conj);
-    let acc = f.either(g).fold((VecDeque::new(), Vec::new()), 1..10);
-    assert_eq!(acc, (VecDeque::from([4, 1]), vec![3, 6]));
+    let acc = f.either(g).fold((Vec::new(), Vec::new()), 1..10);
+    assert_eq!(acc, (vec![1, 4], vec![3, 6]));
 }
