@@ -8,7 +8,7 @@ pub struct Filter<P> {
 }
 
 impl<P> Filter<P> {
-    fn new(pred: P) -> Self {
+    pub(crate) fn new(pred: P) -> Self {
         Filter { pred }
     }
 }
@@ -36,9 +36,6 @@ impl<Xf> Folding<Xf> {
     pub fn filter<P>(self, pred: P) -> Folding<Comp<Xf, Filter<P>>> {
         self.comp(Filter::new(pred))
     }
-}
-pub fn filter<P>(pred: P) -> Folding<Filter<P>> {
-    Folding::new(Filter::new(pred))
 }
 
 impl<A, B, Sf, P> Fold<A, B> for FilterSf<Sf, P>

@@ -8,7 +8,7 @@ pub struct Map<F> {
 }
 
 impl<F> Map<F> {
-    fn new(mapf: F) -> Map<F> {
+    pub(crate) fn new(mapf: F) -> Map<F> {
         Map { mapf }
     }
 }
@@ -36,10 +36,6 @@ impl<Xf> Folding<Xf> {
     pub fn map<F>(self, mapf: F) -> Folding<Comp<Xf, Map<F>>> {
         self.comp(Map::new(mapf))
     }
-}
-
-pub fn map<F>(f: F) -> Folding<Map<F>> {
-    Folding::new(Map::new(f))
 }
 
 impl<A, B, C, Sf, F> Fold<A, C> for MapSf<Sf, F>

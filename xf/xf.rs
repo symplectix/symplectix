@@ -16,10 +16,10 @@ mod map;
 mod take;
 
 use comp::Comp;
-pub use filter::filter;
+use filter::Filter;
 use identity::Identity;
-pub use map::map;
-pub use take::take;
+use map::Map;
+use take::Take;
 
 /// A fold step function.
 pub trait Fold<A, B> {
@@ -117,6 +117,18 @@ impl<Xf> Folding<Xf> {
 
 pub fn folding<A, B>() -> Folding<Identity<A, B>> {
     Folding::new(Identity::new())
+}
+
+pub fn map<F>(f: F) -> Folding<Map<F>> {
+    Folding::new(Map::new(f))
+}
+
+pub fn filter<P>(pred: P) -> Folding<Filter<P>> {
+    Folding::new(Filter::new(pred))
+}
+
+pub fn take(count: usize) -> Folding<Take> {
+    Folding::new(Take::new(count))
 }
 
 impl<A, B, F> Fold<A, B> for F

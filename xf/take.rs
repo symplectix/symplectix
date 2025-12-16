@@ -7,7 +7,7 @@ pub struct Take {
     count: usize,
 }
 impl Take {
-    fn new(count: usize) -> Self {
+    pub(crate) fn new(count: usize) -> Self {
         Take { count }
     }
 }
@@ -34,9 +34,6 @@ impl<Xf> Folding<Xf> {
     pub fn take(self, count: usize) -> Folding<Comp<Xf, Take>> {
         self.comp(Take::new(count))
     }
-}
-pub fn take(count: usize) -> Folding<Take> {
-    Folding::new(Take::new(count))
 }
 
 impl<A, B, F> Fold<A, B> for TakeSf<F>
