@@ -1,5 +1,6 @@
+#![allow(dead_code)]
+
 use std::borrow::ToOwned;
-pub use std::iter::{empty, once};
 
 pub use xf::Fold;
 

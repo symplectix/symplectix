@@ -1,15 +1,17 @@
 #![allow(missing_docs)]
 
+use std::iter::{empty, once};
+
 mod helper;
 use helper::*;
 
 #[test]
 fn map() {
-    let acc = vec![];
-    let ret = xf::map(pow2).apply(conj).fold(acc, empty::<i32>());
+    let ret = xf::map(pow2).apply(conj).fold(vec![], empty::<i32>());
     assert_eq!(ret, vec![]);
-    let acc = vec![];
-    let ret = xf::map(pow2).apply(conj).fold(acc, 1..4);
+    let ret = xf::map(pow2).apply(conj).fold(vec![], once::<i32>(9));
+    assert_eq!(ret, vec![81]);
+    let ret = xf::map(pow2).apply(conj).fold(vec![], 1..4);
     assert_eq!(ret, vec![1, 4, 9]);
 }
 
@@ -48,6 +50,20 @@ fn take() {
 }
 
 #[test]
+fn count() {
+    assert_eq!(0, xf::count.fold(0, empty::<i32>()));
+    assert_eq!(9, xf::count.fold(0, 1..10));
+
+    let acc = xf::take(3).apply(xf::count).fold(0, 1..);
+    assert_eq!(acc, 3);
+
+    let f = xf::sum.par(xf::count);
+    let (sum, count) = f.fold((0, 0), 1..3);
+    assert_eq!(sum, 3);
+    assert_eq!(count, 2);
+}
+
+#[test]
 fn map_filter_take() {
     let acc = xf::map(mul3).take(5).filter(even).apply(conj).fold(vec![], 1..);
     assert_eq!(acc, vec![6, 12]);
@@ -63,20 +79,6 @@ fn map_filter_take() {
     assert_eq!(acc, vec![6, 12]);
     let acc = xf::take(5).filter(even).map(mul3).apply(conj).fold(vec![], 1..);
     assert_eq!(acc, vec![6, 12]);
-}
-
-#[test]
-fn count() {
-    assert_eq!(0, xf::count.fold(0, empty::<i32>()));
-    assert_eq!(9, xf::count.fold(0, 1..10));
-
-    let acc = xf::take(3).apply(xf::count).fold(0, 1..);
-    assert_eq!(acc, 3);
-
-    let f = xf::sum.par(xf::count);
-    let (sum, count) = f.fold((0, 0), 1..3);
-    assert_eq!(sum, 3);
-    assert_eq!(count, 2);
 }
 
 #[test]
