@@ -3,57 +3,59 @@ use std::borrow::Borrow;
 use crate::{Comp, Fold, Folding, Step, Xform};
 
 #[derive(Debug)]
-pub struct Map<F> {
+pub struct Map<Rf, F> {
+    rf: Rf,
     mapf: F,
 }
 
-impl<F> Map<F> {
-    pub(crate) fn new(mapf: F) -> Map<F> {
-        Map { mapf }
+impl<Rf, F> Map<Rf, F> {
+    pub(crate) fn new(rf: Rf, mapf: F) -> Self {
+        Map { rf, mapf }
     }
 }
 
-#[derive(Debug)]
-pub struct MapSf<Sf, F> {
-    sf: Sf,
-    mapf: F,
-}
-
-impl<F, MapF> MapSf<F, MapF> {
-    fn new(f: F, mapf: MapF) -> Self {
-        MapSf { sf: f, mapf }
-    }
-}
-
-impl<Rf, F> Xform<Rf> for Map<F> {
-    type Fold = MapSf<Rf, F>;
-    fn xform(self, sf: Rf) -> Self::Fold {
-        MapSf::new(sf, self.mapf)
-    }
-}
-
-impl<Xf> Folding<Xf> {
-    pub fn map<F>(self, mapf: F) -> Folding<Comp<Xf, Map<F>>> {
-        self.comp(Map::new(mapf))
-    }
-}
-
-impl<A, B, C, Sf, F> Fold<A, C> for MapSf<Sf, F>
+impl<A, B, C, Rf, F> Fold<A, C> for Map<Rf, F>
 where
-    Sf: Fold<B, C>,
+    Rf: Fold<B, C>,
     F: FnMut(&A) -> B,
 {
-    type Acc = Sf::Acc;
+    type Acc = Rf::Acc;
+
     #[inline]
     fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
     where
         In: Borrow<A>,
     {
         let mapped = (self.mapf)(input.borrow());
-        self.sf.step(acc, &mapped)
+        self.rf.step(acc, &mapped)
     }
+
     #[inline]
     fn done(self, acc: Self::Acc) -> C {
-        self.sf.done(acc)
+        self.rf.done(acc)
+    }
+}
+
+#[derive(Debug)]
+pub struct MapXf<F> {
+    mapf: F,
+}
+
+impl<F> MapXf<F> {
+    pub(crate) fn new(mapf: F) -> MapXf<F> {
+        MapXf { mapf }
+    }
+}
+
+impl<Rf, F> Xform<Rf> for MapXf<F> {
+    type Fold = Map<Rf, F>;
+    fn xform(self, sf: Rf) -> Self::Fold {
+        Map::new(sf, self.mapf)
+    }
+}
+
+impl<Xf> Folding<Xf> {
+    pub fn map<F>(self, mapf: F) -> Folding<Comp<Xf, MapXf<F>>> {
+        self.comp(MapXf::new(mapf))
     }
 }

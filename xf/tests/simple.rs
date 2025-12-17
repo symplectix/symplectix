@@ -146,6 +146,11 @@ fn sum_take() {
 }
 
 #[test]
+fn sum_take_filter_map() {
+    assert_eq!(4, xf::sum.filter(even).map(pow2).take(3).fold(0, 1..));
+}
+
+#[test]
 fn sum_par_sum() {
     let f = xf::map(mul3).take(3).apply(xf::sum);
     let g = xf::map(pow2).take(3).apply(xf::sum);

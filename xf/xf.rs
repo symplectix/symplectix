@@ -10,16 +10,16 @@
 use std::borrow::Borrow;
 
 mod comp;
-mod filter;
 mod identity;
+use comp::Comp;
+use identity::Identity;
+
+mod filter;
 mod map;
 mod take;
-
-use comp::Comp;
-use filter::Filter;
-use identity::Identity;
-use map::Map;
-use take::Take;
+use filter::{Filter, FilterXf};
+use map::{Map, MapXf};
+use take::{Take, TakeXf};
 
 mod either;
 mod fuse;
@@ -34,7 +34,7 @@ pub trait Fold<A, B> {
     type Acc;
 
     /// Runs just a one step of folding.
-    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    fn step<In>(&mut self, acc: Self::Acc, item: &In) -> Step<Self::Acc>
     where
         In: Borrow<A>;
 
@@ -61,6 +61,27 @@ pub trait Fold<A, B> {
             }
         }
         self.done(acc)
+    }
+
+    fn map<F>(self, f: F) -> Map<Self, F>
+    where
+        Self: Sized,
+    {
+        Map::new(self, f)
+    }
+
+    fn filter<P>(self, f: P) -> Filter<Self, P>
+    where
+        Self: Sized,
+    {
+        Filter::new(self, f)
+    }
+
+    fn take(self, n: usize) -> Take<Self>
+    where
+        Self: Sized,
+    {
+        Take::new(self, n)
     }
 
     fn par<That>(self, that: That) -> Par<Self, That>
@@ -126,16 +147,16 @@ pub fn folding<A, B>() -> Folding<Identity<A, B>> {
     Folding::new(Identity::new())
 }
 
-pub fn map<F>(f: F) -> Folding<Map<F>> {
-    Folding::new(Map::new(f))
+pub fn map<F>(f: F) -> Folding<MapXf<F>> {
+    Folding::new(MapXf::new(f))
 }
 
-pub fn filter<P>(pred: P) -> Folding<Filter<P>> {
-    Folding::new(Filter::new(pred))
+pub fn filter<P>(pred: P) -> Folding<FilterXf<P>> {
+    Folding::new(FilterXf::new(pred))
 }
 
-pub fn take(count: usize) -> Folding<Take> {
-    Folding::new(Take::new(count))
+pub fn take(count: usize) -> Folding<TakeXf> {
+    Folding::new(TakeXf::new(count))
 }
 
 impl<A, B, F> Fold<A, B> for F

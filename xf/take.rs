@@ -3,40 +3,40 @@ use std::borrow::Borrow;
 use crate::{Comp, Fold, Folding, Step, Xform};
 
 #[derive(Debug)]
-pub struct Take {
+pub struct TakeXf {
     count: usize,
 }
-impl Take {
+impl TakeXf {
     pub(crate) fn new(count: usize) -> Self {
-        Take { count }
+        TakeXf { count }
     }
 }
 
 #[derive(Debug)]
-pub struct TakeSf<F> {
+pub struct Take<F> {
     f: F,
     count: usize,
 }
-impl<F> TakeSf<F> {
-    fn new(f: F, count: usize) -> Self {
-        TakeSf { f, count }
+impl<F> Take<F> {
+    pub(crate) fn new(f: F, count: usize) -> Self {
+        Take { f, count }
     }
 }
 
-impl<Sf> Xform<Sf> for Take {
-    type Fold = TakeSf<Sf>;
+impl<Sf> Xform<Sf> for TakeXf {
+    type Fold = Take<Sf>;
     fn xform(self, sf: Sf) -> Self::Fold {
-        TakeSf::new(sf, self.count)
+        Take::new(sf, self.count)
     }
 }
 
 impl<Xf> Folding<Xf> {
-    pub fn take(self, count: usize) -> Folding<Comp<Xf, Take>> {
-        self.comp(Take::new(count))
+    pub fn take(self, count: usize) -> Folding<Comp<Xf, TakeXf>> {
+        self.comp(TakeXf::new(count))
     }
 }
 
-impl<A, B, F> Fold<A, B> for TakeSf<F>
+impl<A, B, F> Fold<A, B> for Take<F>
 where
     F: Fold<A, B>,
 {

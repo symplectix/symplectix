@@ -3,31 +3,31 @@ use std::borrow::Borrow;
 use crate::{Fold, Step};
 
 #[derive(Debug)]
-pub(crate) struct Fuse<F> {
-    f: F,
+pub(crate) struct Fuse<Rf> {
+    rf: Rf,
     halt: bool,
 }
 
-impl<F> Fuse<F> {
-    pub(crate) fn new(f: F) -> Self {
-        Fuse { f, halt: false }
+impl<Rf> Fuse<Rf> {
+    pub(crate) fn new(rf: Rf) -> Self {
+        Fuse { rf, halt: false }
     }
 }
 
-impl<A, B, F> Fold<A, B> for Fuse<F>
+impl<A, B, Rf> Fold<A, B> for Fuse<Rf>
 where
-    F: Fold<A, B>,
+    Rf: Fold<A, B>,
 {
-    type Acc = F::Acc;
+    type Acc = Rf::Acc;
 
-    fn step<In>(&mut self, acc: <F as Fold<A, B>>::Acc, input: &In) -> Step<<F as Fold<A, B>>::Acc>
+    fn step<In>(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: &In) -> Step<<Rf as Fold<A, B>>::Acc>
     where
         In: Borrow<A>,
     {
         if self.halt {
             Step::Halt(acc)
         } else {
-            match self.f.step(acc, input) {
+            match self.rf.step(acc, item) {
                 Step::Halt(ret) => {
                     self.halt = true;
                     Step::Halt(ret)
@@ -38,6 +38,6 @@ where
     }
 
     fn done(self, acc: Self::Acc) -> B {
-        self.f.done(acc)
+        self.rf.done(acc)
     }
 }
