@@ -2,7 +2,10 @@ load("//bazel:rust.bzl", "rust")
 
 rust.library(
     name = "ano",
-    srcs = glob(["*.rs", "xf/*.rs"]),
+    srcs = glob([
+        "*.rs",
+        "xf/*.rs",
+    ]),
 )
 
 rust.test(

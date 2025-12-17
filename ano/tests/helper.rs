@@ -24,12 +24,12 @@ where
 }
 
 #[inline]
-pub fn count<T>(acc: usize, _input: &T) -> usize {
+pub fn _count<T>(acc: usize, _input: &T) -> usize {
     acc + 1
 }
 
 #[inline]
-pub fn sum<A, B>(mut acc: B, input: &A) -> B
+pub fn _sum<A, B>(mut acc: B, input: &A) -> B
 where
     B: for<'a> std::ops::AddAssign<&'a A>,
 {

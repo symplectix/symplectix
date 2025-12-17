@@ -25,11 +25,7 @@ where
     where
         In: Borrow<A>,
     {
-        if (self.pred)(input.borrow()) {
-            self.rf.step(acc, input)
-        } else {
-            Step::More(acc)
-        }
+        if (self.pred)(input.borrow()) { self.rf.step(acc, input) } else { Step::More(acc) }
     }
     #[inline]
     fn done(self, acc: Self::Acc) -> B {

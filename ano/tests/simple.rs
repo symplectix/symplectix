@@ -2,7 +2,7 @@
 
 use std::iter::{empty, once};
 
-use ano::{xf, Fold};
+use ano::{Fold, xf};
 
 mod helper;
 use helper::*;
@@ -56,12 +56,12 @@ fn take() {
 }
 
 #[test]
-fn test_count() {
-    assert_eq!(0, ano::from_fn(count).fold(0, empty::<i32>()));
-    assert_eq!(9, ano::from_fn(count).fold(0, 1..10));
-    assert_eq!(3, xf::take(3).into_fn(count).fold(0, 1..));
+fn count() {
+    assert_eq!(0, ano::from_fn(_count).fold(0, empty::<i32>()));
+    assert_eq!(9, ano::from_fn(_count).fold(0, 1..10));
+    assert_eq!(3, xf::take(3).into_fn(_count).fold(0, 1..));
 
-    let f = ano::from_fn(count).par(ano::from_fn(sum));
+    let f = ano::from_fn(_count).par(ano::from_fn(_sum));
     let (count, sum) = f.fold((0, 0), 1..3);
     assert_eq!(count, 2);
     assert_eq!(sum, 3);
@@ -86,15 +86,15 @@ fn map_filter_take() {
 }
 
 #[test]
-fn test_sum() {
-    assert_eq!(0, ano::from_fn(sum).fold(0, empty::<i32>()));
-    assert_eq!(1, ano::from_fn(sum).fold(1, empty::<i32>()));
-    assert_eq!(1, ano::from_fn(sum).fold(0, once::<i32>(1)));
-    assert_eq!(2, ano::from_fn(sum).fold(0, once::<i32>(2)));
-    assert_eq!(18, xf::map(mul3).take(3).into_fn(sum).fold(0, 1..));
+fn sum() {
+    assert_eq!(0, ano::from_fn(_sum).fold(0, empty::<i32>()));
+    assert_eq!(1, ano::from_fn(_sum).fold(1, empty::<i32>()));
+    assert_eq!(1, ano::from_fn(_sum).fold(0, once::<i32>(1)));
+    assert_eq!(2, ano::from_fn(_sum).fold(0, once::<i32>(2)));
+    assert_eq!(18, xf::map(mul3).take(3).into_fn(_sum).fold(0, 1..));
 
-    let f = xf::map(mul3).take(3).into_fn(sum);
-    let g = xf::map(pow2).take(3).into_fn(sum);
+    let f = xf::map(mul3).take(3).into_fn(_sum);
+    let g = xf::map(pow2).take(3).into_fn(_sum);
     let (fsum, gsum) = f.par(g).fold((0, 0), 1..);
     assert_eq!(fsum, 18);
     assert_eq!(gsum, 14);
@@ -107,7 +107,7 @@ fn par() {
     assert_eq!(acc, (vec![1, 2, 3, 4], vec![1, 2, 3, 4]));
 
     let f = xf::map(pow2).take(3).into_fn(conj);
-    let g = xf::map(mul3).take(2).into_fn(sum);
+    let g = xf::map(mul3).take(2).into_fn(_sum);
     let acc = f.par(g).fold((Vec::new(), 0), 1..10);
     assert_eq!(acc, (vec![1, 4, 9], 9));
 }
@@ -119,7 +119,7 @@ fn either() {
     assert_eq!(acc, (vec![1, 2, 3, 4], vec![1, 2, 3, 4]));
 
     let f = xf::map(pow2).take(3).into_fn(conj);
-    let g = xf::map(mul3).take(2).into_fn(sum);
+    let g = xf::map(mul3).take(2).into_fn(_sum);
     let acc = f.either(g).fold((Vec::new(), 0), 1..10);
     assert_eq!(acc, (vec![1, 4], 9));
 }
