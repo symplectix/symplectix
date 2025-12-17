@@ -20,9 +20,9 @@ where
 {
     type Acc = Rf::Acc;
 
-    fn step<In>(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: &In) -> Step<<Rf as Fold<A, B>>::Acc>
+    fn step<T>(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: &T) -> Step<<Rf as Fold<A, B>>::Acc>
     where
-        In: Borrow<A>,
+        T: Borrow<A>,
     {
         if self.halt {
             Step::Halt(acc)

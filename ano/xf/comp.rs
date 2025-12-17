@@ -12,14 +12,14 @@ impl<F, G> Comp<F, G> {
     }
 }
 
-impl<Sf, F, G> Xform<Sf> for Comp<F, G>
+impl<Rf, F, G> Xform<Rf> for Comp<F, G>
 where
     F: Xform<G::Fold>,
-    G: Xform<Sf>,
+    G: Xform<Rf>,
 {
     type Fold = F::Fold;
 
-    fn xform(self, rf: Sf) -> Self::Fold {
+    fn xform(self, rf: Rf) -> Self::Fold {
         self.f.xform(self.g.xform(rf))
     }
 }

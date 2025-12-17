@@ -13,8 +13,8 @@ impl<F> MapXf<F> {
 
 impl<Rf, F> Xform<Rf> for MapXf<F> {
     type Fold = crate::Map<Rf, F>;
-    fn xform(self, sf: Rf) -> Self::Fold {
-        crate::Map::new(sf, self.mapf)
+    fn xform(self, rf: Rf) -> Self::Fold {
+        crate::Map::new(rf, self.mapf)
     }
 }
 

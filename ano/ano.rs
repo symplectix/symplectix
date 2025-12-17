@@ -49,9 +49,9 @@ pub trait Fold<A, B> {
     type Acc;
 
     /// Runs just a one step of folding.
-    fn step<In>(&mut self, acc: Self::Acc, item: &In) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
     where
-        In: Borrow<A>;
+        T: Borrow<A>;
 
     /// Invoked when folding is complete.
     ///

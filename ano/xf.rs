@@ -17,12 +17,12 @@ pub struct Folding<Xf> {
 }
 
 /// An adapter that creates a new [Fold] from the given one.
-pub trait Xform<Sf> {
+pub trait Xform<Rf> {
     /// A new step function created by apply.
     type Fold;
 
     /// Creates a new [Fold] from the given one.
-    fn xform(self, fold: Sf) -> Self::Fold;
+    fn xform(self, rf: Rf) -> Self::Fold;
 }
 
 impl<Xf> Folding<Xf> {

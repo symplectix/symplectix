@@ -11,10 +11,10 @@ impl TakeXf {
     }
 }
 
-impl<Sf> Xform<Sf> for TakeXf {
-    type Fold = crate::Take<Sf>;
-    fn xform(self, sf: Sf) -> Self::Fold {
-        crate::Take::new(sf, self.count)
+impl<Rf> Xform<Rf> for TakeXf {
+    type Fold = crate::Take<Rf>;
+    fn xform(self, rf: Rf) -> Self::Fold {
+        crate::Take::new(rf, self.count)
     }
 }
 

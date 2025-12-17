@@ -12,10 +12,10 @@ impl<A, B> Identity<A, B> {
     }
 }
 
-impl<A, B, Sf: Fold<A, B>> Xform<Sf> for Identity<A, B> {
-    type Fold = Sf;
+impl<A, B, Rf: Fold<A, B>> Xform<Rf> for Identity<A, B> {
+    type Fold = Rf;
     #[inline]
-    fn xform(self, step_fn: Sf) -> Self::Fold {
+    fn xform(self, step_fn: Rf) -> Self::Fold {
         step_fn
     }
 }

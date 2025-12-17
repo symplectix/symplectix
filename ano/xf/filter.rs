@@ -11,10 +11,10 @@ impl<P> FilterXf<P> {
     }
 }
 
-impl<Sf, P> Xform<Sf> for FilterXf<P> {
-    type Fold = crate::Filter<Sf, P>;
-    fn xform(self, sf: Sf) -> Self::Fold {
-        crate::Filter::new(sf, self.pred)
+impl<Rf, P> Xform<Rf> for FilterXf<P> {
+    type Fold = crate::Filter<Rf, P>;
+    fn xform(self, rf: Rf) -> Self::Fold {
+        crate::Filter::new(rf, self.pred)
     }
 }
 

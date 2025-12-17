@@ -8,18 +8,18 @@ pub struct Filter<Rf, P> {
     pred: P,
 }
 
-impl<F, P> Filter<F, P> {
-    pub(crate) fn new(f: F, pred: P) -> Self {
-        Filter { rf: f, pred }
+impl<Rf, P> Filter<Rf, P> {
+    pub(crate) fn new(rf: Rf, pred: P) -> Self {
+        Filter { rf, pred }
     }
 }
 
-impl<A, B, Sf, P> Fold<A, B> for Filter<Sf, P>
+impl<A, B, Rf, P> Fold<A, B> for Filter<Rf, P>
 where
-    Sf: Fold<A, B>,
+    Rf: Fold<A, B>,
     P: FnMut(&A) -> bool,
 {
-    type Acc = Sf::Acc;
+    type Acc = Rf::Acc;
 
     #[inline]
     fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
