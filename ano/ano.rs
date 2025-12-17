@@ -31,16 +31,18 @@ pub mod xf;
 ///
 /// When you chain Folds, they are evaluated in reverse order.
 ///
-/// ```rust
+/// ```
 /// use ano::Fold;
-/// assert_eq!(4, ano::sum.filter(|x: &i32| x % 2 != 0).take(3).fold(0, 1..));
+/// let sum = ano::from_fn(|acc, item: &i32| acc + item);
+/// assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold(0, 1..));
 /// ```
 ///
 /// You can use `xf` module to write pipelines in forward order.
 ///
-/// ```rust
+/// ```
 /// use ano::Fold;
-/// assert_eq!(4, ano::xf::take(3).filter(|x: &i32| x % 2 != 0).apply(ano::sum).fold(0, 1..));
+/// let sum = ano::from_fn(|acc, item: &i32| acc + item);
+/// assert_eq!(4, ano::xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold(0, 1..));
 /// ```
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
@@ -119,6 +121,13 @@ pub enum Step<T> {
     More(T),
     /// Stop folding.
     Halt(T),
+}
+
+pub fn from_fn<A, B, F>(f: F) -> FromFn<F>
+where
+    F: FnMut(B, &A) -> B,
+{
+    FromFn::new(f)
 }
 
 impl<A, B, F> Fold<A, B> for F
