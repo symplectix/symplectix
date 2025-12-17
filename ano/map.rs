@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 
-use crate::{Comp, Fold, Folding, Step, Xform};
+use crate::{Fold, Step};
 
 #[derive(Debug)]
 pub struct Map<Rf, F> {
@@ -33,29 +33,5 @@ where
     #[inline]
     fn done(self, acc: Self::Acc) -> C {
         self.rf.done(acc)
-    }
-}
-
-#[derive(Debug)]
-pub struct MapXf<F> {
-    mapf: F,
-}
-
-impl<F> MapXf<F> {
-    pub(crate) fn new(mapf: F) -> MapXf<F> {
-        MapXf { mapf }
-    }
-}
-
-impl<Rf, F> Xform<Rf> for MapXf<F> {
-    type Fold = Map<Rf, F>;
-    fn xform(self, sf: Rf) -> Self::Fold {
-        Map::new(sf, self.mapf)
-    }
-}
-
-impl<Xf> Folding<Xf> {
-    pub fn map<F>(self, mapf: F) -> Folding<Comp<Xf, MapXf<F>>> {
-        self.comp(MapXf::new(mapf))
     }
 }

@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use crate::{Fold, Xform};
+use super::Xform;
+use crate::Fold;
 
 #[derive(Debug)]
 pub struct Identity<A, B>(pub(crate) PhantomData<(A, B)>);

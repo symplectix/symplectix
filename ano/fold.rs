@@ -9,17 +9,12 @@
 
 use std::borrow::Borrow;
 
-mod comp;
-mod identity;
-use comp::Comp;
-use identity::Identity;
-
 mod filter;
 mod map;
 mod take;
-use filter::{Filter, FilterXf};
-use map::{Map, MapXf};
-use take::{Take, TakeXf};
+use filter::Filter;
+use map::Map;
+use take::Take;
 
 mod either;
 mod fuse;
@@ -28,22 +23,22 @@ use either::Either;
 use fuse::Fuse;
 use par::Par;
 
+pub mod xf;
+
 /// A fold step function.
 ///
 /// When you chain Folds, they are evaluated in reverse order.
 ///
 /// ```rust
-/// # use xf::Fold;
-/// # use xf::sum;
-/// assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold(0, 1..));
+/// use fold::Fold;
+/// assert_eq!(4, fold::sum.filter(|x: &i32| x % 2 != 0).take(3).fold(0, 1..));
 /// ```
 ///
 /// You can use `xf` module to write pipelines in forward order.
 ///
 /// ```rust
-/// # use xf::Fold;
-/// # use xf::sum;
-/// assert_eq!(4, xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold(0, 1..));
+/// use fold::{Fold, xf};
+/// assert_eq!(4, xf::take(3).filter(|x: &i32| x % 2 != 0).apply(fold::sum).fold(0, 1..));
 /// ```
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
@@ -122,57 +117,6 @@ pub enum Step<T> {
     More(T),
     /// Stop folding.
     Halt(T),
-}
-
-// Exists only to compose xf and construct a Fold.
-#[derive(Debug)]
-pub struct Folding<Xf> {
-    xf: Xf,
-}
-
-/// An adapter that creates a new [Fold] from the given one.
-pub trait Xform<Sf> {
-    /// A new step function created by apply.
-    type Fold;
-
-    /// Creates a new [Fold] from the given one.
-    fn xform(self, fold: Sf) -> Self::Fold;
-
-    // We can't implement adapters (e.g., map, filter) in Xform,
-    // because rustc won't be able to infer the Sf type.
-}
-
-impl<Xf> Folding<Xf> {
-    pub fn apply<F>(self, fold: F) -> Xf::Fold
-    where
-        Xf: Xform<F>,
-    {
-        self.xf.xform(fold)
-    }
-
-    fn new(xf: Xf) -> Self {
-        Folding { xf }
-    }
-
-    fn comp<That>(self, that: That) -> Folding<Comp<Xf, That>> {
-        Folding::new(Comp::new(self.xf, that))
-    }
-}
-
-pub fn folding<A, B>() -> Folding<Identity<A, B>> {
-    Folding::new(Identity::new())
-}
-
-pub fn map<F>(f: F) -> Folding<MapXf<F>> {
-    Folding::new(MapXf::new(f))
-}
-
-pub fn filter<P>(pred: P) -> Folding<FilterXf<P>> {
-    Folding::new(FilterXf::new(pred))
-}
-
-pub fn take(count: usize) -> Folding<TakeXf> {
-    Folding::new(TakeXf::new(count))
 }
 
 impl<A, B, F> Fold<A, B> for F

@@ -1,4 +1,4 @@
-use crate::Xform;
+use super::Xform;
 
 #[derive(Debug)]
 pub struct Comp<F, G> {

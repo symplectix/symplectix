@@ -1,20 +1,20 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "xf",
-    srcs = glob(["*.rs"]),
+    name = "fold",
+    srcs = glob(["*.rs", "xf/*.rs"]),
 )
 
 rust.test(
-    name = "xf_test",
+    name = "fold_test",
     timeout = "short",
-    crate = ":xf",
+    crate = ":fold",
 )
 
 rust.doc_test(
-    name = "xf_doc_test",
+    name = "fold_doc_test",
     timeout = "short",
-    crate = ":xf",
+    crate = ":fold",
 )
 
 rust.tests(
@@ -22,5 +22,5 @@ rust.tests(
     size = "small",
     srcs = glob(["tests/*.rs"]),
     shared_srcs = ["tests/helper.rs"],
-    deps = [":xf"],
+    deps = [":fold"],
 )

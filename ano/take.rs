@@ -1,38 +1,16 @@
 use std::borrow::Borrow;
 
-use crate::{Comp, Fold, Folding, Step, Xform};
-
-#[derive(Debug)]
-pub struct TakeXf {
-    count: usize,
-}
-impl TakeXf {
-    pub(crate) fn new(count: usize) -> Self {
-        TakeXf { count }
-    }
-}
+use crate::{Fold, Step};
 
 #[derive(Debug)]
 pub struct Take<F> {
     f: F,
     count: usize,
 }
+
 impl<F> Take<F> {
     pub(crate) fn new(f: F, count: usize) -> Self {
         Take { f, count }
-    }
-}
-
-impl<Sf> Xform<Sf> for TakeXf {
-    type Fold = Take<Sf>;
-    fn xform(self, sf: Sf) -> Self::Fold {
-        Take::new(sf, self.count)
-    }
-}
-
-impl<Xf> Folding<Xf> {
-    pub fn take(self, count: usize) -> Folding<Comp<Xf, TakeXf>> {
-        self.comp(TakeXf::new(count))
     }
 }
 
