@@ -21,11 +21,11 @@ where
 {
     type Acc = (<F as Fold<A, B>>::Acc, <G as Fold<A, C>>::Acc);
 
-    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
     where
-        In: Borrow<A>,
+        T: Borrow<A>,
     {
-        match (self.f.step(acc.0, input), self.g.step(acc.1, input)) {
+        match (self.f.step(acc.0, item), self.g.step(acc.1, item)) {
             (Step::More(a), Step::More(b)) => Step::More((a, b)),
             (Step::Halt(a), Step::More(b)) => Step::Halt((a, b)),
             (Step::More(a), Step::Halt(b)) => Step::Halt((a, b)),

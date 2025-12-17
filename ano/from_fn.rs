@@ -20,11 +20,11 @@ where
     type Acc = B;
 
     #[inline]
-    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
     where
-        In: Borrow<A>,
+        T: Borrow<A>,
     {
-        Step::More((self.f)(acc, input.borrow()))
+        Step::More((self.f)(acc, item.borrow()))
     }
 
     #[inline]

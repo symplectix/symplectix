@@ -3,44 +3,46 @@ use std::borrow::Borrow;
 use crate::{Fold, Step};
 
 #[derive(Debug)]
-pub struct Take<F> {
-    f: F,
+pub struct Take<Rf> {
+    rf: Rf,
     count: usize,
 }
 
-impl<F> Take<F> {
-    pub(crate) fn new(f: F, count: usize) -> Self {
-        Take { f, count }
+impl<Rf> Take<Rf> {
+    pub(crate) fn new(rf: Rf, count: usize) -> Self {
+        Take { rf, count }
     }
 }
 
-impl<A, B, F> Fold<A, B> for Take<F>
+impl<A, B, Rf> Fold<A, B> for Take<Rf>
 where
-    F: Fold<A, B>,
+    Rf: Fold<A, B>,
 {
-    type Acc = F::Acc;
+    type Acc = Rf::Acc;
+
     #[inline]
-    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
     where
-        In: Borrow<A>,
+        T: Borrow<A>,
     {
         match self.count {
             0 => Step::Halt(acc),
             1 => {
                 self.count = 0;
-                match self.f.step(acc, input) {
+                match self.rf.step(acc, item) {
                     Step::More(a) => Step::Halt(a),
                     Step::Halt(a) => Step::Halt(a),
                 }
             }
             _ => {
                 self.count -= 1;
-                self.f.step(acc, input)
+                self.rf.step(acc, item)
             }
         }
     }
+
     #[inline]
     fn done(self, acc: Self::Acc) -> B {
-        self.f.done(acc)
+        self.rf.done(acc)
     }
 }

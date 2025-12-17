@@ -20,13 +20,15 @@ where
     P: FnMut(&A) -> bool,
 {
     type Acc = Sf::Acc;
+
     #[inline]
-    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
     where
-        In: Borrow<A>,
+        T: Borrow<A>,
     {
-        if (self.pred)(input.borrow()) { self.rf.step(acc, input) } else { Step::More(acc) }
+        if (self.pred)(item.borrow()) { self.rf.step(acc, item) } else { Step::More(acc) }
     }
+
     #[inline]
     fn done(self, acc: Self::Acc) -> B {
         self.rf.done(acc)

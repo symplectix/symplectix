@@ -15,24 +15,24 @@ pub fn even(x: &i32) -> bool {
 }
 
 #[inline]
-pub fn conj<A>(mut acc: Vec<A::Owned>, input: &A) -> Vec<A::Owned>
+pub fn conj<A>(mut acc: Vec<A::Owned>, item: &A) -> Vec<A::Owned>
 where
     A: ToOwned,
 {
-    acc.push(input.to_owned());
+    acc.push(item.to_owned());
     acc
 }
 
 #[inline]
-pub fn _count<T>(acc: usize, _input: &T) -> usize {
+pub fn _count<T>(acc: usize, _item: &T) -> usize {
     acc + 1
 }
 
 #[inline]
-pub fn _sum<A, B>(mut acc: B, input: &A) -> B
+pub fn _sum<A, B>(mut acc: B, item: &A) -> B
 where
     B: for<'a> std::ops::AddAssign<&'a A>,
 {
-    acc += input;
+    acc += item;
     acc
 }

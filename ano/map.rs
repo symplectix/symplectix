@@ -22,11 +22,11 @@ where
     type Acc = Rf::Acc;
 
     #[inline]
-    fn step<In>(&mut self, acc: Self::Acc, input: &In) -> Step<Self::Acc>
+    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
     where
-        In: Borrow<A>,
+        T: Borrow<A>,
     {
-        let mapped = (self.mapf)(input.borrow());
+        let mapped = (self.mapf)(item.borrow());
         self.rf.step(acc, &mapped)
     }
 
