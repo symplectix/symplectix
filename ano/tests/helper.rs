@@ -22,3 +22,17 @@ where
     acc.push(input.to_owned());
     acc
 }
+
+#[inline]
+pub fn count<T>(acc: usize, _input: &T) -> usize {
+    acc + 1
+}
+
+#[inline]
+pub fn sum<A, B>(mut acc: B, input: &A) -> B
+where
+    B: for<'a> std::ops::AddAssign<&'a A>,
+{
+    acc += input;
+    acc
+}

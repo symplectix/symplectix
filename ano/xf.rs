@@ -1,3 +1,5 @@
+use crate::FromFn;
+
 mod comp;
 mod filter;
 mod identity;
@@ -24,7 +26,7 @@ pub trait Xform<Sf> {
 }
 
 impl<Xf> Folding<Xf> {
-    pub fn apply<F, A, B>(self, fold: F) -> Xf::Fold
+    pub fn apply<A, B, F>(self, fold: F) -> Xf::Fold
     where
         Xf: Xform<F>,
         Xf::Fold: crate::Fold<A, B>,
@@ -32,9 +34,13 @@ impl<Xf> Folding<Xf> {
         self.xf.xform(fold)
     }
 
-    // pub fn sum(self) -> Sum<Xf::Fold> {
-    //     self.apply(crate::sum)
-    // }
+    pub fn into_fn<A, B, F>(self, f: F) -> Xf::Fold
+    where
+        Xf: Xform<FromFn<F>>,
+        Xf::Fold: crate::Fold<A, B>,
+    {
+        self.apply(FromFn::new(f))
+    }
 
     fn new(xf: Xf) -> Self {
         Folding { xf }
