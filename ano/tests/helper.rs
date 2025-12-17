@@ -2,8 +2,6 @@
 
 use std::borrow::ToOwned;
 
-pub use fold::Fold;
-
 pub fn pow2(x: &i32) -> i32 {
     x.pow(2)
 }

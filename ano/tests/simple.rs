@@ -2,7 +2,7 @@
 
 use std::iter::{empty, once};
 
-use fold::xf;
+use ano::{count, sum, xf, Fold};
 
 mod helper;
 use helper::*;
@@ -89,23 +89,23 @@ fn take_3_inf() {
 
 #[test]
 fn count_empty() {
-    assert_eq!(0, fold::count.fold(0, empty::<i32>()));
+    assert_eq!(0, count.fold(0, empty::<i32>()));
 }
 
 #[test]
 fn count_all() {
-    assert_eq!(9, fold::count.fold(0, 1..10));
+    assert_eq!(9, count.fold(0, 1..10));
 }
 
 #[test]
 fn count_take() {
-    let acc = xf::take(3).apply(fold::count).fold(0, 1..);
+    let acc = xf::take(3).apply(count).fold(0, 1..);
     assert_eq!(acc, 3);
 }
 
 #[test]
 fn count_par_sum() {
-    let f = fold::count.par(fold::sum);
+    let f = count.par(sum);
     let (count, sum) = f.fold((0, 0), 1..3);
     assert_eq!(count, 2);
     assert_eq!(sum, 3);
@@ -131,31 +131,31 @@ fn map_filter_take() {
 
 #[test]
 fn sum_empty() {
-    assert_eq!(0, fold::sum.fold(0, empty::<i32>()));
-    assert_eq!(1, fold::sum.fold(1, empty::<i32>()));
+    assert_eq!(0, sum.fold(0, empty::<i32>()));
+    assert_eq!(1, sum.fold(1, empty::<i32>()));
 }
 
 #[test]
 fn sum_once() {
-    assert_eq!(1, fold::sum.fold(0, once::<i32>(1)));
-    assert_eq!(2, fold::sum.fold(0, once::<i32>(2)));
+    assert_eq!(1, sum.fold(0, once::<i32>(1)));
+    assert_eq!(2, sum.fold(0, once::<i32>(2)));
 }
 
 #[test]
 fn sum_take() {
-    let acc = xf::map(mul3).take(3).apply(fold::sum).fold(0, 1..);
+    let acc = xf::map(mul3).take(3).apply(sum).fold(0, 1..);
     assert_eq!(acc, 18);
 }
 
 #[test]
 fn sum_take_filter_map() {
-    assert_eq!(4, fold::sum.filter(even).map(pow2).take(3).fold(0, 1..));
+    assert_eq!(4, sum.filter(even).map(pow2).take(3).fold(0, 1..));
 }
 
 #[test]
 fn sum_par_sum() {
-    let f = xf::map(mul3).take(3).apply(fold::sum);
-    let g = xf::map(pow2).take(3).apply(fold::sum);
+    let f = xf::map(mul3).take(3).apply(sum);
+    let g = xf::map(pow2).take(3).apply(sum);
     let (fsum, gsum) = f.par(g).fold((0, 0), 1..);
     assert_eq!(fsum, 18);
     assert_eq!(gsum, 14);
@@ -171,7 +171,7 @@ fn par_dup() {
 #[test]
 fn par_conj_sum() {
     let f = xf::map(pow2).take(3).apply(conj);
-    let g = xf::map(mul3).take(2).apply(fold::sum);
+    let g = xf::map(mul3).take(2).apply(sum);
     let acc = f.par(g).fold((Vec::new(), 0), 1..10);
     assert_eq!(acc, (vec![1, 4, 9], 9));
 }
@@ -186,7 +186,7 @@ fn either_dup() {
 #[test]
 fn either_conj_sum() {
     let f = xf::map(pow2).take(3).apply(conj);
-    let g = xf::map(mul3).take(2).apply(fold::sum);
+    let g = xf::map(mul3).take(2).apply(sum);
     let acc = f.either(g).fold((Vec::new(), 0), 1..10);
     assert_eq!(acc, (vec![1, 4], 9));
 }
