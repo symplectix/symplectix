@@ -17,9 +17,11 @@ use map::Map;
 use take::Take;
 
 mod either;
+mod from_fn;
 mod fuse;
 mod par;
 use either::Either;
+use from_fn::FromFn;
 use fuse::Fuse;
 use par::Par;
 

@@ -32,6 +32,10 @@ impl<Xf> Folding<Xf> {
         self.xf.xform(fold)
     }
 
+    // pub fn sum(self) -> Sum<Xf::Fold> {
+    //     self.apply(crate::sum)
+    // }
+
     fn new(xf: Xf) -> Self {
         Folding { xf }
     }
