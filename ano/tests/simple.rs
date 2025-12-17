@@ -10,49 +10,49 @@ use helper::*;
 #[test]
 fn map() {
     let ret = xf::map(pow2).into_fn(conj).fold(vec![], empty::<i32>());
-    assert_eq!(ret, vec![]);
+    assert_eq!(ret, []);
 
     let ret = xf::map(pow2).into_fn(conj).fold(vec![], once::<i32>(9));
-    assert_eq!(ret, vec![81]);
+    assert_eq!(ret, [81]);
 
-    let ret = xf::map(pow2).into_fn(conj).fold(vec![], 1..4);
-    assert_eq!(ret, vec![1, 4, 9]);
+    let ret = xf::map(pow2).into_fn(conj).fold(vec![], &[1, 2, 3]);
+    assert_eq!(ret, [1, 4, 9]);
 }
 
 #[test]
 fn filter() {
     let ret = xf::filter(even).into_fn(conj).fold(vec![], empty::<i32>());
-    assert_eq!(ret, vec![]);
+    assert_eq!(ret, []);
 
     let ret = xf::filter(even).into_fn(conj).fold(vec![], once(1));
-    assert_eq!(ret, vec![]);
+    assert_eq!(ret, []);
 
-    let ret = xf::filter(even).into_fn(conj).fold(vec![], vec![1, 3, 5]);
-    assert_eq!(ret, vec![]);
+    let ret = xf::filter(even).into_fn(conj).fold(vec![], &[1, 3, 5]);
+    assert_eq!(ret, []);
 
     let ret = xf::filter(even).into_fn(conj).fold(vec![], 1..6);
-    assert_eq!(ret, vec![2, 4]);
+    assert_eq!(ret, [2, 4]);
 }
 
 #[test]
 fn take() {
     let acc = xf::take(0).into_fn(conj).fold(vec![], empty::<i32>());
-    assert_eq!(acc, vec![]);
+    assert_eq!(acc, []);
 
     let acc = xf::take(0).into_fn(conj).fold(vec![], 1..);
-    assert_eq!(acc, vec![]);
+    assert_eq!(acc, []);
 
     let acc = xf::take(1).into_fn(conj).fold(vec![], empty::<i32>());
-    assert_eq!(acc, vec![]);
+    assert_eq!(acc, []);
 
     let acc = xf::take(2).into_fn(conj).fold(vec![], 1..3);
-    assert_eq!(acc, vec![1, 2]);
+    assert_eq!(acc, [1, 2]);
 
-    let acc = xf::take(5).into_fn(conj).fold(vec![], 1..3);
-    assert_eq!(acc, vec![1, 2]);
+    let acc = xf::take(5).into_fn(conj::<i32>).fold(vec![], &[1, 2, 3]);
+    assert_eq!(acc, [1, 2, 3]);
 
     let acc = xf::take(3).into_fn(conj).fold(vec![], 1..);
-    assert_eq!(acc, vec![1, 2, 3]);
+    assert_eq!(acc, [1, 2, 3]);
 }
 
 #[test]
@@ -62,7 +62,7 @@ fn count() {
     assert_eq!(3, xf::take(3).into_fn(_count).fold(0, 1..));
 
     let f = ano::from_fn(_count).par(ano::from_fn(_sum));
-    let (count, sum) = f.fold((0, 0), 1..3);
+    let (count, sum) = f.fold((0, 0), &[1, 2]);
     assert_eq!(count, 2);
     assert_eq!(sum, 3);
 }
@@ -70,19 +70,19 @@ fn count() {
 #[test]
 fn map_filter_take() {
     let acc = xf::map(mul3).take(5).filter(even).into_fn(conj).fold(vec![], 1..);
-    assert_eq!(acc, vec![6, 12]);
+    assert_eq!(acc, [6, 12]);
     let acc = xf::map(mul3).filter(even).take(5).into_fn(conj).fold(vec![], 1..);
-    assert_eq!(acc, vec![6, 12, 18, 24, 30]);
+    assert_eq!(acc, [6, 12, 18, 24, 30]);
 
     let acc = xf::filter(even).map(mul3).take(5).into_fn(conj).fold(vec![], 1..);
-    assert_eq!(acc, vec![6, 12, 18, 24, 30]);
+    assert_eq!(acc, [6, 12, 18, 24, 30]);
     let acc = xf::filter(even).take(5).map(mul3).into_fn(conj).fold(vec![], 1..);
-    assert_eq!(acc, vec![6, 12, 18, 24, 30]);
+    assert_eq!(acc, [6, 12, 18, 24, 30]);
 
     let acc = xf::take(5).map(mul3).filter(even).into_fn(conj).fold(vec![], 1..);
-    assert_eq!(acc, vec![6, 12]);
+    assert_eq!(acc, [6, 12]);
     let acc = xf::take(5).filter(even).map(mul3).into_fn(conj).fold(vec![], 1..);
-    assert_eq!(acc, vec![6, 12]);
+    assert_eq!(acc, [6, 12]);
 }
 
 #[test]
