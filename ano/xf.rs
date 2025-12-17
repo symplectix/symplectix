@@ -24,9 +24,10 @@ pub trait Xform<Sf> {
 }
 
 impl<Xf> Folding<Xf> {
-    pub fn apply<F>(self, fold: F) -> Xf::Fold
+    pub fn apply<F, A, B>(self, fold: F) -> Xf::Fold
     where
         Xf: Xform<F>,
+        Xf::Fold: crate::Fold<A, B>,
     {
         self.xf.xform(fold)
     }
