@@ -3,11 +3,14 @@ use std::borrow::Borrow;
 use crate::{Fold, Step};
 
 #[derive(Debug)]
-pub struct Either<F, G>(F, G);
+pub struct Either<F, G> {
+    f: F,
+    g: G,
+}
 
 impl<F, G> Either<F, G> {
     pub(crate) fn new(f: F, g: G) -> Self {
-        Either(f, g)
+        Either { f, g }
     }
 }
 
@@ -22,7 +25,7 @@ where
     where
         In: Borrow<A>,
     {
-        match (self.0.step(acc.0, input), self.1.step(acc.1, input)) {
+        match (self.f.step(acc.0, input), self.g.step(acc.1, input)) {
             (Step::More(a), Step::More(b)) => Step::More((a, b)),
             (Step::Halt(a), Step::More(b)) => Step::Halt((a, b)),
             (Step::More(a), Step::Halt(b)) => Step::Halt((a, b)),
@@ -32,6 +35,6 @@ where
 
     #[inline]
     fn done(self, acc: Self::Acc) -> (B, C) {
-        (self.0.done(acc.0), self.1.done(acc.1))
+        (self.f.done(acc.0), self.g.done(acc.1))
     }
 }
