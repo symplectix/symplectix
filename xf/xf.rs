@@ -29,6 +29,22 @@ use fuse::Fuse;
 use par::Par;
 
 /// A fold step function.
+///
+/// When you chain Folds, they are evaluated in reverse order.
+///
+/// ```rust
+/// # use xf::Fold;
+/// # use xf::sum;
+/// assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold(0, 1..));
+/// ```
+///
+/// You can use `xf` module to write pipelines in forward order.
+///
+/// ```rust
+/// # use xf::Fold;
+/// # use xf::sum;
+/// assert_eq!(4, xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold(0, 1..));
+/// ```
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
