@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use crate::{Fold, Step};
 
 #[derive(Debug)]
@@ -17,17 +15,13 @@ impl<Rf, F> Map<Rf, F> {
 impl<A, B, C, Rf, F> Fold<A, C> for Map<Rf, F>
 where
     Rf: Fold<B, C>,
-    F: FnMut(&A) -> B,
+    F: FnMut(A) -> B,
 {
     type Acc = Rf::Acc;
 
     #[inline]
-    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
-    where
-        T: Borrow<A>,
-    {
-        let mapped = (self.mapf)(item.borrow());
-        self.rf.step(acc, &mapped)
+    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
+        self.rf.step(acc, (self.mapf)(item))
     }
 
     #[inline]

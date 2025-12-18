@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::rc::Rc;
 
 use crate::{Fold, Step};
 
@@ -16,16 +16,15 @@ impl<F, G> Either<F, G> {
 
 impl<A, B, C, F, G> Fold<A, (B, C)> for Either<F, G>
 where
-    F: Fold<A, B>,
-    G: Fold<A, C>,
+    F: Fold<Rc<A>, B>,
+    G: Fold<Rc<A>, C>,
 {
-    type Acc = (<F as Fold<A, B>>::Acc, <G as Fold<A, C>>::Acc);
+    type Acc = (<F as Fold<Rc<A>, B>>::Acc, <G as Fold<Rc<A>, C>>::Acc);
 
-    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
-    where
-        T: Borrow<A>,
-    {
-        match (self.f.step(acc.0, item), self.g.step(acc.1, item)) {
+    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
+        let a = Rc::new(item);
+        let b = a.clone();
+        match (self.f.step(acc.0, a), self.g.step(acc.1, b)) {
             (Step::More(a), Step::More(b)) => Step::More((a, b)),
             (Step::Halt(a), Step::More(b)) => Step::Halt((a, b)),
             (Step::More(a), Step::Halt(b)) => Step::Halt((a, b)),

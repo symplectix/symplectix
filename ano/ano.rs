@@ -7,8 +7,6 @@
 // - [transducers](https://clojure.org/reference/transducers)
 // - [xforms](https://github.com/cgrand/xforms)
 
-use std::borrow::Borrow;
-
 mod filter;
 mod map;
 mod take;
@@ -33,7 +31,7 @@ pub mod xf;
 ///
 /// ```
 /// use ano::Fold;
-/// let sum = ano::from_fn(|acc, item: &i32| acc + item);
+/// let sum = ano::from_fn(|acc, item: i32| acc + item);
 /// assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold(0, 1..));
 /// ```
 ///
@@ -41,7 +39,7 @@ pub mod xf;
 ///
 /// ```
 /// use ano::Fold;
-/// let sum = ano::from_fn(|acc, item: &i32| acc + item);
+/// let sum = ano::from_fn(|acc, item: i32| acc + item);
 /// assert_eq!(4, ano::xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold(0, 1..));
 /// ```
 pub trait Fold<A, B> {
@@ -49,23 +47,20 @@ pub trait Fold<A, B> {
     type Acc;
 
     /// Runs just a one step of folding.
-    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
-    where
-        T: Borrow<A>;
+    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc>;
 
     /// Invoked when folding is complete.
     ///
     /// You must call `done` exactly once.
     fn done(self, acc: Self::Acc) -> B;
 
-    fn fold<It, T>(mut self, mut acc: Self::Acc, iterable: It) -> B
+    fn fold<It>(mut self, mut acc: Self::Acc, iterable: It) -> B
     where
         Self: Sized,
-        It: IntoIterator<Item = T>,
-        T: Borrow<A>,
+        It: IntoIterator<Item = A>,
     {
         for item in iterable.into_iter() {
-            match self.step(acc, &item) {
+            match self.step(acc, item) {
                 Step::More(ret) => {
                     acc = ret;
                 }
@@ -125,7 +120,7 @@ pub enum Step<T> {
 
 pub fn from_fn<A, B, F>(f: F) -> FromFn<F>
 where
-    F: FnMut(B, &A) -> B,
+    F: FnMut(B, A) -> B,
 {
     FromFn::new(f)
 }

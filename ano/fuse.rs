@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use crate::{Fold, Step};
 
 #[derive(Debug)]
@@ -20,10 +18,7 @@ where
 {
     type Acc = Rf::Acc;
 
-    fn step<T>(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: &T) -> Step<<Rf as Fold<A, B>>::Acc>
-    where
-        T: Borrow<A>,
-    {
+    fn step(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: A) -> Step<<Rf as Fold<A, B>>::Acc> {
         if self.halt {
             Step::Halt(acc)
         } else {

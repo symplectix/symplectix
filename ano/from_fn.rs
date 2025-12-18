@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use crate::{Fold, Step};
 
 #[derive(Debug)]
@@ -15,16 +13,13 @@ impl<F> FromFn<F> {
 
 impl<A, B, F> Fold<A, B> for FromFn<F>
 where
-    F: FnMut(B, &A) -> B,
+    F: FnMut(B, A) -> B,
 {
     type Acc = B;
 
     #[inline]
-    fn step<T>(&mut self, acc: Self::Acc, item: &T) -> Step<Self::Acc>
-    where
-        T: Borrow<A>,
-    {
-        Step::More((self.f)(acc, item.borrow()))
+    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
+        Step::More((self.f)(acc, item))
     }
 
     #[inline]
