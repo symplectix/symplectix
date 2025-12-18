@@ -57,11 +57,6 @@ fn take() {
 
     let acc = xf::take(5).into_fn(conj).fold(vec![], &[1, 2, 3]);
     assert_eq!(acc, [&1, &2, &3]);
-
-    let f = xf::take(5).into_fn(conj);
-    let g = xf::take(5).into_fn(conj);
-    let acc = f.par(g).fold((vec![], vec![]), &[1, 2, 3]);
-    assert_eq!(acc, (vec![Rc::new(&1), Rc::new(&2), Rc::new(&3)], vec![Rc::new(&1), Rc::new(&2), Rc::new(&3)]));
 }
 
 #[test]
@@ -69,11 +64,6 @@ fn count() {
     assert_eq!(0, ano::from_fn(_count).fold(0, empty::<i32>()));
     assert_eq!(9, ano::from_fn(_count).fold(0, 1..10));
     assert_eq!(3, xf::take(3).into_fn(_count).fold(0, 1..));
-
-    let f = ano::from_fn(_count).par(ano::from_fn(_sum_rc));
-    let (count, sum) = f.fold((0, 0), [1, 2]);
-    assert_eq!(count, 2);
-    assert_eq!(sum, 3);
 }
 
 #[test]
@@ -101,18 +91,44 @@ fn sum() {
     assert_eq!(1, ano::from_fn(_sum).fold(0, once::<i32>(1)));
     assert_eq!(2, ano::from_fn(_sum).fold(0, once::<i32>(2)));
     assert_eq!(18, xf::map(mul3).take(3).into_fn(_sum).fold(0, 1..));
+}
 
-    let f = xf::map(mul3_rc).take(3).into_fn(_sum);
-    let g = xf::map(pow2_rc).take(3).into_fn(_sum);
-    let (fsum, gsum) = f.par(g).fold((0, 0), 1..);
-    assert_eq!(fsum, 18);
-    assert_eq!(gsum, 14);
+#[test]
+fn seq() {
+    let f = xf::take(3).into_fn(conj);
+    let g = xf::take(5).into_fn(conj);
+    let acc = f.seq(g).fold((vec![], vec![]), 1..);
+    assert_eq!(acc, (vec![1, 2, 3], vec![4, 5, 6, 7, 8]));
 }
 
 #[test]
 fn par() {
+    fn to_rcs<I>(iterable: I) -> impl Iterator<Item = Rc<I::Item>>
+    where
+        I: IntoIterator,
+    {
+        iterable.into_iter().map(Rc::new)
+    }
+
     let f = xf::map(pow2_rc).take(3).into_fn(conj);
     let g = xf::map(mul3_rc).take(2).into_fn(_sum);
-    let acc = f.par(g).fold((Vec::new(), 0), 1..10);
+    let acc = f.par(g).fold((Vec::new(), 0), to_rcs(1..10));
     assert_eq!(acc, (vec![1, 4, 9], 9));
+
+    let f = xf::take(5).into_fn(conj);
+    let g = xf::take(5).into_fn(conj);
+    let acc = f.par(g).fold((vec![], vec![]), to_rcs(&[1, 2, 3]));
+    assert_eq!(acc, (vec![Rc::new(&1), Rc::new(&2), Rc::new(&3)], vec![Rc::new(&1), Rc::new(&2), Rc::new(&3)]));
+
+    let f = ano::from_fn(_count).par(ano::from_fn(_sum_rc));
+    let g = ano::from_fn(_count).par(ano::from_fn(_sum_rc));
+    let (a, b) = f.seq(g).fold(((0, 0), (0, 0)), to_rcs([1, 2]));
+    assert_eq!(a, (2, 3));
+    assert_eq!(b, (0, 0));
+
+    let f = xf::map(mul3_rc).take(3).into_fn(_sum);
+    let g = xf::map(pow2_rc).take(3).into_fn(_sum);
+    let (fsum, gsum) = f.par(g).fold((0, 0), to_rcs(1..));
+    assert_eq!(fsum, 18);
+    assert_eq!(gsum, 14);
 }

@@ -10,6 +10,10 @@ impl<Rf> Fuse<Rf> {
     pub(crate) fn new(rf: Rf) -> Self {
         Fuse { rf, halt: false }
     }
+
+    pub(crate) fn halted(&self) -> bool {
+        self.halt
+    }
 }
 
 impl<A, B, Rf> Fold<A, B> for Fuse<Rf>

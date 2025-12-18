@@ -17,9 +17,11 @@ use take::Take;
 mod from_fn;
 mod fuse;
 mod par;
+mod seq;
 use from_fn::FromFn;
 use fuse::Fuse;
 use par::Par;
+use seq::Seq;
 
 pub mod xf;
 
@@ -95,6 +97,13 @@ pub trait Fold<A, B> {
         Self: Sized,
     {
         Take::new(self, n)
+    }
+
+    fn seq<That>(self, that: That) -> Seq<Self, That>
+    where
+        Self: Sized,
+    {
+        Seq::new(self, that)
     }
 
     fn par<That>(self, that: That) -> Par<Self, That>
