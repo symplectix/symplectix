@@ -126,6 +126,12 @@ fn par() {
     assert_eq!(a, (2, 3));
     assert_eq!(b, (0, 0));
 
+    let f = ano::from_fn(_count).par(ano::from_fn(_sum_rc));
+    let g = ano::from_fn(_count).par(ano::from_fn(_sum_rc));
+    let (a, b) = f.par(g).fold(((0, 0), (0, 0)), to_rcs([1, 2]));
+    assert_eq!(a, (2, 3));
+    assert_eq!(b, (2, 3));
+
     let f = xf::map(mul3_rc).take(3).into_fn(_sum);
     let g = xf::map(pow2_rc).take(3).into_fn(_sum);
     let (fsum, gsum) = f.par(g).fold((0, 0), to_rcs(1..));
