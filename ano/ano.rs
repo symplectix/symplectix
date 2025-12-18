@@ -52,6 +52,9 @@ pub trait Fold<A, B> {
     type Acc;
 
     /// Runs just a one step of folding.
+    // TODO: use Try instead of ControlFlow
+    // https://doc.rust-lang.org/std/ops/trait.Try.html
+    // https://github.com/rust-lang/rust/issues/84277
     fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc>;
 
     /// Invoked when folding is complete.
