@@ -55,7 +55,7 @@ pub trait Fold<A, B> {
     type Acc;
 
     /// Runs just a one step of folding.
-    // TODO: use Try instead of ControlFlow
+    // TODO: consider to use Try instead of ControlFlow.
     // https://doc.rust-lang.org/std/ops/trait.Try.html
     // https://github.com/rust-lang/rust/issues/84277
     fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc>;
@@ -65,16 +65,17 @@ pub trait Fold<A, B> {
     /// You must call `done` exactly once.
     fn done(self, acc: Self::Acc) -> B;
 
-    fn fold<It>(mut self, acc: Self::Acc, iterable: It) -> B
+    fn fold<It>(mut self, init: Self::Acc, iterable: It) -> B
     where
         Self: Sized,
         It: IntoIterator<Item = A>,
     {
         use std::ops::ControlFlow::*;
-        match iterable.into_iter().try_fold(acc, |acc, v| self.step(acc, v)) {
-            Continue(ret) => self.done(ret),
-            Break(ret) => self.done(ret),
-        }
+        let ret = match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
+            Continue(ret) => ret,
+            Break(ret) => ret,
+        };
+        self.done(ret)
     }
 
     fn map<F>(self, f: F) -> Map<Self, F>
