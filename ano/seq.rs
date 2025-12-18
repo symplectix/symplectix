@@ -1,3 +1,5 @@
+use std::ops::ControlFlow::*;
+
 use crate::{Fold, Fuse, Step};
 
 #[derive(Debug)]
@@ -22,17 +24,17 @@ where
     fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
         if !self.f.halted() {
             return match self.f.step(acc.0, item) {
-                Step::More(a) => Step::More((a, acc.1)),
-                Step::Halt(a) => Step::More((a, acc.1)),
+                Continue(a) => Continue((a, acc.1)),
+                Break(a) => Continue((a, acc.1)),
             };
         }
         if !self.g.halted() {
             return match self.g.step(acc.1, item) {
-                Step::More(b) => Step::More((acc.0, b)),
-                Step::Halt(b) => Step::Halt((acc.0, b)),
+                Continue(b) => Continue((acc.0, b)),
+                Break(b) => Break((acc.0, b)),
             };
         }
-        Step::Halt(acc)
+        Break(acc)
     }
 
     #[inline]

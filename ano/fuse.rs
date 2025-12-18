@@ -1,3 +1,5 @@
+use std::ops::ControlFlow::Break;
+
 use crate::{Fold, Step};
 
 #[derive(Debug)]
@@ -24,15 +26,11 @@ where
 
     fn step(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: A) -> Step<<Rf as Fold<A, B>>::Acc> {
         if self.halt {
-            Step::Halt(acc)
+            Break(acc)
         } else {
-            match self.rf.step(acc, item) {
-                Step::Halt(ret) => {
-                    self.halt = true;
-                    Step::Halt(ret)
-                }
-                step => step,
-            }
+            let step = self.rf.step(acc, item);
+            self.halt = step.is_break();
+            step
         }
     }
 

@@ -1,3 +1,4 @@
+use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
 use crate::{Fold, Fuse, Step};
@@ -23,10 +24,10 @@ where
 
     fn step(&mut self, acc: Self::Acc, item: Rc<A>) -> Step<Self::Acc> {
         match (self.f.step(acc.0, item.clone()), self.g.step(acc.1, item.clone())) {
-            (Step::More(a), Step::More(b)) => Step::More((a, b)),
-            (Step::Halt(a), Step::More(b)) => Step::More((a, b)),
-            (Step::More(a), Step::Halt(b)) => Step::More((a, b)),
-            (Step::Halt(a), Step::Halt(b)) => Step::Halt((a, b)),
+            (Continue(a), Continue(b)) => Continue((a, b)),
+            (Break(a), Continue(b)) => Continue((a, b)),
+            (Continue(a), Break(b)) => Continue((a, b)),
+            (Break(a), Break(b)) => Break((a, b)),
         }
     }
 

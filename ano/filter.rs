@@ -21,7 +21,8 @@ where
 
     #[inline]
     fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
-        if (self.pred)(&item) { self.rf.step(acc, item) } else { Step::More(acc) }
+        use std::ops::ControlFlow::Continue;
+        if (self.pred)(&item) { self.rf.step(acc, item) } else { Continue(acc) }
     }
 
     #[inline]

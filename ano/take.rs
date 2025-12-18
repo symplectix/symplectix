@@ -1,3 +1,5 @@
+use std::ops::ControlFlow::*;
+
 use crate::{Fold, Step};
 
 #[derive(Debug)]
@@ -21,12 +23,12 @@ where
     #[inline]
     fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
         match self.count {
-            0 => Step::Halt(acc),
+            0 => Break(acc),
             1 => {
                 self.count = 0;
                 match self.rf.step(acc, item) {
-                    Step::More(a) => Step::Halt(a),
-                    Step::Halt(a) => Step::Halt(a),
+                    Continue(a) => Break(a),
+                    Break(a) => Break(a),
                 }
             }
             _ => {

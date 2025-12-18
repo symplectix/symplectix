@@ -7,6 +7,8 @@
 // - [transducers](https://clojure.org/reference/transducers)
 // - [xforms](https://github.com/cgrand/xforms)
 
+use std::ops::ControlFlow;
+
 mod filter;
 mod map;
 mod take;
@@ -67,12 +69,14 @@ pub trait Fold<A, B> {
         Self: Sized,
         It: IntoIterator<Item = A>,
     {
+        use ControlFlow::*;
+
         for item in iterable.into_iter() {
             match self.step(acc, item) {
-                Step::More(ret) => {
+                Continue(ret) => {
                     acc = ret;
                 }
-                Step::Halt(ret) => {
+                Break(ret) => {
                     acc = ret;
                     break;
                 }
@@ -118,13 +122,7 @@ pub trait Fold<A, B> {
 }
 
 /// The result of [Fold.step].
-#[derive(Debug, Copy, Clone)]
-pub enum Step<T> {
-    /// Keep folding.
-    More(T),
-    /// Stop folding.
-    Halt(T),
-}
+type Step<T> = ControlFlow<T, T>;
 
 pub fn from_fn<A, B, F>(f: F) -> FromFn<F>
 where

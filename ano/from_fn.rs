@@ -19,7 +19,8 @@ where
 
     #[inline]
     fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
-        Step::More((self.f)(acc, item))
+        use std::ops::ControlFlow::Continue;
+        Continue((self.f)(acc, item))
     }
 
     #[inline]
