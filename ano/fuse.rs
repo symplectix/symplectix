@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::Break;
 
-use crate::{Fold, Step};
+use crate::{ControlFlow, Fold};
 
 #[derive(Debug)]
 pub(crate) struct Fuse<Rf> {
@@ -24,7 +24,7 @@ where
 {
     type Acc = Rf::Acc;
 
-    fn step(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: A) -> Step<<Rf as Fold<A, B>>::Acc> {
+    fn step(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: A) -> ControlFlow<<Rf as Fold<A, B>>::Acc> {
         if self.halt {
             Break(acc)
         } else {

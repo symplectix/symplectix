@@ -1,4 +1,4 @@
-use crate::{Fold, Step};
+use crate::{ControlFlow, Fold};
 
 #[derive(Debug)]
 pub struct FromFn<F> {
@@ -18,7 +18,7 @@ where
     type Acc = B;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
+    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
         use std::ops::ControlFlow::Continue;
         Continue((self.f)(acc, item))
     }

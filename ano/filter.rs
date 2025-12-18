@@ -1,4 +1,4 @@
-use crate::{Fold, Step};
+use crate::{ControlFlow, Fold};
 
 #[derive(Debug)]
 pub struct Filter<Rf, P> {
@@ -20,7 +20,7 @@ where
     type Acc = Rf::Acc;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
+    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
         use std::ops::ControlFlow::Continue;
         if (self.pred)(&item) { self.rf.step(acc, item) } else { Continue(acc) }
     }

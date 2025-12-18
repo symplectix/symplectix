@@ -7,8 +7,6 @@
 // - [transducers](https://clojure.org/reference/transducers)
 // - [xforms](https://github.com/cgrand/xforms)
 
-use std::ops::ControlFlow;
-
 mod filter;
 mod map;
 mod take;
@@ -26,6 +24,9 @@ use par::Par;
 use seq::Seq;
 
 pub mod xf;
+
+/// The result of [Fold.step].
+type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 
 /// A fold step function.
 ///
@@ -57,32 +58,23 @@ pub trait Fold<A, B> {
     // TODO: use Try instead of ControlFlow
     // https://doc.rust-lang.org/std/ops/trait.Try.html
     // https://github.com/rust-lang/rust/issues/84277
-    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc>;
+    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc>;
 
     /// Invoked when folding is complete.
     ///
     /// You must call `done` exactly once.
     fn done(self, acc: Self::Acc) -> B;
 
-    fn fold<It>(mut self, mut acc: Self::Acc, iterable: It) -> B
+    fn fold<It>(mut self, acc: Self::Acc, iterable: It) -> B
     where
         Self: Sized,
         It: IntoIterator<Item = A>,
     {
-        use ControlFlow::*;
-
-        for item in iterable.into_iter() {
-            match self.step(acc, item) {
-                Continue(ret) => {
-                    acc = ret;
-                }
-                Break(ret) => {
-                    acc = ret;
-                    break;
-                }
-            }
+        use std::ops::ControlFlow::*;
+        match iterable.into_iter().try_fold(acc, |acc, v| self.step(acc, v)) {
+            Continue(ret) => self.done(ret),
+            Break(ret) => self.done(ret),
         }
-        self.done(acc)
     }
 
     fn map<F>(self, f: F) -> Map<Self, F>
@@ -120,9 +112,6 @@ pub trait Fold<A, B> {
         Par::new(self, that)
     }
 }
-
-/// The result of [Fold.step].
-type Step<T> = ControlFlow<T, T>;
 
 pub fn from_fn<A, B, F>(f: F) -> FromFn<F>
 where

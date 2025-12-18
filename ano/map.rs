@@ -1,4 +1,4 @@
-use crate::{Fold, Step};
+use crate::{ControlFlow, Fold};
 
 #[derive(Debug)]
 pub struct Map<Rf, F> {
@@ -20,7 +20,7 @@ where
     type Acc = Rf::Acc;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
+    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
         self.rf.step(acc, (self.mapf)(item))
     }
 

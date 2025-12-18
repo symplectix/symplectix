@@ -1,7 +1,7 @@
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use crate::{Fold, Fuse, Step};
+use crate::{ControlFlow, Fold, Fuse};
 
 #[derive(Debug)]
 pub struct Par<F, G> {
@@ -22,7 +22,7 @@ where
 {
     type Acc = (<F as Fold<Rc<A>, B>>::Acc, <G as Fold<Rc<A>, C>>::Acc);
 
-    fn step(&mut self, acc: Self::Acc, item: Rc<A>) -> Step<Self::Acc> {
+    fn step(&mut self, acc: Self::Acc, item: Rc<A>) -> ControlFlow<Self::Acc> {
         match (self.f.step(acc.0, item.clone()), self.g.step(acc.1, item.clone())) {
             (Continue(a), Continue(b)) => Continue((a, b)),
             (Break(a), Continue(b)) => Continue((a, b)),

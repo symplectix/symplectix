@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{Fold, Fuse, Step};
+use crate::{ControlFlow, Fold, Fuse};
 
 #[derive(Debug)]
 pub struct Seq<F, G> {
@@ -21,7 +21,7 @@ where
 {
     type Acc = (<F as Fold<A, B>>::Acc, <G as Fold<A, C>>::Acc);
 
-    fn step(&mut self, acc: Self::Acc, item: A) -> Step<Self::Acc> {
+    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
         if !self.f.halted() {
             return match self.f.step(acc.0, item) {
                 Continue(a) => Continue((a, acc.1)),
