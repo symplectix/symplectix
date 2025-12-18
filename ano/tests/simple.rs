@@ -116,15 +116,3 @@ fn par() {
     let acc = f.par(g).fold((Vec::new(), 0), 1..10);
     assert_eq!(acc, (vec![1, 4, 9], 9));
 }
-
-// #[test]
-// fn either() {
-//     let f = ano::from_fn(conj).either(ano::from_fn(conj));
-//     let acc = f.fold((Vec::with_capacity(10), Vec::with_capacity(10)), 1..5);
-//     assert_eq!(acc, (vec![1, 2, 3, 4], vec![1, 2, 3, 4]));
-
-//     let f = xf::map(pow2).take(3).into_fn(conj);
-//     let g = xf::map(mul3).take(2).into_fn(_sum);
-//     let acc = f.either(g).fold((Vec::new(), 0), 1..10);
-//     assert_eq!(acc, (vec![1, 4], 9));
-// }

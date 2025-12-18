@@ -14,11 +14,9 @@ use filter::Filter;
 use map::Map;
 use take::Take;
 
-mod either;
 mod from_fn;
 mod fuse;
 mod par;
-use either::Either;
 use from_fn::FromFn;
 use fuse::Fuse;
 use par::Par;
@@ -39,8 +37,13 @@ pub mod xf;
 ///
 /// ```
 /// use ano::Fold;
-/// let sum = ano::from_fn(|acc, item: i32| acc + item);
-/// assert_eq!(4, ano::xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold(0, 1..));
+/// assert_eq!(
+///     4,
+///     ano::xf::take(3)
+///         .filter(|x: &i32| x % 2 != 0)
+///         .into_fn(|acc, item: i32| acc + item)
+///         .fold(0, 1..)
+/// );
 /// ```
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
@@ -99,13 +102,6 @@ pub trait Fold<A, B> {
         Self: Sized,
     {
         Par::new(self, that)
-    }
-
-    fn either<That>(self, that: That) -> Either<Self, That>
-    where
-        Self: Sized,
-    {
-        Either::new(self, that)
     }
 }
 
