@@ -71,11 +71,11 @@ pub trait Fold<A, B> {
         It: IntoIterator<Item = A>,
     {
         use std::ops::ControlFlow::*;
-        let ret = match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
-            Continue(ret) => ret,
-            Break(ret) => ret,
-        };
-        self.done(ret)
+        let mut iter = iterable.into_iter();
+        match iter.try_fold(init, |acc, v| self.step(acc, v)) {
+            Continue(c) => self.done(c),
+            Break(b) => self.done(b),
+        }
     }
 
     fn map<F>(self, f: F) -> Map<Self, F>
