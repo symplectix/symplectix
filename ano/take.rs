@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{ControlFlow, Fold};
+use crate::{ControlFlow, Fold, Init};
 
 #[derive(Debug)]
 pub struct Take<Rf> {
@@ -41,5 +41,16 @@ where
     #[inline]
     fn done(self, acc: Self::Acc) -> B {
         self.rf.done(acc)
+    }
+}
+
+impl<A, B, Rf> Init<A, B> for Take<Rf>
+where
+    Self: Fold<A, B, Acc = Rf::Acc>,
+    Rf: Init<A, B>,
+{
+    #[inline]
+    fn init(&self, _size_hint: (usize, Option<usize>)) -> Self::Acc {
+        self.rf.init((0, Some(self.count)))
     }
 }

@@ -14,14 +14,15 @@ use filter::Filter;
 use map::Map;
 use take::Take;
 
-mod from_fn;
 mod fuse;
 mod par;
 mod seq;
-use from_fn::Completing;
 use fuse::Fuse;
 use par::Par;
 use seq::Seq;
+
+mod from_fn;
+use from_fn::{Completing, Using};
 
 pub mod xf;
 
@@ -115,6 +116,14 @@ pub trait Fold<A, B> {
         F: FnMut(B) -> C,
     {
         Completing::new(self, f)
+    }
+
+    fn using<F>(self, f: F) -> Using<Self, F>
+    where
+        Self: Sized,
+        F: Fn((usize, Option<usize>)) -> Self::Acc,
+    {
+        Using::new(self, f)
     }
 
     fn seq<That>(self, that: That) -> Seq<Self, That>

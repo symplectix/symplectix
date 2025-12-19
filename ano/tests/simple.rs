@@ -10,17 +10,38 @@ use helper::*;
 
 #[test]
 fn map() {
-    let ret = xf::map(pow2).apply(conj).fold(vec![], empty::<i32>());
+    let f = || conj.using(move |_| vec![]);
+
+    let ret = xf::map(pow2).apply(f()).fold_init(empty::<i32>());
     assert_eq!(ret, []);
 
-    let ret = xf::map(pow2).apply(conj).fold(vec![], once::<i32>(9));
+    let ret = xf::map(pow2).apply(f()).fold_init(once::<i32>(9));
     assert_eq!(ret, [81]);
 
-    let ret = xf::map(pow2).apply(conj).fold(vec![], [1, 2, 3]);
+    let ret = xf::map(pow2).apply(f()).fold_init([1, 2, 3]);
     assert_eq!(ret, [1, 4, 9]);
 
-    let ret = xf::map(mul3).apply(conj).fold(vec![], &[1, 2, 3]);
+    // ???
+    let ret = xf::map(mul3).apply(conj.using(|_| vec![])).fold(vec![], &[1, 2, 3]);
     assert_eq!(ret, [3, 6, 9]);
+}
+
+#[test]
+fn sum_using() {
+    let f = |n| _sum.using(move |_| n);
+
+    assert_eq!(0, f(0).fold_init(empty::<i32>()));
+    assert_eq!(10, f(0).fold_init(1..5));
+    assert_eq!(11, f(1).fold_init(1..5));
+}
+
+#[test]
+fn sum_completing() {
+    let f = |n| _sum.using(move |_| n).completing(|acc| acc + 10);
+
+    assert_eq!(10, f(0).fold_init(empty::<i32>()));
+    assert_eq!(20, f(0).fold_init(1..5));
+    assert_eq!(21, f(1).fold_init(1..5));
 }
 
 #[test]
