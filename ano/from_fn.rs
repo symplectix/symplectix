@@ -28,3 +28,21 @@ where
         acc
     }
 }
+
+impl<A, B, F> Fold<A, B> for F
+where
+    F: FnMut(B, A) -> B,
+{
+    type Acc = B;
+
+    #[inline]
+    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
+        use std::ops::ControlFlow::Continue;
+        Continue((self)(acc, item))
+    }
+
+    #[inline]
+    fn done(self, acc: B) -> B {
+        acc
+    }
+}
