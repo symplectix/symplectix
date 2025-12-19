@@ -108,7 +108,7 @@ pub trait Fold<A, B> {
         Seq::new(self, that)
     }
 
-    fn par<That>(self, that: That) -> Par<Self, That>
+    fn par<'a, That>(self, that: That) -> Par<'a, Self, That>
     where
         Self: Sized,
     {

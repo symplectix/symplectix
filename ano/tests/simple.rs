@@ -117,8 +117,8 @@ fn par() {
 
     let f = xf::take(5).into_fn(conj);
     let g = xf::take(5).into_fn(conj);
-    let acc = f.par(g).fold((vec![], vec![]), to_rcs(&[1, 2, 3]));
-    assert_eq!(acc, (vec![Rc::new(&1), Rc::new(&2), Rc::new(&3)], vec![Rc::new(&1), Rc::new(&2), Rc::new(&3)]));
+    let acc = f.par(g).fold((vec![], vec![]), &[1, 2, 3]);
+    assert_eq!(acc, (vec![&1, &2, &3], vec![&1, &2, &3]));
 
     let f = ano::from_fn(_count).par(ano::from_fn(_sum_rc));
     let g = ano::from_fn(_count).par(ano::from_fn(_sum_rc));
