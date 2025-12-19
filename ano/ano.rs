@@ -14,10 +14,12 @@ use filter::Filter;
 use map::Map;
 use take::Take;
 
+mod completing;
 mod from_fn;
 mod fuse;
 mod par;
 mod seq;
+use completing::Completing;
 use from_fn::FromFn;
 use fuse::Fuse;
 use par::Par;
