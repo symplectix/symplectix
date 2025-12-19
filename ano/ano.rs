@@ -121,7 +121,7 @@ pub trait Fold<A, B> {
     fn using<F>(self, f: F) -> Using<Self, F>
     where
         Self: Sized,
-        F: Fn((usize, Option<usize>)) -> Self::Acc,
+        // F: Fn((usize, Option<usize>)) -> Self::Acc,
     {
         Using::new(self, f)
     }

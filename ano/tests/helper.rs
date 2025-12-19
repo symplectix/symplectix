@@ -12,12 +12,12 @@ pub fn pow2_rc(x: Rc<i32>) -> i32 {
     pow2(*x.borrow())
 }
 
-pub fn mul3<T: Mul<i32>>(x: T) -> T::Output {
-    x * 3
+pub fn mul3(x: i32) -> i32 {
+    x.mul(3)
 }
 
 pub fn mul3_rc(x: Rc<i32>) -> i32 {
-    mul3(x.borrow())
+    mul3(*x.borrow())
 }
 
 pub fn even(x: &i32) -> bool {

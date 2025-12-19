@@ -21,9 +21,12 @@ fn map() {
     let ret = xf::map(pow2).apply(f()).fold_init([1, 2, 3]);
     assert_eq!(ret, [1, 4, 9]);
 
-    // ???
-    let ret = xf::map(mul3).apply(conj.using(|_| vec![])).fold(vec![], &[1, 2, 3]);
+    let ret = xf::map(mul3).apply(f()).fold_init([1, 2, 3]);
     assert_eq!(ret, [3, 6, 9]);
+
+    // ???
+    // let ret = xf::map(mul3).apply(conj.using(|_| vec![])).fold_init(&[1, 2, 3]);
+    // assert_eq!(ret, [3, 6, 9]);
 }
 
 #[test]
