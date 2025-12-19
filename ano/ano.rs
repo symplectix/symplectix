@@ -14,13 +14,11 @@ use filter::Filter;
 use map::Map;
 use take::Take;
 
-mod completing;
 mod from_fn;
 mod fuse;
 mod par;
 mod seq;
-use completing::Completing;
-use from_fn::FromFn;
+use from_fn::Completing;
 use fuse::Fuse;
 use par::Par;
 use seq::Seq;
@@ -36,7 +34,7 @@ type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 ///
 /// ```
 /// use ano::Fold;
-/// let sum = ano::from_fn(|acc, item: i32| acc + item);
+/// let sum = |acc, item| acc + item;
 /// assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold(0, 1..));
 /// ```
 ///
@@ -48,7 +46,7 @@ type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 ///     4,
 ///     ano::xf::take(3)
 ///         .filter(|x: &i32| x % 2 != 0)
-///         .into_fn(|acc, item: i32| acc + item)
+///         .apply(|acc, item| acc + item)
 ///         .fold(0, 1..)
 /// );
 /// ```
@@ -101,6 +99,14 @@ pub trait Fold<A, B> {
         Take::new(self, n)
     }
 
+    fn completing<C, F>(self, f: F) -> Completing<Self, B, F>
+    where
+        Self: Sized,
+        F: FnMut(B) -> C,
+    {
+        Completing::new(self, f)
+    }
+
     fn seq<That>(self, that: That) -> Seq<Self, That>
     where
         Self: Sized,
@@ -114,11 +120,4 @@ pub trait Fold<A, B> {
     {
         Par::new(self, that)
     }
-}
-
-pub fn from_fn<A, B, F>(f: F) -> FromFn<F>
-where
-    F: FnMut(B, A) -> B,
-{
-    FromFn::new(f)
 }

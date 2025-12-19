@@ -1,5 +1,3 @@
-use crate::FromFn;
-
 mod comp;
 mod filter;
 mod identity;
@@ -32,14 +30,6 @@ impl<Xf> Folding<Xf> {
         Xf::Fold: crate::Fold<A, B>,
     {
         self.xf.xform(fold)
-    }
-
-    pub fn into_fn<A, B, F>(self, f: F) -> Xf::Fold
-    where
-        Xf: Xform<FromFn<F>>,
-        Xf::Fold: crate::Fold<A, B>,
-    {
-        self.apply(FromFn::new(f))
     }
 
     fn new(xf: Xf) -> Self {
