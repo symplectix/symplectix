@@ -1,4 +1,4 @@
-use crate::{ControlFlow, Fold};
+use crate::{ControlFlow, Fold, Init};
 
 #[derive(Debug)]
 pub struct Map<Rf, F> {
@@ -27,5 +27,16 @@ where
     #[inline]
     fn done(self, acc: Self::Acc) -> C {
         self.rf.done(acc)
+    }
+}
+
+impl<A, B, Rf, F> Init<A, B> for Map<Rf, F>
+where
+    Self: Fold<A, B, Acc = Rf::Acc>,
+    Rf: Init<A, B>,
+{
+    #[inline]
+    fn init(&self, size_hint: (usize, Option<usize>)) -> Self::Acc {
+        self.rf.init(size_hint)
     }
 }

@@ -71,11 +71,21 @@ pub trait Fold<A, B> {
         It: IntoIterator<Item = A>,
     {
         use std::ops::ControlFlow::*;
-        let mut iter = iterable.into_iter();
-        match iter.try_fold(init, |acc, v| self.step(acc, v)) {
+        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
             Continue(c) => self.done(c),
             Break(b) => self.done(b),
         }
+    }
+
+    #[inline]
+    fn fold_init<It>(self, iterable: It) -> B
+    where
+        Self: Sized + Init<A, B>,
+        It: IntoIterator<Item = A>,
+    {
+        let iter = iterable.into_iter();
+        let init = self.init(iter.size_hint());
+        self.fold(init, iter)
     }
 
     fn map<F>(self, f: F) -> Map<Self, F>
@@ -120,4 +130,8 @@ pub trait Fold<A, B> {
     {
         Par::new(self, that)
     }
+}
+
+pub trait Init<A, B>: Fold<A, B> {
+    fn init(&self, size_hint: (usize, Option<usize>)) -> Self::Acc;
 }
