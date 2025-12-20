@@ -31,13 +31,12 @@ where
     }
 }
 
-impl<A, B, Rf, P> Init<A, B> for Filter<Rf, P>
+impl<T, Rf, P> Init<T> for Filter<Rf, P>
 where
-    Self: Fold<A, B, Acc = Rf::Acc>,
-    Rf: Init<A, B>,
+    Rf: Init<T>,
 {
     #[inline]
-    fn init(&self, size_hint: (usize, Option<usize>)) -> Self::Acc {
+    fn init(&self, size_hint: (usize, Option<usize>)) -> T {
         self.rf.init(size_hint)
     }
 }

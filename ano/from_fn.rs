@@ -49,13 +49,12 @@ where
     }
 }
 
-impl<A, B, Rf, F> Init<A, B> for Using<Rf, F>
+impl<T, Rf, F> Init<T> for Using<Rf, F>
 where
-    Rf: Fold<A, B>,
-    F: Fn((usize, Option<usize>)) -> Rf::Acc,
+    F: Fn((usize, Option<usize>)) -> T,
 {
     #[inline]
-    fn init(&self, size_hint: (usize, Option<usize>)) -> Rf::Acc {
+    fn init(&self, size_hint: (usize, Option<usize>)) -> T {
         (self.using)(size_hint)
     }
 }
@@ -91,13 +90,12 @@ where
     }
 }
 
-impl<A, B, C, Rf, F> Init<A, C> for Completing<Rf, B, F>
+impl<T, B, Rf, F> Init<T> for Completing<Rf, B, F>
 where
-    Self: Fold<A, C, Acc = Rf::Acc>,
-    Rf: Init<A, B>,
+    Rf: Init<T>,
 {
     #[inline]
-    fn init(&self, size_hint: (usize, Option<usize>)) -> Self::Acc {
+    fn init(&self, size_hint: (usize, Option<usize>)) -> T {
         self.rf.init(size_hint)
     }
 }

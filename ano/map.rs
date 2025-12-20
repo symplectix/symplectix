@@ -30,13 +30,12 @@ where
     }
 }
 
-impl<A, B, Rf, F> Init<A, B> for Map<Rf, F>
+impl<T, Rf, F> Init<T> for Map<Rf, F>
 where
-    Self: Fold<A, B, Acc = Rf::Acc>,
-    Rf: Init<A, B>,
+    Rf: Init<T>,
 {
     #[inline]
-    fn init(&self, size_hint: (usize, Option<usize>)) -> Self::Acc {
+    fn init(&self, size_hint: (usize, Option<usize>)) -> T {
         self.rf.init(size_hint)
     }
 }

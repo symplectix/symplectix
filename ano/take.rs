@@ -44,13 +44,12 @@ where
     }
 }
 
-impl<A, B, Rf> Init<A, B> for Take<Rf>
+impl<T, Rf> Init<T> for Take<Rf>
 where
-    Self: Fold<A, B, Acc = Rf::Acc>,
-    Rf: Init<A, B>,
+    Rf: Init<T>,
 {
     #[inline]
-    fn init(&self, _size_hint: (usize, Option<usize>)) -> Self::Acc {
+    fn init(&self, _size_hint: (usize, Option<usize>)) -> T {
         self.rf.init((0, Some(self.count)))
     }
 }

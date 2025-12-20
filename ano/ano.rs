@@ -81,7 +81,7 @@ pub trait Fold<A, B> {
     #[inline]
     fn fold_init<It>(self, iterable: It) -> B
     where
-        Self: Sized + Init<A, B>,
+        Self: Sized + Init<Self::Acc>,
         It: IntoIterator<Item = A>,
     {
         let iter = iterable.into_iter();
@@ -141,6 +141,6 @@ pub trait Fold<A, B> {
     }
 }
 
-pub trait Init<A, B>: Fold<A, B> {
-    fn init(&self, size_hint: (usize, Option<usize>)) -> Self::Acc;
+pub trait Init<T> {
+    fn init(&self, size_hint: (usize, Option<usize>)) -> T;
 }

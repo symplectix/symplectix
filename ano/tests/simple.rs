@@ -27,9 +27,8 @@ fn map() {
     let ret = xf::map(mul3).apply(f()).fold(vec![], &[1, 2, 3]);
     assert_eq!(ret, [3, 6, 9]);
 
-    // ???
-    // let ret = xf::map(mul3).apply(f()).fold_init(&[1, 2, 3]);
-    // assert_eq!(ret, [3, 6, 9]);
+    let ret = xf::map(mul3).apply(f()).fold_init(&[1, 2, 3]);
+    assert_eq!(ret, [3, 6, 9]);
 }
 
 #[test]
