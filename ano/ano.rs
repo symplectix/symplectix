@@ -1,5 +1,21 @@
 #![allow(missing_docs)]
-//! Composable transformations.
+//! Composable left folds.
+//!
+//! When you chain folds, they are evaluated in reverse order.
+//!
+//! ```
+//! use ano::Fold;
+//! let sum = |acc, item| acc + item;
+//! assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold_with(0, 1..));
+//! ```
+//!
+//! You can use `xf` module to write pipelines in forward order.
+//!
+//! ```
+//! use ano::{Fold, xf};
+//! let sum = |acc, item| acc + item;
+//! assert_eq!(4, xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold_with(0, 1..));
+//! ```
 
 // Refs:
 // - [foldl](https://github.com/Gabriella439/foldl)
@@ -29,23 +45,7 @@ pub mod xf;
 /// The result of [Fold.step].
 type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 
-/// A fold step function.
-///
-/// When you chain Folds, they are evaluated in reverse order.
-///
-/// ```
-/// use ano::Fold;
-/// let sum = |acc, item| acc + item;
-/// assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold_with(0, 1..));
-/// ```
-///
-/// You can use `xf` module to write pipelines in forward order.
-///
-/// ```
-/// use ano::{Fold, xf};
-/// let sum = |acc, item| acc + item;
-/// assert_eq!(4, xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold_with(0, 1..));
-/// ```
+/// A composable left fold.
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
     type Acc;
