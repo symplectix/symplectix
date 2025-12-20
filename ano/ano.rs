@@ -4,16 +4,20 @@
 //! When you chain folds, they are evaluated in reverse order.
 //!
 //! ```
+//! use std::ops::ControlFlow::Continue;
 //! use ano::Fold;
-//! let sum = |acc, item| acc + item;
+//!
+//! let sum = |acc, item| Continue(acc + item);
 //! assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold_with(0, 1..));
 //! ```
 //!
 //! You can use `xf` module to write pipelines in forward order.
 //!
 //! ```
+//! use std::ops::ControlFlow::Continue;
 //! use ano::{Fold, xf};
-//! let sum = |acc, item| acc + item;
+//!
+//! let sum = |acc, item| Continue(acc + item);
 //! assert_eq!(4, xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold_with(0, 1..));
 //! ```
 

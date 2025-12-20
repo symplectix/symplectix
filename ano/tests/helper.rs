@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::borrow::Borrow;
+use std::ops::ControlFlow::*;
 use std::ops::{Add, Mul, Rem};
 use std::rc::Rc;
 
@@ -35,13 +36,13 @@ where
 pub fn conj<A>() -> impl Fold<A, Vec<A>, Acc = Vec<A>> + InitialState<Vec<A>> {
     let f = |mut acc: Vec<A>, item| {
         acc.push(item);
-        acc
+        Continue(acc)
     };
     f.using(|(lo, _hi)| Vec::with_capacity(lo.saturating_add(1)))
 }
 
 pub fn count<A>() -> impl Fold<A, usize, Acc = usize> + InitialState<usize> {
-    let f = |acc: usize, _item: A| acc + 1;
+    let f = |acc: usize, _item: A| Continue(acc + 1);
     f.using(|_| 0)
 }
 
@@ -49,7 +50,7 @@ pub fn sum<A, B>() -> impl Fold<A, B, Acc = B> + InitialState<B>
 where
     B: Default + Add<A, Output = B>,
 {
-    let f = |acc, item| acc + item;
+    let f = |acc, item| Continue(acc + item);
     f.using(|_| B::default())
 }
 
@@ -58,6 +59,6 @@ where
     A: Copy,
     B: Default + Add<A, Output = B>,
 {
-    let f = |acc, item: Rc<A>| acc + *item.borrow();
+    let f = |acc, item: Rc<A>| Continue(acc + *item.borrow());
     f.using(|_| B::default())
 }

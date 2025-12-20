@@ -4,14 +4,13 @@ use crate::{ControlFlow, Fold, InitialState};
 
 impl<A, B, F> Fold<A, B> for F
 where
-    F: FnMut(B, A) -> B,
+    F: FnMut(B, A) -> ControlFlow<B>,
 {
     type Acc = B;
 
     #[inline]
     fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
-        use std::ops::ControlFlow::Continue;
-        Continue((self)(acc, item))
+        (self)(acc, item)
     }
 
     #[inline]
