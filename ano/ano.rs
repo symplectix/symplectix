@@ -36,7 +36,7 @@ type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 /// ```
 /// use ano::Fold;
 /// let sum = |acc, item| acc + item;
-/// assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold(0, 1..));
+/// assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold_with(0, 1..));
 /// ```
 ///
 /// You can use `xf` module to write pipelines in forward order.
@@ -48,7 +48,7 @@ type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 ///     ano::xf::take(3)
 ///         .filter(|x: &i32| x % 2 != 0)
 ///         .apply(|acc, item| acc + item)
-///         .fold(0, 1..)
+///         .fold_with(0, 1..)
 /// );
 /// ```
 pub trait Fold<A, B> {
@@ -66,7 +66,7 @@ pub trait Fold<A, B> {
     /// You must call `done` exactly once.
     fn done(self, acc: Self::Acc) -> B;
 
-    fn fold<It>(mut self, init: Self::Acc, iterable: It) -> B
+    fn fold_with<It>(mut self, init: Self::Acc, iterable: It) -> B
     where
         Self: Sized,
         It: IntoIterator<Item = A>,
@@ -79,14 +79,14 @@ pub trait Fold<A, B> {
     }
 
     #[inline]
-    fn fold_init<It>(self, iterable: It) -> B
+    fn fold<It>(self, iterable: It) -> B
     where
         Self: Sized + Init<Self::Acc>,
         It: IntoIterator<Item = A>,
     {
         let iter = iterable.into_iter();
         let init = self.init(iter.size_hint());
-        self.fold(init, iter)
+        self.fold_with(init, iter)
     }
 
     fn map<F>(self, f: F) -> Map<Self, F>
