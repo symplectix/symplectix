@@ -28,41 +28,22 @@ fn test_filter() {
 
 #[test]
 fn test_take() {
-    let acc = xf::take(0).apply(conj()).fold(empty::<i32>());
-    assert_eq!(acc, []);
-
-    let acc = xf::take(0).apply(conj()).fold(1..);
-    assert_eq!(acc, []);
-
-    let acc = xf::take(1).apply(conj()).fold(empty::<i32>());
-    assert_eq!(acc, []);
-
-    let acc = xf::take(2).apply(conj()).fold(1..3);
-    assert_eq!(acc, [1, 2]);
-
-    let acc = xf::take(3).apply(conj()).fold(1..);
-    assert_eq!(acc, [1, 2, 3]);
-
-    let acc = xf::take(5).apply(conj()).fold(&[1, 2, 3]);
-    assert_eq!(acc, [&1, &2, &3]);
+    assert_eq!(vec![0; 0], xf::take(0).apply(conj()).fold(empty::<i32>()));
+    assert_eq!(vec![0; 0], xf::take(0).apply(conj()).fold(1..));
+    assert_eq!(vec![0; 0], xf::take(1).apply(conj()).fold(empty::<i32>()));
+    assert_eq!(vec![1, 2], xf::take(2).apply(conj()).fold(1..3));
+    assert_eq!(vec![1, 2, 3], xf::take(3).apply(conj()).fold(1..));
+    assert_eq!(vec![&1, &2, &3], xf::take(5).apply(conj()).fold(&[1, 2, 3]));
 }
 
 #[test]
 fn test_map_filter_take() {
-    let acc = xf::map(mul3).take(5).filter(even).apply(conj()).fold_with(vec![], 1..);
-    assert_eq!(acc, [6, 12]);
-    let acc = xf::map(mul3).filter(even).take(5).apply(conj()).fold_with(vec![], 1..);
-    assert_eq!(acc, [6, 12, 18, 24, 30]);
-
-    let acc = xf::filter(even).map(mul3).take(5).apply(conj()).fold_with(vec![], 1..);
-    assert_eq!(acc, [6, 12, 18, 24, 30]);
-    let acc = xf::filter(even).take(5).map(mul3).apply(conj()).fold_with(vec![], 1..);
-    assert_eq!(acc, [6, 12, 18, 24, 30]);
-
-    let acc = xf::take(5).map(mul3).filter(even).apply(conj()).fold_with(vec![], 1..);
-    assert_eq!(acc, [6, 12]);
-    let acc = xf::take(5).filter(even).map(mul3).apply(conj()).fold_with(vec![], 1..);
-    assert_eq!(acc, [6, 12]);
+    assert_eq!(vec![6, 12], xf::map(mul3).take(5).filter(even).apply(conj()).fold(1..));
+    assert_eq!(vec![6, 12, 18, 24, 30], xf::map(mul3).filter(even).take(5).apply(conj()).fold(1..));
+    assert_eq!(vec![6, 12, 18, 24, 30], xf::filter(even).map(mul3).take(5).apply(conj()).fold(1..));
+    assert_eq!(vec![6, 12, 18, 24, 30], xf::filter(even).take(5).map(mul3).apply(conj()).fold(1..));
+    assert_eq!(vec![6, 12], xf::take(5).map(mul3).filter(even).apply(conj()).fold(1..));
+    assert_eq!(vec![6, 12], xf::take(5).filter(even).map(mul3).apply(conj()).fold(1..));
 }
 
 #[test]
@@ -74,35 +55,22 @@ fn test_count() {
 
 #[test]
 fn test_sum() {
-    assert_eq!(0, _sum.fold_with(0, empty::<i32>()));
-    assert_eq!(1, _sum.fold_with(1, empty::<i32>()));
-    assert_eq!(1, _sum.fold_with(0, once::<i32>(1)));
-    assert_eq!(2, _sum.fold_with(0, once::<i32>(2)));
-    assert_eq!(18, xf::map(mul3).take(3).apply(_sum).fold_with(0, 1..));
-}
+    assert_eq!(0, sum().fold(empty::<i32>()));
+    assert_eq!(1, sum().fold(once::<i32>(1)));
+    assert_eq!(2, sum().fold(once::<i32>(2)));
+    assert_eq!(18, xf::map(mul3).take(3).apply(sum()).fold(1..));
 
-#[test]
-fn test_sum_using() {
-    let f = |n| _sum.using(move |_| n);
-    assert_eq!(0, f(0).fold(empty::<i32>()));
-    assert_eq!(10, f(0).fold(1..5));
-    assert_eq!(11, f(1).fold(1..5));
-}
-
-#[test]
-fn test_sum_completing() {
-    let f = |n| _sum.using(move |_| n).completing(|acc| acc + 10);
-    assert_eq!(10, f(0).fold(empty::<i32>()));
-    assert_eq!(20, f(0).fold(1..5));
-    assert_eq!(21, f(1).fold(1..5));
+    assert_eq!(10, sum::<i32, i32>().completing(|acc| acc + 10).fold(empty::<i32>()));
+    assert_eq!(20, xf::take(4).apply(sum::<i32, i32>().completing(|acc| acc + 10)).fold(1..5));
+    assert_eq!(20, xf::take(4).apply(sum::<i32, i32>()).completing(|acc| acc + 10).fold(1..5));
 }
 
 #[test]
 fn test_seq() {
-    let f = xf::take(3).apply(conj());
-    let g = xf::take(5).apply(conj());
-    let acc = f.seq(g).fold_with((vec![], vec![]), 1..);
-    assert_eq!(acc, (vec![1, 2, 3], vec![4, 5, 6, 7, 8]));
+    assert_eq!(
+        (vec![1, 2, 3], vec![4, 5, 6, 7, 8]),
+        xf::take(3).apply(conj()).seq(xf::take(5).apply(conj())).fold(1..)
+    );
 }
 
 #[test]
@@ -115,35 +83,34 @@ fn test_par() {
     }
 
     let f = xf::map(pow2_rc).take(3).apply(conj());
-    let g = xf::map(mul3_rc).take(2).apply(_sum);
-    let acc = f.par(g).fold_with((Vec::new(), 0), to_rcs(1..10));
+    let g = xf::map(mul3_rc).take(2).apply(sum());
+    let acc = f.par(g).fold(to_rcs(1..10));
     assert_eq!(acc, (vec![1, 4, 9], 9));
 
     let f = xf::take(5).apply(conj());
     let g = xf::take(5).apply(conj());
-    let acc = f.par(g).fold_with((vec![], vec![]), &[1, 2, 3]);
+    let acc = f.par(g).fold(&[1, 2, 3]);
     assert_eq!(acc, (vec![&1, &2, &3], vec![&1, &2, &3]));
 
-    let f = count().par(_sum_rc);
-    let g = count().par(_sum_rc);
-    let (a, b) = f.seq(g).fold_with(((0, 0), (0, 0)), to_rcs([1, 2]));
-    assert_eq!(a, (2, 3));
-    assert_eq!(b, (0, 0));
+    let f = count().par(sum_rc());
+    let g = count().par(sum_rc());
+    let ret = f.seq(g).fold(to_rcs([1, 2]));
+    assert_eq!(ret, ((2, 3), (0, 0)));
 
-    let f = count().par(_sum_rc);
-    let g = count().par(_sum_rc);
+    let f = count().par(sum_rc());
+    let g = count().par(sum_rc());
     let (a, b) = f.par(g).fold_with(((0, 0), (0, 0)), to_rcs([1, 2]));
     assert_eq!(a, (2, 3));
     assert_eq!(b, (2, 3));
 
-    let f = count().par(_sum);
-    let g = count().par(_sum);
+    let f = count().par(sum());
+    let g = count().par(sum());
     let (a, b) = f.par(g).fold_with(((0, 0), (0, 0)), &[1, 2]);
     assert_eq!(a, (2, 3));
     assert_eq!(b, (2, 3));
 
-    let f = xf::map(mul3_rc).take(3).apply(_sum);
-    let g = xf::map(pow2_rc).take(3).apply(_sum);
+    let f = xf::map(mul3_rc).take(3).apply(sum());
+    let g = xf::map(pow2_rc).take(3).apply(sum());
     let (fsum, gsum) = f.par(g).fold_with((0, 0), to_rcs(1..));
     assert_eq!(fsum, 18);
     assert_eq!(gsum, 14);

@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{ControlFlow, Fold, Fuse};
+use crate::{ControlFlow, Fold, Fuse, InitialState};
 
 #[derive(Debug)]
 pub struct Seq<F, G> {
@@ -40,5 +40,16 @@ where
     #[inline]
     fn done(self, acc: Self::Acc) -> (B, C) {
         (self.f.done(acc.0), self.g.done(acc.1))
+    }
+}
+
+impl<A, B, F, G> InitialState<(A, B)> for Seq<F, G>
+where
+    F: InitialState<A>,
+    G: InitialState<B>,
+{
+    #[inline]
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> (A, B) {
+        (self.f.initial_state(size_hint), self.g.initial_state(size_hint))
     }
 }

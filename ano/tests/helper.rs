@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::borrow::Borrow;
-use std::ops::{AddAssign, Mul, Rem};
+use std::ops::{Add, Mul, Rem};
 use std::rc::Rc;
 
 use ano::{Fold, InitialState};
@@ -45,14 +45,19 @@ pub fn count<A>() -> impl Fold<A, usize, Acc = usize> + InitialState<usize> {
     f.using(|_| 0)
 }
 
-pub fn _sum<A, B>(mut acc: B, item: A) -> B
+pub fn sum<A, B>() -> impl Fold<A, B, Acc = B> + InitialState<B>
 where
-    B: AddAssign<A>,
+    B: Default + Add<A, Output = B>,
 {
-    acc += item;
-    acc
+    let f = |acc, item| acc + item;
+    f.using(|_| B::default())
 }
 
-pub fn _sum_rc(acc: i32, item: Rc<i32>) -> i32 {
-    _sum(acc, item.borrow())
+pub fn sum_rc<A, B>() -> impl Fold<Rc<A>, B, Acc = B> + InitialState<B>
+where
+    A: Copy,
+    B: Default + Add<A, Output = B>,
+{
+    let f = |acc, item: Rc<A>| acc + *item.borrow();
+    f.using(|_| B::default())
 }

@@ -28,17 +28,6 @@ macro_rules! step {
     };
 }
 
-impl<'a, A, B, F, G> InitialState<(A, B)> for Par<'a, F, G>
-where
-    F: InitialState<A>,
-    G: InitialState<B>,
-{
-    #[inline]
-    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> (A, B) {
-        (self.f.initial_state(size_hint), self.g.initial_state(size_hint))
-    }
-}
-
 impl<'a, A, B, C, F, G> Fold<&'a A, (B, C)> for Par<'a, F, G>
 where
     F: Fold<&'a A, B>,
@@ -70,5 +59,16 @@ where
     #[inline]
     fn done(self, acc: Self::Acc) -> (B, C) {
         (self.f.done(acc.0), self.g.done(acc.1))
+    }
+}
+
+impl<'a, A, B, F, G> InitialState<(A, B)> for Par<'a, F, G>
+where
+    F: InitialState<A>,
+    G: InitialState<B>,
+{
+    #[inline]
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> (A, B) {
+        (self.f.initial_state(size_hint), self.g.initial_state(size_hint))
     }
 }
