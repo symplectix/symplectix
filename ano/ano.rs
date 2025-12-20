@@ -42,14 +42,9 @@ type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 /// You can use `xf` module to write pipelines in forward order.
 ///
 /// ```
-/// use ano::Fold;
-/// assert_eq!(
-///     4,
-///     ano::xf::take(3)
-///         .filter(|x: &i32| x % 2 != 0)
-///         .apply(|acc, item| acc + item)
-///         .fold_with(0, 1..)
-/// );
+/// use ano::{Fold, xf};
+/// let sum = |acc, item| acc + item;
+/// assert_eq!(4, xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold_with(0, 1..));
 /// ```
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.

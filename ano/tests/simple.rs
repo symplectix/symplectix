@@ -99,19 +99,19 @@ fn test_par() {
 
     let f = count().par(sum_rc());
     let g = count().par(sum_rc());
-    let (a, b) = f.par(g).fold_with(((0, 0), (0, 0)), to_rcs([1, 2]));
+    let (a, b) = f.par(g).fold(to_rcs([1, 2]));
     assert_eq!(a, (2, 3));
     assert_eq!(b, (2, 3));
 
     let f = count().par(sum());
     let g = count().par(sum());
-    let (a, b) = f.par(g).fold_with(((0, 0), (0, 0)), &[1, 2]);
+    let (a, b) = f.par(g).fold(&[1, 2]);
     assert_eq!(a, (2, 3));
     assert_eq!(b, (2, 3));
 
-    let f = xf::map(mul3_rc).take(3).apply(sum());
-    let g = xf::map(pow2_rc).take(3).apply(sum());
-    let (fsum, gsum) = f.par(g).fold_with((0, 0), to_rcs(1..));
+    let f = xf::map(mul3_rc).take(3).apply(sum::<_, i32>());
+    let g = xf::map(pow2_rc).take(3).apply(sum::<_, i32>());
+    let (fsum, gsum) = f.par(g).fold(to_rcs(1..));
     assert_eq!(fsum, 18);
     assert_eq!(gsum, 14);
 }
