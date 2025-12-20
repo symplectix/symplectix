@@ -9,7 +9,7 @@ mod helper;
 use helper::*;
 
 #[test]
-fn map() {
+fn test_map() {
     assert_eq!(vec![0; 0], xf::map(pow2).apply(conj()).fold(empty::<i32>()));
     assert_eq!(vec![81], xf::map(pow2).apply(conj()).fold(once::<i32>(9)));
     assert_eq!(vec![1, 4, 9], xf::map(pow2).apply(conj()).fold([1, 2, 3]));
@@ -18,7 +18,7 @@ fn map() {
 }
 
 #[test]
-fn filter() {
+fn test_filter() {
     assert_eq!(vec![0; 0], xf::filter(even).apply(conj()).fold(empty::<i32>()));
     assert_eq!(vec![0; 0], xf::filter(even).apply(conj()).fold(once(1)));
     assert_eq!(vec![0; 0], xf::filter(even).apply(conj()).fold([1, 3, 5]));
@@ -27,7 +27,7 @@ fn filter() {
 }
 
 #[test]
-fn take() {
+fn test_take() {
     let acc = xf::take(0).apply(conj()).fold(empty::<i32>());
     assert_eq!(acc, []);
 
@@ -48,7 +48,7 @@ fn take() {
 }
 
 #[test]
-fn map_filter_take() {
+fn test_map_filter_take() {
     let acc = xf::map(mul3).take(5).filter(even).apply(conj()).fold_with(vec![], 1..);
     assert_eq!(acc, [6, 12]);
     let acc = xf::map(mul3).filter(even).take(5).apply(conj()).fold_with(vec![], 1..);
@@ -66,15 +66,14 @@ fn map_filter_take() {
 }
 
 #[test]
-fn count() {
-    let f = || _count.using(|_| 0);
-    assert_eq!(0, f().fold(empty::<i32>()));
-    assert_eq!(9, f().fold(1..10));
-    assert_eq!(3, xf::take(3).apply(f()).fold(1..));
+fn test_count() {
+    assert_eq!(0, count().fold(empty::<i32>()));
+    assert_eq!(9, count().fold(1..10));
+    assert_eq!(3, xf::take(3).apply(count()).fold(1..));
 }
 
 #[test]
-fn sum() {
+fn test_sum() {
     assert_eq!(0, _sum.fold_with(0, empty::<i32>()));
     assert_eq!(1, _sum.fold_with(1, empty::<i32>()));
     assert_eq!(1, _sum.fold_with(0, once::<i32>(1)));
@@ -83,7 +82,7 @@ fn sum() {
 }
 
 #[test]
-fn sum_using() {
+fn test_sum_using() {
     let f = |n| _sum.using(move |_| n);
     assert_eq!(0, f(0).fold(empty::<i32>()));
     assert_eq!(10, f(0).fold(1..5));
@@ -91,7 +90,7 @@ fn sum_using() {
 }
 
 #[test]
-fn sum_completing() {
+fn test_sum_completing() {
     let f = |n| _sum.using(move |_| n).completing(|acc| acc + 10);
     assert_eq!(10, f(0).fold(empty::<i32>()));
     assert_eq!(20, f(0).fold(1..5));
@@ -99,7 +98,7 @@ fn sum_completing() {
 }
 
 #[test]
-fn seq() {
+fn test_seq() {
     let f = xf::take(3).apply(conj());
     let g = xf::take(5).apply(conj());
     let acc = f.seq(g).fold_with((vec![], vec![]), 1..);
@@ -107,7 +106,7 @@ fn seq() {
 }
 
 #[test]
-fn par() {
+fn test_par() {
     fn to_rcs<I>(iterable: I) -> impl Iterator<Item = Rc<I::Item>>
     where
         I: IntoIterator,
@@ -125,20 +124,20 @@ fn par() {
     let acc = f.par(g).fold_with((vec![], vec![]), &[1, 2, 3]);
     assert_eq!(acc, (vec![&1, &2, &3], vec![&1, &2, &3]));
 
-    let f = _count.par(_sum_rc);
-    let g = _count.par(_sum_rc);
+    let f = count().par(_sum_rc);
+    let g = count().par(_sum_rc);
     let (a, b) = f.seq(g).fold_with(((0, 0), (0, 0)), to_rcs([1, 2]));
     assert_eq!(a, (2, 3));
     assert_eq!(b, (0, 0));
 
-    let f = _count.par(_sum_rc);
-    let g = _count.par(_sum_rc);
+    let f = count().par(_sum_rc);
+    let g = count().par(_sum_rc);
     let (a, b) = f.par(g).fold_with(((0, 0), (0, 0)), to_rcs([1, 2]));
     assert_eq!(a, (2, 3));
     assert_eq!(b, (2, 3));
 
-    let f = _count.par(_sum);
-    let g = _count.par(_sum);
+    let f = count().par(_sum);
+    let g = count().par(_sum);
     let (a, b) = f.par(g).fold_with(((0, 0), (0, 0)), &[1, 2]);
     assert_eq!(a, (2, 3));
     assert_eq!(b, (2, 3));

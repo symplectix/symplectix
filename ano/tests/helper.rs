@@ -33,16 +33,16 @@ where
 }
 
 pub fn conj<A>() -> impl Fold<A, Vec<A>, Acc = Vec<A>> + InitialState<Vec<A>> {
-    fn _conj<A>(mut acc: Vec<A>, item: A) -> Vec<A> {
+    let f = |mut acc: Vec<A>, item| {
         acc.push(item);
         acc
-    }
-
-    _conj.using(|(lo, _hi)| Vec::with_capacity(lo.saturating_add(1)))
+    };
+    f.using(|(lo, _hi)| Vec::with_capacity(lo.saturating_add(1)))
 }
 
-pub fn _count<T>(acc: usize, _item: T) -> usize {
-    acc + 1
+pub fn count<A>() -> impl Fold<A, usize, Acc = usize> + InitialState<usize> {
+    let f = |acc: usize, _item: A| acc + 1;
+    f.using(|_| 0)
 }
 
 pub fn _sum<A, B>(mut acc: B, item: A) -> B
