@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use crate::{ControlFlow, Fold, Fuse};
+use crate::{ControlFlow, Fold, Fuse, InitialState};
 
 #[derive(Debug)]
 pub struct Par<'a, F, G> {
@@ -26,6 +26,17 @@ macro_rules! step {
             (Break(a), Break(b)) => Break((a, b)),
         }
     };
+}
+
+impl<'a, A, B, F, G> InitialState<(A, B)> for Par<'a, F, G>
+where
+    F: InitialState<A>,
+    G: InitialState<B>,
+{
+    #[inline]
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> (A, B) {
+        (self.f.initial_state(size_hint), self.g.initial_state(size_hint))
+    }
 }
 
 impl<'a, A, B, C, F, G> Fold<&'a A, (B, C)> for Par<'a, F, G>

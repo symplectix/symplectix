@@ -1,4 +1,4 @@
-use crate::{ControlFlow, Fold, Init};
+use crate::{ControlFlow, Fold, InitialState};
 
 #[derive(Debug)]
 pub struct Map<Rf, F> {
@@ -30,12 +30,12 @@ where
     }
 }
 
-impl<T, Rf, F> Init<T> for Map<Rf, F>
+impl<T, Rf, F> InitialState<T> for Map<Rf, F>
 where
-    Rf: Init<T>,
+    Rf: InitialState<T>,
 {
     #[inline]
-    fn init(&self, size_hint: (usize, Option<usize>)) -> T {
-        self.rf.init(size_hint)
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
+        self.rf.initial_state(size_hint)
     }
 }

@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{ControlFlow, Fold, Init};
+use crate::{ControlFlow, Fold, InitialState};
 
 #[derive(Debug)]
 pub struct Take<Rf> {
@@ -44,12 +44,12 @@ where
     }
 }
 
-impl<T, Rf> Init<T> for Take<Rf>
+impl<T, Rf> InitialState<T> for Take<Rf>
 where
-    Rf: Init<T>,
+    Rf: InitialState<T>,
 {
     #[inline]
-    fn init(&self, _size_hint: (usize, Option<usize>)) -> T {
-        self.rf.init((0, Some(self.count)))
+    fn initial_state(&self, _size_hint: (usize, Option<usize>)) -> T {
+        self.rf.initial_state((0, Some(self.count)))
     }
 }

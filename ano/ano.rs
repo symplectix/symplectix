@@ -81,11 +81,11 @@ pub trait Fold<A, B> {
     #[inline]
     fn fold<It>(self, iterable: It) -> B
     where
-        Self: Sized + Init<Self::Acc>,
+        Self: Sized + InitialState<Self::Acc>,
         It: IntoIterator<Item = A>,
     {
         let iter = iterable.into_iter();
-        let init = self.init(iter.size_hint());
+        let init = self.initial_state(iter.size_hint());
         self.fold_with(init, iter)
     }
 
@@ -121,7 +121,7 @@ pub trait Fold<A, B> {
     fn using<F>(self, f: F) -> Using<Self, F>
     where
         Self: Sized,
-        // F: Fn((usize, Option<usize>)) -> Self::Acc,
+        F: Fn((usize, Option<usize>)) -> Self::Acc,
     {
         Using::new(self, f)
     }
@@ -141,6 +141,6 @@ pub trait Fold<A, B> {
     }
 }
 
-pub trait Init<T> {
-    fn init(&self, size_hint: (usize, Option<usize>)) -> T;
+pub trait InitialState<T> {
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T;
 }

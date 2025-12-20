@@ -1,4 +1,4 @@
-use crate::{ControlFlow, Fold, Init};
+use crate::{ControlFlow, Fold, InitialState};
 
 #[derive(Debug)]
 pub struct Filter<Rf, P> {
@@ -31,12 +31,12 @@ where
     }
 }
 
-impl<T, Rf, P> Init<T> for Filter<Rf, P>
+impl<T, Rf, P> InitialState<T> for Filter<Rf, P>
 where
-    Rf: Init<T>,
+    Rf: InitialState<T>,
 {
     #[inline]
-    fn init(&self, size_hint: (usize, Option<usize>)) -> T {
-        self.rf.init(size_hint)
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
+        self.rf.initial_state(size_hint)
     }
 }

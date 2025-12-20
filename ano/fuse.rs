@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::Break;
 
-use crate::{ControlFlow, Fold};
+use crate::{ControlFlow, Fold, InitialState};
 
 #[derive(Debug)]
 pub(crate) struct Fuse<Rf> {
@@ -15,6 +15,16 @@ impl<Rf> Fuse<Rf> {
 
     pub(crate) fn halted(&self) -> bool {
         self.halt
+    }
+}
+
+impl<T, Rf> InitialState<T> for Fuse<Rf>
+where
+    Rf: InitialState<T>,
+{
+    #[inline]
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
+        self.rf.initial_state(size_hint)
     }
 }
 

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{ControlFlow, Fold, Init};
+use crate::{ControlFlow, Fold, InitialState};
 
 impl<A, B, F> Fold<A, B> for F
 where
@@ -49,12 +49,12 @@ where
     }
 }
 
-impl<T, Rf, F> Init<T> for Using<Rf, F>
+impl<T, Rf, F> InitialState<T> for Using<Rf, F>
 where
     F: Fn((usize, Option<usize>)) -> T,
 {
     #[inline]
-    fn init(&self, size_hint: (usize, Option<usize>)) -> T {
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
         (self.using)(size_hint)
     }
 }
@@ -90,12 +90,12 @@ where
     }
 }
 
-impl<T, B, Rf, F> Init<T> for Completing<Rf, B, F>
+impl<T, B, Rf, F> InitialState<T> for Completing<Rf, B, F>
 where
-    Rf: Init<T>,
+    Rf: InitialState<T>,
 {
     #[inline]
-    fn init(&self, size_hint: (usize, Option<usize>)) -> T {
-        self.rf.init(size_hint)
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
+        self.rf.initial_state(size_hint)
     }
 }
