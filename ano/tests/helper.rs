@@ -41,6 +41,26 @@ pub fn conj<A>() -> impl Fold<A, Vec<A>, Acc = Vec<A>> + InitialState<Vec<A>> {
     f.using(|(lo, _hi)| Vec::with_capacity(lo.saturating_add(1)))
 }
 
+pub fn all<A, P>(mut pred: P) -> impl Fold<A, bool, Acc = bool> + InitialState<bool>
+where
+    P: FnMut(&A) -> bool,
+{
+    let f = move |_acc, item| {
+        if pred(&item) { Continue(true) } else { Break(false) }
+    };
+    f.using(|_| true)
+}
+
+pub fn any<A, P>(mut pred: P) -> impl Fold<A, bool, Acc = bool> + InitialState<bool>
+where
+    P: FnMut(&A) -> bool,
+{
+    let f = move |_acc: bool, item: A| {
+        if pred(&item) { Break(true) } else { Continue(false) }
+    };
+    f.using(|_| false)
+}
+
 pub fn count<A>() -> impl Fold<A, usize, Acc = usize> + InitialState<usize> {
     let f = |acc: usize, _item: A| Continue(acc + 1);
     f.using(|_| 0)

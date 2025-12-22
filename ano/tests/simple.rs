@@ -18,11 +18,6 @@ fn test_map() {
 }
 
 #[test]
-fn test_using_using() {
-    assert_eq!(110, sum().using(|_| 1).using(|_| 100).fold(1..5));
-}
-
-#[test]
 fn test_filter() {
     assert_eq!(vec![0; 0], xf::filter(even).apply(conj()).fold(empty::<i32>()));
     assert_eq!(vec![0; 0], xf::filter(even).apply(conj()).fold(once(1)));
@@ -52,6 +47,13 @@ fn test_map_filter_take() {
 }
 
 #[test]
+fn test_all() {
+    assert!(all(even).fold(empty::<i32>()));
+    assert!(all(even).fold([2, 4]));
+    assert!(!all(even).fold([1, 2]));
+}
+
+#[test]
 fn test_count() {
     assert_eq!(0, count().fold(empty::<i32>()));
     assert_eq!(9, count().fold(1..10));
@@ -75,6 +77,11 @@ fn test_sum_str() {
     assert_eq!("", sum::<_, String>().fold(empty::<&str>()));
     assert_eq!("1", sum::<_, String>().fold(once::<&str>("1")));
     assert_eq!("123", sum::<_, String>().fold(["foo1".trim_start_matches("foo"), "2", "3"]));
+}
+
+#[test]
+fn test_using_using() {
+    assert_eq!(110, sum().using(|_| 1).using(|_| 100).fold(1..5));
 }
 
 #[test]
