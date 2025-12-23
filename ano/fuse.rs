@@ -32,9 +32,9 @@ impl<A, B, Rf> Fold<A, B> for Fuse<Rf>
 where
     Rf: Fold<A, B>,
 {
-    type Acc = Rf::Acc;
+    type State = Rf::State;
 
-    fn step(&mut self, acc: <Rf as Fold<A, B>>::Acc, item: A) -> ControlFlow<<Rf as Fold<A, B>>::Acc> {
+    fn step(&mut self, acc: <Rf as Fold<A, B>>::State, item: A) -> ControlFlow<<Rf as Fold<A, B>>::State> {
         if self.halt {
             Break(acc)
         } else {
@@ -44,7 +44,7 @@ where
         }
     }
 
-    fn done(self, acc: Self::Acc) -> B {
+    fn done(self, acc: Self::State) -> B {
         self.rf.done(acc)
     }
 }

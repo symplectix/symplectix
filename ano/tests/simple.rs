@@ -50,7 +50,18 @@ fn test_map_filter_take() {
 fn test_all() {
     assert!(all(even).fold(empty::<i32>()));
     assert!(all(even).fold([2, 4]));
+    assert!(all(even).fold(&[2, 4]));
     assert!(!all(even).fold([1, 2]));
+    assert!(!all(even).fold(&[1, 2]));
+}
+
+#[test]
+fn test_any() {
+    assert!(!any(even).fold(empty::<i32>()));
+    assert!(any(even).fold([2, 4]));
+    assert!(any(even).fold([1, 2]));
+    assert!(any(even).fold(&[2, 4]));
+    assert!(any(even).fold(&[1, 2]));
 }
 
 #[test]

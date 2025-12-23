@@ -33,14 +33,14 @@ where
     F: Fold<&'a A, B>,
     G: Fold<&'a A, C>,
 {
-    type Acc = (<F as Fold<&'a A, B>>::Acc, <G as Fold<&'a A, C>>::Acc);
+    type State = (<F as Fold<&'a A, B>>::State, <G as Fold<&'a A, C>>::State);
 
-    fn step(&mut self, acc: Self::Acc, item: &'a A) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: &'a A) -> ControlFlow<Self::State> {
         step!((self.f.step(acc.0, item), self.g.step(acc.1, item)))
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> (B, C) {
+    fn done(self, acc: Self::State) -> (B, C) {
         (self.f.done(acc.0), self.g.done(acc.1))
     }
 }
@@ -50,14 +50,14 @@ where
     F: Fold<Rc<A>, B>,
     G: Fold<Rc<A>, C>,
 {
-    type Acc = (<F as Fold<Rc<A>, B>>::Acc, <G as Fold<Rc<A>, C>>::Acc);
+    type State = (<F as Fold<Rc<A>, B>>::State, <G as Fold<Rc<A>, C>>::State);
 
-    fn step(&mut self, acc: Self::Acc, item: Rc<A>) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: Rc<A>) -> ControlFlow<Self::State> {
         step!((self.f.step(acc.0, item.clone()), self.g.step(acc.1, item)))
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> (B, C) {
+    fn done(self, acc: Self::State) -> (B, C) {
         (self.f.done(acc.0), self.g.done(acc.1))
     }
 }

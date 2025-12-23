@@ -6,15 +6,15 @@ impl<A, B, F> Fold<A, B> for F
 where
     F: FnMut(B, A) -> ControlFlow<B>,
 {
-    type Acc = B;
+    type State = B;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         (self)(acc, item)
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> B {
+    fn done(self, acc: Self::State) -> B {
         acc
     }
 }
@@ -35,15 +35,15 @@ impl<A, B, Rf, F> Fold<A, B> for Using<Rf, F>
 where
     Rf: Fold<A, B>,
 {
-    type Acc = Rf::Acc;
+    type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         self.rf.step(acc, item)
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> B {
+    fn done(self, acc: Self::State) -> B {
         self.rf.done(acc)
     }
 }
@@ -76,15 +76,15 @@ where
     Rf: Fold<A, B>,
     F: FnMut(B) -> C,
 {
-    type Acc = Rf::Acc;
+    type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         self.rf.step(acc, item)
     }
 
     #[inline]
-    fn done(mut self, acc: Self::Acc) -> C {
+    fn done(mut self, acc: Self::State) -> C {
         (self.completing)(self.rf.done(acc))
     }
 }

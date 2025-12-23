@@ -18,10 +18,10 @@ impl<A, B, Rf> Fold<A, B> for Take<Rf>
 where
     Rf: Fold<A, B>,
 {
-    type Acc = Rf::Acc;
+    type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         match self.count {
             0 => Break(acc),
             1 => {
@@ -39,7 +39,7 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> B {
+    fn done(self, acc: Self::State) -> B {
         self.rf.done(acc)
     }
 }

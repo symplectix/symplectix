@@ -33,7 +33,7 @@ where
     x.rem(2) == 0
 }
 
-pub fn conj<A>() -> impl Fold<A, Vec<A>, Acc = Vec<A>> + InitialState<Vec<A>> {
+pub fn conj<A>() -> impl Fold<A, Vec<A>, State = Vec<A>> + InitialState<Vec<A>> {
     let f = |mut acc: Vec<A>, item| {
         acc.push(item);
         Continue(acc)
@@ -41,7 +41,7 @@ pub fn conj<A>() -> impl Fold<A, Vec<A>, Acc = Vec<A>> + InitialState<Vec<A>> {
     f.using(|(lo, _hi)| Vec::with_capacity(lo.saturating_add(1)))
 }
 
-pub fn all<A, P>(mut pred: P) -> impl Fold<A, bool, Acc = bool> + InitialState<bool>
+pub fn all<A, P>(mut pred: P) -> impl Fold<A, bool, State = bool> + InitialState<bool>
 where
     P: FnMut(&A) -> bool,
 {
@@ -51,7 +51,7 @@ where
     f.using(|_| true)
 }
 
-pub fn any<A, P>(mut pred: P) -> impl Fold<A, bool, Acc = bool> + InitialState<bool>
+pub fn any<A, P>(mut pred: P) -> impl Fold<A, bool, State = bool> + InitialState<bool>
 where
     P: FnMut(&A) -> bool,
 {
@@ -61,12 +61,12 @@ where
     f.using(|_| false)
 }
 
-pub fn count<A>() -> impl Fold<A, usize, Acc = usize> + InitialState<usize> {
+pub fn count<A>() -> impl Fold<A, usize, State = usize> + InitialState<usize> {
     let f = |acc: usize, _item: A| Continue(acc + 1);
     f.using(|_| 0)
 }
 
-pub fn sum<A, B>() -> impl Fold<A, B, Acc = B> + InitialState<B>
+pub fn sum<A, B>() -> impl Fold<A, B, State = B> + InitialState<B>
 where
     B: Default + Add<A, Output = B>,
 {
@@ -74,7 +74,7 @@ where
     f.using(|_| B::default())
 }
 
-pub fn sum_rc<A, B>() -> impl Fold<Rc<A>, B, Acc = B> + InitialState<B>
+pub fn sum_rc<A, B>() -> impl Fold<Rc<A>, B, State = B> + InitialState<B>
 where
     A: Copy,
     B: Default + Add<A, Output = B>,

@@ -19,9 +19,9 @@ where
     F: Fold<A, B>,
     G: Fold<A, C>,
 {
-    type Acc = (<F as Fold<A, B>>::Acc, <G as Fold<A, C>>::Acc);
+    type State = (<F as Fold<A, B>>::State, <G as Fold<A, C>>::State);
 
-    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         if !self.f.halted() {
             return match self.f.step(acc.0, item) {
                 Continue(a) => Continue((a, acc.1)),
@@ -38,7 +38,7 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> (B, C) {
+    fn done(self, acc: Self::State) -> (B, C) {
         (self.f.done(acc.0), self.g.done(acc.1))
     }
 }

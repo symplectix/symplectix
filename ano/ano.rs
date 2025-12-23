@@ -52,20 +52,20 @@ type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 /// A composable left fold.
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
-    type Acc;
+    type State;
 
     /// Runs just a one step of folding.
     // TODO: consider to use Try instead of ControlFlow.
     // https://doc.rust-lang.org/std/ops/trait.Try.html
     // https://github.com/rust-lang/rust/issues/84277
-    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc>;
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State>;
 
     /// Invoked when folding is complete.
     ///
     /// You must call `done` exactly once.
-    fn done(self, acc: Self::Acc) -> B;
+    fn done(self, acc: Self::State) -> B;
 
-    fn fold_with<It>(mut self, init: Self::Acc, iterable: It) -> B
+    fn fold_with<It>(mut self, init: Self::State, iterable: It) -> B
     where
         Self: Sized,
         It: IntoIterator<Item = A>,
@@ -80,7 +80,7 @@ pub trait Fold<A, B> {
     #[inline]
     fn fold<It>(self, iterable: It) -> B
     where
-        Self: Sized + InitialState<Self::Acc>,
+        Self: Sized + InitialState<Self::State>,
         It: IntoIterator<Item = A>,
     {
         let iter = iterable.into_iter();
@@ -120,7 +120,7 @@ pub trait Fold<A, B> {
     fn using<F>(self, f: F) -> Using<Self, F>
     where
         Self: Sized,
-        F: Fn((usize, Option<usize>)) -> Self::Acc,
+        F: Fn((usize, Option<usize>)) -> Self::State,
     {
         Using::new(self, f)
     }

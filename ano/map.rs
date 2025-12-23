@@ -17,15 +17,15 @@ where
     Rf: Fold<B, C>,
     F: FnMut(A) -> B,
 {
-    type Acc = Rf::Acc;
+    type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         self.rf.step(acc, (self.mapf)(item))
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> C {
+    fn done(self, acc: Self::State) -> C {
         self.rf.done(acc)
     }
 }

@@ -17,16 +17,16 @@ where
     Rf: Fold<A, B>,
     P: FnMut(&A) -> bool,
 {
-    type Acc = Rf::Acc;
+    type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::Acc, item: A) -> ControlFlow<Self::Acc> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         use std::ops::ControlFlow::Continue;
         if (self.pred)(&item) { self.rf.step(acc, item) } else { Continue(acc) }
     }
 
     #[inline]
-    fn done(self, acc: Self::Acc) -> B {
+    fn done(self, acc: Self::State) -> B {
         self.rf.done(acc)
     }
 }
