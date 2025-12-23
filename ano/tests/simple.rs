@@ -15,6 +15,12 @@ fn test_map() {
     assert_eq!(vec![1, 4, 9], xf::map(pow2).apply(conj()).fold([1, 2, 3]));
     assert_eq!(vec![3, 6, 9], xf::map(mul3).apply(conj()).fold([1, 2, 3]));
     assert_eq!(vec![3, 6, 9], xf::map(mul3).apply(conj()).fold(&[1, 2, 3]));
+
+    assert_eq!(vec![0; 0], conj().map(pow2).fold(empty::<i32>()));
+    assert_eq!(vec![81], conj().map(pow2).fold(once::<i32>(9)));
+    assert_eq!(vec![1, 4, 9], conj().map(pow2).fold([1, 2, 3]));
+    assert_eq!(vec![3, 6, 9], conj().map(mul3).fold([1, 2, 3]));
+    assert_eq!(vec![3, 6, 9], conj().map(mul3).fold(&[1, 2, 3]));
 }
 
 #[test]
@@ -42,6 +48,7 @@ fn test_map_filter_take() {
     assert_eq!(vec![6, 12, 18, 24, 30], xf::map(mul3).filter(even).take(5).apply(conj()).fold(1..));
     assert_eq!(vec![6, 12, 18, 24, 30], xf::filter(even).map(mul3).take(5).apply(conj()).fold(1..));
     assert_eq!(vec![6, 12, 18, 24, 30], xf::filter(even).take(5).map(mul3).apply(conj()).fold(1..));
+    assert_eq!(vec![6, 12, 18, 24, 30], conj().map(mul3).take(5).filter(even).fold(1..));
     assert_eq!(vec![6, 12], xf::take(5).map(mul3).filter(even).apply(conj()).fold(1..));
     assert_eq!(vec![6, 12], xf::take(5).filter(even).map(mul3).apply(conj()).fold(1..));
 }

@@ -1,14 +1,14 @@
 #![allow(missing_docs)]
 //! Composable left folds.
 //!
-//! When you chain folds, they are evaluated in reverse order.
+//! When you chain folds, they are evaluated in reverse order (right to left).
 //!
 //! ```
 //! use std::ops::ControlFlow::Continue;
 //! use ano::Fold;
 //!
 //! let sum = |acc, item| Continue(acc + item);
-//! assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold_with(0, 1..));
+//! assert_eq!(4, sum.using(|_| 0).filter(|x: &i32| x % 2 != 0).take(3).fold(1..));
 //! ```
 //!
 //! You can use `xf` module to write pipelines in forward order.
