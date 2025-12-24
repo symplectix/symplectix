@@ -49,6 +49,28 @@ pub mod xf;
 /// The result of [Fold.step].
 type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 
+// #[derive(Debug)]
+// pub struct Folding<T> {
+//     data: T,
+// }
+// impl<T> Folding<T>
+// where
+//     T: IntoIterator,
+// {
+//     #[inline]
+//     pub fn by<F, R>(self, f: F) -> R
+//     where
+//         F: Fold<T::Item, R> + InitialState<F::State>,
+//     {
+//         let iter = self.data.into_iter();
+//         let init = f.initial_state(iter.size_hint());
+//         f.fold_with(init, iter)
+//     }
+// }
+// pub fn fold<T>(data: T) -> Folding<T> {
+//     Folding { data }
+// }
+
 /// A composable left fold.
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
