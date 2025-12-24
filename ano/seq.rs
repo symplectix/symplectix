@@ -2,7 +2,7 @@ use std::ops::ControlFlow::*;
 
 use crate::{ControlFlow, Fold, Fuse, InitialState};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Seq<F, G> {
     f: Fuse<F>,
     g: Fuse<G>,

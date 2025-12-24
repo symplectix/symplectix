@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use crate::{ControlFlow, Fold, Fuse, InitialState};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Par<'a, F, G> {
     _ref: PhantomData<&'a ()>,
     f: Fuse<F>,

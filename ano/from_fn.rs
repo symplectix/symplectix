@@ -19,7 +19,7 @@ where
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Using<Rf, F> {
     rf: Rf,
     using: F,
@@ -58,7 +58,7 @@ where
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Completing<Rf, B, F> {
     rf: Rf,
     _b: PhantomData<B>,

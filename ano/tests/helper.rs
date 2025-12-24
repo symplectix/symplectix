@@ -33,7 +33,7 @@ where
     x.rem(2) == 0
 }
 
-pub fn conj<A>() -> impl Fold<A, Vec<A>, State = Vec<A>> + InitialState<Vec<A>> {
+pub fn conj<A>() -> impl Fold<A, Vec<A>, State = Vec<A>> + InitialState<Vec<A>> + Clone {
     let f = |mut acc: Vec<A>, item| {
         acc.push(item);
         Continue(acc)

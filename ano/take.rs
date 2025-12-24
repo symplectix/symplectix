@@ -2,7 +2,7 @@ use std::ops::ControlFlow::*;
 
 use crate::{ControlFlow, Fold, InitialState};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Take<Rf> {
     rf: Rf,
     count: usize,

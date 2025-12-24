@@ -1,6 +1,6 @@
 use crate::{ControlFlow, Fold, InitialState};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Filter<Rf, P> {
     rf: Rf,
     pred: P,

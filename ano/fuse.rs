@@ -2,7 +2,7 @@ use std::ops::ControlFlow::Break;
 
 use crate::{ControlFlow, Fold, InitialState};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Fuse<Rf> {
     rf: Rf,
     halt: bool,
