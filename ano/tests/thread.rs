@@ -27,19 +27,22 @@ fn check_send() {
 fn thread_scope_fold() {
     use std::thread;
     let data = vec![1, 2, 3, 4, 5, 6];
-    let f = sum::<_, i32>();
+    let f = sum::<_, i32>().map(mul3);
     let r = thread::scope(|s| {
         let mut results = Vec::with_capacity(2);
         let mut handles = Vec::with_capacity(2);
-        let g = f.clone();
-        handles.push(s.spawn(|| g.fold(&data[..3])));
-        let g = f.clone();
-        handles.push(s.spawn(|| g.fold(&data[3..])));
+
+        for chunk in data.chunks(3) {
+            let g = f.clone();
+            handles.push(s.spawn(move || g.fold(chunk)));
+        }
+
         for h in handles {
             results.push(h.join().unwrap());
         }
+
         results
     });
 
-    assert_eq!(r, vec![6, 15]);
+    assert_eq!(r, vec![18, 45]);
 }
