@@ -2,7 +2,6 @@ use std::marker::PhantomData;
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use crate::from_fn::Completing;
 use crate::{Fold, Fuse, InitialState, Step};
 
 #[derive(Debug, Clone)]
@@ -71,5 +70,46 @@ where
     #[inline]
     fn initial_state(&self, size_hint: (usize, Option<usize>)) -> (A, B) {
         (self.f.initial_state(size_hint), self.g.initial_state(size_hint))
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct With<Rf, B, F> {
+    rf: Rf,
+    _b: PhantomData<B>,
+    completing: F,
+}
+
+impl<Rf, B, F> With<Rf, B, F> {
+    pub(crate) fn new(rf: Rf, completing: F) -> Self {
+        With { _b: PhantomData, rf, completing }
+    }
+}
+
+impl<A, B, C, Rf, F> Fold<A, C> for With<Rf, B, F>
+where
+    Rf: Fold<A, B>,
+    F: FnMut(B) -> C,
+{
+    type State = Rf::State;
+
+    #[inline]
+    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
+        self.rf.step(acc, item)
+    }
+
+    #[inline]
+    fn complete(mut self, acc: Self::State) -> C {
+        (self.completing)(self.rf.complete(acc))
+    }
+}
+
+impl<T, B, Rf, F> InitialState<T> for With<Rf, B, F>
+where
+    Rf: InitialState<T>,
+{
+    #[inline]
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
+        self.rf.initial_state(size_hint)
     }
 }

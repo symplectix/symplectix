@@ -39,7 +39,7 @@ mod seq;
 mod zip;
 use fuse::Fuse;
 use seq::Seq;
-use zip::Zip;
+use zip::{With, Zip};
 
 mod from_fn;
 use from_fn::{Completing, WithInitialState};
@@ -135,6 +135,14 @@ pub trait Fold<A, B> {
         Self: Sized,
     {
         Zip::new(self, that)
+    }
+
+    fn with<C, F>(self, f: F) -> With<Self, B, F>
+    where
+        Self: Sized,
+        F: FnMut(B) -> C,
+    {
+        With::new(self, f)
     }
 }
 
