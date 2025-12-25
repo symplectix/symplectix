@@ -27,22 +27,23 @@
 // - [transducers](https://clojure.org/reference/transducers)
 // - [xforms](https://github.com/cgrand/xforms)
 
+mod completing;
 mod filter;
-mod map;
-mod take;
-use filter::Filter;
-use map::Map;
-use take::Take;
-
 mod fuse;
+mod map;
 mod seq;
+mod take;
+mod with_initial_state;
 mod zip;
-use fuse::Fuse;
-use seq::Seq;
-use zip::{With, Zip};
 
-mod from_fn;
-use from_fn::{Completing, WithInitialState};
+use completing::Completing;
+use filter::Filter;
+use fuse::Fuse;
+use map::Map;
+use seq::Seq;
+use take::Take;
+use with_initial_state::WithInitialState;
+use zip::Zip;
 
 pub mod xf;
 
@@ -136,16 +137,25 @@ pub trait Fold<A, B> {
     {
         Zip::new(self, that)
     }
-
-    fn with<C, F>(self, f: F) -> With<Self, B, F>
-    where
-        Self: Sized,
-        F: FnMut(B) -> C,
-    {
-        With::new(self, f)
-    }
 }
 
 pub trait InitialState<T> {
     fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T;
+}
+
+impl<A, B, F> Fold<A, B> for F
+where
+    F: FnMut(B, A) -> Step<B>,
+{
+    type State = B;
+
+    #[inline]
+    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
+        (self)(acc, item)
+    }
+
+    #[inline]
+    fn complete(self, acc: Self::State) -> B {
+        acc
+    }
 }

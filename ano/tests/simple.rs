@@ -123,8 +123,8 @@ fn test_zip() {
 }
 
 #[test]
-fn test_zip_with() {
-    let f = sum().zip(count()).with(|(sum, c): (i32, usize)| sum as f64 / c as f64);
+fn test_zip_completing() {
+    let f = sum().zip(count()).completing(|(sum, c): (i32, usize)| sum as f64 / c as f64);
     let avg = f.fold(&[1, 2]);
     assert_eq!(avg, 1.5);
 }
