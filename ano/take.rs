@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{ControlFlow, Fold, InitialState};
+use crate::{Step, Fold, InitialState};
 
 #[derive(Debug, Clone)]
 pub struct Take<Rf> {
@@ -21,7 +21,7 @@ where
     type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
         match self.count {
             0 => Break(acc),
             1 => {

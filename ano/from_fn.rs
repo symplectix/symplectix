@@ -1,15 +1,15 @@
 use std::marker::PhantomData;
 
-use crate::{ControlFlow, Fold, InitialState};
+use crate::{Fold, InitialState, Step};
 
 impl<A, B, F> Fold<A, B> for F
 where
-    F: FnMut(B, A) -> ControlFlow<B>,
+    F: FnMut(B, A) -> Step<B>,
 {
     type State = B;
 
     #[inline]
-    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
         (self)(acc, item)
     }
 
@@ -38,7 +38,7 @@ where
     type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
         self.rf.step(acc, item)
     }
 
@@ -79,7 +79,7 @@ where
     type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
         self.rf.step(acc, item)
     }
 

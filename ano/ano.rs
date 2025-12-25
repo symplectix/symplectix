@@ -47,7 +47,7 @@ use from_fn::{Completing, WithInitialState};
 pub mod xf;
 
 /// The result of [Fold.step].
-pub type ControlFlow<T> = std::ops::ControlFlow<T, T>;
+pub type Step<T> = std::ops::ControlFlow<T, T>;
 
 // #[derive(Debug)]
 // pub struct Folding<T> {
@@ -80,7 +80,7 @@ pub trait Fold<A, B> {
     // TODO: consider to use Try instead of ControlFlow.
     // https://doc.rust-lang.org/std/ops/trait.Try.html
     // https://github.com/rust-lang/rust/issues/84277
-    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State>;
+    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State>;
 
     /// Invoked when folding is complete.
     fn complete(self, acc: Self::State) -> B;

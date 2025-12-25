@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use crate::{ControlFlow, Fold, Fuse, InitialState};
+use crate::{Step, Fold, Fuse, InitialState};
 
 #[derive(Debug, Clone)]
 pub struct Par<'a, F, G> {
@@ -35,7 +35,7 @@ where
 {
     type State = (<F as Fold<&'a A, B>>::State, <G as Fold<&'a A, C>>::State);
 
-    fn step(&mut self, acc: Self::State, item: &'a A) -> ControlFlow<Self::State> {
+    fn step(&mut self, acc: Self::State, item: &'a A) -> Step<Self::State> {
         step!((self.f.step(acc.0, item), self.g.step(acc.1, item)))
     }
 
@@ -52,7 +52,7 @@ where
 {
     type State = (<F as Fold<Rc<A>, B>>::State, <G as Fold<Rc<A>, C>>::State);
 
-    fn step(&mut self, acc: Self::State, item: Rc<A>) -> ControlFlow<Self::State> {
+    fn step(&mut self, acc: Self::State, item: Rc<A>) -> Step<Self::State> {
         step!((self.f.step(acc.0, item.clone()), self.g.step(acc.1, item)))
     }
 

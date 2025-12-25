@@ -1,4 +1,4 @@
-use crate::{ControlFlow, Fold, InitialState};
+use crate::{Fold, InitialState, Step};
 
 #[derive(Debug, Clone)]
 pub struct Map<Rf, F> {
@@ -20,7 +20,7 @@ where
     type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
         self.rf.step(acc, (self.mapf)(item))
     }
 
