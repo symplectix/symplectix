@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{Step, Fold, Fuse, InitialState};
+use crate::{Fold, Fuse, InitialState, Step};
 
 #[derive(Debug, Clone)]
 pub struct Seq<F, G> {

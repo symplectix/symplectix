@@ -35,11 +35,11 @@ use map::Map;
 use take::Take;
 
 mod fuse;
-mod par;
 mod seq;
+mod zip;
 use fuse::Fuse;
-use par::Par;
 use seq::Seq;
+use zip::Zip;
 
 mod from_fn;
 use from_fn::{Completing, WithInitialState};
@@ -48,28 +48,6 @@ pub mod xf;
 
 /// The result of [Fold.step].
 pub type Step<T> = std::ops::ControlFlow<T, T>;
-
-// #[derive(Debug)]
-// pub struct Folding<T> {
-//     data: T,
-// }
-// impl<T> Folding<T>
-// where
-//     T: IntoIterator,
-// {
-//     #[inline]
-//     pub fn by<F, R>(self, f: F) -> R
-//     where
-//         F: Fold<T::Item, R> + InitialState<F::State>,
-//     {
-//         let iter = self.data.into_iter();
-//         let init = f.initial_state(iter.size_hint());
-//         f.fold_with(init, iter)
-//     }
-// }
-// pub fn fold<T>(data: T) -> Folding<T> {
-//     Folding { data }
-// }
 
 /// A composable left fold.
 pub trait Fold<A, B> {
@@ -108,6 +86,22 @@ pub trait Fold<A, B> {
         self.fold_with(init, iter)
     }
 
+    fn completing<C, F>(self, f: F) -> Completing<Self, B, F>
+    where
+        Self: Sized,
+        F: FnMut(B) -> C,
+    {
+        Completing::new(self, f)
+    }
+
+    fn with_initial_state<F>(self, f: F) -> WithInitialState<Self, F>
+    where
+        Self: Sized,
+        F: Fn((usize, Option<usize>)) -> Self::State,
+    {
+        WithInitialState::new(self, f)
+    }
+
     fn map<F>(self, f: F) -> Map<Self, F>
     where
         Self: Sized,
@@ -129,22 +123,6 @@ pub trait Fold<A, B> {
         Take::new(self, n)
     }
 
-    fn completing<C, F>(self, f: F) -> Completing<Self, B, F>
-    where
-        Self: Sized,
-        F: FnMut(B) -> C,
-    {
-        Completing::new(self, f)
-    }
-
-    fn with_initial_state<F>(self, f: F) -> WithInitialState<Self, F>
-    where
-        Self: Sized,
-        F: Fn((usize, Option<usize>)) -> Self::State,
-    {
-        WithInitialState::new(self, f)
-    }
-
     fn seq<That>(self, that: That) -> Seq<Self, That>
     where
         Self: Sized,
@@ -152,11 +130,11 @@ pub trait Fold<A, B> {
         Seq::new(self, that)
     }
 
-    fn par<'a, That>(self, that: That) -> Par<'a, Self, That>
+    fn zip<'a, That>(self, that: That) -> Zip<'a, Self, That>
     where
         Self: Sized,
     {
-        Par::new(self, that)
+        Zip::new(self, that)
     }
 }
 

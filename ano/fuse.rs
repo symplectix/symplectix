@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::Break;
 
-use crate::{Step, Fold, InitialState};
+use crate::{Fold, InitialState, Step};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Fuse<Rf> {

@@ -98,32 +98,32 @@ fn test_seq() {
 }
 
 #[test]
-fn test_par() {
-    let f = count().par(sum());
-    let g = sum().par(count());
-    let (a, b) = f.par(g).fold(&[1, 2]);
+fn test_zip() {
+    let f = count().zip(sum());
+    let g = sum().zip(count());
+    let (a, b) = f.zip(g).fold(&[1, 2]);
     assert_eq!(a, (2, 3));
     assert_eq!(b, (3, 2));
 
-    let f = count().par(sum());
-    let g = sum().par(count());
+    let f = count().zip(sum());
+    let g = sum().zip(count());
     let (a, b) = f.seq(g).fold(&[1, 2]);
     assert_eq!(a, (2, 3));
     assert_eq!(b, (0, 0));
 
     let f = conj().take(3).map(mul3);
     let g = sum().take(2).map(mul3);
-    let acc = f.par(g).fold(&[1, 2, 3, 4]);
+    let acc = f.zip(g).fold(&[1, 2, 3, 4]);
     assert_eq!(acc, (vec![3, 6, 9], 9));
 
     let f = conj().take(5);
     let g = conj().take(5);
-    let acc = f.par(g).fold(&[1, 2, 3]);
+    let acc = f.zip(g).fold(&[1, 2, 3]);
     assert_eq!(acc, (vec![&1, &2, &3], vec![&1, &2, &3]));
 }
 
 #[test]
-fn test_par_rc() {
+fn test_zip_rc() {
     fn to_rcs<I>(iterable: I) -> impl Iterator<Item = Rc<I::Item>>
     where
         I: IntoIterator,
@@ -133,23 +133,23 @@ fn test_par_rc() {
 
     let f = conj().take(3).map(pow2_rc);
     let g = sum().take(2).map(mul3_rc);
-    let acc = f.par(g).fold(to_rcs(1..10));
+    let acc = f.zip(g).fold(to_rcs(1..10));
     assert_eq!(acc, (vec![1, 4, 9], 9));
 
-    let f = count().par(sum_rc());
-    let g = count().par(sum_rc());
+    let f = count().zip(sum_rc());
+    let g = count().zip(sum_rc());
     let ret = f.seq(g).fold(to_rcs([1, 2]));
     assert_eq!(ret, ((2, 3), (0, 0)));
 
-    let f = count().par(sum_rc());
-    let g = count().par(sum_rc());
-    let (a, b) = f.par(g).fold(to_rcs([1, 2]));
+    let f = count().zip(sum_rc());
+    let g = count().zip(sum_rc());
+    let (a, b) = f.zip(g).fold(to_rcs([1, 2]));
     assert_eq!(a, (2, 3));
     assert_eq!(b, (2, 3));
 
     let f = xf::map(mul3_rc).take(3).apply(sum::<_, i32>());
     let g = xf::map(pow2_rc).take(3).apply(sum::<_, i32>());
-    let (fsum, gsum) = f.par(g).fold(to_rcs(1..));
+    let (fsum, gsum) = f.zip(g).fold(to_rcs(1..));
     assert_eq!(fsum, 18);
     assert_eq!(gsum, 14);
 }

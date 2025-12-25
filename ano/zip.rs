@@ -2,18 +2,18 @@ use std::marker::PhantomData;
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use crate::{Step, Fold, Fuse, InitialState};
+use crate::{Fold, Fuse, InitialState, Step};
 
 #[derive(Debug, Clone)]
-pub struct Par<'a, F, G> {
+pub struct Zip<'a, F, G> {
     _ref: PhantomData<&'a ()>,
     f: Fuse<F>,
     g: Fuse<G>,
 }
 
-impl<'a, F, G> Par<'a, F, G> {
+impl<'a, F, G> Zip<'a, F, G> {
     pub(crate) fn new(f: F, g: G) -> Self {
-        Par { _ref: PhantomData, f: Fuse::new(f), g: Fuse::new(g) }
+        Zip { _ref: PhantomData, f: Fuse::new(f), g: Fuse::new(g) }
     }
 }
 
@@ -28,7 +28,7 @@ macro_rules! step {
     };
 }
 
-impl<'a, A, B, C, F, G> Fold<&'a A, (B, C)> for Par<'a, F, G>
+impl<'a, A, B, C, F, G> Fold<&'a A, (B, C)> for Zip<'a, F, G>
 where
     F: Fold<&'a A, B>,
     G: Fold<&'a A, C>,
@@ -45,7 +45,7 @@ where
     }
 }
 
-impl<A, B, C, F, G> Fold<Rc<A>, (B, C)> for Par<'_, F, G>
+impl<A, B, C, F, G> Fold<Rc<A>, (B, C)> for Zip<'_, F, G>
 where
     F: Fold<Rc<A>, B>,
     G: Fold<Rc<A>, C>,
@@ -62,7 +62,7 @@ where
     }
 }
 
-impl<'a, A, B, F, G> InitialState<(A, B)> for Par<'a, F, G>
+impl<'a, A, B, F, G> InitialState<(A, B)> for Zip<'a, F, G>
 where
     F: InitialState<A>,
     G: InitialState<B>,
