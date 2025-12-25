@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
+use crate::from_fn::Completing;
 use crate::{Fold, Fuse, InitialState, Step};
 
 #[derive(Debug, Clone)]
