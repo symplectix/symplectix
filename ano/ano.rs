@@ -47,7 +47,7 @@ use from_fn::{Completing, Using};
 pub mod xf;
 
 /// The result of [Fold.step].
-type ControlFlow<T> = std::ops::ControlFlow<T, T>;
+pub type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 
 // #[derive(Debug)]
 // pub struct Folding<T> {

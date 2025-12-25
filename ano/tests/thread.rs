@@ -24,17 +24,22 @@ fn check_send() {
 }
 
 #[test]
-fn thread_spawn_fold() {
+fn thread_scope_fold() {
     use std::thread;
-    let f = conj();
-    let handle = {
+    let data = vec![1, 2, 3, 4, 5, 6];
+    let f = sum::<_, i32>();
+    let r = thread::scope(|s| {
+        let mut results = Vec::with_capacity(2);
+        let mut handles = Vec::with_capacity(2);
         let g = f.clone();
-        thread::spawn(move || g.fold([1, 2, 3]))
-    };
-    assert_eq!(handle.join().unwrap(), vec![1, 2, 3]);
-    let handle = {
+        handles.push(s.spawn(|| g.fold(&data[..3])));
         let g = f.clone();
-        thread::spawn(move || g.fold([1, 2, 3]))
-    };
-    assert_eq!(handle.join().unwrap(), vec![1, 2, 3]);
+        handles.push(s.spawn(|| g.fold(&data[3..])));
+        for h in handles {
+            results.push(h.join().unwrap());
+        }
+        results
+    });
+
+    assert_eq!(r, vec![6, 15]);
 }

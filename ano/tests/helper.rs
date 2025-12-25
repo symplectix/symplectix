@@ -51,22 +51,52 @@ where
     f.using(|_| true)
 }
 
-pub fn any<A, P>(mut pred: P) -> impl Fold<A, bool, State = bool> + InitialState<bool>
+#[derive(Debug, Clone)]
+pub struct Any<P> {
+    pred: P,
+}
+
+impl<A, P> Fold<A, bool> for Any<P>
 where
     P: FnMut(&A) -> bool,
 {
-    let f = move |_acc: bool, item: A| {
-        if pred(&item) { Break(true) } else { Continue(false) }
-    };
-    f.using(|_| false)
+    type State = bool;
+
+    #[inline]
+    fn step(&mut self, _acc: Self::State, item: A) -> ano::ControlFlow<Self::State> {
+        if (self.pred)(&item) { Break(true) } else { Continue(false) }
+    }
+
+    #[inline]
+    fn done(self, acc: Self::State) -> bool {
+        acc
+    }
 }
 
-pub fn count<A>() -> impl Fold<A, usize, State = usize> + InitialState<usize> {
+impl<P> InitialState<bool> for Any<P> {
+    #[inline]
+    fn initial_state(&self, _size_hint: (usize, Option<usize>)) -> bool {
+        false
+    }
+}
+
+pub fn any<A, P>(pred: P) -> Any<P>
+where
+    P: FnMut(&A) -> bool,
+{
+    Any { pred }
+    // let f = move |_acc: bool, item: A| {
+    //     if pred(&item) { Break(true) } else { Continue(false) }
+    // };
+    // f.using(|_| false)
+}
+
+pub fn count<A>() -> impl Fold<A, usize, State = usize> + InitialState<usize> + Clone {
     let f = |acc: usize, _item: A| Continue(acc + 1);
     f.using(|_| 0)
 }
 
-pub fn sum<A, B>() -> impl Fold<A, B, State = B> + InitialState<B>
+pub fn sum<A, B>() -> impl Fold<A, B, State = B> + InitialState<B> + Clone
 where
     B: Default + Add<A, Output = B>,
 {
@@ -74,7 +104,7 @@ where
     f.using(|_| B::default())
 }
 
-pub fn sum_rc<A, B>() -> impl Fold<Rc<A>, B, State = B> + InitialState<B>
+pub fn sum_rc<A, B>() -> impl Fold<Rc<A>, B, State = B> + InitialState<B> + Clone
 where
     A: Copy,
     B: Default + Add<A, Output = B>,
