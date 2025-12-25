@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 
 use std::iter::{empty, once};
+use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
 use ano::Fold;
@@ -34,6 +35,12 @@ fn test_take() {
     assert_eq!(vec![1, 2], conj().take(2).fold(1..3));
     assert_eq!(vec![1, 2, 3], conj().take(3).fold(1..));
     assert_eq!(vec![&1, &2, &3], conj().take(5).fold(&[1, 2, 3]));
+
+    let mut f = sum().take(2);
+    assert_eq!(f.step(0, 1), Continue(1));
+    let mut g = f.clone();
+    assert_eq!(f.step(1, 2), Break(3));
+    assert_eq!(g.step(1, 2), Break(3));
 }
 
 #[test]
