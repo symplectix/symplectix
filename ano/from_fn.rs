@@ -20,18 +20,18 @@ where
 }
 
 #[derive(Debug, Clone)]
-pub struct Using<Rf, F> {
+pub struct WithInitialState<Rf, F> {
     rf: Rf,
     using: F,
 }
 
-impl<Rf, F> Using<Rf, F> {
+impl<Rf, F> WithInitialState<Rf, F> {
     pub(crate) fn new(rf: Rf, using: F) -> Self {
-        Using { rf, using }
+        WithInitialState { rf, using }
     }
 }
 
-impl<A, B, Rf, F> Fold<A, B> for Using<Rf, F>
+impl<A, B, Rf, F> Fold<A, B> for WithInitialState<Rf, F>
 where
     Rf: Fold<A, B>,
 {
@@ -48,7 +48,7 @@ where
     }
 }
 
-impl<T, Rf, F> InitialState<T> for Using<Rf, F>
+impl<T, Rf, F> InitialState<T> for WithInitialState<Rf, F>
 where
     F: Fn((usize, Option<usize>)) -> T,
 {

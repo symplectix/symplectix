@@ -8,7 +8,7 @@
 //! use ano::Fold;
 //!
 //! let sum = |acc, item| Continue(acc + item);
-//! assert_eq!(4, sum.using(|_| 0).filter(|x: &i32| x % 2 != 0).take(3).fold(1..));
+//! assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold_with(0, 1..));
 //! ```
 //!
 //! You can use `xf` module to write pipelines in forward order.
@@ -42,7 +42,7 @@ use par::Par;
 use seq::Seq;
 
 mod from_fn;
-use from_fn::{Completing, Using};
+use from_fn::{Completing, WithInitialState};
 
 pub mod xf;
 
@@ -137,12 +137,12 @@ pub trait Fold<A, B> {
         Completing::new(self, f)
     }
 
-    fn using<F>(self, f: F) -> Using<Self, F>
+    fn with_initial_state<F>(self, f: F) -> WithInitialState<Self, F>
     where
         Self: Sized,
         F: Fn((usize, Option<usize>)) -> Self::State,
     {
-        Using::new(self, f)
+        WithInitialState::new(self, f)
     }
 
     fn seq<That>(self, that: That) -> Seq<Self, That>

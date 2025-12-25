@@ -89,7 +89,7 @@ fn test_sum() {
 
 #[test]
 fn test_nested_using() {
-    assert_eq!(200, sum().using(|_| 10).using(|_| 100).fold(once(100)));
+    assert_eq!(200, sum().with_initial_state(|_| 10).with_initial_state(|_| 100).fold(once(100)));
 }
 
 #[test]
