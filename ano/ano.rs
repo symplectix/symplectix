@@ -26,24 +26,24 @@
 //!
 //! So in this case, `take` is applied to data first, then `map`, and finally `sum`.
 
+mod beginning;
 mod completing;
 mod filter;
 mod fuse;
 mod map;
 mod seq;
 mod take;
-mod with_initial_state;
 mod zip;
 
 use std::ops::ControlFlow::*;
 
+use beginning::Beginning;
 use completing::Completing;
 use filter::Filter;
 use fuse::Fuse;
 use map::Map;
 use seq::Seq;
 use take::Take;
-use with_initial_state::WithInitialState;
 use zip::Zip;
 
 /// The result of [Fold.step].
@@ -86,20 +86,20 @@ pub trait Fold<A, B> {
         }
     }
 
+    fn beginning<F>(self, f: F) -> Beginning<Self, F>
+    where
+        Self: Sized,
+        F: Fn((usize, Option<usize>)) -> Self::State,
+    {
+        Beginning::new(self, f)
+    }
+
     fn completing<C, F>(self, f: F) -> Completing<Self, B, F>
     where
         Self: Sized,
         F: FnMut(B) -> C,
     {
         Completing::new(self, f)
-    }
-
-    fn with_initial_state<F>(self, f: F) -> WithInitialState<Self, F>
-    where
-        Self: Sized,
-        F: Fn((usize, Option<usize>)) -> Self::State,
-    {
-        WithInitialState::new(self, f)
     }
 
     fn map<F>(self, f: F) -> Map<Self, F>

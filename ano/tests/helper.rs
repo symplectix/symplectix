@@ -38,7 +38,7 @@ pub fn conj<A>() -> impl Fold<A, Vec<A>, State = Vec<A>> + InitialState<Vec<A>> 
         acc.push(item);
         Continue(acc)
     };
-    f.with_initial_state(|(lo, _hi)| Vec::with_capacity(lo.saturating_add(1)))
+    f.beginning(|(lo, _hi)| Vec::with_capacity(lo.saturating_add(1)))
 }
 
 pub fn all<A, P>(mut pred: P) -> impl Fold<A, bool, State = bool> + InitialState<bool>
@@ -48,7 +48,7 @@ where
     let f = move |_acc, item| {
         if pred(&item) { Continue(true) } else { Break(false) }
     };
-    f.with_initial_state(|_| true)
+    f.beginning(|_| true)
 }
 
 #[derive(Debug, Clone)]
@@ -93,7 +93,7 @@ where
 
 pub fn count<A>() -> impl Fold<A, usize, State = usize> + InitialState<usize> + Clone {
     let f = |acc: usize, _item: A| Continue(acc + 1);
-    f.with_initial_state(|_| 0)
+    f.beginning(|_| 0)
 }
 
 pub fn sum<A, B>() -> impl Fold<A, B, State = B> + InitialState<B> + Clone
@@ -101,7 +101,7 @@ where
     B: Default + Add<A, Output = B>,
 {
     let f = |acc, item| Continue(acc + item);
-    f.with_initial_state(|_| B::default())
+    f.beginning(|_| B::default())
 }
 
 pub fn sum_rc<A, B>() -> impl Fold<Rc<A>, B, State = B> + InitialState<B> + Clone
@@ -110,5 +110,5 @@ where
     B: Default + Add<A, Output = B>,
 {
     let f = |acc, item: Rc<A>| Continue(acc + *item.borrow());
-    f.with_initial_state(|_| B::default())
+    f.beginning(|_| B::default())
 }

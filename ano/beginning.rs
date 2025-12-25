@@ -1,18 +1,18 @@
 use crate::{Fold, InitialState, Step};
 
 #[derive(Debug, Clone)]
-pub struct WithInitialState<Rf, F> {
+pub struct Beginning<Rf, F> {
     rf: Rf,
-    using: F,
+    begin: F,
 }
 
-impl<Rf, F> WithInitialState<Rf, F> {
-    pub(crate) fn new(rf: Rf, using: F) -> Self {
-        WithInitialState { rf, using }
+impl<Rf, F> Beginning<Rf, F> {
+    pub(crate) fn new(rf: Rf, begin: F) -> Self {
+        Beginning { rf, begin }
     }
 }
 
-impl<A, B, Rf, F> Fold<A, B> for WithInitialState<Rf, F>
+impl<A, B, Rf, F> Fold<A, B> for Beginning<Rf, F>
 where
     Rf: Fold<A, B>,
 {
@@ -29,12 +29,12 @@ where
     }
 }
 
-impl<T, Rf, F> InitialState<T> for WithInitialState<Rf, F>
+impl<T, Rf, F> InitialState<T> for Beginning<Rf, F>
 where
     F: Fn((usize, Option<usize>)) -> T,
 {
     #[inline]
     fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
-        (self.using)(size_hint)
+        (self.begin)(size_hint)
     }
 }
