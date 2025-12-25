@@ -10,16 +10,6 @@
 //! let sum = |acc, item| Continue(acc + item);
 //! assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold_with(0, 1..));
 //! ```
-//!
-//! You can use `xf` module to write pipelines in forward order.
-//!
-//! ```
-//! use std::ops::ControlFlow::Continue;
-//! use ano::{Fold, xf};
-//!
-//! let sum = |acc, item| Continue(acc + item);
-//! assert_eq!(4, xf::take(3).filter(|x: &i32| x % 2 != 0).apply(sum).fold_with(0, 1..));
-//! ```
 
 // Refs:
 // - [foldl](https://github.com/Gabriella439/foldl)
@@ -36,6 +26,8 @@ mod take;
 mod with_initial_state;
 mod zip;
 
+use std::ops::ControlFlow::*;
+
 use completing::Completing;
 use filter::Filter;
 use fuse::Fuse;
@@ -44,8 +36,6 @@ use seq::Seq;
 use take::Take;
 use with_initial_state::WithInitialState;
 use zip::Zip;
-
-pub mod xf;
 
 /// The result of [Fold.step].
 pub type Step<T> = std::ops::ControlFlow<T, T>;
@@ -64,18 +54,6 @@ pub trait Fold<A, B> {
     /// Invoked when folding is complete.
     fn complete(self, acc: Self::State) -> B;
 
-    fn fold_with<It>(mut self, init: Self::State, iterable: It) -> B
-    where
-        Self: Sized,
-        It: IntoIterator<Item = A>,
-    {
-        use std::ops::ControlFlow::*;
-        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
-            Continue(c) => self.complete(c),
-            Break(b) => self.complete(b),
-        }
-    }
-
     #[inline]
     fn fold<It>(self, iterable: It) -> B
     where
@@ -85,6 +63,18 @@ pub trait Fold<A, B> {
         let iter = iterable.into_iter();
         let init = self.initial_state(iter.size_hint());
         self.fold_with(init, iter)
+    }
+
+    #[inline]
+    fn fold_with<It>(mut self, init: Self::State, iterable: It) -> B
+    where
+        Self: Sized,
+        It: IntoIterator<Item = A>,
+    {
+        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
+            Continue(c) => self.complete(c),
+            Break(b) => self.complete(b),
+        }
     }
 
     fn completing<C, F>(self, f: F) -> Completing<Self, B, F>

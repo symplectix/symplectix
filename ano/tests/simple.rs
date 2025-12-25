@@ -3,7 +3,7 @@
 use std::iter::{empty, once};
 use std::rc::Rc;
 
-use ano::{Fold, xf};
+use ano::Fold;
 
 mod helper;
 use helper::*;
@@ -154,8 +154,8 @@ fn test_zip_rc() {
     assert_eq!(a, (2, 3));
     assert_eq!(b, (2, 3));
 
-    let f = xf::map(mul3_rc).take(3).apply(sum::<_, i32>());
-    let g = xf::map(pow2_rc).take(3).apply(sum::<_, i32>());
+    let f = sum::<_, i32>().take(3).map(mul3_rc);
+    let g = sum::<_, i32>().take(3).map(pow2_rc);
     let (fsum, gsum) = f.zip(g).fold(to_rcs(1..));
     assert_eq!(fsum, 18);
     assert_eq!(gsum, 14);

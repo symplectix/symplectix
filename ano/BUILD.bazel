@@ -4,7 +4,8 @@ rust.library(
     name = "ano",
     srcs = glob([
         "*.rs",
-        "xf/*.rs",
+        # disabled for now because not sure this is useful or not.
+        # "xf/*.rs",
     ]),
 )
 
