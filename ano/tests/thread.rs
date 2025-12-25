@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 
-use ano::Fold;
+use ano::{Fold, InitialState};
+use std::thread;
 
 mod helper;
 use helper::*;
@@ -23,18 +24,29 @@ fn check_send() {
     check(conj::<i32>().map(pow2).filter(even::<i32>).take(10));
 }
 
-#[test]
-fn thread_scope_fold() {
-    use std::thread;
-    let data = vec![1, 2, 3, 4, 5, 6];
-    let map_sum = sum::<_, i32>().map(mul3);
-    let sums = thread::scope(|scope| {
+fn par_fold<'a, 'b, A, B, C, F, G>(f: F, g: G, data: &'a [A]) -> C
+where
+    'a: 'b,
+    &'b [A]: Send,
+    B: Send,
+    F: Fold<B, C> + InitialState<<F as Fold<B, C>>::State>,
+    G: Fold<&'b A, B> + InitialState<<G as Fold<&'b A, B>>::State> + Clone + Send,
+{
+    let bs = thread::scope(|scope| {
         let mut handles = Vec::with_capacity(data.len() / 3 + 1);
         data.chunks(3).for_each(|chunk| {
-            let f = map_sum.clone();
-            handles.push(scope.spawn(move || f.fold(chunk)));
+            let g = g.clone();
+            handles.push(scope.spawn(move || g.fold(chunk)));
         });
         handles.into_iter().map(|h| h.join().unwrap()).collect::<Vec<_>>()
     });
-    assert_eq!(sum::<_, i32>().fold(&sums), 63);
+    f.fold(bs)
+}
+
+#[test]
+fn thread_scope_fold() {
+    let data = vec![1, 2, 3, 4, 5, 6];
+    // let map_sum = sum::<_, i32>().map(mul3);
+    let r = par_fold(sum::<_, i32>(), sum::<_, i32>().map(mul3), &data);
+    assert_eq!(r, 63);
 }

@@ -26,6 +26,8 @@
 //!
 //! So in this case, `take` is applied to data first, then `map`, and finally `sum`.
 
+use std::ops::ControlFlow::*;
+
 mod beginning;
 mod completing;
 mod filter;
@@ -34,8 +36,6 @@ mod map;
 mod seq;
 mod take;
 mod zip;
-
-use std::ops::ControlFlow::*;
 
 use beginning::Beginning;
 use completing::Completing;
