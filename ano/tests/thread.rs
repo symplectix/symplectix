@@ -46,7 +46,8 @@ where
 #[test]
 fn thread_scope_fold() {
     let data = vec![1, 2, 3, 4, 5, 6];
-    // let map_sum = sum::<_, i32>().map(mul3);
     let r = par_fold(sum::<_, i32>(), sum::<_, i32>().map(mul3), &data);
     assert_eq!(r, 63);
+    let r = par_fold(sum::<_, usize>(), count::<i32>().map(mul3), &data);
+    assert_eq!(r, 6);
 }
