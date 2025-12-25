@@ -1,21 +1,30 @@
 #![allow(missing_docs)]
 //! Composable left folds.
 //!
-//! When you chain folds, they are evaluated in reverse order (right to left).
+//! To create a fold, the most simplest way is from a closure.
 //!
 //! ```
 //! use std::ops::ControlFlow::Continue;
 //! use ano::Fold;
 //!
 //! let sum = |acc, item| Continue(acc + item);
-//! assert_eq!(4, sum.filter(|x: &i32| x % 2 != 0).take(3).fold_with(0, 1..));
+//! assert_eq!(sum.fold_with(0, 1..5), 10);
 //! ```
-
-// Refs:
-// - [foldl](https://github.com/Gabriella439/foldl)
-// - [prefolds](https://github.com/effectfully/prefolds)
-// - [transducers](https://clojure.org/reference/transducers)
-// - [xforms](https://github.com/cgrand/xforms)
+//!
+//! You can chain to construct a fold pipeline like an iterator,
+//! but they are evaluated in reverse order.
+//!
+//! ```
+//! use std::ops::ControlFlow::Continue;
+//! use ano::Fold;
+//!
+//! let data = vec![1, 2, 3, 4, 5];
+//! let sum = |acc, item| Continue(acc + item);
+//! let f = sum.map(|x: &i32| x - 1).take(3);
+//! assert_eq!(3, f.fold_with(0, &data[..]));
+//! ```
+//!
+//! So in this case, `take` is applied to data first, then `map`, and finally `sum`.
 
 mod completing;
 mod filter;
