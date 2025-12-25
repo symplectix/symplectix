@@ -83,9 +83,7 @@ pub trait Fold<A, B> {
     fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State>;
 
     /// Invoked when folding is complete.
-    ///
-    /// You must call `done` exactly once.
-    fn done(self, acc: Self::State) -> B;
+    fn complete(self, acc: Self::State) -> B;
 
     fn fold_with<It>(mut self, init: Self::State, iterable: It) -> B
     where
@@ -94,8 +92,8 @@ pub trait Fold<A, B> {
     {
         use std::ops::ControlFlow::*;
         match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
-            Continue(c) => self.done(c),
-            Break(b) => self.done(b),
+            Continue(c) => self.complete(c),
+            Break(b) => self.complete(b),
         }
     }
 

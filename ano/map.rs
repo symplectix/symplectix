@@ -25,8 +25,8 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::State) -> C {
-        self.rf.done(acc)
+    fn complete(self, acc: Self::State) -> C {
+        self.rf.complete(acc)
     }
 }
 

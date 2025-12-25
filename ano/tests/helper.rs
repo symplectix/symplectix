@@ -68,7 +68,7 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::State) -> bool {
+    fn complete(self, acc: Self::State) -> bool {
         acc
     }
 }

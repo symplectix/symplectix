@@ -14,7 +14,7 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::State) -> B {
+    fn complete(self, acc: Self::State) -> B {
         acc
     }
 }
@@ -43,8 +43,8 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::State) -> B {
-        self.rf.done(acc)
+    fn complete(self, acc: Self::State) -> B {
+        self.rf.complete(acc)
     }
 }
 
@@ -84,8 +84,8 @@ where
     }
 
     #[inline]
-    fn done(mut self, acc: Self::State) -> C {
-        (self.completing)(self.rf.done(acc))
+    fn complete(mut self, acc: Self::State) -> C {
+        (self.completing)(self.rf.complete(acc))
     }
 }
 

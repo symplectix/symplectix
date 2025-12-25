@@ -44,7 +44,7 @@ where
         }
     }
 
-    fn done(self, acc: Self::State) -> B {
-        self.rf.done(acc)
+    fn complete(self, acc: Self::State) -> B {
+        self.rf.complete(acc)
     }
 }

@@ -40,8 +40,8 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::State) -> (B, C) {
-        (self.f.done(acc.0), self.g.done(acc.1))
+    fn complete(self, acc: Self::State) -> (B, C) {
+        (self.f.complete(acc.0), self.g.complete(acc.1))
     }
 }
 
@@ -57,8 +57,8 @@ where
     }
 
     #[inline]
-    fn done(self, acc: Self::State) -> (B, C) {
-        (self.f.done(acc.0), self.g.done(acc.1))
+    fn complete(self, acc: Self::State) -> (B, C) {
+        (self.f.complete(acc.0), self.g.complete(acc.1))
     }
 }
 
