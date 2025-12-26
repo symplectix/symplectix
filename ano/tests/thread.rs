@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 
 use ano::{Fold, InitialState};
+use std::slice::Chunks;
 use std::thread;
 
 mod helper;
@@ -24,17 +25,27 @@ fn check_send() {
     check(conj::<i32>().map(pow2).filter(even::<i32>).take(10));
 }
 
-fn par_fold<'a, 'b, A, B, C, F, G>(f: F, g: G, data: &'a [A]) -> C
+fn fold_slice<'a, 'b, A, B, C, F, G>(f: F, g: G, data: &'a [A]) -> C
 where
     'a: 'b,
-    &'b [A]: Send,
+    A: Sync,
     B: Send,
     F: Fold<B, C> + InitialState<<F as Fold<B, C>>::State>,
     G: Fold<&'b A, B> + InitialState<<G as Fold<&'b A, B>>::State> + Clone + Send,
 {
+    fold_chunks(f, g, data.chunks(3))
+}
+
+fn fold_chunks<'a, A, B, C, F, G>(f: F, g: G, chunks: Chunks<'a, A>) -> C
+where
+    A: Sync,
+    B: Send,
+    F: Fold<B, C> + InitialState<<F as Fold<B, C>>::State>,
+    G: Fold<&'a A, B> + InitialState<<G as Fold<&'a A, B>>::State> + Clone + Send,
+{
     let bs = thread::scope(|scope| {
-        let mut handles = Vec::with_capacity(data.len() / 3 + 1);
-        data.chunks(3).for_each(|chunk| {
+        let mut handles = Vec::with_capacity(chunks.len());
+        chunks.for_each(|chunk| {
             let g = g.clone();
             handles.push(scope.spawn(move || g.fold(chunk)));
         });
@@ -46,8 +57,8 @@ where
 #[test]
 fn thread_scope_fold() {
     let data = vec![1, 2, 3, 4, 5, 6];
-    let r = par_fold(sum::<_, i32>(), sum::<_, i32>().map(mul3), &data);
+    let r = fold_slice(sum::<_, i32>(), sum::<_, i32>().map(mul3), &data);
     assert_eq!(r, 63);
-    let r = par_fold(sum::<_, usize>(), count::<i32>().map(mul3), &data);
+    let r = fold_slice(sum::<_, usize>(), count().map(mul3), &data);
     assert_eq!(r, 6);
 }
