@@ -27,18 +27,41 @@ fn check_send() {
 }
 
 #[derive(Debug, Clone)]
-struct FoldChunks<'scope, 'env, F> {
+struct Par<F, G> {
+    f: F,
+    g: G,
+}
+
+impl<F, G> Par<F, G> {
+    fn new(f: F, g: G) -> Self {
+        Par { f, g }
+    }
+
+    fn fold<'a, A, B, C>(self, chunks: Chunks<'a, A>) -> Result<C>
+    where
+        A: Sync,
+        B: Send + 'a,
+        F: Fold<B, C> + InitialState<<F as Fold<B, C>>::State>,
+        G: Fold<&'a A, B> + InitialState<<G as Fold<&'a A, B>>::State> + Clone + Send + 'a,
+    {
+        let gs = thread::scope(|scope| FoldInScope::new(scope, self.g).fold(chunks))?;
+        Ok(self.f.fold(gs))
+    }
+}
+
+#[derive(Debug, Clone)]
+struct FoldInScope<'scope, 'env, F> {
     scope: &'scope Scope<'scope, 'env>,
     f: F,
 }
 
-impl<'s, 'e, F> FoldChunks<'s, 'e, F> {
+impl<'s, 'e, F> FoldInScope<'s, 'e, F> {
     fn new(scope: &'s Scope<'s, 'e>, f: F) -> Self {
-        FoldChunks { scope, f }
+        FoldInScope { scope, f }
     }
 }
 
-impl<'s, 'e, A, T, B, F> Fold<T, Result<Vec<B>>> for FoldChunks<'s, 'e, F>
+impl<'s, 'e, A, T, B, F> Fold<T, Result<Vec<B>>> for FoldInScope<'s, 'e, F>
 where
     T: IntoIterator<Item = &'e A> + Send + 's,
     A: 'e,
@@ -58,27 +81,17 @@ where
     }
 }
 
-impl<'s, 'e, B, F> InitialState<Vec<ScopedJoinHandle<'s, B>>> for FoldChunks<'s, 'e, F> {
+impl<'s, 'e, B, F> InitialState<Vec<ScopedJoinHandle<'s, B>>> for FoldInScope<'s, 'e, F> {
     fn initial_state(&self, (lo, _hi): (usize, Option<usize>)) -> Vec<ScopedJoinHandle<'s, B>> {
         Vec::with_capacity(lo.saturating_add(1))
     }
 }
 
-fn fold_chunks<'a, A, B, C, F, G>(f: F, g: G, chunks: Chunks<'a, A>) -> Result<C>
-where
-    A: Sync,
-    B: Send + 'a,
-    F: Fold<B, C> + InitialState<<F as Fold<B, C>>::State>,
-    G: Fold<&'a A, B> + InitialState<<G as Fold<&'a A, B>>::State> + Clone + Send + 'a,
-{
-    thread::scope(|scope| FoldChunks::new(scope, g).fold(chunks)).map(|bs| f.fold(bs))
-}
-
 #[test]
 fn thread_scope_fold() {
     let data = vec![1, 2, 3, 4, 5, 6];
-    let r = fold_chunks(sum::<_, i32>(), sum::<_, i32>().map(mul3), data.chunks(3));
+    let r = Par::new(sum::<_, i32>(), sum::<_, i32>().map(mul3)).fold(data.chunks(3));
     assert_eq!(r.unwrap(), 63);
-    let r = fold_chunks(sum::<_, usize>(), count().map(mul3), data.chunks(4));
+    let r = Par::new(sum::<_, usize>(), count().map(mul3)).fold(data.chunks(4));
     assert_eq!(r.unwrap(), 6);
 }
