@@ -1,6 +1,4 @@
-use std::ops::ControlFlow::Break;
-
-use crate::{ControlFlow, InitialState, StepFn};
+use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Fuse<Sf> {

@@ -46,6 +46,12 @@ use seq::Seq;
 use take::Take;
 use zip::Zip;
 
+mod internal {
+    pub(crate) use std::ops::ControlFlow::*;
+
+    pub(crate) use crate::{ControlFlow, Fuse, InitialState, StepFn};
+}
+
 /// A composable left fold.
 pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.

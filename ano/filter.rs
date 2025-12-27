@@ -1,4 +1,4 @@
-use crate::{ControlFlow, InitialState, StepFn};
+use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Filter<Sf, P> {
@@ -21,7 +21,6 @@ where
 
     #[inline]
     fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
-        use std::ops::ControlFlow::Continue;
         if (self.pred)(&item) { self.sf.step(acc, item) } else { Continue(acc) }
     }
 

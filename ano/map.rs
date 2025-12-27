@@ -1,4 +1,4 @@
-use crate::{ControlFlow, InitialState, StepFn};
+use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Map<Sf, F> {

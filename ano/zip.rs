@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
-use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use crate::{ControlFlow, Fuse, InitialState, StepFn};
+use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Zip<'a, F, G> {

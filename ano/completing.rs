@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{ControlFlow, InitialState, StepFn};
+use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Completing<Sf, R, F> {
