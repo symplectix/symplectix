@@ -37,7 +37,9 @@ impl<F, G> Par<F, G> {
     fn new(f: F, g: G) -> Self {
         Par { f, g }
     }
+}
 
+impl<F, G> Par<F, G> {
     fn fold<'a, A, B, C>(self, chunks: Chunks<'a, A>) -> Result<C>
     where
         A: Sync,
