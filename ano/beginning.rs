@@ -1,35 +1,35 @@
 use crate::{ControlFlow, InitialState, StepFn};
 
 #[derive(Debug, Clone)]
-pub struct Beginning<Rf, F> {
-    rf: Rf,
+pub struct Beginning<Sf, F> {
+    sf: Sf,
     begin: F,
 }
 
-impl<Rf, F> Beginning<Rf, F> {
-    pub(crate) fn new(rf: Rf, begin: F) -> Self {
-        Beginning { rf, begin }
+impl<Sf, F> Beginning<Sf, F> {
+    pub(crate) fn new(sf: Sf, begin: F) -> Self {
+        Beginning { sf, begin }
     }
 }
 
-impl<A, B, Rf, F> StepFn<A, B> for Beginning<Rf, F>
+impl<Sf, F, A, B> StepFn<A, B> for Beginning<Sf, F>
 where
-    Rf: StepFn<A, B>,
+    Sf: StepFn<A, B>,
 {
-    type State = Rf::State;
+    type State = Sf::State;
 
     #[inline]
     fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
-        self.rf.step(acc, item)
+        self.sf.step(acc, item)
     }
 
     #[inline]
     fn complete(self, acc: Self::State) -> B {
-        self.rf.complete(acc)
+        self.sf.complete(acc)
     }
 }
 
-impl<T, Rf, F> InitialState<T> for Beginning<Rf, F>
+impl<Sf, F, T> InitialState<T> for Beginning<Sf, F>
 where
     F: Fn((usize, Option<usize>)) -> T,
 {

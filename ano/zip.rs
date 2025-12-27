@@ -28,7 +28,7 @@ macro_rules! step {
     };
 }
 
-impl<'a, A, B, C, F, G> StepFn<&'a A, (B, C)> for Zip<'a, F, G>
+impl<'a, F, G, A, B, C> StepFn<&'a A, (B, C)> for Zip<'a, F, G>
 where
     F: StepFn<&'a A, B>,
     G: StepFn<&'a A, C>,
@@ -45,7 +45,7 @@ where
     }
 }
 
-impl<A, B, C, F, G> StepFn<Rc<A>, (B, C)> for Zip<'_, F, G>
+impl<A, F, G, B, C> StepFn<Rc<A>, (B, C)> for Zip<'_, F, G>
 where
     F: StepFn<Rc<A>, B>,
     G: StepFn<Rc<A>, C>,
@@ -62,7 +62,7 @@ where
     }
 }
 
-impl<'a, A, B, F, G> InitialState<(A, B)> for Zip<'a, F, G>
+impl<'a, F, G, A, B> InitialState<(A, B)> for Zip<'a, F, G>
 where
     F: InitialState<A>,
     G: InitialState<B>,

@@ -11,8 +11,8 @@
 //! assert_eq!(sum.fold_with(0, 1..5), 10);
 //! ```
 //!
-//! You can chain to construct a fold pipeline like an iterator,
-//! but they are evaluated in reverse order.
+//! You can chain to construct a fold pipeline like an iterator
+//! by the `StepFn` trait, but they are evaluated in reverse order.
 //!
 //! ```
 //! use std::ops::ControlFlow::Continue;
@@ -51,7 +51,7 @@ pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
     type State;
 
-    fn fold_with<T>(self, init: Self::State, foldable: T) -> B
+    fn fold_with<T>(self, init: Self::State, iterable: T) -> B
     where
         Self: Sized,
         T: IntoIterator<Item = A>;
@@ -76,6 +76,7 @@ pub trait InitialState<St> {
 pub type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 
 pub trait StepFn<A, B> {
+    /// The accumulator, used to store the intermediate result while folding.
     type State;
 
     /// Runs just a one step of folding.

@@ -1,42 +1,42 @@
 use crate::{ControlFlow, InitialState, StepFn};
 
 #[derive(Debug, Clone)]
-pub struct Filter<Rf, P> {
-    rf: Rf,
+pub struct Filter<Sf, P> {
+    sf: Sf,
     pred: P,
 }
 
-impl<Rf, P> Filter<Rf, P> {
-    pub(crate) fn new(rf: Rf, pred: P) -> Self {
-        Filter { rf, pred }
+impl<Sf, P> Filter<Sf, P> {
+    pub(crate) fn new(sf: Sf, pred: P) -> Self {
+        Filter { sf, pred }
     }
 }
 
-impl<A, B, Rf, P> StepFn<A, B> for Filter<Rf, P>
+impl<Sf, P, A, B> StepFn<A, B> for Filter<Sf, P>
 where
-    Rf: StepFn<A, B>,
+    Sf: StepFn<A, B>,
     P: FnMut(&A) -> bool,
 {
-    type State = Rf::State;
+    type State = Sf::State;
 
     #[inline]
     fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         use std::ops::ControlFlow::Continue;
-        if (self.pred)(&item) { self.rf.step(acc, item) } else { Continue(acc) }
+        if (self.pred)(&item) { self.sf.step(acc, item) } else { Continue(acc) }
     }
 
     #[inline]
     fn complete(self, acc: Self::State) -> B {
-        self.rf.complete(acc)
+        self.sf.complete(acc)
     }
 }
 
-impl<St, Sf, P> InitialState<St> for Filter<Sf, P>
+impl<Sf, P, T> InitialState<T> for Filter<Sf, P>
 where
-    Sf: InitialState<St>,
+    Sf: InitialState<T>,
 {
     #[inline]
-    fn initial_state(&self, (_lo, hi): (usize, Option<usize>)) -> St {
-        self.rf.initial_state((0, hi))
+    fn initial_state(&self, (_lo, hi): (usize, Option<usize>)) -> T {
+        self.sf.initial_state((0, hi))
     }
 }

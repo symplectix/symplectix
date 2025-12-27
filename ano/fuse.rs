@@ -3,14 +3,14 @@ use std::ops::ControlFlow::Break;
 use crate::{ControlFlow, InitialState, StepFn};
 
 #[derive(Debug, Clone)]
-pub(crate) struct Fuse<Rf> {
-    rf: Rf,
+pub(crate) struct Fuse<Sf> {
+    sf: Sf,
     halt: bool,
 }
 
-impl<Rf> Fuse<Rf> {
-    pub(crate) fn new(rf: Rf) -> Self {
-        Fuse { rf, halt: false }
+impl<Sf> Fuse<Sf> {
+    pub(crate) fn new(sf: Sf) -> Self {
+        Fuse { sf, halt: false }
     }
 
     pub(crate) fn halted(&self) -> bool {
@@ -18,33 +18,33 @@ impl<Rf> Fuse<Rf> {
     }
 }
 
-impl<T, Rf> InitialState<T> for Fuse<Rf>
+impl<Sf, A, B> StepFn<A, B> for Fuse<Sf>
 where
-    Rf: InitialState<T>,
+    Sf: StepFn<A, B>,
 {
-    #[inline]
-    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
-        self.rf.initial_state(size_hint)
-    }
-}
+    type State = Sf::State;
 
-impl<A, B, Rf> StepFn<A, B> for Fuse<Rf>
-where
-    Rf: StepFn<A, B>,
-{
-    type State = Rf::State;
-
-    fn step(&mut self, acc: <Rf as StepFn<A, B>>::State, item: A) -> ControlFlow<<Rf as StepFn<A, B>>::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         if self.halt {
             Break(acc)
         } else {
-            let step = self.rf.step(acc, item);
+            let step = self.sf.step(acc, item);
             self.halt = step.is_break();
             step
         }
     }
 
     fn complete(self, acc: Self::State) -> B {
-        self.rf.complete(acc)
+        self.sf.complete(acc)
+    }
+}
+
+impl<Sf, T> InitialState<T> for Fuse<Sf>
+where
+    Sf: InitialState<T>,
+{
+    #[inline]
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
+        self.sf.initial_state(size_hint)
     }
 }

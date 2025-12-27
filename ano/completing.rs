@@ -3,42 +3,42 @@ use std::marker::PhantomData;
 use crate::{ControlFlow, InitialState, StepFn};
 
 #[derive(Debug, Clone)]
-pub struct Completing<Rf, B, F> {
-    rf: Rf,
-    _b: PhantomData<B>,
+pub struct Completing<Sf, R, F> {
+    sf: Sf,
+    _ret: PhantomData<R>,
     completing: F,
 }
 
-impl<Rf, B, F> Completing<Rf, B, F> {
-    pub(crate) fn new(rf: Rf, completing: F) -> Self {
-        Completing { _b: PhantomData, rf, completing }
+impl<Sf, R, F> Completing<Sf, R, F> {
+    pub(crate) fn new(sf: Sf, completing: F) -> Self {
+        Completing { sf, _ret: PhantomData, completing }
     }
 }
 
-impl<A, B, C, Rf, F> StepFn<A, C> for Completing<Rf, B, F>
+impl<Sf, R, F, A, B> StepFn<A, B> for Completing<Sf, R, F>
 where
-    Rf: StepFn<A, B>,
-    F: FnMut(B) -> C,
+    Sf: StepFn<A, R>,
+    F: FnMut(R) -> B,
 {
-    type State = Rf::State;
+    type State = Sf::State;
 
     #[inline]
     fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
-        self.rf.step(acc, item)
+        self.sf.step(acc, item)
     }
 
     #[inline]
-    fn complete(mut self, acc: Self::State) -> C {
-        (self.completing)(self.rf.complete(acc))
+    fn complete(mut self, acc: Self::State) -> B {
+        (self.completing)(self.sf.complete(acc))
     }
 }
 
-impl<T, B, Rf, F> InitialState<T> for Completing<Rf, B, F>
+impl<Sf, R, F, T> InitialState<T> for Completing<Sf, R, F>
 where
-    Rf: InitialState<T>,
+    Sf: InitialState<T>,
 {
     #[inline]
     fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
-        self.rf.initial_state(size_hint)
+        self.sf.initial_state(size_hint)
     }
 }

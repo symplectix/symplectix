@@ -14,7 +14,7 @@ impl<F, G> Seq<F, G> {
     }
 }
 
-impl<A, B, C, F, G> StepFn<A, (B, C)> for Seq<F, G>
+impl<F, G, A, B, C> StepFn<A, (B, C)> for Seq<F, G>
 where
     F: StepFn<A, B>,
     G: StepFn<A, C>,
@@ -43,7 +43,7 @@ where
     }
 }
 
-impl<A, B, F, G> InitialState<(A, B)> for Seq<F, G>
+impl<F, G, A, B> InitialState<(A, B)> for Seq<F, G>
 where
     F: InitialState<A>,
     G: InitialState<B>,
