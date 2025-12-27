@@ -47,21 +47,22 @@ use take::Take;
 use zip::Zip;
 
 /// A composable left fold.
-pub trait Fold<T, R> {
+pub trait Fold<A, B> {
     /// The accumulator, used to store the intermediate result while folding.
     type State;
 
-    fn fold_with(self, init: Self::State, foldable: T) -> R
+    fn fold_with<T>(self, init: Self::State, foldable: T) -> B
     where
-        Self: Sized;
+        Self: Sized,
+        T: IntoIterator<Item = A>;
 
     #[inline]
-    fn fold(self, foldable: T) -> R
+    fn fold<T>(self, iterable: T) -> B
     where
-        Self: Sized + Fold<T::IntoIter, R> + InitialState<<Self as Fold<T::IntoIter, R>>::State>,
-        T: IntoIterator,
+        Self: Sized + InitialState<Self::State>,
+        T: IntoIterator<Item = A>,
     {
-        let iter = foldable.into_iter();
+        let iter = iterable.into_iter();
         let init = self.initial_state(iter.size_hint());
         self.fold_with(init, iter)
     }
@@ -69,25 +70,6 @@ pub trait Fold<T, R> {
 
 pub trait InitialState<St> {
     fn initial_state(&self, size_hint: (usize, Option<usize>)) -> St;
-}
-
-impl<A, B, T, Sf> Fold<T, B> for Sf
-where
-    T: IntoIterator<Item = A>,
-    Sf: StepFn<A, B>,
-{
-    type State = <Sf as StepFn<A, B>>::State;
-
-    #[inline]
-    fn fold_with(mut self, init: Self::State, iterable: T) -> B
-    where
-        Self: Sized,
-    {
-        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
-            Continue(c) => self.complete(c),
-            Break(b) => self.complete(b),
-        }
-    }
 }
 
 /// The result of [Fold.step].
@@ -171,5 +153,24 @@ where
     #[inline]
     fn complete(self, acc: Self::State) -> B {
         acc
+    }
+}
+
+impl<A, B, Sf> Fold<A, B> for Sf
+where
+    Sf: StepFn<A, B>,
+{
+    type State = <Sf as StepFn<A, B>>::State;
+
+    #[inline]
+    fn fold_with<T>(mut self, init: Self::State, iterable: T) -> B
+    where
+        Self: Sized,
+        T: IntoIterator<Item = A>,
+    {
+        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
+            Continue(c) => self.complete(c),
+            Break(b) => self.complete(b),
+        }
     }
 }
