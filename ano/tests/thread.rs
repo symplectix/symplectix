@@ -38,15 +38,16 @@ impl<'s, 'e, G> FoldChunks<'s, 'e, G> {
     }
 }
 
-impl<'s, 'e, A, B, G> Fold<&'e [A], Vec<B>> for FoldChunks<'s, 'e, G>
+impl<'s, 'e, A, T, B, G> Fold<T, Vec<B>> for FoldChunks<'s, 'e, G>
 where
-    A: Sync + 's,
-    B: Send + 's,
+    T: IntoIterator<Item = &'e A> + Send + 's,
+    A: 'e,
+    B: Send + 'e,
     G: Fold<&'e A, B> + InitialState<<G as Fold<&'e A, B>>::State> + Clone + Send + 's,
 {
     type State = Vec<ScopedJoinHandle<'s, B>>;
 
-    fn step(&mut self, mut acc: Self::State, item: &'e [A]) -> ano::Step<Self::State> {
+    fn step(&mut self, mut acc: Self::State, item: T) -> ano::Step<Self::State> {
         let sf = self.g.clone();
         acc.push(self.scope.spawn(move || sf.fold(item)));
         Continue(acc)
