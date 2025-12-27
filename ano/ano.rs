@@ -91,7 +91,7 @@ where
 }
 
 /// The result of [Fold.step].
-pub type Step<T> = std::ops::ControlFlow<T, T>;
+pub type ControlFlow<T> = std::ops::ControlFlow<T, T>;
 
 pub trait StepFn<A, B> {
     type State;
@@ -100,7 +100,7 @@ pub trait StepFn<A, B> {
     // TODO: consider to use Try instead of ControlFlow.
     // https://doc.rust-lang.org/std/ops/trait.Try.html
     // https://github.com/rust-lang/rust/issues/84277
-    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State>;
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State>;
 
     /// Invoked when folding is complete.
     fn complete(self, acc: Self::State) -> B;
@@ -159,12 +159,12 @@ pub trait StepFn<A, B> {
 
 impl<A, B, F> StepFn<A, B> for F
 where
-    F: FnMut(B, A) -> Step<B>,
+    F: FnMut(B, A) -> ControlFlow<B>,
 {
     type State = B;
 
     #[inline]
-    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         (self)(acc, item)
     }
 

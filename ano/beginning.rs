@@ -1,4 +1,4 @@
-use crate::{InitialState, Step, StepFn};
+use crate::{ControlFlow, InitialState, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Beginning<Rf, F> {
@@ -19,7 +19,7 @@ where
     type State = Rf::State;
 
     #[inline]
-    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         self.rf.step(acc, item)
     }
 

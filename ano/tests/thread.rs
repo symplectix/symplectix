@@ -73,7 +73,7 @@ where
 {
     type State = Vec<ScopedJoinHandle<'s, B>>;
 
-    fn step(&mut self, mut acc: Self::State, item: T) -> ano::Step<Self::State> {
+    fn step(&mut self, mut acc: Self::State, item: T) -> ano::ControlFlow<Self::State> {
         let f = self.f.clone();
         acc.push(self.scope.spawn(move || f.fold(item)));
         Continue(acc)
@@ -94,6 +94,8 @@ impl<'s, 'e, B, F> InitialState<Vec<ScopedJoinHandle<'s, B>>> for FoldInScope<'s
 fn thread_scope_fold() {
     let data = vec![1, 2, 3, 4, 5, 6];
     let r = Par::new(sum::<_, i32>(), sum::<_, i32>().map(mul3)).fold(data.chunks(3));
+    assert_eq!(r.unwrap(), 63);
+    let r = Par::new(sum::<_, i32>(), sum::<_, i32>().map(mul3)).fold(data.chunks(7));
     assert_eq!(r.unwrap(), 63);
     let r = Par::new(sum::<_, usize>(), count().map(mul3)).fold(data.chunks(4));
     assert_eq!(r.unwrap(), 6);

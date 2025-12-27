@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use crate::{Fuse, InitialState, Step, StepFn};
+use crate::{ControlFlow, Fuse, InitialState, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Zip<'a, F, G> {
@@ -35,7 +35,7 @@ where
 {
     type State = (<F as StepFn<&'a A, B>>::State, <G as StepFn<&'a A, C>>::State);
 
-    fn step(&mut self, acc: Self::State, item: &'a A) -> Step<Self::State> {
+    fn step(&mut self, acc: Self::State, item: &'a A) -> ControlFlow<Self::State> {
         step!((self.f.step(acc.0, item), self.g.step(acc.1, item)))
     }
 
@@ -52,7 +52,7 @@ where
 {
     type State = (<F as StepFn<Rc<A>, B>>::State, <G as StepFn<Rc<A>, C>>::State);
 
-    fn step(&mut self, acc: Self::State, item: Rc<A>) -> Step<Self::State> {
+    fn step(&mut self, acc: Self::State, item: Rc<A>) -> ControlFlow<Self::State> {
         step!((self.f.step(acc.0, item.clone()), self.g.step(acc.1, item)))
     }
 

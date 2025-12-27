@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{Fuse, InitialState, Step, StepFn};
+use crate::{ControlFlow, Fuse, InitialState, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Seq<F, G> {
@@ -21,7 +21,7 @@ where
 {
     type State = (<F as StepFn<A, B>>::State, <G as StepFn<A, C>>::State);
 
-    fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
+    fn step(&mut self, acc: Self::State, item: A) -> ControlFlow<Self::State> {
         if !self.f.halted() {
             return match self.f.step(acc.0, item) {
                 Continue(a) => Continue((a, acc.1)),

@@ -63,7 +63,7 @@ where
     type State = bool;
 
     #[inline]
-    fn step(&mut self, _acc: Self::State, item: A) -> ano::Step<Self::State> {
+    fn step(&mut self, _acc: Self::State, item: A) -> ano::ControlFlow<Self::State> {
         if (self.pred)(&item) { Break(true) } else { Continue(false) }
     }
 
