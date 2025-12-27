@@ -1,9 +1,10 @@
 #![allow(missing_docs)]
 
-use ano::{Fold, InitialState};
 use std::ops::ControlFlow::*;
 use std::slice::Chunks;
 use std::thread::{self, Result, Scope, ScopedJoinHandle};
+
+use ano::{Fold, InitialState, StepFn};
 
 mod helper;
 use helper::*;
@@ -41,8 +42,8 @@ impl<F, G> Par<F, G> {
     where
         A: Sync,
         B: Send + 'a,
-        F: Fold<B, C> + InitialState<<F as Fold<B, C>>::State>,
-        G: Fold<&'a A, B> + InitialState<<G as Fold<&'a A, B>>::State> + Clone + Send + 'a,
+        F: StepFn<B, C> + InitialState<<F as StepFn<B, C>>::State>,
+        G: StepFn<&'a A, B> + InitialState<<G as StepFn<&'a A, B>>::State> + Clone + Send + 'a,
     {
         let gs = thread::scope(|scope| FoldInScope::new(scope, self.g).fold(chunks))?;
         Ok(self.f.fold(gs))
@@ -61,12 +62,12 @@ impl<'s, 'e, F> FoldInScope<'s, 'e, F> {
     }
 }
 
-impl<'s, 'e, A, T, B, F> Fold<T, Result<Vec<B>>> for FoldInScope<'s, 'e, F>
+impl<'s, 'e, A, T, B, F> StepFn<T, Result<Vec<B>>> for FoldInScope<'s, 'e, F>
 where
     T: IntoIterator<Item = &'e A> + Send + 's,
     A: 'e,
     B: Send + 's,
-    F: Fold<&'e A, B> + InitialState<<F as Fold<&'e A, B>>::State> + Clone + Send + 's,
+    F: StepFn<&'e A, B> + InitialState<<F as StepFn<&'e A, B>>::State> + Clone + Send + 's,
 {
     type State = Vec<ScopedJoinHandle<'s, B>>;
 

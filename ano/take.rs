@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{Fold, InitialState, Step};
+use crate::{InitialState, Step, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Take<Rf> {
@@ -14,9 +14,9 @@ impl<Rf> Take<Rf> {
     }
 }
 
-impl<A, B, Rf> Fold<A, B> for Take<Rf>
+impl<A, B, Rf> StepFn<A, B> for Take<Rf>
 where
-    Rf: Fold<A, B>,
+    Rf: StepFn<A, B>,
 {
     type State = Rf::State;
 
@@ -44,12 +44,12 @@ where
     }
 }
 
-impl<T, Rf> InitialState<T> for Take<Rf>
+impl<St, Sf> InitialState<St> for Take<Sf>
 where
-    Rf: InitialState<T>,
+    Sf: InitialState<St>,
 {
     #[inline]
-    fn initial_state(&self, _size_hint: (usize, Option<usize>)) -> T {
+    fn initial_state(&self, _size_hint: (usize, Option<usize>)) -> St {
         self.rf.initial_state((0, Some(self.count)))
     }
 }

@@ -1,4 +1,4 @@
-use crate::{Fold, InitialState, Step};
+use crate::{InitialState, Step, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Map<Rf, F> {
@@ -12,9 +12,9 @@ impl<Rf, F> Map<Rf, F> {
     }
 }
 
-impl<A, B, C, Rf, F> Fold<A, C> for Map<Rf, F>
+impl<A, B, C, Rf, F> StepFn<A, C> for Map<Rf, F>
 where
-    Rf: Fold<B, C>,
+    Rf: StepFn<B, C>,
     F: FnMut(A) -> B,
 {
     type State = Rf::State;
@@ -30,12 +30,12 @@ where
     }
 }
 
-impl<T, Rf, F> InitialState<T> for Map<Rf, F>
+impl<St, Sf, F> InitialState<St> for Map<Sf, F>
 where
-    Rf: InitialState<T>,
+    Sf: InitialState<St>,
 {
     #[inline]
-    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> St {
         self.rf.initial_state(size_hint)
     }
 }

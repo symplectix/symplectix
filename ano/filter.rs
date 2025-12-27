@@ -1,4 +1,4 @@
-use crate::{Fold, InitialState, Step};
+use crate::{InitialState, Step, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Filter<Rf, P> {
@@ -12,9 +12,9 @@ impl<Rf, P> Filter<Rf, P> {
     }
 }
 
-impl<A, B, Rf, P> Fold<A, B> for Filter<Rf, P>
+impl<A, B, Rf, P> StepFn<A, B> for Filter<Rf, P>
 where
-    Rf: Fold<A, B>,
+    Rf: StepFn<A, B>,
     P: FnMut(&A) -> bool,
 {
     type State = Rf::State;
@@ -31,12 +31,12 @@ where
     }
 }
 
-impl<T, Rf, P> InitialState<T> for Filter<Rf, P>
+impl<St, Sf, P> InitialState<St> for Filter<Sf, P>
 where
-    Rf: InitialState<T>,
+    Sf: InitialState<St>,
 {
     #[inline]
-    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T {
-        self.rf.initial_state(size_hint)
+    fn initial_state(&self, (_lo, hi): (usize, Option<usize>)) -> St {
+        self.rf.initial_state((0, hi))
     }
 }

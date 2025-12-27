@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{Fold, InitialState, Step};
+use crate::{InitialState, Step, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Completing<Rf, B, F> {
@@ -15,9 +15,9 @@ impl<Rf, B, F> Completing<Rf, B, F> {
     }
 }
 
-impl<A, B, C, Rf, F> Fold<A, C> for Completing<Rf, B, F>
+impl<A, B, C, Rf, F> StepFn<A, C> for Completing<Rf, B, F>
 where
-    Rf: Fold<A, B>,
+    Rf: StepFn<A, B>,
     F: FnMut(B) -> C,
 {
     type State = Rf::State;

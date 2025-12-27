@@ -1,4 +1,4 @@
-use crate::{Fold, InitialState, Step};
+use crate::{InitialState, Step, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Beginning<Rf, F> {
@@ -12,9 +12,9 @@ impl<Rf, F> Beginning<Rf, F> {
     }
 }
 
-impl<A, B, Rf, F> Fold<A, B> for Beginning<Rf, F>
+impl<A, B, Rf, F> StepFn<A, B> for Beginning<Rf, F>
 where
-    Rf: Fold<A, B>,
+    Rf: StepFn<A, B>,
 {
     type State = Rf::State;
 

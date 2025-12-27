@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use crate::{Fold, Fuse, InitialState, Step};
+use crate::{Fuse, InitialState, Step, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Zip<'a, F, G> {
@@ -28,12 +28,12 @@ macro_rules! step {
     };
 }
 
-impl<'a, A, B, C, F, G> Fold<&'a A, (B, C)> for Zip<'a, F, G>
+impl<'a, A, B, C, F, G> StepFn<&'a A, (B, C)> for Zip<'a, F, G>
 where
-    F: Fold<&'a A, B>,
-    G: Fold<&'a A, C>,
+    F: StepFn<&'a A, B>,
+    G: StepFn<&'a A, C>,
 {
-    type State = (<F as Fold<&'a A, B>>::State, <G as Fold<&'a A, C>>::State);
+    type State = (<F as StepFn<&'a A, B>>::State, <G as StepFn<&'a A, C>>::State);
 
     fn step(&mut self, acc: Self::State, item: &'a A) -> Step<Self::State> {
         step!((self.f.step(acc.0, item), self.g.step(acc.1, item)))
@@ -45,12 +45,12 @@ where
     }
 }
 
-impl<A, B, C, F, G> Fold<Rc<A>, (B, C)> for Zip<'_, F, G>
+impl<A, B, C, F, G> StepFn<Rc<A>, (B, C)> for Zip<'_, F, G>
 where
-    F: Fold<Rc<A>, B>,
-    G: Fold<Rc<A>, C>,
+    F: StepFn<Rc<A>, B>,
+    G: StepFn<Rc<A>, C>,
 {
-    type State = (<F as Fold<Rc<A>, B>>::State, <G as Fold<Rc<A>, C>>::State);
+    type State = (<F as StepFn<Rc<A>, B>>::State, <G as StepFn<Rc<A>, C>>::State);
 
     fn step(&mut self, acc: Self::State, item: Rc<A>) -> Step<Self::State> {
         step!((self.f.step(acc.0, item.clone()), self.g.step(acc.1, item)))

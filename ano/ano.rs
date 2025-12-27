@@ -16,7 +16,7 @@
 //!
 //! ```
 //! use std::ops::ControlFlow::Continue;
-//! use ano::Fold;
+//! use ano::{Fold, StepFn};
 //!
 //! let data = vec![1, 2, 3, 4, 5];
 //! let sum = |acc, item| Continue(acc + item);
@@ -46,12 +46,54 @@ use seq::Seq;
 use take::Take;
 use zip::Zip;
 
+/// A composable left fold.
+pub trait Fold<T, R> {
+    /// The accumulator, used to store the intermediate result while folding.
+    type State;
+
+    fn fold_with(self, init: Self::State, foldable: T) -> R
+    where
+        Self: Sized;
+
+    #[inline]
+    fn fold(self, foldable: T) -> R
+    where
+        Self: Sized + Fold<T::IntoIter, R> + InitialState<<Self as Fold<T::IntoIter, R>>::State>,
+        T: IntoIterator,
+    {
+        let iter = foldable.into_iter();
+        let init = self.initial_state(iter.size_hint());
+        self.fold_with(init, iter)
+    }
+}
+
+pub trait InitialState<St> {
+    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> St;
+}
+
+impl<A, B, T, Sf> Fold<T, B> for Sf
+where
+    T: IntoIterator<Item = A>,
+    Sf: StepFn<A, B>,
+{
+    type State = <Sf as StepFn<A, B>>::State;
+
+    #[inline]
+    fn fold_with(mut self, init: Self::State, iterable: T) -> B
+    where
+        Self: Sized,
+    {
+        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
+            Continue(c) => self.complete(c),
+            Break(b) => self.complete(b),
+        }
+    }
+}
+
 /// The result of [Fold.step].
 pub type Step<T> = std::ops::ControlFlow<T, T>;
 
-/// A composable left fold.
-pub trait Fold<A, B> {
-    /// The accumulator, used to store the intermediate result while folding.
+pub trait StepFn<A, B> {
     type State;
 
     /// Runs just a one step of folding.
@@ -62,29 +104,6 @@ pub trait Fold<A, B> {
 
     /// Invoked when folding is complete.
     fn complete(self, acc: Self::State) -> B;
-
-    #[inline]
-    fn fold<It>(self, iterable: It) -> B
-    where
-        Self: Sized + InitialState<Self::State>,
-        It: IntoIterator<Item = A>,
-    {
-        let iter = iterable.into_iter();
-        let init = self.initial_state(iter.size_hint());
-        self.fold_with(init, iter)
-    }
-
-    #[inline]
-    fn fold_with<It>(mut self, init: Self::State, iterable: It) -> B
-    where
-        Self: Sized,
-        It: IntoIterator<Item = A>,
-    {
-        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
-            Continue(c) => self.complete(c),
-            Break(b) => self.complete(b),
-        }
-    }
 
     fn beginning<F>(self, f: F) -> Beginning<Self, F>
     where
@@ -138,11 +157,7 @@ pub trait Fold<A, B> {
     }
 }
 
-pub trait InitialState<T> {
-    fn initial_state(&self, size_hint: (usize, Option<usize>)) -> T;
-}
-
-impl<A, B, F> Fold<A, B> for F
+impl<A, B, F> StepFn<A, B> for F
 where
     F: FnMut(B, A) -> Step<B>,
 {

@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::Break;
 
-use crate::{Fold, InitialState, Step};
+use crate::{InitialState, Step, StepFn};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Fuse<Rf> {
@@ -28,13 +28,13 @@ where
     }
 }
 
-impl<A, B, Rf> Fold<A, B> for Fuse<Rf>
+impl<A, B, Rf> StepFn<A, B> for Fuse<Rf>
 where
-    Rf: Fold<A, B>,
+    Rf: StepFn<A, B>,
 {
     type State = Rf::State;
 
-    fn step(&mut self, acc: <Rf as Fold<A, B>>::State, item: A) -> Step<<Rf as Fold<A, B>>::State> {
+    fn step(&mut self, acc: <Rf as StepFn<A, B>>::State, item: A) -> Step<<Rf as StepFn<A, B>>::State> {
         if self.halt {
             Break(acc)
         } else {

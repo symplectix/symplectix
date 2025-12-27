@@ -1,6 +1,6 @@
 use std::ops::ControlFlow::*;
 
-use crate::{Fold, Fuse, InitialState, Step};
+use crate::{Fuse, InitialState, Step, StepFn};
 
 #[derive(Debug, Clone)]
 pub struct Seq<F, G> {
@@ -14,12 +14,12 @@ impl<F, G> Seq<F, G> {
     }
 }
 
-impl<A, B, C, F, G> Fold<A, (B, C)> for Seq<F, G>
+impl<A, B, C, F, G> StepFn<A, (B, C)> for Seq<F, G>
 where
-    F: Fold<A, B>,
-    G: Fold<A, C>,
+    F: StepFn<A, B>,
+    G: StepFn<A, C>,
 {
-    type State = (<F as Fold<A, B>>::State, <G as Fold<A, C>>::State);
+    type State = (<F as StepFn<A, B>>::State, <G as StepFn<A, C>>::State);
 
     fn step(&mut self, acc: Self::State, item: A) -> Step<Self::State> {
         if !self.f.halted() {
