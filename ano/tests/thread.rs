@@ -3,7 +3,7 @@
 use ano::{Fold, InitialState};
 use std::ops::ControlFlow::*;
 use std::slice::Chunks;
-use std::thread::{self, Scope, ScopedJoinHandle};
+use std::thread::{self, Result, Scope, ScopedJoinHandle};
 
 mod helper;
 use helper::*;
@@ -27,70 +27,58 @@ fn check_send() {
 }
 
 #[derive(Debug, Clone)]
-struct FoldChunks<'scope, 'env, G> {
+struct FoldChunks<'scope, 'env, F> {
     scope: &'scope Scope<'scope, 'env>,
-    g: G,
+    f: F,
 }
 
-impl<'s, 'e, G> FoldChunks<'s, 'e, G> {
-    fn new(scope: &'s Scope<'s, 'e>, g: G) -> Self {
-        FoldChunks { scope, g }
+impl<'s, 'e, F> FoldChunks<'s, 'e, F> {
+    fn new(scope: &'s Scope<'s, 'e>, f: F) -> Self {
+        FoldChunks { scope, f }
     }
 }
 
-impl<'s, 'e, A, T, B, G> Fold<T, Vec<B>> for FoldChunks<'s, 'e, G>
+impl<'s, 'e, A, T, B, F> Fold<T, Result<Vec<B>>> for FoldChunks<'s, 'e, F>
 where
     T: IntoIterator<Item = &'e A> + Send + 's,
     A: 'e,
-    B: Send + 'e,
-    G: Fold<&'e A, B> + InitialState<<G as Fold<&'e A, B>>::State> + Clone + Send + 's,
+    B: Send + 's,
+    F: Fold<&'e A, B> + InitialState<<F as Fold<&'e A, B>>::State> + Clone + Send + 's,
 {
     type State = Vec<ScopedJoinHandle<'s, B>>;
 
     fn step(&mut self, mut acc: Self::State, item: T) -> ano::Step<Self::State> {
-        let sf = self.g.clone();
-        acc.push(self.scope.spawn(move || sf.fold(item)));
+        let f = self.f.clone();
+        acc.push(self.scope.spawn(move || f.fold(item)));
         Continue(acc)
     }
 
-    fn complete(self, acc: Self::State) -> Vec<B> {
-        acc.into_iter().map(|h| h.join().unwrap()).collect()
+    fn complete(self, acc: Self::State) -> Result<Vec<B>> {
+        acc.into_iter().map(|h| h.join()).collect()
     }
 }
 
-impl<'s, 'e, B, G> InitialState<Vec<ScopedJoinHandle<'s, B>>> for FoldChunks<'s, 'e, G> {
+impl<'s, 'e, B, F> InitialState<Vec<ScopedJoinHandle<'s, B>>> for FoldChunks<'s, 'e, F> {
     fn initial_state(&self, (lo, _hi): (usize, Option<usize>)) -> Vec<ScopedJoinHandle<'s, B>> {
         Vec::with_capacity(lo.saturating_add(1))
     }
 }
 
-fn fold_slice<'a, 'b, A, B, C, F, G>(f: F, g: G, data: &'a [A]) -> C
-where
-    'a: 'b,
-    A: Sync,
-    B: Send + 'b,
-    F: Fold<B, C> + InitialState<<F as Fold<B, C>>::State>,
-    G: Fold<&'b A, B> + InitialState<<G as Fold<&'b A, B>>::State> + Clone + Send + 'b,
-{
-    fold_chunks(f, g, data.chunks(3))
-}
-
-fn fold_chunks<'a, A, B, C, F, G>(f: F, g: G, chunks: Chunks<'a, A>) -> C
+fn fold_chunks<'a, A, B, C, F, G>(f: F, g: G, chunks: Chunks<'a, A>) -> Result<C>
 where
     A: Sync,
     B: Send + 'a,
     F: Fold<B, C> + InitialState<<F as Fold<B, C>>::State>,
     G: Fold<&'a A, B> + InitialState<<G as Fold<&'a A, B>>::State> + Clone + Send + 'a,
 {
-    let bs = thread::scope(|scope| FoldChunks::new(scope, g).fold(chunks));
-    f.fold(bs)
+    thread::scope(|scope| FoldChunks::new(scope, g).fold(chunks)).map(|bs| f.fold(bs))
 }
 
 #[test]
 fn thread_scope_fold() {
     let data = vec![1, 2, 3, 4, 5, 6];
-    let r = fold_slice(sum::<_, i32>(), sum::<_, i32>().map(mul3), &data);
-    assert_eq!(r, 63);
-    let r = fold_slice(sum::<_, usize>(), count().map(mul3), &data);
-    assert_eq!(r, 6);
+    let r = fold_chunks(sum::<_, i32>(), sum::<_, i32>().map(mul3), data.chunks(3));
+    assert_eq!(r.unwrap(), 63);
+    let r = fold_chunks(sum::<_, usize>(), count().map(mul3), data.chunks(4));
+    assert_eq!(r.unwrap(), 6);
 }
