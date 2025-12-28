@@ -35,7 +35,7 @@ where
     }
 }
 
-impl<'a, T, B, F, G> InitialState<T> for Par<B, F, G>
+impl<T, B, F, G> InitialState<T> for Par<B, F, G>
 where
     F: InitialState<T>,
 {
