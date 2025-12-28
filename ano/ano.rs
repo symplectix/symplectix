@@ -33,6 +33,7 @@ mod completing;
 mod filter;
 mod fuse;
 mod map;
+mod par;
 mod seq;
 mod take;
 mod zip;
@@ -42,6 +43,7 @@ use completing::Completing;
 use filter::Filter;
 use fuse::Fuse;
 use map::Map;
+use par::Par;
 use seq::Seq;
 use take::Take;
 use zip::Zip;
@@ -49,7 +51,7 @@ use zip::Zip;
 mod internal {
     pub(crate) use std::ops::ControlFlow::*;
 
-    pub(crate) use crate::{ControlFlow, Fuse, InitialState, StepFn};
+    pub(crate) use crate::{ControlFlow, Fold, Fuse, InitialState, StepFn};
 }
 
 /// A composable left fold.
@@ -144,6 +146,13 @@ pub trait StepFn<A, B> {
     {
         Zip::new(self, that)
     }
+
+    fn par<That>(self, that: That) -> Par<A, Self, That>
+    where
+        Self: Sized,
+    {
+        Par::new(self, that)
+    }
 }
 
 impl<A, B, F> StepFn<A, B> for F
@@ -163,21 +172,118 @@ where
     }
 }
 
-impl<A, B, Sf> Fold<A, B> for Sf
-where
-    Sf: StepFn<A, B>,
-{
-    type State = <Sf as StepFn<A, B>>::State;
+// The bracket impl below cause conflicting implementations error:
+// error[E0119]: conflicting implementations of trait `Fold<&[_], _>` for type `Par<_, _>`
+// downstream crates may implement trait `StepFn<&[_], _>` for type `Par<_, _>`
+//
+// impl<A, B, Sf> Fold<A, B> for Sf
+// where
+//     Sf: StepFn<A, B>,
+// {
+//     type State = <Sf as StepFn<A, B>>::State;
+//     def_fold_with!();
+// }
+//
+// n.b. Par does not implement StepFn intentionaly.
+//
+// All StepFn should be able to automatically implement Fold,
+// but this error prevents it from doing so. This is very annoying.
+// The boilerplate below is a workaround to avoid this error.
+//
+// See also: https://github.com/rust-lang/rust/issues/48869
 
-    #[inline]
-    fn fold_with<T>(mut self, init: Self::State, iterable: T) -> B
-    where
-        Self: Sized,
-        T: IntoIterator<Item = A>,
-    {
-        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
-            Continue(c) => self.complete(c),
-            Break(b) => self.complete(b),
+macro_rules! def_fold_with {
+    ($Item: ty) => {
+        #[inline]
+        fn fold_with<Iter>(mut self, init: Self::State, iterable: Iter) -> B
+        where
+            Self: Sized,
+            Iter: IntoIterator<Item = $Item>,
+        {
+            match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
+                Continue(c) => self.complete(c),
+                Break(b) => self.complete(b),
+            }
         }
-    }
+    };
+}
+
+impl<A, B, F> Fold<A, B> for F
+where
+    F: FnMut(B, A) -> ControlFlow<B>,
+{
+    type State = B;
+    def_fold_with!(A);
+}
+
+impl<Sf, F, A, B> Fold<A, B> for Beginning<Sf, F>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
+}
+
+impl<Sf, R, F, A, B> Fold<A, B> for Completing<Sf, R, F>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
+}
+
+impl<Sf, A, B> Fold<A, B> for Fuse<Sf>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
+}
+
+impl<Sf, F, A, B> Fold<A, B> for Map<Sf, F>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
+}
+
+impl<Sf, P, A, B> Fold<A, B> for Filter<Sf, P>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
+}
+
+impl<Sf, A, B> Fold<A, B> for Take<Sf>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
+}
+
+impl<F, G, A, B> Fold<A, B> for Seq<F, G>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
+}
+
+impl<'a, F, G, A, B> Fold<A, B> for Zip<'a, F, G>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
+}
+
+impl<'s, 'e, A, B, F> Fold<A, B> for par::FoldInScope<'s, 'e, F>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    def_fold_with!(A);
 }

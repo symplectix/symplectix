@@ -5,7 +5,7 @@ use std::ops::ControlFlow::*;
 use std::ops::{Add, Mul, Rem};
 use std::rc::Rc;
 
-use ano::{InitialState, StepFn};
+use ano::{Fold, InitialState, StepFn};
 
 pub fn pow2(x: i32) -> i32 {
     x.pow(2)
@@ -33,7 +33,10 @@ where
     x.rem(2) == 0
 }
 
-pub fn conj<A>() -> impl StepFn<A, Vec<A>, State = Vec<A>> + InitialState<Vec<A>> + Clone {
+pub trait FoldFn<A, B>: Fold<A, B, State = B> + StepFn<A, B, State = B> + InitialState<B> {}
+impl<A, B, T> FoldFn<A, B> for T where T: Fold<A, B, State = B> + StepFn<A, B, State = B> + InitialState<B> {}
+
+pub fn conj<A>() -> impl FoldFn<A, Vec<A>> + Clone {
     let f = |mut acc: Vec<A>, item| {
         acc.push(item);
         Continue(acc)
@@ -41,7 +44,7 @@ pub fn conj<A>() -> impl StepFn<A, Vec<A>, State = Vec<A>> + InitialState<Vec<A>
     f.beginning(|(lo, _hi)| Vec::with_capacity(lo.saturating_add(1)))
 }
 
-pub fn all<A, P>(mut pred: P) -> impl StepFn<A, bool, State = bool> + InitialState<bool>
+pub fn all<A, P>(mut pred: P) -> impl FoldFn<A, bool>
 where
     P: FnMut(&A) -> bool,
 {
@@ -56,6 +59,22 @@ pub struct Any<P> {
     pred: P,
 }
 
+impl<A, B, P> Fold<A, B> for Any<P>
+where
+    Self: StepFn<A, B>,
+{
+    type State = <Self as StepFn<A, B>>::State;
+    fn fold_with<T>(mut self, init: Self::State, iterable: T) -> B
+    where
+        Self: Sized,
+        T: IntoIterator<Item = A>,
+    {
+        match iterable.into_iter().try_fold(init, |acc, v| self.step(acc, v)) {
+            Continue(c) => self.complete(c),
+            Break(b) => self.complete(b),
+        }
+    }
+}
 impl<A, P> StepFn<A, bool> for Any<P>
 where
     P: FnMut(&A) -> bool,
@@ -91,12 +110,12 @@ where
     // f.using(|_| false)
 }
 
-pub fn count<A>() -> impl StepFn<A, usize, State = usize> + InitialState<usize> + Clone {
+pub fn count<A>() -> impl FoldFn<A, usize> + Clone {
     let f = |acc: usize, _item: A| Continue(acc + 1);
     f.beginning(|_| 0)
 }
 
-pub fn sum<A, B>() -> impl StepFn<A, B, State = B> + InitialState<B> + Clone
+pub fn sum<A, B>() -> impl FoldFn<A, B> + Clone
 where
     B: Default + Add<A, Output = B>,
 {
@@ -104,7 +123,7 @@ where
     f.beginning(|_| B::default())
 }
 
-pub fn sum_rc<A, B>() -> impl StepFn<Rc<A>, B, State = B> + InitialState<B> + Clone
+pub fn sum_rc<A, B>() -> impl FoldFn<Rc<A>, B> + Clone
 where
     A: Copy,
     B: Default + Add<A, Output = B>,
