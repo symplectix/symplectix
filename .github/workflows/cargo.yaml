@@ -14,8 +14,9 @@ jobs:
     strategy:
       matrix:
         os:
-          # - ubuntu-22.04
           - ubuntu-24.04
+        profile:
+          - release
 
     runs-on: ${{ matrix.os }}
 
@@ -25,13 +26,23 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/registry
+            ~/.cargo/bin
             ~/.cargo/git
+            ~/.cargo/registry
             target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('/Cargo.lock') }}
+
+      - name: Lint
+        run: cargo clippy --profile ${{ matrix.profile }} --all-targets --all-features
+
+      - name: Format
+        run: cargo +nightly fmt --all --check
+
+      - name: Check
+        run: cargo check --profile ${{ matrix.profile }}
 
       - name: Build
-        run: cargo build --profile release --all-targets
+        run: cargo build --profile ${{ matrix.profile }}
 
       - name: Test
-        run: cargo test --profile release --all-targets
+        run: cargo test --profile ${{ matrix.profile }}
