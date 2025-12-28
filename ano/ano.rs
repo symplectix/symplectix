@@ -43,7 +43,7 @@ use completing::Completing;
 use filter::Filter;
 use fuse::Fuse;
 use map::Map;
-use par::Par;
+use par::{FoldInScope, Par};
 use seq::Seq;
 use take::Take;
 use zip::Zip;
@@ -193,7 +193,7 @@ where
 // See also: https://github.com/rust-lang/rust/issues/48869
 
 macro_rules! def_fold_with {
-    ($Item: ty) => {
+    ($Item:ty) => {
         #[inline]
         fn fold_with<Iter>(mut self, init: Self::State, iterable: Iter) -> B
         where
@@ -208,6 +208,18 @@ macro_rules! def_fold_with {
     };
 }
 
+macro_rules! impl_fold {
+    (Fold<$A:tt, $B:tt> for $Ty:ident<$($type_params:tt),+>) => {
+        impl<$($type_params,)+ $A, $B> Fold<$A, $B> for $Ty<$($type_params),+>
+        where
+            Self: StepFn<$A, $B>,
+        {
+            type State = <Self as StepFn<$A, $B>>::State;
+            def_fold_with!($A);
+        }
+    };
+}
+
 impl<A, B, F> Fold<A, B> for F
 where
     F: FnMut(B, A) -> ControlFlow<B>,
@@ -216,74 +228,12 @@ where
     def_fold_with!(A);
 }
 
-impl<Sf, F, A, B> Fold<A, B> for Beginning<Sf, F>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
-
-impl<Sf, R, F, A, B> Fold<A, B> for Completing<Sf, R, F>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
-
-impl<Sf, A, B> Fold<A, B> for Fuse<Sf>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
-
-impl<Sf, F, A, B> Fold<A, B> for Map<Sf, F>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
-
-impl<Sf, P, A, B> Fold<A, B> for Filter<Sf, P>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
-
-impl<Sf, A, B> Fold<A, B> for Take<Sf>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
-
-impl<F, G, A, B> Fold<A, B> for Seq<F, G>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
-
-impl<'a, F, G, A, B> Fold<A, B> for Zip<'a, F, G>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
-
-impl<'s, 'e, A, B, F> Fold<A, B> for par::FoldInScope<'s, 'e, F>
-where
-    Self: StepFn<A, B>,
-{
-    type State = <Self as StepFn<A, B>>::State;
-    def_fold_with!(A);
-}
+impl_fold!(Fold<A, B> for Beginning<Sf, F>);
+impl_fold!(Fold<A, B> for Completing<Sf, R, F>);
+impl_fold!(Fold<A, B> for Fuse<Sf>);
+impl_fold!(Fold<A, B> for Map<Sf, F>);
+impl_fold!(Fold<A, B> for Filter<Sf, P>);
+impl_fold!(Fold<A, B> for Take<Sf>);
+impl_fold!(Fold<A, B> for Seq<F, G>);
+impl_fold!(Fold<A, B> for Zip<'a, F, G>);
+impl_fold!(Fold<A, B> for FoldInScope<'s, 'e, F>);
