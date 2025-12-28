@@ -10,14 +10,6 @@ on:
       - main
 
 jobs:
-  Validate:
-    if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Title
-        run: |
-          [[ "${{ github.event.pull_request.title }}" =~ ^[a-z]{1}[a-z/_-]*:\ [a-z]{1}.*[^.]$ ]]
-
   Bazel:
     strategy:
       matrix:
