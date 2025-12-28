@@ -1,0 +1,10 @@
+[build]
+rustflags = ["-Dwarnings"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+
+[term]
+color = "always"
+verbose = true
