@@ -1,0 +1,12 @@
+[package]
+name = "bit"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[lib]
+name = "bit"
+path = "bit.rs"
+
+[lints]
+workspace = true
