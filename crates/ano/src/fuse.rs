@@ -2,7 +2,7 @@ use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Fuse<Sf> {
-    sf: Sf,
+    sf:   Sf,
     halt: bool,
 }
 

@@ -4,17 +4,27 @@ use std::cmp;
 use std::iter::Sum;
 use std::ops::RangeBounds;
 
-use bits_core::block::{Block, *};
+use bits_core::block::{
+    Block,
+    *,
+};
 use bits_core::word::Word;
-use bits_core::{BitVec, Bits};
-use fenwicktree::{LowerBound, Nodes, Prefix};
+use bits_core::{
+    BitVec,
+    Bits,
+};
+use fenwicktree::{
+    LowerBound,
+    Nodes,
+    Prefix,
+};
 
 mod l1l2;
 
 /// `Pop<T>` stores auxiliary data to compute `Rank` and `Select` more efficiently.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pop<T> {
-    aux: Aux,
+    aux:  Aux,
     repr: BitVec<T>,
 }
 

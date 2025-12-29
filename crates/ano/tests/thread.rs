@@ -1,6 +1,9 @@
 #![allow(missing_docs)]
 
-use ano::{Fold, StepFn};
+use ano::{
+    Fold,
+    StepFn,
+};
 
 mod helper;
 use helper::*;
@@ -25,7 +28,7 @@ fn check_send() {
 
 #[test]
 fn thread_scope_fold() {
-    let data = vec![1, 2, 3, 4, 5, 6];
+    let data = [1, 2, 3, 4, 5, 6];
     let r = sum::<_, i32>().par(sum::<_, i32>().map(mul3)).fold(data.chunks(3));
     assert_eq!(r.unwrap(), 63);
     let r = sum::<_, i32>().par(sum::<_, i32>().map(mul3)).fold(data.chunks(7));

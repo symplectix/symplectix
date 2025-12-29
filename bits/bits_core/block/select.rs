@@ -1,5 +1,8 @@
 use crate::bits::Bits;
-use crate::block::{Block, Rank};
+use crate::block::{
+    Block,
+    Rank,
+};
 
 pub trait Select: Rank {
     #[inline]

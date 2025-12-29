@@ -10,14 +10,6 @@ on:
       - main
 
 jobs:
-  Validate:
-    if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Title
-        run: |
-          [[ "${{ github.event.pull_request.title }}" =~ ^[a-z]{1}[a-z/_-]*:\ [a-z]{1}.*[^.]$ ]]
-
   Bazel:
     strategy:
       matrix:
@@ -58,3 +50,41 @@ jobs:
             ~/.cache/bazel
             ~/.cache/bazelisk
           key: ${{ steps.restore-bazel-cache.outputs.cache-primary-key }}
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+      - name: cargo fmt
+        run: cargo fmt --all --check
+
+  testing:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-24.04
+        profile:
+          - release
+    runs-on: ${{ matrix.os }}
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/git
+            ~/.cargo/registry
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('/Cargo.lock') }}
+      - run: cargo clippy --profile ${{ matrix.profile }} --all-targets --all-features
+      - run: cargo check --profile ${{ matrix.profile }}
+      - run: cargo build --profile ${{ matrix.profile }}
+      - run: cargo test --profile ${{ matrix.profile }}

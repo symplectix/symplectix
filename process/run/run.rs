@@ -1,18 +1,39 @@
 #![allow(missing_docs)]
 use std::ffi::OsString;
-use std::os::unix::process::{CommandExt, ExitStatusExt};
+use std::os::unix::process::{
+    CommandExt,
+    ExitStatusExt,
+};
 use std::path::PathBuf;
-use std::process::{ExitCode, ExitStatus, Stdio};
+use std::process::{
+    ExitCode,
+    ExitStatus,
+    Stdio,
+};
 use std::sync::Arc;
 use std::time::Duration;
-use std::{env, io, process};
+use std::{
+    env,
+    io,
+    process,
+};
 
 use futures::future;
 use futures::prelude::*;
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::signal::unix::{SignalKind, signal};
+use tokio::io::{
+    AsyncBufReadExt,
+    BufReader,
+};
+use tokio::signal::unix::{
+    SignalKind,
+    signal,
+};
 use tokio::time;
-use tracing::{error, info, trace};
+use tracing::{
+    error,
+    info,
+    trace,
+};
 
 mod child;
 
@@ -87,13 +108,13 @@ enum ProcessInner {
 pub struct WaitStatus {
     exit_status: ExitStatus,
     exit_reason: ExitReasons,
-    cmd: Arc<Command>,
+    cmd:         Arc<Command>,
 }
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 struct ExitReasons {
-    io_error: Option<io::ErrorKind>,
-    timedout: bool,
+    io_error:      Option<io::ErrorKind>,
+    timedout:      bool,
     proc_signaled: Option<libc::c_int>,
     self_signaled: Option<libc::c_int>,
 }
@@ -121,7 +142,11 @@ impl Command {
     fn dry_run(self: &Arc<Self>) -> io::Result<WaitStatus> {
         info!("[DRYRUN] {:?}", self);
 
-        Ok(WaitStatus { exit_status: ExitStatus::from_raw(0), exit_reason: ExitReasons::default(), cmd: self.clone() })
+        Ok(WaitStatus {
+            exit_status: ExitStatus::from_raw(0),
+            exit_reason: ExitReasons::default(),
+            cmd:         self.clone(),
+        })
     }
 
     #[tracing::instrument(skip(self))]
@@ -150,9 +175,10 @@ impl Command {
 
             wait_for(&self.hook.wait_for).await.map_err(|err| match err {
                 SpawnError::Io(io_err) => io_err,
-                SpawnError::FoundErrFile(path) => {
-                    io::Error::new(io::ErrorKind::InvalidData, format!("found an error file at {}", path.display()))
-                }
+                SpawnError::FoundErrFile(path) => io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("found an error file at {}", path.display()),
+                ),
             })?;
 
             #[cfg(target_os = "linux")]
@@ -227,10 +253,11 @@ impl ProcessInner {
                 let mut cause = ExitReasons::default();
                 let mut _interrupted = 0;
 
-                let to_wait_status = |exit_status: ExitStatus, mut cause: ExitReasons, cmd| -> WaitStatus {
-                    cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
-                    WaitStatus { exit_status, exit_reason: cause, cmd: Arc::clone(cmd) }
-                };
+                let to_wait_status =
+                    |exit_status: ExitStatus, mut cause: ExitReasons, cmd| -> WaitStatus {
+                        cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
+                        WaitStatus { exit_status, exit_reason: cause, cmd: Arc::clone(cmd) }
+                    };
 
                 let result = loop {
                     tokio::select! {

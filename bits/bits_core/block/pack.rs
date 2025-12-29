@@ -1,5 +1,8 @@
 use crate::bits::Bits;
-use crate::block::{Block, BlockMut};
+use crate::block::{
+    Block,
+    BlockMut,
+};
 use crate::word::Word;
 
 /// Provides helper methods to read/write auxiliary data for Rank and Select.

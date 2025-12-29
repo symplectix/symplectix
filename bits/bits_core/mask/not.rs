@@ -1,7 +1,14 @@
 use core::cmp::Ordering::*;
-use core::iter::{Fuse, Peekable};
+use core::iter::{
+    Fuse,
+    Peekable,
+};
 
-use super::{Mask, compare, helper};
+use super::{
+    Mask,
+    compare,
+    helper,
+};
 
 pub struct Not<A, B> {
     pub(crate) a: A,
@@ -44,7 +51,10 @@ where
     type Iter = Difference<A::Iter, B::Iter>;
     #[inline]
     fn into_mask(self) -> Self::Iter {
-        Difference { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+        Difference {
+            a: self.a.into_mask().fuse().peekable(),
+            b: self.b.into_mask().fuse().peekable(),
+        }
     }
 }
 

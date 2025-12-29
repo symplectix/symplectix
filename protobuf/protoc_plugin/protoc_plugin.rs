@@ -1,12 +1,24 @@
 #![allow(missing_docs)]
 use std::io;
-use std::io::{Read, Write};
+use std::io::{
+    Read,
+    Write,
+};
 
 use prost::Message;
-use prost_reflect::{DescriptorPool, FileDescriptor};
+use prost_reflect::{
+    DescriptorPool,
+    FileDescriptor,
+};
 use prost_types::FileDescriptorSet;
-use prost_types::compiler::code_generator_response::{Feature, File};
-use prost_types::compiler::{CodeGeneratorRequest, CodeGeneratorResponse};
+use prost_types::compiler::code_generator_response::{
+    Feature,
+    File,
+};
+use prost_types::compiler::{
+    CodeGeneratorRequest,
+    CodeGeneratorResponse,
+};
 
 pub trait GenCode {
     fn gen_code(&self, req: CodeGeneratorRequest) -> CodeGeneratorResponse;
@@ -27,8 +39,9 @@ impl<T: GenFile> GenCode for T {
         };
 
         for target_proto in &req.file_to_generate {
-            let file_desc =
-                pool.get_file_by_name(target_proto.as_str()).expect("failed to fetch a file descriptor from a pool");
+            let file_desc = pool
+                .get_file_by_name(target_proto.as_str())
+                .expect("failed to fetch a file descriptor from a pool");
 
             match self.gen_file(target_proto, &file_desc) {
                 Ok(generated_file) => response.file.push(generated_file),

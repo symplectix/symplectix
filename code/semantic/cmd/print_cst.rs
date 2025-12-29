@@ -1,5 +1,8 @@
 #![allow(missing_docs)]
-use tree_sitter::{Parser, TreeCursor};
+use tree_sitter::{
+    Parser,
+    TreeCursor,
+};
 
 static RUST_SRC: &str = r#"
 use std::env;

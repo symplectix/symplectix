@@ -1,21 +1,31 @@
 #![allow(missing_docs)]
 use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::{
+    Path,
+    PathBuf,
+};
 use std::sync::LazyLock as Lazy;
-use std::{env, fs, io};
+use std::{
+    env,
+    fs,
+    io,
+};
 
 use runfiles::Runfiles;
 pub use tempfile::TempDir;
 
 // The local repository's workspace name.
-pub static WORKSPACE: Lazy<String> =
-    Lazy::new(|| env::var("TEST_WORKSPACE").expect("fetching the environment variable 'TEST_WORKSPACE'"));
+pub static WORKSPACE: Lazy<String> = Lazy::new(|| {
+    env::var("TEST_WORKSPACE").expect("fetching the environment variable 'TEST_WORKSPACE'")
+});
 
-static RUNFILES: Lazy<Runfiles> = Lazy::new(|| Runfiles::create().expect("runfiles can not be created"));
+static RUNFILES: Lazy<Runfiles> =
+    Lazy::new(|| Runfiles::create().expect("runfiles can not be created"));
 
 // Signifies test executable is being driven by bazel test.
 // https://bazel.build/reference/test-encyclopedia
-static BAZEL_TEST: Lazy<bool> = Lazy::new(|| if let Ok(val) = env::var("BAZEL_TEST") { val == "1" } else { false });
+static BAZEL_TEST: Lazy<bool> =
+    Lazy::new(|| if let Ok(val) = env::var("BAZEL_TEST") { val == "1" } else { false });
 
 /// Absolute path to the base of the runfiles tree.
 pub static SRCDIR: Lazy<String> =
@@ -102,7 +112,13 @@ mod tests {
     #[test]
     fn worspace() {
         assert_eq!(rlocation("syx").join(".rustfmt.toml"), rlocation("syx/.rustfmt.toml"),);
-        assert_eq!(rlocation("rules_rust").join(".rustfmt.toml"), rlocation("rules_rust/.rustfmt.toml"),);
-        assert_eq!(rlocation("rules_rust").join(".clippy.toml"), rlocation("rules_rust/.clippy.toml"),);
+        assert_eq!(
+            rlocation("rules_rust").join(".rustfmt.toml"),
+            rlocation("rules_rust/.rustfmt.toml"),
+        );
+        assert_eq!(
+            rlocation("rules_rust").join(".clippy.toml"),
+            rlocation("rules_rust/.clippy.toml"),
+        );
     }
 }

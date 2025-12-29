@@ -1,7 +1,13 @@
 use core::cmp::Ordering::*;
-use core::iter::{Fuse, Peekable};
+use core::iter::{
+    Fuse,
+    Peekable,
+};
 
-use super::{Mask, helper};
+use super::{
+    Mask,
+    helper,
+};
 
 pub struct And<A, B> {
     pub(crate) a: A,
@@ -44,7 +50,10 @@ where
     type Bits = A::Bits;
     type Iter = Intersection<A::Iter, B::Iter>;
     fn into_mask(self) -> Self::Iter {
-        Intersection { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+        Intersection {
+            a: self.a.into_mask().fuse().peekable(),
+            b: self.b.into_mask().fuse().peekable(),
+        }
     }
 }
 

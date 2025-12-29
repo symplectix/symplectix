@@ -26,8 +26,9 @@ pub struct Corpus {
 
 impl fuzzing::Op for Corpus {
     async fn run(self) -> anyhow::Result<()> {
-        fs::create_dir_all(&self.output)
-            .with_context(|| format!("failed to create a directory at {}", self.output.display()))?;
+        fs::create_dir_all(&self.output).with_context(|| {
+            format!("failed to create a directory at {}", self.output.display())
+        })?;
 
         let corpus_file = BufReader::new({
             let Some(corpus_list) = self.corpus_list.as_ref() else {
@@ -42,7 +43,11 @@ impl fuzzing::Op for Corpus {
             let from = line.context("error reading lines")?;
             let to = self.output.join(from.replace('/', "_"));
             fs::copy(&from, &to).with_context(|| {
-                format!("failed to copy from {from} to {to}", from = from.as_str(), to = to.display())
+                format!(
+                    "failed to copy from {from} to {to}",
+                    from = from.as_str(),
+                    to = to.display()
+                )
             })?;
         }
 

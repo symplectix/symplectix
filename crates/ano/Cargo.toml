@@ -1,0 +1,10 @@
+[package]
+name = "ano"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

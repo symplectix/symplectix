@@ -21,4 +21,7 @@ pub mod word {
 }
 
 pub use bits_aux::Pop;
-pub use bits_core::{BitVec, Bits};
+pub use bits_core::{
+    BitVec,
+    Bits,
+};

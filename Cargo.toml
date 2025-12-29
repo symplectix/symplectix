@@ -1,0 +1,22 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/ano",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Kohei Watanabe"]
+
+[workspace.lints.rust]
+missing_docs = "deny"
+
+[workspace.lints.clippy]
+# pedantic = "deny"
+
+[workspace.dependencies]
+
+[profile.release]
+codegen-units = 1
+lto = true

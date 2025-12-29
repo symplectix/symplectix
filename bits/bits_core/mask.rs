@@ -15,7 +15,10 @@ pub use not::*;
 pub use or::*;
 pub use xor::*;
 
-use crate::block::{Block, Count};
+use crate::block::{
+    Block,
+    Count,
+};
 
 pub trait Mask: Sized {
     type Bits;

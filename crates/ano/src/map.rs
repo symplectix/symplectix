@@ -2,7 +2,7 @@ use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Map<Sf, F> {
-    sf: Sf,
+    sf:   Sf,
     mapf: F,
 }
 

@@ -1,7 +1,16 @@
 use std::cmp::Ordering;
-use std::fmt::{self, Debug, Formatter};
+use std::fmt::{
+    self,
+    Debug,
+    Formatter,
+};
 use std::iter::Sum;
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use std::ops::{
+    Add,
+    AddAssign,
+    Sub,
+    SubAssign,
+};
 
 #[derive(Copy, Clone, Default, PartialEq, Eq)]
 pub(crate) struct L1L2(u64);

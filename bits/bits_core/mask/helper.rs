@@ -1,4 +1,7 @@
-use std::borrow::{Cow, ToOwned};
+use std::borrow::{
+    Cow,
+    ToOwned,
+};
 use std::boxed::Box;
 use std::vec::Vec;
 

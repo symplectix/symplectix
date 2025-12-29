@@ -2,10 +2,18 @@
 
 use std::borrow::Borrow;
 use std::ops::ControlFlow::*;
-use std::ops::{Add, Mul, Rem};
+use std::ops::{
+    Add,
+    Mul,
+    Rem,
+};
 use std::rc::Rc;
 
-use ano::{Fold, InitialState, StepFn};
+use ano::{
+    Fold,
+    InitialState,
+    StepFn,
+};
 
 pub fn pow2(x: i32) -> i32 {
     x.pow(2)
@@ -34,7 +42,10 @@ where
 }
 
 pub trait FoldFn<A, B>: Fold<A, B, State = B> + StepFn<A, B, State = B> + InitialState<B> {}
-impl<A, B, T> FoldFn<A, B> for T where T: Fold<A, B, State = B> + StepFn<A, B, State = B> + InitialState<B> {}
+impl<A, B, T> FoldFn<A, B> for T where
+    T: Fold<A, B, State = B> + StepFn<A, B, State = B> + InitialState<B>
+{
+}
 
 pub fn conj<A>() -> impl FoldFn<A, Vec<A>> + Clone {
     let f = |mut acc: Vec<A>, item| {

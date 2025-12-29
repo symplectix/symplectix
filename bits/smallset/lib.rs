@@ -1,8 +1,18 @@
 #![allow(missing_docs)]
 
-use std::cmp::Ordering::{self, Equal as EQ, Greater as GT, Less as LT};
+use std::cmp::Ordering::{
+    self,
+    Equal as EQ,
+    Greater as GT,
+    Less as LT,
+};
 use std::iter::Peekable;
-use std::ops::{Deref, DerefMut, Range, RangeBounds};
+use std::ops::{
+    Deref,
+    DerefMut,
+    Range,
+    RangeBounds,
+};
 
 use bits_core::block::*;
 use bits_core::mask::helper;
@@ -180,7 +190,12 @@ impl<const N: usize> Select for SmallSet<u16, N> {
     }
 }
 
-fn cmp_opt<T: Ord>(a: Option<&T>, b: Option<&T>, a_is_none: Ordering, b_is_none: Ordering) -> Ordering {
+fn cmp_opt<T: Ord>(
+    a: Option<&T>,
+    b: Option<&T>,
+    a_is_none: Ordering,
+    b_is_none: Ordering,
+) -> Ordering {
     match (a, b) {
         (None, _) => a_is_none,
         (_, None) => b_is_none,
@@ -208,7 +223,8 @@ impl<const N: usize, const M: usize> helper::Assign<SmallSet<u16, M>> for SmallS
     /// assert_eq!(a.as_ref(), &[2, 3]);
     /// ```
     fn and(a: &mut Self, b: &SmallSet<u16, M>) {
-        a.0 = Iter { a: a.as_slice().iter().peekable(), b: b.as_slice().iter().peekable() }.collect();
+        a.0 =
+            Iter { a: a.as_slice().iter().peekable(), b: b.as_slice().iter().peekable() }.collect();
 
         struct Iter<A: Iterator, B: Iterator> {
             a: Peekable<A>,
@@ -261,7 +277,8 @@ impl<const N: usize, const M: usize> helper::Assign<SmallSet<u16, M>> for SmallS
     /// assert_eq!(a.as_ref(), &[1]);
     /// ```
     fn not(a: &mut Self, b: &SmallSet<u16, M>) {
-        a.0 = Iter { a: a.as_slice().iter().peekable(), b: b.as_slice().iter().peekable() }.collect();
+        a.0 =
+            Iter { a: a.as_slice().iter().peekable(), b: b.as_slice().iter().peekable() }.collect();
 
         struct Iter<A: Iterator, B: Iterator> {
             a: Peekable<A>,
@@ -311,7 +328,8 @@ impl<const N: usize, const M: usize> helper::Assign<SmallSet<u16, M>> for SmallS
     /// assert_eq!(a.as_ref(), &[1, 2, 3, 4]);
     /// ```
     fn or(a: &mut Self, b: &SmallSet<u16, M>) {
-        a.0 = Iter { a: a.as_slice().iter().peekable(), b: b.as_slice().iter().peekable() }.collect();
+        a.0 =
+            Iter { a: a.as_slice().iter().peekable(), b: b.as_slice().iter().peekable() }.collect();
 
         struct Iter<A: Iterator, B: Iterator> {
             a: Peekable<A>,
@@ -358,7 +376,8 @@ impl<const N: usize, const M: usize> helper::Assign<SmallSet<u16, M>> for SmallS
     /// assert_eq!(a.as_ref(), &[1, 4]);
     /// ```
     fn xor(a: &mut Self, b: &SmallSet<u16, M>) {
-        a.0 = Iter { a: a.as_slice().iter().peekable(), b: b.as_slice().iter().peekable() }.collect();
+        a.0 =
+            Iter { a: a.as_slice().iter().peekable(), b: b.as_slice().iter().peekable() }.collect();
 
         struct Iter<L: Iterator, R: Iterator> {
             a: Peekable<L>,

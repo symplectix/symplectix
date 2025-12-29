@@ -1,10 +1,16 @@
 #![allow(missing_docs)]
 
-use std::iter::{empty, once};
+use std::iter::{
+    empty,
+    once,
+};
 use std::ops::ControlFlow::*;
 use std::rc::Rc;
 
-use ano::{Fold, StepFn};
+use ano::{
+    Fold,
+    StepFn,
+};
 
 mod helper;
 use helper::*;

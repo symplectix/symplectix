@@ -1,7 +1,10 @@
 use std::ops::RangeBounds;
 
 use crate::bits::Bits;
-use crate::block::{Block, Count};
+use crate::block::{
+    Block,
+    Count,
+};
 
 pub trait Rank: Count {
     #[inline]
