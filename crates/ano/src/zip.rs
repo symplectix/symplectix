@@ -6,8 +6,8 @@ use crate::internal::*;
 #[derive(Debug, Clone)]
 pub struct Zip<'a, F, G> {
     _ref: PhantomData<&'a ()>,
-    f: Fuse<F>,
-    g: Fuse<G>,
+    f:    Fuse<F>,
+    g:    Fuse<G>,
 }
 
 impl<'a, F, G> Zip<'a, F, G> {

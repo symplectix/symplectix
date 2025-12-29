@@ -5,6 +5,7 @@
 //!
 //! ```
 //! use std::ops::ControlFlow::Continue;
+//!
 //! use ano::Fold;
 //!
 //! let sum = |acc, item| Continue(acc + item);
@@ -16,7 +17,11 @@
 //!
 //! ```
 //! use std::ops::ControlFlow::Continue;
-//! use ano::{Fold, StepFn};
+//!
+//! use ano::{
+//!     Fold,
+//!     StepFn,
+//! };
 //!
 //! let data = vec![1, 2, 3, 4, 5];
 //! let sum = |acc, item| Continue(acc + item);
@@ -43,7 +48,10 @@ use completing::Completing;
 use filter::Filter;
 use fuse::Fuse;
 use map::Map;
-use par::{FoldInScope, Par};
+use par::{
+    FoldInScope,
+    Par,
+};
 use seq::Seq;
 use take::Take;
 use zip::Zip;
@@ -51,7 +59,13 @@ use zip::Zip;
 mod internal {
     pub(crate) use std::ops::ControlFlow::*;
 
-    pub(crate) use crate::{ControlFlow, Fold, Fuse, InitialState, StepFn};
+    pub(crate) use crate::{
+        ControlFlow,
+        Fold,
+        Fuse,
+        InitialState,
+        StepFn,
+    };
 }
 
 /// A composable left fold.

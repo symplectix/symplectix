@@ -1,5 +1,10 @@
 use std::marker::PhantomData;
-use std::thread::{self, Result, Scope, ScopedJoinHandle};
+use std::thread::{
+    self,
+    Result,
+    Scope,
+    ScopedJoinHandle,
+};
 
 use crate::internal::*;
 
@@ -47,7 +52,7 @@ where
 #[derive(Debug, Clone)]
 pub(crate) struct FoldInScope<'scope, 'env, F> {
     scope: &'scope Scope<'scope, 'env>,
-    f: F,
+    f:     F,
 }
 
 impl<'s, 'e, F> FoldInScope<'s, 'e, F> {

@@ -2,7 +2,7 @@ use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Beginning<Sf, F> {
-    sf: Sf,
+    sf:    Sf,
     begin: F,
 }
 

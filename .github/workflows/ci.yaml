@@ -58,10 +58,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
-      - name: Format
+      - name: cargo fmt
         run: cargo fmt --all --check
 
-  build:
+  testing:
     strategy:
       matrix:
         os:
@@ -85,11 +85,11 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('/Cargo.lock') }}
 
-      - name: Clippy
-        run: cargo clippy --all-targets --all-features
-      - name: Check
+      - name: cargo clippy
+        run: cargo clippy --profile ${{ matrix.profile }} --all-targets --all-features
+      - name: cargo check
         run: cargo check --profile ${{ matrix.profile }}
-      - name: Build
+      - name: cargo build
         run: cargo build --profile ${{ matrix.profile }}
-      - name: Test
+      - name: cargo test
         run: cargo test --profile ${{ matrix.profile }}

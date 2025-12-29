@@ -2,7 +2,7 @@ use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Filter<Sf, P> {
-    sf: Sf,
+    sf:   Sf,
     pred: P,
 }
 

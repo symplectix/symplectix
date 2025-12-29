@@ -2,7 +2,7 @@ use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Take<Sf> {
-    sf: Sf,
+    sf:    Sf,
     count: usize,
 }
 

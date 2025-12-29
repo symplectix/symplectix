@@ -4,8 +4,8 @@ use crate::internal::*;
 
 #[derive(Debug, Clone)]
 pub struct Completing<Sf, R, F> {
-    sf: Sf,
-    _ret: PhantomData<R>,
+    sf:         Sf,
+    _ret:       PhantomData<R>,
     completing: F,
 }
 
