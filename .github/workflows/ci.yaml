@@ -84,12 +84,7 @@ jobs:
             ~/.cargo/registry
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('/Cargo.lock') }}
-
-      - name: cargo clippy
-        run: cargo clippy --profile ${{ matrix.profile }} --all-targets --all-features
-      - name: cargo check
-        run: cargo check --profile ${{ matrix.profile }}
-      - name: cargo build
-        run: cargo build --profile ${{ matrix.profile }}
-      - name: cargo test
-        run: cargo test --profile ${{ matrix.profile }}
+      - run: cargo clippy --profile ${{ matrix.profile }} --all-targets --all-features
+      - run: cargo check --profile ${{ matrix.profile }}
+      - run: cargo build --profile ${{ matrix.profile }}
+      - run: cargo test --profile ${{ matrix.profile }}
