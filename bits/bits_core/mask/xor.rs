@@ -1,7 +1,14 @@
 use core::cmp::Ordering::*;
-use core::iter::{Fuse, Peekable};
+use core::iter::{
+    Fuse,
+    Peekable,
+};
 
-use super::{Mask, compare, helper};
+use super::{
+    Mask,
+    compare,
+    helper,
+};
 
 pub struct Xor<A, B> {
     pub(crate) a: A,
@@ -46,7 +53,10 @@ where
     type Iter = SymmetricDifference<A::Iter, B::Iter>;
     #[inline]
     fn into_mask(self) -> Self::Iter {
-        SymmetricDifference { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+        SymmetricDifference {
+            a: self.a.into_mask().fuse().peekable(),
+            b: self.b.into_mask().fuse().peekable(),
+        }
     }
 }
 

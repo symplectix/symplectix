@@ -5,11 +5,17 @@ use std::os::unix::process::ExitStatusExt;
 use std::process::ExitStatus;
 use std::sync::LazyLock;
 
-use tokio::signal::unix::{SignalKind, signal};
+use tokio::signal::unix::{
+    SignalKind,
+    signal,
+};
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::error::SendError;
 use tokio::task;
-use tracing::{error, trace};
+use tracing::{
+    error,
+    trace,
+};
 
 static REAPER: LazyLock<Reaper<Result<usize, Infallible>>> = LazyLock::new(Reaper::start);
 
@@ -42,11 +48,15 @@ impl Reaper<Result<usize, Infallible>> {
                                     break;
                                 }
                                 libc::EINTR => {
-                                    // This likely can't happen since we are calling libc::waitpid with WNOHANG.
+                                    // This likely can't happen since we are calling libc::waitpid
+                                    // with WNOHANG.
                                     trace!("got interrupted, continue reaping");
                                 }
                                 errno => {
-                                    error!(errno, "an error is detected or a caught signal aborts the call");
+                                    error!(
+                                        errno,
+                                        "an error is detected or a caught signal aborts the call"
+                                    );
                                     // break;
                                 }
                             }

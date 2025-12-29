@@ -1,8 +1,15 @@
 use std::fmt;
-use std::ops::{self, Range, RangeBounds};
+use std::ops::{
+    self,
+    Range,
+    RangeBounds,
+};
 
 use crate::block::*;
-use crate::{Bits, Block};
+use crate::{
+    Bits,
+    Block,
+};
 
 /// Integer with a fixed-sized bits.
 pub trait Word:
@@ -58,7 +65,10 @@ impl WordSelectHelper for u64 {
         (n < self.count1()).then(|| {
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
             if is_x86_feature_detected!("bmi2") {
-                use std::arch::x86_64::{_pdep_u64, _tzcnt_u64};
+                use std::arch::x86_64::{
+                    _pdep_u64,
+                    _tzcnt_u64,
+                };
                 return unsafe { _tzcnt_u64(_pdep_u64(1 << n, self)) as usize };
             }
             broadword(self, n as u64)

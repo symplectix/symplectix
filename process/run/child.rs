@@ -1,9 +1,16 @@
 use std::io;
-use std::process::{Command, ExitStatus};
+use std::process::{
+    Command,
+    ExitStatus,
+};
 use std::sync::Arc;
 use std::time::Duration;
 
-use tokio::process::{Child as TokioChild, ChildStderr, Command as TokioCommand};
+use tokio::process::{
+    Child as TokioChild,
+    ChildStderr,
+    Command as TokioCommand,
+};
 use tokio::time;
 use tracing::trace;
 

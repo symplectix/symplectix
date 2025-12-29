@@ -1,7 +1,13 @@
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::{
+    Borrow,
+    BorrowMut,
+};
 use std::ops;
 
-use crate::{Bits, Block};
+use crate::{
+    Bits,
+    Block,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BitVec<T> {

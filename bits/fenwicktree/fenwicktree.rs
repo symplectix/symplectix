@@ -2,10 +2,19 @@
 //! 1-indexed FenwickTree (BinaryIndexedTree).
 
 use std::iter::Sum;
-use std::ops::{AddAssign, Sub, SubAssign};
+use std::ops::{
+    AddAssign,
+    Sub,
+    SubAssign,
+};
 
 use bits_core::word::Word;
-pub use index::{children, prefix, search, update};
+pub use index::{
+    children,
+    prefix,
+    search,
+    update,
+};
 
 pub trait Node: Sized + Copy {}
 
@@ -79,8 +88,14 @@ pub fn pop<T: Node + SubAssign>(bit: &mut Vec<T>) -> Option<T> {
 }
 
 mod index {
-    use core::iter::{Successors, successors};
-    use core::ops::{Add, Sub};
+    use core::iter::{
+        Successors,
+        successors,
+    };
+    use core::ops::{
+        Add,
+        Sub,
+    };
 
     use bits_core::word::Word;
 
@@ -99,8 +114,7 @@ mod index {
     /// # Examples
     ///
     /// ```
-    /// for i in fenwicktree::prefix(7) {
-    /// }
+    /// for i in fenwicktree::prefix(7) {}
     /// ```
     pub fn prefix(i: usize) -> Successors<usize, fn(&usize) -> Option<usize>> {
         fn next_index(&i: &usize) -> Option<usize> {
@@ -223,7 +237,7 @@ where
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Complement<'a, T: ?Sized, U = u64> {
-    inner: &'a T,
+    inner:     &'a T,
     max_bound: U,
 }
 

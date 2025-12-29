@@ -1,9 +1,23 @@
 use std::borrow::ToOwned;
 use std::mem;
-use std::ops::{Range, RangeBounds};
+use std::ops::{
+    Range,
+    RangeBounds,
+};
 
-use crate::block::{BlockMut, Count, Excess, Pack, Rank, Select};
-use crate::{BitVec, Block, Word};
+use crate::block::{
+    BlockMut,
+    Count,
+    Excess,
+    Pack,
+    Rank,
+    Select,
+};
+use crate::{
+    BitVec,
+    Block,
+    Word,
+};
 
 #[derive(Hash, Debug)]
 #[repr(transparent)]
@@ -99,8 +113,8 @@ impl<T: Block> Bits<T> {
     /// ```
     /// # use bits_core::Bits;
     /// let v: &Bits<u64> = Bits::new(&[0b00000101, 0b01100011, 0b01100000]);
-    /// assert_eq!(v.test(0),   Some(true));
-    /// assert_eq!(v.test(64),  Some(true));
+    /// assert_eq!(v.test(0), Some(true));
+    /// assert_eq!(v.test(64), Some(true));
     /// assert_eq!(v.test(128), Some(false));
     /// assert_eq!(v.test(200), None);
     /// ```
@@ -176,8 +190,8 @@ impl<T: Block + Count> Bits<T> {
     /// let b: &Bits<u64> = Bits::new(&[]);
     /// let c: &Bits<u64> = Bits::new(&[!0, !0, !0]);
     /// assert!(!a.all());
-    /// assert!( b.all());
-    /// assert!( c.all());
+    /// assert!(b.all());
+    /// assert!(c.all());
     /// ```
     #[inline]
     pub fn all(&self) -> bool {
@@ -196,8 +210,8 @@ impl<T: Block + Count> Bits<T> {
     /// let b4: &Bits<u64> = Bits::new(&[0, 0, 1]);
     /// assert!(!b1.any());
     /// assert!(!b2.any());
-    /// assert!( b3.any());
-    /// assert!( b4.any());
+    /// assert!(b3.any());
+    /// assert!(b4.any());
     /// ```
     #[inline]
     pub fn any(&self) -> bool {
@@ -305,7 +319,10 @@ fn range_over<T: Block>(s: usize, e: usize, mut f: impl FnMut(usize, usize, usiz
         return;
     }
 
-    use std::iter::{once, repeat};
+    use std::iter::{
+        once,
+        repeat,
+    };
     for (index, cur) in (q0..q1).zip(once(r0).chain(repeat(0))) {
         if !f(index, cur, T::BITS) {
             return;
@@ -338,8 +355,8 @@ impl<B: Block + Pack> Bits<B> {
     /// # use bits_core::Bits;
     /// let bits: &Bits<u16> = Bits::new(&[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001]);
     /// let len = 4;
-    /// assert_eq!(bits.unpack::<u8>(0,  len), 0b0011);
-    /// assert_eq!(bits.unpack::<u8>(8,  len), 0b0001);
+    /// assert_eq!(bits.unpack::<u8>(0, len), 0b0011);
+    /// assert_eq!(bits.unpack::<u8>(8, len), 0b0001);
     /// assert_eq!(bits.unpack::<u8>(14, len), 0b0111);
     /// assert_eq!(bits.unpack::<u8>(30, len), 0b0010);
     /// ```

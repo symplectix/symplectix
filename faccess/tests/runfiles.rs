@@ -6,7 +6,8 @@ use testing::rlocation;
 
 fn check_ok<P: AsRef<Path>>(path: P, mode: Mode) {
     let path = path.as_ref();
-    faccess::at(path, mode).unwrap_or_else(|err| panic!("check_ok: {err} {path}", path = path.display()));
+    faccess::at(path, mode)
+        .unwrap_or_else(|err| panic!("check_ok: {err} {path}", path = path.display()));
 }
 
 fn check_err<P: AsRef<Path>>(path: P, mode: Mode) {

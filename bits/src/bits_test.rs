@@ -4,8 +4,16 @@ extern crate quickcheck_macros;
 
 use std::borrow::Cow;
 
-use bits::block::{Block, Buf, SmallSet, *};
-use bits::{BitVec, Bits};
+use bits::block::{
+    Block,
+    Buf,
+    SmallSet,
+    *,
+};
+use bits::{
+    BitVec,
+    Bits,
+};
 
 #[test]
 fn block_is_implemented() {
@@ -150,7 +158,10 @@ where
     assert_eq!(aux.count1(), bits.len());
 
     bits.into_iter().enumerate().all(|(i, b)| {
-        aux.test(b).unwrap() && aux.rank1(..b) == i && aux.select1(i) == Some(b) && aux.inner().select1(i) == Some(b)
+        aux.test(b).unwrap()
+            && aux.rank1(..b) == i
+            && aux.select1(i) == Some(b)
+            && aux.inner().select1(i) == Some(b)
     })
 }
 

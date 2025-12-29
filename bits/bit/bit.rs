@@ -1,7 +1,11 @@
 #![allow(missing_docs)]
 
 use core::iter::successors;
-use core::ops::{Bound, Range, RangeBounds};
+use core::ops::{
+    Bound,
+    Range,
+    RangeBounds,
+};
 
 // TODO: Use type parameters instead of an argument.
 // Type parameters can not be used in const expressions.
@@ -53,7 +57,8 @@ const fn max_index_exclusive(bound: Bound<&usize>, max: usize) -> usize {
 }
 
 /// Splits a given range [s, e) into chunks.
-/// Each chunk is represented as a (index, len) tuple, and its rhs, index+len, is aligned to a multiple of n.
+/// Each chunk is represented as a (index, len) tuple, and its rhs, index+len, is aligned to a
+/// multiple of n.
 ///
 /// # Examples
 ///

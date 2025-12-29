@@ -1,7 +1,14 @@
 use core::cmp::Ordering::*;
-use core::iter::{Fuse, Peekable};
+use core::iter::{
+    Fuse,
+    Peekable,
+};
 
-use super::{Mask, compare, helper};
+use super::{
+    Mask,
+    compare,
+    helper,
+};
 
 pub struct Or<A, B> {
     pub(crate) a: A,
