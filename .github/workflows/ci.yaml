@@ -56,6 +56,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
+        with:
+          compornents: rustfmt
       - name: Format
         run: cargo fmt --all --check
 
@@ -72,6 +74,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          compornents: clippy
       - uses: actions/cache@v4
         with:
           path: |
