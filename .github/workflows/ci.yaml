@@ -68,9 +68,9 @@ jobs:
           - ubuntu-24.04
         profile:
           - release
-
     runs-on: ${{ matrix.os }}
-
+    env:
+      RUSTFLAGS: -D warnings
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
