@@ -2,12 +2,16 @@
 codegen-units = 1
 lto = true
 
+[profile.dev.package.fenwicktree]
+overflow-checks = false
+
 [workspace]
 resolver = "3"
 members = [
   "crates/ano",
   "crates/bit",
   "crates/bits",
+  "crates/fenwicktree",
 ]
 
 [workspace.package]
@@ -22,3 +26,5 @@ missing_docs = "deny"
 
 [workspace.dependencies]
 num = { version = "0.4" }
+quickcheck = { version = "1" }
+quickcheck_macros = { version = "1" }
