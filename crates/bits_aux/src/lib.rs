@@ -4,12 +4,12 @@ use std::cmp;
 use std::iter::Sum;
 use std::ops::RangeBounds;
 
-use bits_core::block::{
+use bits::block::{
     Block,
     *,
 };
-use bits_core::word::Word;
-use bits_core::{
+use bits::word::Word;
+use bits::{
     BitVec,
     Bits,
 };

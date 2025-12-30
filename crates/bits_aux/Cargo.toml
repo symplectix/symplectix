@@ -1,0 +1,13 @@
+[package]
+name = "bits_aux"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bit.path = "../bit"
+bits.path = "../bits"
+fenwicktree.path = "../fenwicktree"
+num.workspace = true
+
+[lints]
+workspace = true

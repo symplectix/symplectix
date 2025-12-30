@@ -8,11 +8,7 @@ overflow-checks = false
 [workspace]
 resolver = "3"
 members = [
-  "crates/ano",
-  "crates/bit",
-  "crates/bits",
-  "crates/bits_buf",
-  "crates/fenwicktree",
+  "crates/*",
 ]
 
 [workspace.package]
