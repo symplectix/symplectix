@@ -76,14 +76,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin
-            ~/.cargo/git
-            ~/.cargo/registry
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('/Cargo.lock') }}
+      - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --profile ${{ matrix.profile }} --all-targets --all-features
       - run: cargo check --profile ${{ matrix.profile }}
       - run: cargo build --profile ${{ matrix.profile }}
