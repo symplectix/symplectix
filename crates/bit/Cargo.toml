@@ -1,9 +1,11 @@
 [package]
-name = "ano"
+name = "bit"
 version.workspace = true
 edition.workspace = true
 
-[dependencies]
+[lib]
+name = "bit"
+path = "bit.rs"
 
 [lints]
 workspace = true

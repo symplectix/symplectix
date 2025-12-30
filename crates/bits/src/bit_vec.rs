@@ -62,7 +62,7 @@ impl<T: Block> BitVec<T> {
     /// # Tests
     ///
     /// ```
-    /// # use bits_core::BitVec;
+    /// # use bits::BitVec;
     /// let v = BitVec::<u8>::new(30);
     ///
     /// assert_eq!(v.as_slice().len(), 4);

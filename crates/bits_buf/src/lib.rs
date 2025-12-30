@@ -3,10 +3,10 @@
 
 use std::ops::RangeBounds;
 
-use bits_core::Bits;
-use bits_core::block::*;
-use bits_core::mask::helper;
-use bits_core::word::Word;
+use bits::Bits;
+use bits::block::*;
+use bits::mask::helper;
+use bits::word::Word;
 
 /// Buf is just a wrap of an array A, and can be
 /// used as a fixed size of bits block.
@@ -61,7 +61,7 @@ impl<B: Word, const N: usize> Block for Buf<[B; N]> {
     /// # Tests
     ///
     /// ```
-    /// # use bits_core::block::*;
+    /// # use bits::block::*;
     /// # use bits_buf::Buf;
     /// let mut b = Buf::<[u32; 16]>::empty();
     /// assert_eq!(Buf::<[u32; 16]>::BITS, 512);
@@ -117,7 +117,7 @@ impl<B: Word, const N: usize> Select for Buf<[B; N]> {
     /// # Tests
     ///
     /// ```
-    /// # use bits_core::block::*;
+    /// # use bits::block::*;
     /// # use bits_buf::Buf;
     /// let mut b = Buf::<[u64; 8]>::empty();
     /// assert_eq!(b.select1(0), None);
@@ -148,8 +148,8 @@ where
     /// # Tests
     ///
     /// ```
-    /// # use bits_core::block::*;
-    /// # use bits_core::mask::helper::Assign;
+    /// # use bits::block::*;
+    /// # use bits::mask::helper::Assign;
     /// let mut a = bits_buf::Buf::<[u64; 4]>::empty();
     /// a.set1(0);
     /// a.set1(1);
@@ -176,8 +176,8 @@ where
     /// # Tests
     ///
     /// ```
-    /// # use bits_core::block::*;
-    /// # use bits_core::mask::helper::Assign;
+    /// # use bits::block::*;
+    /// # use bits::mask::helper::Assign;
     /// let mut a = bits_buf::Buf::<[u64; 4]>::empty();
     /// a.set1(0);
     /// a.set1(1);
@@ -200,8 +200,8 @@ where
     /// # Tests
     ///
     /// ```
-    /// # use bits_core::block::*;
-    /// # use bits_core::mask::helper::Assign;
+    /// # use bits::block::*;
+    /// # use bits::mask::helper::Assign;
     /// let mut a = bits_buf::Buf::<[u64; 4]>::empty();
     /// a.set1(0);
     /// a.set1(1);
@@ -230,8 +230,8 @@ where
     /// # Tests
     ///
     /// ```
-    /// # use bits_core::block::*;
-    /// # use bits_core::mask::helper::Assign;
+    /// # use bits::block::*;
+    /// # use bits::mask::helper::Assign;
     /// let mut a = bits_buf::Buf::<[u64; 4]>::empty();
     /// a.set1(0);
     /// a.set1(1);

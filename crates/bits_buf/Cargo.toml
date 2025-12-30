@@ -1,9 +1,11 @@
 [package]
-name = "ano"
+name = "bits_buf"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
+bit.path = "../bit"
+bits.path = "../bits"
 
 [lints]
 workspace = true

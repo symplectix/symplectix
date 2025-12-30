@@ -132,7 +132,7 @@ impl WordSelectHelper for u32 {
 
 impl WordSelectHelper for u128 {
     /// ```
-    /// # use bits_core::block::*;
+    /// # use bits::block::*;
     /// let mut n: u128 = 0;
     /// for i in (0..128).step_by(2) {
     ///     n.set1(i);
@@ -158,12 +158,6 @@ impl WordSelectHelper for usize {
     #[inline]
     fn select1(self, c: usize) -> Option<usize> {
         (self as u64).select1(c)
-    }
-
-    #[cfg(target_pointer_width = "128")]
-    #[inline]
-    fn select1(self, c: usize) -> Option<usize> {
-        (self as u128).select_word(c)
     }
 }
 

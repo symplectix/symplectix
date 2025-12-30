@@ -1,0 +1,14 @@
+[package]
+name = "fenwicktree"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bits.path = "../bits"
+
+[dev-dependencies]
+quickcheck.workspace = true
+quickcheck_macros.workspace = true
+
+[lints]
+workspace = true

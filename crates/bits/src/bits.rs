@@ -94,7 +94,7 @@ impl<T: Block> Bits<T> {
     /// # Tests
     ///
     /// ```
-    /// # use bits_core::Bits;
+    /// # use bits::Bits;
     /// let v: &Bits<u8> = Bits::new(&[0, 0, 0]);
     /// let w: &Bits<u8> = Bits::new(&[]);
     /// assert_eq!(v.bits(), 24);
@@ -111,7 +111,7 @@ impl<T: Block> Bits<T> {
     /// # Examples
     ///
     /// ```
-    /// # use bits_core::Bits;
+    /// # use bits::Bits;
     /// let v: &Bits<u64> = Bits::new(&[0b00000101, 0b01100011, 0b01100000]);
     /// assert_eq!(v.test(0), Some(true));
     /// assert_eq!(v.test(64), Some(true));
@@ -149,7 +149,7 @@ impl<T: Block + Count> Bits<T> {
     /// # Examples
     ///
     /// ```
-    /// # use bits_core::Bits;
+    /// # use bits::Bits;
     /// let a: &Bits<u64> = Bits::new(&[]);
     /// let b: &Bits<u64> = Bits::new(&[0, 0, 0]);
     /// let c: &Bits<u64> = Bits::new(&[0, 1, 3]);
@@ -167,7 +167,7 @@ impl<T: Block + Count> Bits<T> {
     /// # Examples
     ///
     /// ```
-    /// # use bits_core::Bits;
+    /// # use bits::Bits;
     /// let a: &Bits<u64> = Bits::new(&[]);
     /// let b: &Bits<u64> = Bits::new(&[0, 0, 0]);
     /// let c: &Bits<u64> = Bits::new(&[0, 1, 3]);
@@ -185,7 +185,7 @@ impl<T: Block + Count> Bits<T> {
     /// # Examples
     ///
     /// ```
-    /// # use bits_core::Bits;
+    /// # use bits::Bits;
     /// let a: &Bits<u64> = Bits::new(&[0, 0, 0]);
     /// let b: &Bits<u64> = Bits::new(&[]);
     /// let c: &Bits<u64> = Bits::new(&[!0, !0, !0]);
@@ -203,7 +203,7 @@ impl<T: Block + Count> Bits<T> {
     /// # Examples
     ///
     /// ```
-    /// # use bits_core::Bits;
+    /// # use bits::Bits;
     /// let b1: &Bits<u64> = Bits::new(&[]);
     /// let b2: &Bits<u64> = Bits::new(&[0, 0, 0]);
     /// let b3: &Bits<u64> = Bits::new(&[!0, !0, !0]);
@@ -352,7 +352,7 @@ impl<B: Block + Pack> Bits<B> {
     /// # Examples
     ///
     /// ```
-    /// # use bits_core::Bits;
+    /// # use bits::Bits;
     /// let bits: &Bits<u16> = Bits::new(&[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001]);
     /// let len = 4;
     /// assert_eq!(bits.unpack::<u8>(0, len), 0b0011);
