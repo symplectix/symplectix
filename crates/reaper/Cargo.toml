@@ -1,0 +1,15 @@
+[package]
+name = "reaper"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+path = "reaper.rs"
+
+[dependencies]
+libc.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true
