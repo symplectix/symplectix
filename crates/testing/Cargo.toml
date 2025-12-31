@@ -1,0 +1,14 @@
+[package]
+name = "testing"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[lib]
+path = "testing.rs"
+
+[dependencies]
+tempfile.workspace = true
