@@ -1,18 +1,39 @@
 #![allow(missing_docs)]
 use std::ffi::OsString;
-use std::os::unix::process::{CommandExt, ExitStatusExt};
+use std::os::unix::process::{
+    CommandExt,
+    ExitStatusExt,
+};
 use std::path::PathBuf;
-use std::process::{ExitCode, ExitStatus, Stdio};
+use std::process::{
+    ExitCode,
+    ExitStatus,
+    Stdio,
+};
 use std::sync::Arc;
 use std::time::Duration;
-use std::{env, io, process};
+use std::{
+    env,
+    io,
+    process,
+};
 
 use futures::future;
 use futures::prelude::*;
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::signal::unix::{SignalKind, signal};
+use tokio::io::{
+    AsyncBufReadExt,
+    BufReader,
+};
+use tokio::signal::unix::{
+    SignalKind,
+    signal,
+};
 use tokio::time;
-use tracing::{error, info, trace};
+use tracing::{
+    error,
+    info,
+    trace,
+};
 
 mod child;
 mod fsutil;
@@ -87,13 +108,13 @@ enum ProcessInner {
 pub struct WaitStatus {
     exit_status: ExitStatus,
     exit_reason: ExitReasons,
-    cmd: Arc<Command>,
+    cmd:         Arc<Command>,
 }
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 struct ExitReasons {
-    io_error: Option<io::ErrorKind>,
-    timedout: bool,
+    io_error:      Option<io::ErrorKind>,
+    timedout:      bool,
     proc_signaled: Option<libc::c_int>,
     self_signaled: Option<libc::c_int>,
 }
@@ -124,7 +145,7 @@ impl Command {
         Ok(WaitStatus {
             exit_status: ExitStatus::from_raw(0),
             exit_reason: ExitReasons::default(),
-            cmd: self.clone(),
+            cmd:         self.clone(),
         })
     }
 

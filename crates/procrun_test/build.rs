@@ -1,9 +1,13 @@
 //! Builds a C executable.
 
-use std::env;
-use std::io;
-use std::process::Command;
-use std::process::Stdio;
+use std::process::{
+    Command,
+    Stdio,
+};
+use std::{
+    env,
+    io,
+};
 
 fn main() -> io::Result<()> {
     let out_dir = env::var("OUT_DIR").expect("can not find OUT_DIR");

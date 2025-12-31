@@ -2,7 +2,10 @@
 
 use std::env;
 use std::ffi::OsString;
-use std::process::{ExitCode, Termination};
+use std::process::{
+    ExitCode,
+    Termination,
+};
 use std::sync::Arc;
 
 use anyhow::Context;
