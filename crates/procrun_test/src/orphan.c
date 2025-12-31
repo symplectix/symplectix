@@ -4,7 +4,7 @@
 
 int orphan(int n) {
     pid_t child;
-    int max_depth = 20;
+    int max_depth = 2;
 
     if ((child = fork()) < 0) {
         perror("could not create a child process");
@@ -18,18 +18,15 @@ int orphan(int n) {
 
         fprintf(
             stderr,
-            "\tdepth=%d\tpid=%d\tgroup=%d\tparent=%d\tchild=%d\n",
-            n,
+            "\tParent\tpid=%d\tgroup=%d\tparent=%d\tchild=%d\n",
             pid,
             group,
             parent,
             child
         );
         fflush(stderr);
-
         // the first process is monitored by run.
         sleep(max_depth-n);
-
         exit(n);
     } else {
         pid_t pid    = getpid();
@@ -41,19 +38,17 @@ int orphan(int n) {
         }
 
         // Wait to be reparented.
-        while (n == max_depth && getppid() == parent) {
+        while (getppid() == parent) {
         }
         fprintf(
             stderr,
-            "\tdepth=%d\tpid=%d\tgroup=%d\treparented=%d\tparent_before=%d\n",
-            n,
+            "\tOrphan\tpid=%d\tgroup=%d\tparent=%d\tparent_before=%d\n",
             pid,
             group,
             getppid(),
             parent
         );
         fflush(stderr);
-
         exit(n);
     }
 }

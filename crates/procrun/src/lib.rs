@@ -1,5 +1,6 @@
 //! An internal library for the procrun executable.
 
+use std::env;
 use std::ffi::OsString;
 use std::process::{ExitCode, Termination};
 use std::sync::Arc;
@@ -26,7 +27,16 @@ impl Termination for Exit {
 /// Spawns a new process using `proc` and waits the status.
 #[tokio::main]
 pub async fn run() -> Exit {
-    Exit(try_run(std::env::args_os()).await)
+    Exit(try_run(env::args_os()).await)
+}
+
+/// Spawns a new process using `proc` and waits the status.
+#[tokio::main]
+pub async fn run_args<T>(args: impl IntoIterator<Item = T>) -> Exit
+where
+    T: Into<OsString> + Clone,
+{
+    Exit(try_run(args).await)
 }
 
 /// Spawns a new process using `proc` and waits the status.
@@ -41,7 +51,7 @@ where
                 .with_target(false)
                 .without_time(),
         )
-        .with(EnvFilter::from_env("RUN_LOG"))
+        .with(EnvFilter::from_env("PROCRUN_LOG"))
         .init();
 
     Arc::new(proc::Command::from_args_os(args))
