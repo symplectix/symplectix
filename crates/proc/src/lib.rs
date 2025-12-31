@@ -36,7 +36,7 @@ use tracing::{
 };
 
 mod child;
-
+mod fsutil;
 #[cfg(test)]
 mod run_test;
 
@@ -227,7 +227,7 @@ impl Process {
         self.inner.wait().await
     }
 
-    fn pid(&self) -> Option<u32> {
+    pub fn pid(&self) -> Option<u32> {
         match &self.inner {
             ProcessInner::DryRun { .. } => None,
             ProcessInner::Spawned { child, .. } => Some(child.pid),

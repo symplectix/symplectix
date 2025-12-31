@@ -1,0 +1,17 @@
+[package]
+name = "procrun"
+version.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow.workspace = true
+proc.workspace = true
+tokio.workspace = true
+tracing-subscriber.workspace = true
+
+[[bin]]
+name = "procrun"
+path = "bin/procrun.rs"

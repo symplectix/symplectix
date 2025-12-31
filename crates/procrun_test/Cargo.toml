@@ -1,0 +1,18 @@
+[package]
+name = "procrun_test"
+version.workspace = true
+edition.workspace = true
+build = "build.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+procrun.workspace = true
+
+[build-dependencies]
+anyhow.workspace = true
+
+[[bin]]
+name = "procrun_test"
+path = "bin/procrun_test.rs"

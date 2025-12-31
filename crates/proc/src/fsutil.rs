@@ -1,7 +1,6 @@
 #![allow(missing_docs)]
 use std::io;
 use std::path::Path;
-use std::process::Stdio;
 
 use tokio::fs;
 
@@ -25,8 +24,4 @@ pub async fn create_file<P: AsRef<Path>>(path: P, truncate: bool) -> io::Result<
     };
 
     Ok(file.into_std().await)
-}
-
-pub async fn stdio_from<P: AsRef<Path>>(path: P, truncate: bool) -> io::Result<Stdio> {
-    Ok(Stdio::from(create_file(path, truncate).await?))
 }

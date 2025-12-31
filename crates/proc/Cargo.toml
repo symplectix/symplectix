@@ -1,0 +1,20 @@
+[package]
+name = "proc"
+version.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+clap.workspace = true
+futures.workspace = true
+humantime.workspace = true
+libc.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+reaper.workspace = true
+
+[dev-dependencies]
+testing.workspace = true
