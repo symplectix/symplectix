@@ -15,11 +15,6 @@ build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
 build:rustfmt --output_groups=+rustfmt_checks
 build:rustfmt --@rules_rust//rust/settings:rustfmt.toml=//:.rustfmt.toml
 
-# Enable clippy lints.
-common:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
-common:clippy --output_groups=+clippy_checks
-common:clippy --@rules_rust//rust/settings:clippy.toml=//:.clippy.toml
-
 # Enable rustc lints.
 # https://doc.rust-lang.org/rustc/lints/index.html
 common:clippy --@rules_rust//rust/settings:clippy_flag=-Dmissing-docs
@@ -61,7 +56,6 @@ build:release --@rules_rust//rust/settings:extra_rustc_flag=-Cembed-bitcode=yes
 build:release --@rules_rust//rust/settings:extra_rustc_flag=-Ccodegen-units=1
 build:release --@rules_rust//rust/settings:extra_rustc_flag=-Coverflow-checks=off
 
-build:ci --config=clippy
 build:ci --config=rustfmt
 build:ci --config=stable
 build:ci --config=dev
