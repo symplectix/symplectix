@@ -88,3 +88,5 @@ jobs:
         run: cargo build --profile ${{ matrix.profile }} --workspace
       - name: Run test
         run: cargo test --profile ${{ matrix.profile }} --workspace
+      - name: Print build info
+        run: cargo run --profile ${{ matrix.profile }} --bin buildinfo
