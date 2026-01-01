@@ -21,10 +21,6 @@ fn main() -> io::Result<()> {
         PathBuf::from(out_dir).join("print_buildinfo.rs")
     };
 
-    for (k, v) in env::vars() {
-        println!("{:?} {:?}", k, v);
-    }
-
     // no env for the project root.
     // https://github.com/rust-lang/cargo/issues/3946
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize()?;
