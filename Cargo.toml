@@ -42,6 +42,10 @@ missing_docs = "deny"
 [profile.dev.package.fenwicktree]
 overflow-checks = false
 
+[profile.release.package.buildinfo]
+# no need to optimize
+opt-level = 0
+
 [profile.release]
 lto = true
 codegen-units = 1

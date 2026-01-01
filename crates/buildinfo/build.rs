@@ -30,10 +30,7 @@ fn main() -> io::Result<()> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize()?;
     let head = root.join(".git/HEAD");
     assert!(head.exists(), "buildinfo has been moved?");
-
-    println!("{:?}", env::current_dir());
-    println!("{:?}", PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize()?);
-    panic!();
+    println!("cargo::rerun-if-changed=../../.git/HEAD");
 
     let revision = {
         let rev_parse = git()
