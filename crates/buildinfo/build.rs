@@ -51,7 +51,7 @@ fn main() -> io::Result<()> {
 
     let body = format!(
         r#"
-fn buildinfo () {{
+fn buildinfo() {{
     println!("r{run_number}.{revision}");
 }}
 
