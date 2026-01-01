@@ -117,11 +117,6 @@ rust.toolchain(
 )
 use_repo(rust, "rust_toolchains")
 
-register_toolchains(
-    "@rust_toolchains//:all",
-    "//protobuf/prost:prost_toolchain",
-)
-
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", isolate = True)
 
 # Raw bindings to platform APIs
