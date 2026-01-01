@@ -47,14 +47,12 @@ fn main() -> io::Result<()> {
     // * run_attempt: A unique number for each attempt of a particular workflow run in a repository.
     //   This number begins at 1 for the workflow run's first attempt, and increments with each
     //   re-run.
-    let run_id = env::var("GITHUB_RUN_ID").unwrap_or("0".to_owned());
     let run_number = env::var("GITHUB_RUN_NUMBER").unwrap_or("0".to_owned());
 
     let body = format!(
         r#"
 fn buildinfo () {{
     println!("r{run_number}.{revision}");
-    println!("run_id: {run_id}");
 }}
 
 fn main() {{
