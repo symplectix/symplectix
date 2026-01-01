@@ -21,11 +21,14 @@ fn main() -> io::Result<()> {
         PathBuf::from(out_dir).join("print_buildinfo.rs")
     };
 
-    // no env for the project root.
+    // No env for the project root.
     // https://github.com/rust-lang/cargo/issues/3946
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize()?;
     let head = root.join(".git/HEAD");
     assert!(head.exists(), "buildinfo has been moved?");
+    // Will not work when developing on a local machine.
+    // In a CI environment, even if a cache exists,
+    // this build script is (supposed to be) rebuilt every time.
     println!("cargo::rerun-if-changed=../../.git/HEAD");
 
     let revision = {
