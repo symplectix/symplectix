@@ -21,51 +21,46 @@ fn main() -> io::Result<()> {
         PathBuf::from(out_dir).join("print_buildinfo.rs")
     };
 
-    // for (k, v) in env::vars() {
-    //     println!("{} {}", k, v);
-    // }
+    let revision = {
+        let rev_parse = git()
+            .arg("rev-parse")
+            .arg("--short=10")
+            .arg("HEAD")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()?
+            .wait_with_output()?;
+        // String::from_utf8_lossy_owned is unstable.
+        // let revision = String::from_utf8_lossy_owned(rev_parse.stdout);
+        String::from_utf8_lossy(&rev_parse.stdout).into_owned()
+    };
+    let revision = revision.lines().nth(0).expect("unexpected rev-parse output");
 
-    // let cargo = env!("CARGO");
-    // let pkgver = env!("CARGO_PKG_VERSION");
-    // let pkgver_major = env!("CARGO_PKG_VERSION_MAJOR");
-    // let pkgver_minor = env!("CARGO_PKG_VERSION_MINOR");
-    // let pkgver_patch = env!("CARGO_PKG_VERSION_PATCH");
-
-    let rev_count = git()
-        .arg("rev-list")
-        .arg("--count")
-        .arg("HEAD")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()?
-        .wait_with_output()?;
-
-    let rev_parse = git()
-        .arg("rev-parse")
-        .arg("--short=10")
-        .arg("HEAD")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()?
-        .wait_with_output()?;
-
+    // Github Actions environment variables.
+    // https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+    //
+    // * run_id: A unique number for each workflow run within a repository. This number does not
+    //   change if you re-run the workflow run.
+    // * run_number: A unique number for each run of a particular workflow in a repository. This
+    //   number begins at 1 for the workflow's first run, and increments with each new run. This
+    //   number does not change if you re-run the workflow run.
+    // * run_attempt: A unique number for each attempt of a particular workflow run in a repository.
+    //   This number begins at 1 for the workflow run's first attempt, and increments with each
+    //   re-run.
     let run_id = env::var("GITHUB_RUN_ID").unwrap_or("0".to_owned());
     let run_number = env::var("GITHUB_RUN_NUMBER").unwrap_or("0".to_owned());
-    let run_attempt = env::var("GITHUB_RUN_ATTEMPT").unwrap_or("0".to_owned());
 
     let body = format!(
         r#"
 fn buildinfo () {{
-    println!("pkgver: r{rev_count}.{revision}");
-    println!("run: {run_id}-{run_number}-{run_attempt}");
+    println!("r{run_number}.{revision}");
+    println!("run_id: {run_id}");
 }}
 
 fn main() {{
     buildinfo();
 }}
 "#,
-        revision = &String::from_utf8_lossy(&rev_parse.stdout)[..rev_parse.stdout.len() - 1],
-        rev_count = &String::from_utf8_lossy(&rev_count.stdout)[..rev_count.stdout.len() - 1]
     );
 
     fs::write(out_path, body)
