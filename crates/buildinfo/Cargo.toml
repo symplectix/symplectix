@@ -1,0 +1,10 @@
+[package]
+name = "buildinfo"
+version.workspace = true
+edition.workspace = true
+build = "build.rs"
+
+[dependencies]
+
+[lints]
+workspace = true
