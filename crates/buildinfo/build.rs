@@ -34,7 +34,7 @@ fn main() -> io::Result<()> {
         // let revision = String::from_utf8_lossy_owned(rev_parse.stdout);
         String::from_utf8_lossy(&rev_parse.stdout).into_owned()
     };
-    let revision = revision.lines().nth(0).expect("unexpected rev-parse output");
+    let revision = revision.lines().next().expect("unexpected rev-parse output");
 
     // Github Actions environment variables.
     // https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
