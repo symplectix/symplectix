@@ -18,7 +18,7 @@ fn main() -> io::Result<()> {
     let flags = Flags::parse();
     let md = fs::read_to_string(&flags.path)?;
 
-    let cst = parse_md(&md).ok_or(io::Error::new(io::ErrorKind::Other, "failed to parse"))?;
+    let cst = parse_md(&md).ok_or(io::Error::other("failed to parse"))?;
     let mut cur = cst.walk();
     visit(&mut cur, 0, &md);
     Ok(())
