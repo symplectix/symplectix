@@ -1,0 +1,23 @@
+[package]
+name = "protoc_plugin"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+prost.workspace = true
+prost-types.workspace = true
+prost-reflect.workspace = true
+
+[lints]
+workspace = true
+
+# Run compiled executable from repository root:
+# protoc \
+#   --plugin=./target/debug/protoc-gen-message-descriptor-dump \
+#   --message-descriptor-dump_out=. \
+#   crates/protoc_plugin/examplepb/example.proto \
+#   crates/protoc_plugin/examplepb/service.proto
+[[bin]]
+name = "protoc-gen-message-descriptor-dump"
+path = "bin/message_descriptor_dump.rs"
