@@ -1,0 +1,13 @@
+[package]
+name = "print_md_cst"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+clap.workspace = true
+tree-sitter.workspace = true
+tree-sitter-md.workspace = true
+
+[lints]
+workspace = true
