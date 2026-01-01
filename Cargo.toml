@@ -20,6 +20,9 @@ quickcheck = { version = "1" }
 quickcheck_macros = { version = "1" }
 proc = { path= "crates/proc" }
 procrun = { path= "crates/procrun" }
+prost = { version = "0.13" }
+prost-types = { version = "0.13" }
+prost-reflect = { version = "0.14" }
 reaper = { path = "crates/reaper" }
 tempfile = { version = "3" }
 testing = { path = "crates/testing" }

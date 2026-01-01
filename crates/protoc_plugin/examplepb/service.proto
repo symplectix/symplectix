@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package examplepb;
 
-import "protobuf/protoc_plugin/examplepb/example.proto";
+import "crates/protoc_plugin/examplepb/example.proto";
 
 service CustomerService {
     rpc GetCustomer(examplepb.Customer.Id) returns (examplepb.Customer);
