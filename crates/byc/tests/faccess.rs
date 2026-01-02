@@ -25,5 +25,7 @@ fn cargo() {
 
 #[test]
 fn rootfs() {
+    check_ok(byc::faccess().r_ok().at("/bin/bash"));
+    check_ok(byc::faccess().r_ok().x_ok().at("/bin/bash"));
     check_err(byc::faccess().w_ok().at("/bin/bash"));
 }
