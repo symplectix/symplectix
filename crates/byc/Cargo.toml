@@ -1,0 +1,12 @@
+[package]
+name = "byc"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bitflags.workspace = true
+bon.workspace = true
+libc.workspace = true
+
+[lints]
+workspace = true
