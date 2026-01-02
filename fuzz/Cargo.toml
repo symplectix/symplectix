@@ -1,0 +1,32 @@
+[package]
+name = "fuzz"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[[bin]]
+name = "buffer_overflow"
+path = "fuzz_targets/buffer_overflow.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "use_after_scope"
+path = "fuzz_targets/use_after_scope.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "memory_leaks"
+path = "fuzz_targets/memory_leaks.rs"
+test = false
+doc = false
+bench = false
