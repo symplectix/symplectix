@@ -10,6 +10,9 @@ edition = "2024"
 
 [workspace.dependencies]
 anyhow = { version = "1" }
+bitflags = { version = "2" }
+bon = { version = "3.8" }
+byc = { path = "crates/byc" }
 cc = { version = "1" }
 clap = { version = "4.5.53", features = ["derive"] }
 futures = { version = "0.3" }
