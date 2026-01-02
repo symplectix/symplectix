@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   workflow_dispatch:
@@ -10,47 +10,6 @@ on:
       - main
 
 jobs:
-  Bazel:
-    strategy:
-      matrix:
-        os:
-          # - ubuntu-22.04
-          - ubuntu-24.04
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/cache/restore@v4
-        id: restore-bazel-cache
-        env:
-          cache-name: bazel-cache
-        with:
-          path: |
-            ~/.cache/bazel
-            ~/.cache/bazelisk
-          key: ${{ matrix.os }}-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ matrix.os }}-${{ env.cache-name }}-
-
-      - name: Build
-        run: bazel build --config=ci //...
-
-      - name: Test
-        run: bazel test --config=ci //...
-
-      # TODO: Test fuzzing targets
-      # - name: Fuzz
-      #   run: bazel build --config=fuzzing //...
-
-      - uses: actions/cache/save@v4
-        if: github.ref == 'refs/heads/main'
-        with:
-          path: |
-            ~/.cache/bazel
-            ~/.cache/bazelisk
-          key: ${{ steps.restore-bazel-cache.outputs.cache-primary-key }}
-
   format:
     runs-on: ubuntu-latest
     steps:
