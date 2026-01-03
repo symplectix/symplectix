@@ -45,9 +45,6 @@ pub struct Command {
 
 #[derive(Debug, Clone, PartialEq, Eq, clap::Parser)]
 pub struct Flags {
-    #[arg(long)]
-    dry_run: bool,
-
     #[command(flatten)]
     hook: Hook,
 
@@ -101,9 +98,9 @@ pub struct Process {
     inner: ProcessInner,
 }
 
-enum ProcessInner {
-    DryRun { flags: Arc<ArcSwap<Flags>> },
-    Spawned { reaper: reaper::Channel, child: child::Child },
+struct ProcessInner {
+    reaper: reaper::Channel,
+    child:  child::Child,
 }
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -152,40 +149,36 @@ impl Command {
     #[tracing::instrument(skip(self))]
     pub async fn spawn(mut self) -> io::Result<Process> {
         let flags = self.flags.load();
-        if flags.dry_run {
-            Ok(Process { inner: ProcessInner::DryRun { flags: self.flags } })
-        } else {
-            wait_for(&flags.hook.wait_for).await.map_err(|err| match err {
-                SpawnError::Io(io_err) => io_err,
-                SpawnError::FoundErrFile(path) => io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!("found an error file at {}", path.display()),
-                ),
-            })?;
+        wait_for(&flags.hook.wait_for).await.map_err(|err| match err {
+            SpawnError::Io(io_err) => io_err,
+            SpawnError::FoundErrFile(path) => io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("found an error file at {}", path.display()),
+            ),
+        })?;
 
-            self.cmd
-                .args(&flags.args[..])
-                // Put the child into a new process group.
-                // A process group ID of 0 will use the process ID as the PGID.
-                .process_group(0)
-                // TODO: remove
-                .stderr(Stdio::piped());
-            // TODO: nightly
-            // #[cfg(target_os = "linux")]
-            // {
-            //     use std::os::linux::process::CommandExt;
-            //     self.cmd.create_pidfd(true);
-            // }
+        self.cmd
+            .args(&flags.args[..])
+            // Put the child into a new process group.
+            // A process group ID of 0 will use the process ID as the PGID.
+            .process_group(0)
+            // TODO: remove
+            .stderr(Stdio::piped());
+        // TODO: nightly
+        // #[cfg(target_os = "linux")]
+        // {
+        //     use std::os::linux::process::CommandExt;
+        //     self.cmd.create_pidfd(true);
+        // }
 
-            #[cfg(target_os = "linux")]
-            unsafe {
-                libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
-            }
-
-            let reaper = reaper::subscribe();
-            let child = child::spawn(self.cmd, self.flags)?;
-            Ok(Process { inner: ProcessInner::Spawned { reaper, child } })
+        #[cfg(target_os = "linux")]
+        unsafe {
+            libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
         }
+
+        let reaper = reaper::subscribe();
+        let child = child::spawn(self.cmd, self.flags)?;
+        Ok(Process { inner: ProcessInner { reaper, child } })
     }
 }
 
@@ -223,100 +216,92 @@ impl Process {
         self.inner.wait().await
     }
 
-    pub fn pid(&self) -> Option<u32> {
+    pub fn pid(&self) -> u32 {
         match &self.inner {
-            ProcessInner::DryRun { .. } => None,
-            ProcessInner::Spawned { child, .. } => Some(child.pid),
+            ProcessInner { child, .. } => child.pid,
         }
     }
 }
 
 impl ProcessInner {
     async fn wait(self) -> io::Result<ExitStatus> {
-        match self {
-            ProcessInner::DryRun { flags } => Ok(ExitStatus {
-                exit_status: process::ExitStatus::from_raw(0),
-                exit_reasons: ExitReasons::default(),
-                flags,
-            }),
-            ProcessInner::Spawned { mut reaper, mut child } => {
-                // SIGTERM: stop monitored process
-                // SIGINT:  e.g., Ctrl-C at terminal
-                // SIGQUIT: e.g., Ctrl-\ at terminal
-                // SIGHUP:  e.g., terminal closed
-                let mut sigterm = signal(SignalKind::terminate())?;
-                let mut sigint = signal(SignalKind::interrupt())?;
+        let ProcessInner { mut reaper, mut child } = self;
 
-                let stderr = child.stderr().unwrap();
-                let mut stderr = BufReader::new(stderr).lines();
+        // SIGTERM: stop monitored process
+        // SIGINT:  e.g., Ctrl-C at terminal
+        // SIGQUIT: e.g., Ctrl-\ at terminal
+        // SIGHUP:  e.g., terminal closed
+        let mut sigterm = signal(SignalKind::terminate())?;
+        let mut sigint = signal(SignalKind::interrupt())?;
 
-                let mut cause = ExitReasons::default();
-                let mut _interrupted = 0;
+        let stderr = child.stderr().unwrap();
+        let mut stderr = BufReader::new(stderr).lines();
 
-                let to_wait_status =
-                    |exit_status: process::ExitStatus, mut cause: ExitReasons, cmd| -> ExitStatus {
-                        cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
-                        ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(cmd) }
-                    };
+        let mut cause = ExitReasons::default();
+        let mut _interrupted = 0;
 
-                let result = loop {
-                    tokio::select! {
-                        biased;
-                        reaped = reaper.recv() => match reaped {
-                            Err(err) => {
-                                trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
-                            }
-                            Ok((pid, exit_status)) => if pid == child.pid as libc::pid_t {
-                                break Ok(to_wait_status(exit_status, cause, &child.flags));
-                            }
-                        },
-                        _ = sigterm.recv() => {
-                            _interrupted += 1;
-                            cause.self_signaled = cause.self_signaled.or(Some(libc::SIGTERM));
-                            child.kill(Some(libc::SIGTERM)).await;
-                        },
-                        _ = sigint.recv() => {
-                            _interrupted += 1;
-                            cause.self_signaled = cause.self_signaled.or(Some(libc::SIGINT));
-                            child.kill(Some(libc::SIGINT)).await;
-                        },
-                        child_stat = child.wait() => match child_stat {
-                            Err(err) => {
-                                error!("got an error while waiting the child: {}", err.to_string());
-                                cause.io_error = cause.io_error.or(Some(err.kind()));
-                                child.kill(None).await;
-                            }
-                            Ok(None) => {
-                                _interrupted += 1;
-                                cause.timedout = true;
-                                child.kill(None).await;
-                            }
-                            Ok(Some(exit_status)) => {
-                                break Ok(to_wait_status(exit_status, cause, &child.flags));
-                            }
-                        },
-                        line = stderr.next_line() => match line {
-                            Err(err) => {
-                                error!("got an error while reading lines: {}", err.to_string());
-                                cause.io_error = cause.io_error.or(Some(err.kind()));
-                                child.kill(None).await;
-                            }
-                            Ok(None) => {
-                                trace!("got an empty result from next_line");
-                            }
-                            Ok(Some(line)) => {
-                                tracing::info!("{}", line);
-                            }
-                        },
+        let to_wait_status =
+            |exit_status: process::ExitStatus, mut cause: ExitReasons, cmd| -> ExitStatus {
+                cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
+                ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(cmd) }
+            };
+
+        let result = loop {
+            tokio::select! {
+                biased;
+                reaped = reaper.recv() => match reaped {
+                    Err(err) => {
+                        trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
                     }
-                };
-
-                // Reap all descendant processes here,
-                // to ensure there are no children left behind.
-                child.killpg();
-                on_exit(child.flags.load().hook.on_exit.as_ref(), result).await
+                    Ok((pid, exit_status)) => if pid == child.pid as libc::pid_t {
+                        break Ok(to_wait_status(exit_status, cause, &child.flags));
+                    }
+                },
+                _ = sigterm.recv() => {
+                    _interrupted += 1;
+                    cause.self_signaled = cause.self_signaled.or(Some(libc::SIGTERM));
+                    child.kill(Some(libc::SIGTERM)).await;
+                },
+                _ = sigint.recv() => {
+                    _interrupted += 1;
+                    cause.self_signaled = cause.self_signaled.or(Some(libc::SIGINT));
+                    child.kill(Some(libc::SIGINT)).await;
+                },
+                child_stat = child.wait() => match child_stat {
+                    Err(err) => {
+                        error!("got an error while waiting the child: {}", err.to_string());
+                        cause.io_error = cause.io_error.or(Some(err.kind()));
+                        child.kill(None).await;
+                    }
+                    Ok(None) => {
+                        _interrupted += 1;
+                        cause.timedout = true;
+                        child.kill(None).await;
+                    }
+                    Ok(Some(exit_status)) => {
+                        break Ok(to_wait_status(exit_status, cause, &child.flags));
+                    }
+                },
+                line = stderr.next_line() => match line {
+                    Err(err) => {
+                        error!("got an error while reading lines: {}", err.to_string());
+                        cause.io_error = cause.io_error.or(Some(err.kind()));
+                        child.kill(None).await;
+                    }
+                    Ok(None) => {
+                        trace!("got an empty result from next_line");
+                    }
+                    Ok(Some(line)) => {
+                        tracing::info!("{}", line);
+                    }
+                },
             }
-        }
+        };
+
+        // Reap all descendant processes here,
+        // to ensure there are no children left behind.
+        child.killpg();
+        on_exit(child.flags.load().hook.on_exit.as_ref(), result).await
     }
 }
 
