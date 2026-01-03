@@ -50,3 +50,19 @@ overflow-checks = false
 [profile.release]
 lto = true
 codegen-units = 1
+
+[package]
+name = "syx"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+tokio.workspace = true
+proc.workspace = true
+
+[[bin]]
+name = "syx"
+path = "src/main.rs"

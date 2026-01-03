@@ -1,0 +1,2 @@
+[alias]
+syx = "run --package syx --release --"
