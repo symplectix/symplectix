@@ -13,11 +13,11 @@ use std::process::{
 use std::sync::Arc;
 use std::time::Duration;
 use std::{
-    env,
     io,
     process,
 };
 
+use arc_swap::ArcSwap;
 use futures::future;
 use futures::prelude::*;
 use tokio::io::{
@@ -31,7 +31,6 @@ use tokio::signal::unix::{
 use tokio::time;
 use tracing::{
     error,
-    info,
     trace,
 };
 
@@ -41,7 +40,7 @@ mod fsutil;
 mod run_test;
 
 #[derive(Debug, Clone, PartialEq, Eq, clap::Parser)]
-pub struct Command {
+pub struct CommandOptions {
     #[arg(long)]
     dry_run: bool,
 
@@ -62,6 +61,11 @@ pub struct Command {
     /// The arguments passed to the command.
     #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     args: Vec<OsString>, // CMD
+}
+
+pub struct Command {
+    cmd:  process::Command,
+    opts: Arc<ArcSwap<CommandOptions>>,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, clap::Parser)]
@@ -99,16 +103,16 @@ pub struct Process {
 }
 
 enum ProcessInner {
-    DryRun { cmd: Arc<Command> },
+    DryRun { cmd: Arc<ArcSwap<CommandOptions>> },
     Spawned { reaper: reaper::Channel, child: child::Child },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 #[error("{exit_status}")]
 pub struct WaitStatus {
     exit_status: ExitStatus,
     exit_reason: ExitReasons,
-    cmd:         Arc<Command>,
+    cmd:         Arc<ArcSwap<CommandOptions>>,
 }
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -129,8 +133,8 @@ enum SpawnError {
     FoundErrFile(PathBuf),
 }
 
-impl Command {
-    pub fn from_args_os<I, T>(args_os: I) -> Command
+impl CommandOptions {
+    pub fn from_args_os<I, T>(args_os: I) -> CommandOptions
     where
         I: IntoIterator<Item = T>,
         T: Into<OsString> + Clone,
@@ -138,42 +142,21 @@ impl Command {
         <Self as clap::Parser>::parse_from(args_os)
     }
 
-    #[tracing::instrument(skip(self))]
-    fn dry_run(self: &Arc<Self>) -> io::Result<WaitStatus> {
-        info!("[DRYRUN] {:?}", self);
-
-        Ok(WaitStatus {
-            exit_status: ExitStatus::from_raw(0),
-            exit_reason: ExitReasons::default(),
-            cmd:         self.clone(),
-        })
+    pub fn command(self) -> Command {
+        let cmd = process::Command::new(&self.program);
+        let opts = Arc::new(ArcSwap::from_pointee(self));
+        Command { cmd, opts }
     }
+}
 
+impl Command {
     #[tracing::instrument(skip(self))]
-    pub async fn spawn(self: &Arc<Self>) -> io::Result<Process> {
-        if self.dry_run {
-            Ok(Process { inner: ProcessInner::DryRun { cmd: self.clone() } })
+    pub async fn spawn(mut self) -> io::Result<Process> {
+        let opts = self.opts.load();
+        if opts.dry_run {
+            Ok(Process { inner: ProcessInner::DryRun { cmd: self.opts } })
         } else {
-            let mut cmd = process::Command::new(&self.program);
-
-            cmd.args(&self.args[..]);
-
-            cmd.stderr(Stdio::piped());
-
-            cmd.env_clear().envs(env::vars().filter(|(key, _)| self.envs.contains(key)));
-
-            // Put the child into a new process group.
-            // A process group ID of 0 will use the process ID as the PGID.
-            cmd.process_group(0);
-
-            // TODO: nightly
-            // #[cfg(target_os = "linux")]
-            // {
-            //     use std::os::linux::process::CommandExt;
-            //     cmd.create_pidfd(true);
-            // }
-
-            wait_for(&self.hook.wait_for).await.map_err(|err| match err {
+            wait_for(&opts.hook.wait_for).await.map_err(|err| match err {
                 SpawnError::Io(io_err) => io_err,
                 SpawnError::FoundErrFile(path) => io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -181,13 +164,27 @@ impl Command {
                 ),
             })?;
 
+            self.cmd
+                .args(&opts.args[..])
+                // Put the child into a new process group.
+                // A process group ID of 0 will use the process ID as the PGID.
+                .process_group(0)
+                // TODO: remove
+                .stderr(Stdio::piped());
+            // TODO: nightly
+            // #[cfg(target_os = "linux")]
+            // {
+            //     use std::os::linux::process::CommandExt;
+            //     self.cmd.create_pidfd(true);
+            // }
+
             #[cfg(target_os = "linux")]
             unsafe {
                 libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
             }
 
             let reaper = reaper::subscribe();
-            let child = child::spawn(cmd, Arc::clone(self))?;
+            let child = child::spawn(self.cmd, Arc::clone(&self.opts))?;
             Ok(Process { inner: ProcessInner::Spawned { reaper, child } })
         }
     }
@@ -238,7 +235,11 @@ impl Process {
 impl ProcessInner {
     async fn wait(self) -> io::Result<WaitStatus> {
         match self {
-            ProcessInner::DryRun { cmd } => cmd.dry_run(),
+            ProcessInner::DryRun { cmd } => Ok(WaitStatus {
+                exit_status: ExitStatus::from_raw(0),
+                exit_reason: ExitReasons::default(),
+                cmd,
+            }),
             ProcessInner::Spawned { mut reaper, mut child } => {
                 // SIGTERM: stop monitored process
                 // SIGINT:  e.g., Ctrl-C at terminal
@@ -314,7 +315,7 @@ impl ProcessInner {
                 // Reap all descendant processes here,
                 // to ensure there are no children left behind.
                 child.killpg();
-                on_exit(child.cmd.hook.on_exit.as_ref(), result).await
+                on_exit(child.cmd.load().hook.on_exit.as_ref(), result).await
             }
         }
     }
@@ -323,8 +324,7 @@ impl ProcessInner {
 impl WaitStatus {
     pub fn exit_ok(&self) -> Result<(), WaitStatusError> {
         let exit_success = self.exit_status.success();
-        let timedout_but_ok = self.exit_reason.timedout && self.cmd.timeout.is_ok;
-
+        let timedout_but_ok = self.exit_reason.timedout && self.cmd.load().timeout.is_ok;
         if exit_success || timedout_but_ok { Ok(()) } else { Err(WaitStatusError(self.clone())) }
     }
 }

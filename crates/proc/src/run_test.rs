@@ -4,7 +4,6 @@ use std::path::{
     Path,
     PathBuf,
 };
-use std::sync::Arc;
 use std::time::Duration;
 
 use testing::TempDirExt;
@@ -14,29 +13,32 @@ use super::{
     SpawnError,
     wait_for,
 };
-use crate::Command;
+use crate::{
+    CommandOptions,
+    Hook,
+    Timeout,
+};
 
-fn command<I, T>(argv: I) -> Arc<Command>
+fn from_argv<I, T>(argv: I) -> CommandOptions
 where
     I: IntoIterator<Item = T>,
     T: Into<OsString> + Clone,
 {
     let mut argv = argv.into_iter();
 
-    Arc::new(Command {
+    CommandOptions {
         dry_run: false,
-        timeout: crate::Timeout { kill_after: None, is_ok: false },
-        hook:    crate::Hook { wait_for: vec![], on_exit: None },
+        timeout: Timeout { kill_after: None, is_ok: false },
+        hook:    Hook { wait_for: vec![], on_exit: None },
         program: argv.next().unwrap().into(),
         envs:    vec![],
         args:    argv.map(|s| s.into()).collect::<Vec<_>>(),
-    })
+    }
 }
 
-impl Command {
-    fn timeout(mut self: Arc<Self>, duration: Duration) -> Arc<Self> {
-        Arc::make_mut(&mut self).timeout =
-            crate::Timeout { kill_after: Some(duration), is_ok: false };
+impl CommandOptions {
+    fn timeout(mut self, duration: Duration) -> Self {
+        self.timeout = Timeout { kill_after: Some(duration), is_ok: false };
         self
     }
 }
@@ -44,21 +46,24 @@ impl Command {
 #[tokio::test]
 async fn executable() {
     // Should be ok because this checks whether we can spawn the process.
-    assert!(command(["test", "-e", "/xxx"]).spawn().await.is_ok());
-    assert!(command(["test", "-e", "/yyy"]).spawn().await.is_ok());
-    assert!(command(["test", "-e", "/tmp"]).spawn().await.is_ok());
+    assert!(from_argv(["test", "-e", "/xxx"]).command().spawn().await.is_ok());
+    assert!(from_argv(["test", "-e", "/yyy"]).command().spawn().await.is_ok());
+    assert!(from_argv(["test", "-e", "/tmp"]).command().spawn().await.is_ok());
 }
 
 #[tokio::test]
 async fn not_executable() {
-    assert!(command(["not_command", "foo"]).spawn().await.is_err());
+    assert!(from_argv(["not_command", "foo"]).command().spawn().await.is_err());
 }
 
 #[tokio::test]
 async fn exit() {
     for i in 1..256 {
-        let exit =
-            command(["sh", "-c", &format!("exit {}", &i.to_string())]).spawn().await.unwrap();
+        let exit = from_argv(["sh", "-c", &format!("exit {}", &i.to_string())])
+            .command()
+            .spawn()
+            .await
+            .unwrap();
         let status = exit.wait().await.expect("failed to wait");
 
         let Err(err) = status.exit_ok() else {
@@ -71,7 +76,7 @@ async fn exit() {
 
 #[tokio::test]
 async fn sleep() {
-    let sleep = command(["sleep", "1"]).spawn().await.unwrap();
+    let sleep = from_argv(["sleep", "1"]).command().spawn().await.unwrap();
     let status = sleep.wait().await.expect("failed to wait");
     assert!(status.exit_ok().is_ok(), "expected that the command 'sleep' exits successfully",);
 }
@@ -79,7 +84,7 @@ async fn sleep() {
 #[tokio::test]
 async fn sleep_kill() {
     for sig in [libc::SIGINT, libc::SIGTERM, libc::SIGKILL] {
-        let sleep = command(["sleep", "10"]).spawn().await.unwrap();
+        let sleep = from_argv(["sleep", "10"]).command().spawn().await.unwrap();
         // sleep.inner.kill(Some(sig)).await;
         crate::child::kill(sleep.pid().unwrap() as i32, sig).expect("failed to kill");
         let status = sleep.wait().await.expect("failed to wait");
@@ -93,7 +98,7 @@ async fn sleep_kill() {
 #[tokio::test]
 async fn sleep_timeout() {
     let timeout = Duration::from_millis(100);
-    let sleep = command(["sleep", "10"]).timeout(timeout).spawn().await.unwrap();
+    let sleep = from_argv(["sleep", "10"]).timeout(timeout).command().spawn().await.unwrap();
     let status = sleep.wait().await.expect("failed to wait");
     assert!(
         status.exit_reason.timedout,

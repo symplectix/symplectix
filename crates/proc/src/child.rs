@@ -6,6 +6,7 @@ use std::process::{
 use std::sync::Arc;
 use std::time::Duration;
 
+use arc_swap::ArcSwap;
 use tokio::process::{
     Child as TokioChild,
     ChildStderr,
@@ -14,15 +15,17 @@ use tokio::process::{
 use tokio::time;
 use tracing::trace;
 
+use crate::CommandOptions;
+
 #[derive(Debug)]
 pub(crate) struct Child {
     inner: TokioChild,
 
     pub(crate) pid: u32,
-    pub(crate) cmd: Arc<crate::Command>,
+    pub(crate) cmd: Arc<ArcSwap<CommandOptions>>,
 }
 
-pub(crate) fn spawn(target: Command, cmd: Arc<crate::Command>) -> io::Result<Child> {
+pub(crate) fn spawn(target: Command, cmd: Arc<ArcSwap<CommandOptions>>) -> io::Result<Child> {
     let inner = TokioCommand::from(target).kill_on_drop(false).spawn()?;
     let pid = inner.id().expect("fetching the process id before polling should not fail");
     Ok(Child { inner, pid, cmd })
@@ -36,7 +39,8 @@ impl Child {
     /// Waits until the process exits or times out.
     /// For the case of timeout, Ok(None) will be returned.
     pub(crate) async fn wait(&mut self) -> io::Result<Option<ExitStatus>> {
-        match self.cmd.timeout.kill_after {
+        let opts = self.cmd.load();
+        match opts.timeout.kill_after {
             // Always some because no timeout given.
             None => self.inner.wait().await.map(Some),
             Some(dur) => match time::timeout(dur, self.inner.wait()).await {

@@ -1,7 +1,10 @@
+[workspace]
+members = ["."]
+
 [package]
-name = "fuzz"
-version.workspace = true
-edition.workspace = true
+name    = "fuzz"
+version = "0.0.0"
+edition = "2024"
 publish = false
 
 [package.metadata]

@@ -6,7 +6,6 @@ use std::process::{
     ExitCode,
     Termination,
 };
-use std::sync::Arc;
 
 use anyhow::Context;
 use tracing_subscriber::EnvFilter;
@@ -57,7 +56,8 @@ where
         .with(EnvFilter::from_env("PROCRUN_LOG"))
         .init();
 
-    Arc::new(proc::Command::from_args_os(args))
+    proc::CommandOptions::from_args_os(args)
+        .command()
         .spawn()
         .await
         .context("Failed to spawn process")?

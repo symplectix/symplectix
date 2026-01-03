@@ -2,7 +2,6 @@
 resolver = "3"
 members = [
   "crates/*",
-  "fuzz",
 ]
 
 [workspace.package]
@@ -11,6 +10,7 @@ edition = "2024"
 
 [workspace.dependencies]
 anyhow = { version = "1" }
+arc-swap = { version = "1.8" }
 bitflags = { version = "2" }
 bon = { version = "3.8" }
 byc = { path = "crates/byc" }

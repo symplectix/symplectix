@@ -17,6 +17,7 @@ pub struct Cli {
 
 #[derive(Debug, Clone)]
 struct Context {
+    #[allow(dead_code)]
     cargo: PathBuf,
 }
 
