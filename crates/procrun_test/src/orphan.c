@@ -17,14 +17,14 @@ int orphan(int n) {
         pid_t parent = getppid();
 
         fprintf(
-            stderr,
-            "\tParent\tpid=%d\tgroup=%d\tparent=%d\tchild=%d\n",
+            stdout,
+            "Parent\tpid=%d\tgroup=%d\tparent=%d\tchild=%d\n",
             pid,
             group,
             parent,
             child
         );
-        fflush(stderr);
+        fflush(stdout);
         // the first process is monitored by run.
         sleep(max_depth-n);
         exit(n);
@@ -41,14 +41,14 @@ int orphan(int n) {
         while (getppid() == parent) {
         }
         fprintf(
-            stderr,
-            "\tOrphan\tpid=%d\tgroup=%d\tparent=%d\tparent_before=%d\n",
+            stdout,
+            "Orphan\tpid=%d\tgroup=%d\tparent=%d\tparent_before=%d\n",
             pid,
             group,
             getppid(),
             parent
         );
-        fflush(stderr);
+        fflush(stdout);
         exit(n);
     }
 }

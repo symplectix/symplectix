@@ -19,10 +19,6 @@ use std::{
 use arc_swap::ArcSwap;
 use futures::future;
 use futures::prelude::*;
-use tokio::io::{
-    AsyncBufReadExt,
-    BufReader,
-};
 use tokio::signal::unix::{
     SignalKind,
     signal,
@@ -118,8 +114,8 @@ pub struct ExitStatus {
 struct ExitReasons {
     io_error:       Option<io::ErrorKind>,
     timedout:       bool,
-    iam_signaled:   Option<libc::c_int>,
     child_signaled: Option<libc::c_int>,
+    iam_signaled:   Option<libc::c_int>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -149,6 +145,16 @@ impl Flags {
 }
 
 impl Command {
+    pub fn stdout<T: Into<Stdio>>(mut self, stdio: T) -> Self {
+        self.cmd.stdout(stdio);
+        self
+    }
+
+    pub fn stderr<T: Into<Stdio>>(mut self, stdio: T) -> Self {
+        self.cmd.stderr(stdio);
+        self
+    }
+
     #[tracing::instrument(skip(self))]
     pub async fn spawn(mut self) -> io::Result<Process> {
         let flags = self.flags.load();
@@ -233,9 +239,6 @@ impl Process {
         let mut sigterm = signal(SignalKind::terminate())?;
         let mut sigint = signal(SignalKind::interrupt())?;
 
-        let stderr = child.inner.stderr.take().expect("cannot take child stderr");
-        let mut stderr = BufReader::new(stderr).lines();
-
         let mut reasons = ExitReasons::default();
         let mut _interrupted = 0;
 
@@ -252,12 +255,12 @@ impl Process {
                 },
                 _ = sigterm.recv() => {
                     _interrupted += 1;
-                    reasons.child_signaled = reasons.child_signaled.or(Some(libc::SIGTERM));
+                    reasons.iam_signaled = reasons.iam_signaled.or(Some(libc::SIGTERM));
                     child.kill(Some(libc::SIGTERM)).await;
                 },
                 _ = sigint.recv() => {
                     _interrupted += 1;
-                    reasons.child_signaled = reasons.child_signaled.or(Some(libc::SIGINT));
+                    reasons.iam_signaled = reasons.iam_signaled.or(Some(libc::SIGINT));
                     child.kill(Some(libc::SIGINT)).await;
                 },
                 child_stat = child.wait() => match child_stat {
@@ -275,19 +278,6 @@ impl Process {
                         break Ok(to_exit_status(exit_status, reasons, &child.flags));
                     }
                 },
-                line = stderr.next_line() => match line {
-                    Err(err) => {
-                        error!("got an error while reading lines: {}", err.to_string());
-                        reasons.io_error = reasons.io_error.or(Some(err.kind()));
-                        child.kill(None).await;
-                    }
-                    Ok(None) => {
-                        trace!("got an empty result from next_line");
-                    }
-                    Ok(Some(line)) => {
-                        tracing::info!("{}", line);
-                    }
-                },
             }
         };
 
@@ -296,6 +286,11 @@ impl Process {
         child.killpg();
         on_exit(child.flags.load().hook.on_exit.as_ref(), result).await
     }
+
+    // TODO: wait_with_output
+    // pub async fn wait_with_output(self) -> io::Result<Output> {
+    //     todo!()
+    // }
 }
 
 fn to_exit_status(
@@ -303,7 +298,7 @@ fn to_exit_status(
     mut cause: ExitReasons,
     flags: &Arc<ArcSwap<Flags>>,
 ) -> ExitStatus {
-    cause.iam_signaled = exit_status.signal().or(cause.iam_signaled);
+    cause.child_signaled = exit_status.signal().or(cause.child_signaled);
     ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(flags) }
 }
 
@@ -387,10 +382,10 @@ impl ExitStatusError {
             return ExitCode::from(124);
         }
 
-        if let Some(s) = ws.exit_reasons.child_signaled {
+        if let Some(s) = ws.exit_reasons.iam_signaled {
             return ExitCode::from(128 + s as u8);
         }
-        if let Some(s) = ws.exit_reasons.iam_signaled {
+        if let Some(s) = ws.exit_reasons.child_signaled {
             return ExitCode::from(128 + s as u8);
         }
 

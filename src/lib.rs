@@ -23,8 +23,8 @@ struct Context {
 
 #[derive(Debug, Clone, clap::Subcommand)]
 enum Tools {
-    /// Format code.
-    Format(imp::Format),
+    /// Print version.
+    Version(imp::Version),
 }
 
 impl Cli {
@@ -38,24 +38,34 @@ impl Cli {
         let ctx = Context { cargo: PathBuf::from(env!("CARGO")) };
 
         match self.tools {
-            Tools::Format(t) => t.run(ctx).await,
+            Tools::Version(t) => t.run(ctx).await,
         }
     }
 }
 
 pub(crate) mod imp {
+    use anyhow::Context as _;
+
     use super::{
         Context,
         Tool,
     };
 
     #[derive(Debug, Clone, clap::Parser)]
-    pub(crate) struct Format {}
+    pub(crate) struct Version {}
 
-    impl Tool<()> for Format {
+    impl Tool<()> for Version {
         async fn run(self, ctx: Context) -> anyhow::Result<()> {
-            println!("{ctx:?}");
-            Ok(())
+            proc::Flags::from_args_os(["syx", "--", ctx.cargo.to_str().unwrap(), "--version"])
+                .command()
+                .spawn()
+                .await
+                .context("Failed to spawn process")?
+                .wait()
+                .await
+                .context("Failed to fetch wait status")?
+                .exit_ok()
+                .context("Got a failure on running the process")
         }
     }
 }

@@ -4,6 +4,7 @@ use std::env;
 use std::ffi::OsString;
 use std::process::{
     ExitCode,
+    Stdio,
     Termination,
 };
 
@@ -58,6 +59,8 @@ where
 
     proc::Flags::from_args_os(args)
         .command()
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
         .spawn()
         .await
         .context("Failed to spawn process")?
