@@ -23,11 +23,6 @@ use tokio::io::{
     AsyncBufReadExt,
     BufReader,
 };
-use tokio::process::{
-    Child as TokioChild,
-    ChildStderr,
-    Command as TokioCommand,
-};
 use tokio::signal::unix::{
     SignalKind,
     signal,
@@ -105,7 +100,7 @@ pub struct Process {
 
 #[derive(Debug)]
 struct Child {
-    inner: TokioChild,
+    inner: tokio::process::Child,
 
     pub(crate) pid:   u32,
     pub(crate) flags: Arc<ArcSwap<Flags>>,
@@ -186,7 +181,7 @@ impl Command {
 
         let reaper = reaper::subscribe();
         let child = {
-            let inner = TokioCommand::from(self.cmd).kill_on_drop(false).spawn()?;
+            let inner = tokio::process::Command::from(self.cmd).kill_on_drop(false).spawn()?;
             let pid = inner.id().expect("fetching the process id before polling should not fail");
             Child { inner, pid, flags: self.flags }
         };
