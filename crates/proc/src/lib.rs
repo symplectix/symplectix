@@ -116,10 +116,10 @@ pub struct ExitStatus {
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 struct ExitReasons {
-    io_error:      Option<io::ErrorKind>,
-    timedout:      bool,
-    proc_signaled: Option<libc::c_int>,
-    self_signaled: Option<libc::c_int>,
+    io_error:       Option<io::ErrorKind>,
+    timedout:       bool,
+    iam_signaled:   Option<libc::c_int>,
+    child_signaled: Option<libc::c_int>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -212,12 +212,12 @@ async fn wait_for(paths: &[PathBuf]) -> Result<(), SpawnError> {
     future::try_join_all(wait_files).map_ok(|_| ()).await
 }
 
-fn to_wait_status(
+fn to_exit_status(
     exit_status: process::ExitStatus,
     mut cause: ExitReasons,
     flags: &Arc<ArcSwap<Flags>>,
 ) -> ExitStatus {
-    cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
+    cause.iam_signaled = exit_status.signal().or(cause.iam_signaled);
     ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(flags) }
 }
 
@@ -245,7 +245,7 @@ impl Process {
         let stderr = child.inner.stderr.take().expect("cannot take child stderr");
         let mut stderr = BufReader::new(stderr).lines();
 
-        let mut cause = ExitReasons::default();
+        let mut reasons = ExitReasons::default();
         let mut _interrupted = 0;
 
         let result = loop {
@@ -256,38 +256,38 @@ impl Process {
                         trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
                     }
                     Ok((pid, exit_status)) => if pid == child.pid as libc::pid_t {
-                        break Ok(to_wait_status(exit_status, cause, &child.flags));
+                        break Ok(to_exit_status(exit_status, reasons, &child.flags));
                     }
                 },
                 _ = sigterm.recv() => {
                     _interrupted += 1;
-                    cause.self_signaled = cause.self_signaled.or(Some(libc::SIGTERM));
+                    reasons.child_signaled = reasons.child_signaled.or(Some(libc::SIGTERM));
                     child.kill(Some(libc::SIGTERM)).await;
                 },
                 _ = sigint.recv() => {
                     _interrupted += 1;
-                    cause.self_signaled = cause.self_signaled.or(Some(libc::SIGINT));
+                    reasons.child_signaled = reasons.child_signaled.or(Some(libc::SIGINT));
                     child.kill(Some(libc::SIGINT)).await;
                 },
                 child_stat = child.wait() => match child_stat {
                     Err(err) => {
                         error!("got an error while waiting the child: {}", err.to_string());
-                        cause.io_error = cause.io_error.or(Some(err.kind()));
+                        reasons.io_error = reasons.io_error.or(Some(err.kind()));
                         child.kill(None).await;
                     }
                     Ok(None) => {
                         _interrupted += 1;
-                        cause.timedout = true;
+                        reasons.timedout = true;
                         child.kill(None).await;
                     }
                     Ok(Some(exit_status)) => {
-                        break Ok(to_wait_status(exit_status, cause, &child.flags));
+                        break Ok(to_exit_status(exit_status, reasons, &child.flags));
                     }
                 },
                 line = stderr.next_line() => match line {
                     Err(err) => {
                         error!("got an error while reading lines: {}", err.to_string());
-                        cause.io_error = cause.io_error.or(Some(err.kind()));
+                        reasons.io_error = reasons.io_error.or(Some(err.kind()));
                         child.kill(None).await;
                     }
                     Ok(None) => {
@@ -387,10 +387,10 @@ impl ExitStatusError {
             return ExitCode::from(124);
         }
 
-        if let Some(s) = ws.exit_reasons.self_signaled {
+        if let Some(s) = ws.exit_reasons.child_signaled {
             return ExitCode::from(128 + s as u8);
         }
-        if let Some(s) = ws.exit_reasons.proc_signaled {
+        if let Some(s) = ws.exit_reasons.iam_signaled {
             return ExitCode::from(128 + s as u8);
         }
 
