@@ -7,7 +7,6 @@ use std::os::unix::process::{
 use std::path::PathBuf;
 use std::process::{
     ExitCode,
-    ExitStatus,
     Stdio,
 };
 use std::sync::Arc;
@@ -39,8 +38,13 @@ mod fsutil;
 #[cfg(test)]
 mod run_test;
 
+pub struct Command {
+    cmd:   process::Command,
+    flags: Arc<ArcSwap<Flags>>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, clap::Parser)]
-pub struct CommandOptions {
+pub struct Flags {
     #[arg(long)]
     dry_run: bool,
 
@@ -52,7 +56,7 @@ pub struct CommandOptions {
 
     /// The entrypoint of the child process.
     #[arg()]
-    program: OsString, // ENTRYPOINT
+    program: OsString,
 
     /// Environment variables visible to the spawned process.
     #[arg(long = "env", value_name = "KEY")]
@@ -61,11 +65,6 @@ pub struct CommandOptions {
     /// The arguments passed to the command.
     #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     args: Vec<OsString>, // CMD
-}
-
-pub struct Command {
-    cmd:  process::Command,
-    opts: Arc<ArcSwap<CommandOptions>>,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, clap::Parser)]
@@ -103,16 +102,16 @@ pub struct Process {
 }
 
 enum ProcessInner {
-    DryRun { cmd: Arc<ArcSwap<CommandOptions>> },
+    DryRun { flags: Arc<ArcSwap<Flags>> },
     Spawned { reaper: reaper::Channel, child: child::Child },
 }
 
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("{exit_status}")]
-pub struct WaitStatus {
-    exit_status: ExitStatus,
-    exit_reason: ExitReasons,
-    cmd:         Arc<ArcSwap<CommandOptions>>,
+pub struct ExitStatus {
+    exit_status:  process::ExitStatus,
+    exit_reasons: ExitReasons,
+    flags:        Arc<ArcSwap<Flags>>,
 }
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -125,7 +124,7 @@ struct ExitReasons {
 
 #[derive(Debug, thiserror::Error)]
 #[error("{0}")]
-pub struct WaitStatusError(WaitStatus);
+pub struct ExitStatusError(ExitStatus);
 
 #[derive(Debug)]
 enum SpawnError {
@@ -133,8 +132,8 @@ enum SpawnError {
     FoundErrFile(PathBuf),
 }
 
-impl CommandOptions {
-    pub fn from_args_os<I, T>(args_os: I) -> CommandOptions
+impl Flags {
+    pub fn from_args_os<I, T>(args_os: I) -> Flags
     where
         I: IntoIterator<Item = T>,
         T: Into<OsString> + Clone,
@@ -144,19 +143,19 @@ impl CommandOptions {
 
     pub fn command(self) -> Command {
         let cmd = process::Command::new(&self.program);
-        let opts = Arc::new(ArcSwap::from_pointee(self));
-        Command { cmd, opts }
+        let flags = Arc::new(ArcSwap::from_pointee(self));
+        Command { cmd, flags }
     }
 }
 
 impl Command {
     #[tracing::instrument(skip(self))]
     pub async fn spawn(mut self) -> io::Result<Process> {
-        let opts = self.opts.load();
-        if opts.dry_run {
-            Ok(Process { inner: ProcessInner::DryRun { cmd: self.opts } })
+        let flags = self.flags.load();
+        if flags.dry_run {
+            Ok(Process { inner: ProcessInner::DryRun { flags: self.flags } })
         } else {
-            wait_for(&opts.hook.wait_for).await.map_err(|err| match err {
+            wait_for(&flags.hook.wait_for).await.map_err(|err| match err {
                 SpawnError::Io(io_err) => io_err,
                 SpawnError::FoundErrFile(path) => io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -165,7 +164,7 @@ impl Command {
             })?;
 
             self.cmd
-                .args(&opts.args[..])
+                .args(&flags.args[..])
                 // Put the child into a new process group.
                 // A process group ID of 0 will use the process ID as the PGID.
                 .process_group(0)
@@ -184,7 +183,7 @@ impl Command {
             }
 
             let reaper = reaper::subscribe();
-            let child = child::spawn(self.cmd, Arc::clone(&self.opts))?;
+            let child = child::spawn(self.cmd, self.flags)?;
             Ok(Process { inner: ProcessInner::Spawned { reaper, child } })
         }
     }
@@ -220,7 +219,7 @@ impl Process {
             pid = self.pid(),
         )
     )]
-    pub async fn wait(self) -> io::Result<WaitStatus> {
+    pub async fn wait(self) -> io::Result<ExitStatus> {
         self.inner.wait().await
     }
 
@@ -233,12 +232,12 @@ impl Process {
 }
 
 impl ProcessInner {
-    async fn wait(self) -> io::Result<WaitStatus> {
+    async fn wait(self) -> io::Result<ExitStatus> {
         match self {
-            ProcessInner::DryRun { cmd } => Ok(WaitStatus {
-                exit_status: ExitStatus::from_raw(0),
-                exit_reason: ExitReasons::default(),
-                cmd,
+            ProcessInner::DryRun { flags } => Ok(ExitStatus {
+                exit_status: process::ExitStatus::from_raw(0),
+                exit_reasons: ExitReasons::default(),
+                flags,
             }),
             ProcessInner::Spawned { mut reaper, mut child } => {
                 // SIGTERM: stop monitored process
@@ -255,9 +254,9 @@ impl ProcessInner {
                 let mut _interrupted = 0;
 
                 let to_wait_status =
-                    |exit_status: ExitStatus, mut cause: ExitReasons, cmd| -> WaitStatus {
+                    |exit_status: process::ExitStatus, mut cause: ExitReasons, cmd| -> ExitStatus {
                         cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
-                        WaitStatus { exit_status, exit_reason: cause, cmd: Arc::clone(cmd) }
+                        ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(cmd) }
                     };
 
                 let result = loop {
@@ -268,7 +267,7 @@ impl ProcessInner {
                                 trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
                             }
                             Ok((pid, exit_status)) => if pid == child.pid as libc::pid_t {
-                                break Ok(to_wait_status(exit_status, cause, &child.cmd));
+                                break Ok(to_wait_status(exit_status, cause, &child.flags));
                             }
                         },
                         _ = sigterm.recv() => {
@@ -293,7 +292,7 @@ impl ProcessInner {
                                 child.kill(None).await;
                             }
                             Ok(Some(exit_status)) => {
-                                break Ok(to_wait_status(exit_status, cause, &child.cmd));
+                                break Ok(to_wait_status(exit_status, cause, &child.flags));
                             }
                         },
                         line = stderr.next_line() => match line {
@@ -315,36 +314,36 @@ impl ProcessInner {
                 // Reap all descendant processes here,
                 // to ensure there are no children left behind.
                 child.killpg();
-                on_exit(child.cmd.load().hook.on_exit.as_ref(), result).await
+                on_exit(child.flags.load().hook.on_exit.as_ref(), result).await
             }
         }
     }
 }
 
-impl WaitStatus {
-    pub fn exit_ok(&self) -> Result<(), WaitStatusError> {
+impl ExitStatus {
+    pub fn exit_ok(&self) -> Result<(), ExitStatusError> {
         let exit_success = self.exit_status.success();
-        let timedout_but_ok = self.exit_reason.timedout && self.cmd.load().timeout.is_ok;
-        if exit_success || timedout_but_ok { Ok(()) } else { Err(WaitStatusError(self.clone())) }
+        let timedout_but_ok = self.exit_reasons.timedout && self.flags.load().timeout.is_ok;
+        if exit_success || timedout_but_ok { Ok(()) } else { Err(ExitStatusError(self.clone())) }
     }
 }
 
-impl WaitStatusError {
+impl ExitStatusError {
     pub fn exit_code(&self) -> ExitCode {
         let ws = &self.0;
 
-        if ws.exit_reason.timedout {
+        if ws.exit_reasons.timedout {
             return ExitCode::from(124);
         }
 
-        if let Some(s) = ws.exit_reason.self_signaled {
+        if let Some(s) = ws.exit_reasons.self_signaled {
             return ExitCode::from(128 + s as u8);
         }
-        if let Some(s) = ws.exit_reason.proc_signaled {
+        if let Some(s) = ws.exit_reasons.proc_signaled {
             return ExitCode::from(128 + s as u8);
         }
 
-        if ws.exit_reason.io_error.is_some() {
+        if ws.exit_reasons.io_error.is_some() {
             return ExitCode::from(125);
         }
 
@@ -353,7 +352,7 @@ impl WaitStatusError {
 }
 
 #[tracing::instrument]
-async fn on_exit(path: Option<&PathBuf>, result: io::Result<WaitStatus>) -> io::Result<WaitStatus> {
+async fn on_exit(path: Option<&PathBuf>, result: io::Result<ExitStatus>) -> io::Result<ExitStatus> {
     if let Some(path) = path {
         if matches!(result, Ok(ref status) if status.exit_ok().is_ok()) {
             fsutil::create_file(path, true).await?;

@@ -18,7 +18,7 @@ impl Termination for Exit {
     fn report(self) -> ExitCode {
         match self.0 {
             Ok(_) => ExitCode::SUCCESS,
-            Err(ref cause) => match cause.downcast_ref::<proc::WaitStatusError>() {
+            Err(ref cause) => match cause.downcast_ref::<proc::ExitStatusError>() {
                 Some(err) => err.exit_code(),
                 None => ExitCode::FAILURE,
             },
@@ -56,7 +56,7 @@ where
         .with(EnvFilter::from_env("PROCRUN_LOG"))
         .init();
 
-    proc::CommandOptions::from_args_os(args)
+    proc::Flags::from_args_os(args)
         .command()
         .spawn()
         .await

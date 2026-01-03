@@ -15,20 +15,20 @@ use tokio::process::{
 use tokio::time;
 use tracing::trace;
 
-use crate::CommandOptions;
+use crate::Flags;
 
 #[derive(Debug)]
 pub(crate) struct Child {
     inner: TokioChild,
 
-    pub(crate) pid: u32,
-    pub(crate) cmd: Arc<ArcSwap<CommandOptions>>,
+    pub(crate) pid:   u32,
+    pub(crate) flags: Arc<ArcSwap<Flags>>,
 }
 
-pub(crate) fn spawn(target: Command, cmd: Arc<ArcSwap<CommandOptions>>) -> io::Result<Child> {
+pub(crate) fn spawn(target: Command, flags: Arc<ArcSwap<Flags>>) -> io::Result<Child> {
     let inner = TokioCommand::from(target).kill_on_drop(false).spawn()?;
     let pid = inner.id().expect("fetching the process id before polling should not fail");
-    Ok(Child { inner, pid, cmd })
+    Ok(Child { inner, pid, flags })
 }
 
 impl Child {
@@ -39,7 +39,7 @@ impl Child {
     /// Waits until the process exits or times out.
     /// For the case of timeout, Ok(None) will be returned.
     pub(crate) async fn wait(&mut self) -> io::Result<Option<ExitStatus>> {
-        let opts = self.cmd.load();
+        let opts = self.flags.load();
         match opts.timeout.kill_after {
             // Always some because no timeout given.
             None => self.inner.wait().await.map(Some),

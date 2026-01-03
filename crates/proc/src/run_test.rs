@@ -14,19 +14,19 @@ use super::{
     wait_for,
 };
 use crate::{
-    CommandOptions,
+    Flags,
     Hook,
     Timeout,
 };
 
-fn from_argv<I, T>(argv: I) -> CommandOptions
+fn from_argv<I, T>(argv: I) -> Flags
 where
     I: IntoIterator<Item = T>,
     T: Into<OsString> + Clone,
 {
     let mut argv = argv.into_iter();
 
-    CommandOptions {
+    Flags {
         dry_run: false,
         timeout: Timeout { kill_after: None, is_ok: false },
         hook:    Hook { wait_for: vec![], on_exit: None },
@@ -36,7 +36,7 @@ where
     }
 }
 
-impl CommandOptions {
+impl Flags {
     fn timeout(mut self, duration: Duration) -> Self {
         self.timeout = Timeout { kill_after: Some(duration), is_ok: false };
         self
@@ -89,7 +89,7 @@ async fn sleep_kill() {
         crate::child::kill(sleep.pid().unwrap() as i32, sig).expect("failed to kill");
         let status = sleep.wait().await.expect("failed to wait");
         assert!(
-            matches!(status.exit_reason.proc_signaled, Some(got) if sig == got),
+            matches!(status.exit_reasons.proc_signaled, Some(got) if sig == got),
             "expected that the command 'sleep' signaled",
         );
     }
@@ -101,7 +101,7 @@ async fn sleep_timeout() {
     let sleep = from_argv(["sleep", "10"]).timeout(timeout).command().spawn().await.unwrap();
     let status = sleep.wait().await.expect("failed to wait");
     assert!(
-        status.exit_reason.timedout,
+        status.exit_reasons.timedout,
         // matches!(status.exit_reason, Some(ExitReason::ProcTimedout)),
         "expected that the command 'sleep' times out",
     );
