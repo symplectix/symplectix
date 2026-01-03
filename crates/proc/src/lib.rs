@@ -23,6 +23,11 @@ use tokio::io::{
     AsyncBufReadExt,
     BufReader,
 };
+use tokio::process::{
+    Child as TokioChild,
+    ChildStderr,
+    Command as TokioCommand,
+};
 use tokio::signal::unix::{
     SignalKind,
     signal,
@@ -33,7 +38,6 @@ use tracing::{
     trace,
 };
 
-mod child;
 mod fsutil;
 #[cfg(test)]
 mod run_test;
@@ -96,7 +100,15 @@ struct Hook {
 
 pub struct Process {
     reaper: reaper::Channel,
-    child:  child::Child,
+    child:  Child,
+}
+
+#[derive(Debug)]
+struct Child {
+    inner: TokioChild,
+
+    pub(crate) pid:   u32,
+    pub(crate) flags: Arc<ArcSwap<Flags>>,
 }
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -173,7 +185,11 @@ impl Command {
         }
 
         let reaper = reaper::subscribe();
-        let child = child::spawn(self.cmd, self.flags)?;
+        let child = {
+            let inner = TokioCommand::from(self.cmd).kill_on_drop(false).spawn()?;
+            let pid = inner.id().expect("fetching the process id before polling should not fail");
+            Child { inner, pid, flags: self.flags }
+        };
         Ok(Process { reaper, child })
     }
 }
@@ -291,6 +307,61 @@ impl Process {
         child.killpg();
         on_exit(child.flags.load().hook.on_exit.as_ref(), result).await
     }
+}
+
+impl Child {
+    pub(crate) fn stderr(&mut self) -> Option<ChildStderr> {
+        self.inner.stderr.take()
+    }
+
+    /// Waits until the process exits or times out.
+    /// For the case of timeout, Ok(None) will be returned.
+    async fn wait(&mut self) -> io::Result<Option<process::ExitStatus>> {
+        let opts = self.flags.load();
+        match opts.timeout.kill_after {
+            // Always some because no timeout given.
+            None => self.inner.wait().await.map(Some),
+            Some(dur) => match time::timeout(dur, self.inner.wait()).await {
+                Err(_elapsed) => Ok(None),
+                Ok(status) => status.map(Some),
+            },
+        }
+    }
+
+    #[tracing::instrument(skip(self))]
+    async fn kill(&mut self, signal: Option<libc::c_int>) {
+        let gracefully = true;
+        let pid = self.pid as libc::pid_t;
+
+        // Notify the spawned process to be terminated.
+        if gracefully {
+            let signal = signal.unwrap_or(libc::SIGTERM);
+            if let Err(err) = kill(pid, signal) {
+                trace!("kill {}: {}", signal, err);
+            }
+            time::sleep(Duration::from_millis(1000)).await;
+        }
+
+        if let Err(err) = kill(pid, libc::SIGKILL) {
+            trace!("kill {}: {}", libc::SIGKILL, err);
+        }
+    }
+
+    fn killpg(&mut self) {
+        // Reap all descendant processes here,
+        // to ensure there are no children left behind.
+        if let Err(err) = killpg(self.pid as libc::c_int, libc::SIGKILL) {
+            trace!("killpg: {}", err);
+        }
+    }
+}
+
+fn kill(pid: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
+    unsafe { if libc::kill(pid, sig) == 0 { Ok(()) } else { Err(io::Error::last_os_error()) } }
+}
+
+fn killpg(grp: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
+    unsafe { if libc::killpg(grp, sig) == 0 { Ok(()) } else { Err(io::Error::last_os_error()) } }
 }
 
 impl ExitStatus {

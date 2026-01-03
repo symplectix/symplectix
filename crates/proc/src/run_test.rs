@@ -85,7 +85,7 @@ async fn sleep_kill() {
     for sig in [libc::SIGINT, libc::SIGTERM, libc::SIGKILL] {
         let sleep = from_argv(["sleep", "10"]).command().spawn().await.unwrap();
         // sleep.inner.kill(Some(sig)).await;
-        crate::child::kill(sleep.pid() as i32, sig).expect("failed to kill");
+        crate::kill(sleep.pid() as i32, sig).expect("failed to kill");
         let status = sleep.wait().await.expect("failed to wait");
         assert!(
             matches!(status.exit_reasons.proc_signaled, Some(got) if sig == got),
