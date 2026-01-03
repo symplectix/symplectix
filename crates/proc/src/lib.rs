@@ -95,10 +95,6 @@ struct Hook {
 }
 
 pub struct Process {
-    inner: ProcessInner,
-}
-
-struct ProcessInner {
     reaper: reaper::Channel,
     child:  child::Child,
 }
@@ -178,7 +174,7 @@ impl Command {
 
         let reaper = reaper::subscribe();
         let child = child::spawn(self.cmd, self.flags)?;
-        Ok(Process { inner: ProcessInner { reaper, child } })
+        Ok(Process { reaper, child })
     }
 }
 
@@ -206,6 +202,10 @@ async fn wait_for(paths: &[PathBuf]) -> Result<(), SpawnError> {
 }
 
 impl Process {
+    pub fn pid(&self) -> u32 {
+        self.child.pid
+    }
+
     #[tracing::instrument(
         skip(self),
         fields(
@@ -213,19 +213,7 @@ impl Process {
         )
     )]
     pub async fn wait(self) -> io::Result<ExitStatus> {
-        self.inner.wait().await
-    }
-
-    pub fn pid(&self) -> u32 {
-        match &self.inner {
-            ProcessInner { child, .. } => child.pid,
-        }
-    }
-}
-
-impl ProcessInner {
-    async fn wait(self) -> io::Result<ExitStatus> {
-        let ProcessInner { mut reaper, mut child } = self;
+        let Process { mut reaper, mut child } = self;
 
         // SIGTERM: stop monitored process
         // SIGINT:  e.g., Ctrl-C at terminal
