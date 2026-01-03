@@ -212,15 +212,6 @@ async fn wait_for(paths: &[PathBuf]) -> Result<(), SpawnError> {
     future::try_join_all(wait_files).map_ok(|_| ()).await
 }
 
-fn to_exit_status(
-    exit_status: process::ExitStatus,
-    mut cause: ExitReasons,
-    flags: &Arc<ArcSwap<Flags>>,
-) -> ExitStatus {
-    cause.iam_signaled = exit_status.signal().or(cause.iam_signaled);
-    ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(flags) }
-}
-
 impl Process {
     pub fn pid(&self) -> u32 {
         self.child.pid
@@ -305,6 +296,15 @@ impl Process {
         child.killpg();
         on_exit(child.flags.load().hook.on_exit.as_ref(), result).await
     }
+}
+
+fn to_exit_status(
+    exit_status: process::ExitStatus,
+    mut cause: ExitReasons,
+    flags: &Arc<ArcSwap<Flags>>,
+) -> ExitStatus {
+    cause.iam_signaled = exit_status.signal().or(cause.iam_signaled);
+    ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(flags) }
 }
 
 #[tracing::instrument]
