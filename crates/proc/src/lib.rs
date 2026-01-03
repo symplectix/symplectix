@@ -217,6 +217,15 @@ async fn wait_for(paths: &[PathBuf]) -> Result<(), SpawnError> {
     future::try_join_all(wait_files).map_ok(|_| ()).await
 }
 
+fn to_wait_status(
+    exit_status: process::ExitStatus,
+    mut cause: ExitReasons,
+    flags: &Arc<ArcSwap<Flags>>,
+) -> ExitStatus {
+    cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
+    ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(flags) }
+}
+
 impl Process {
     pub fn pid(&self) -> u32 {
         self.child.pid
@@ -238,17 +247,11 @@ impl Process {
         let mut sigterm = signal(SignalKind::terminate())?;
         let mut sigint = signal(SignalKind::interrupt())?;
 
-        let stderr = child.stderr().unwrap();
+        let stderr = child.inner.stderr.take().expect("cannot take child stderr");
         let mut stderr = BufReader::new(stderr).lines();
 
         let mut cause = ExitReasons::default();
         let mut _interrupted = 0;
-
-        let to_wait_status =
-            |exit_status: process::ExitStatus, mut cause: ExitReasons, cmd| -> ExitStatus {
-                cause.proc_signaled = exit_status.signal().or(cause.proc_signaled);
-                ExitStatus { exit_status, exit_reasons: cause, flags: Arc::clone(cmd) }
-            };
 
         let result = loop {
             tokio::select! {
@@ -309,11 +312,20 @@ impl Process {
     }
 }
 
-impl Child {
-    pub(crate) fn stderr(&mut self) -> Option<ChildStderr> {
-        self.inner.stderr.take()
+#[tracing::instrument]
+async fn on_exit(path: Option<&PathBuf>, result: io::Result<ExitStatus>) -> io::Result<ExitStatus> {
+    if let Some(path) = path {
+        if matches!(result, Ok(ref status) if status.exit_ok().is_ok()) {
+            fsutil::create_file(path, true).await?;
+        } else {
+            fsutil::create_file(path.with_extension("err"), true).await?;
+        }
     }
 
+    result
+}
+
+impl Child {
     /// Waits until the process exits or times out.
     /// For the case of timeout, Ok(None) will be returned.
     async fn wait(&mut self) -> io::Result<Option<process::ExitStatus>> {
@@ -393,17 +405,4 @@ impl ExitStatusError {
 
         ws.exit_status.code().map(|c| ExitCode::from(c as u8)).unwrap_or(ExitCode::FAILURE)
     }
-}
-
-#[tracing::instrument]
-async fn on_exit(path: Option<&PathBuf>, result: io::Result<ExitStatus>) -> io::Result<ExitStatus> {
-    if let Some(path) = path {
-        if matches!(result, Ok(ref status) if status.exit_ok().is_ok()) {
-            fsutil::create_file(path, true).await?;
-        } else {
-            fsutil::create_file(path.with_extension("err"), true).await?;
-        }
-    }
-
-    result
 }
