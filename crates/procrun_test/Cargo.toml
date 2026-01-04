@@ -8,7 +8,7 @@ build = "build.rs"
 workspace = true
 
 [dependencies]
-procrun.workspace = true
+# procrun.workspace = true
 
 [build-dependencies]
 anyhow.workspace = true

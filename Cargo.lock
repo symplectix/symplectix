@@ -726,8 +726,15 @@ name = "procrun"
 version = "0.0.0"
 dependencies = [
  "anyhow",
- "proc",
+ "arc-swap",
+ "clap",
+ "futures",
+ "humantime",
+ "libc",
+ "reaper",
+ "thiserror",
  "tokio",
+ "tracing",
  "tracing-subscriber",
 ]
 
@@ -736,7 +743,6 @@ name = "procrun_test"
 version = "0.0.0"
 dependencies = [
  "anyhow",
- "procrun",
 ]
 
 [[package]]
