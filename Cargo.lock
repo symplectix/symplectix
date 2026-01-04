@@ -697,22 +697,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "proc"
-version = "0.0.0"
-dependencies = [
- "arc-swap",
- "clap",
- "futures",
- "humantime",
- "libc",
- "reaper",
- "testing",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "proc-macro2"
 version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -734,6 +718,7 @@ dependencies = [
  "libc",
  "procrun_test",
  "reaper",
+ "testing",
  "thiserror",
  "tokio",
  "tracing",
@@ -1046,7 +1031,6 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "clap",
- "proc",
  "tokio",
 ]
 

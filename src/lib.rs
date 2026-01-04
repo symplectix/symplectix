@@ -3,9 +3,10 @@ use std::path::{
     Path,
     PathBuf,
 };
+use std::process::ExitStatus;
 
-trait Tool<T> {
-    async fn run(self, ctx: Context) -> anyhow::Result<T>;
+trait Tool {
+    fn run(self, ctx: Context) -> anyhow::Result<ExitStatus>;
 }
 
 /// Repository management/automation tools.
@@ -23,13 +24,13 @@ struct Context {
 
 #[derive(Debug, Clone, clap::Subcommand)]
 enum Tools {
-    /// Print version.
-    Version(imp::Version),
+    /// Check code style.
+    Format(imp::Format),
 }
 
 impl Cli {
     /// Run a tool and wait its result.
-    pub async fn run(self) -> anyhow::Result<()> {
+    pub fn run(self) -> anyhow::Result<ExitStatus> {
         let project_root = Path::new(env!("CARGO_MANIFEST_DIR"));
         assert!(project_root.join(".git/HEAD").exists());
         // Always run syx from the project root for consistency.
@@ -38,13 +39,17 @@ impl Cli {
         let ctx = Context { cargo: PathBuf::from(env!("CARGO")) };
 
         match self.tools {
-            Tools::Version(t) => t.run(ctx).await,
+            Tools::Format(t) => t.run(ctx),
         }
     }
 }
 
 pub(crate) mod imp {
-    use std::process::Stdio;
+    use std::process::{
+        Command,
+        ExitStatus,
+        Stdio,
+    };
 
     use anyhow::Context as _;
 
@@ -54,33 +59,18 @@ pub(crate) mod imp {
     };
 
     #[derive(Debug, Clone, clap::Parser)]
-    pub(crate) struct Version {}
+    pub(crate) struct Format {}
 
-    impl Tool<()> for Version {
-        async fn run(self, ctx: Context) -> anyhow::Result<()> {
-            proc::Flags::from_args_os([
-                "syx",
-                "--",
-                ctx.cargo.to_str().unwrap(),
-                // "rustup",
-                // "run",
-                // "nightly",
-                // "cargo",
-                "fmt",
-                "--all",
-                "--check",
-            ])
-            .command()
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
-            .spawn()
-            .await
-            .context("Failed to spawn process")?
-            .wait()
-            .await
-            .context("Failed to wait output")?
-            .exit_ok()
-            .context("Failed to wait output")
+    impl Tool for Format {
+        fn run(self, _ctx: Context) -> anyhow::Result<ExitStatus> {
+            Command::new("rustup")
+                .args(["run", "nightly", "cargo", "fmt", "--all", "--check"])
+                .stdout(Stdio::inherit())
+                .stderr(Stdio::inherit())
+                .spawn()
+                .context("failed to spawn process")?
+                .wait()
+                .context("failed to wait output")
         }
     }
 }

@@ -34,6 +34,9 @@ use tracing::{
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::prelude::*;
 
+#[cfg(test)]
+mod tests;
+
 fn main() -> ProcExit {
     ProcExit(try_run(env::args_os()))
 }
