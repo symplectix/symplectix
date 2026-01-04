@@ -46,10 +46,7 @@ impl Termination for ProcExit {
         match self.0 {
             Ok(_) => ExitCode::SUCCESS,
             Err(ref cause) => match cause.downcast_ref::<ExitStatusError>() {
-                Some(err) => {
-                    error!("{:?}", err);
-                    err.exit_code()
-                }
+                Some(err) => err.exit_code(),
                 None => ExitCode::FAILURE,
             },
         }
