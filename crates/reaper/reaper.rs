@@ -57,7 +57,6 @@ impl Reaper<Result<usize, Infallible>> {
                                         errno,
                                         "an error is detected or a caught signal aborts the call"
                                     );
-                                    // break;
                                 }
                             }
                         }

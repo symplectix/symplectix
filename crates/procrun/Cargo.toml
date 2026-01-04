@@ -2,16 +2,29 @@
 name = "procrun"
 version.workspace = true
 edition.workspace = true
+publish = false
 
 [lints]
 workspace = true
 
 [dependencies]
 anyhow.workspace = true
-proc.workspace = true
+arc-swap.workspace = true
+clap.workspace = true
+futures.workspace = true
+humantime.workspace = true
+libc.workspace = true
+reaper.workspace = true
+thiserror.workspace = true
 tokio.workspace = true
 tracing-subscriber.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+procrun_test.workspace = true
+byc.workspace = true
+testing.workspace = true
 
 [[bin]]
 name = "procrun"
-path = "bin/procrun.rs"
+path = "src/main.rs"
