@@ -110,6 +110,15 @@ pub struct ExitStatus {
     flags:        Arc<ArcSwap<Flags>>,
 }
 
+#[derive(Debug, Clone)]
+pub struct Output {
+    pub status:   process::ExitStatus,
+    pub stdout:   Vec<u8>,
+    pub stderr:   Vec<u8>,
+    exit_reasons: ExitReasons,
+    flags:        Arc<ArcSwap<Flags>>,
+}
+
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 struct ExitReasons {
     io_error:       Option<io::ErrorKind>,
@@ -288,9 +297,83 @@ impl Process {
     }
 
     // TODO: wait_with_output
-    // pub async fn wait_with_output(self) -> io::Result<Output> {
-    //     todo!()
-    // }
+    #[tracing::instrument(
+        skip(self),
+        fields(
+            pid = self.pid(),
+        )
+    )]
+    pub async fn wait_with_output(self) -> io::Result<Output> {
+        let Process { mut reaper, mut child } = self;
+        let child_id = child.pid;
+
+        // SIGTERM: stop monitored process
+        // SIGINT:  e.g., Ctrl-C at terminal
+        // SIGQUIT: e.g., Ctrl-\ at terminal
+        // SIGHUP:  e.g., terminal closed
+        let mut sigterm = signal(SignalKind::terminate())?;
+        let mut sigint = signal(SignalKind::interrupt())?;
+
+        let mut reasons = ExitReasons::default();
+        let mut _interrupted = 0;
+
+        let flags = Arc::clone(&child.flags);
+
+        let result = tokio::select! {
+            biased;
+            // reaped = reaper.recv() => match reaped {
+            //     Err(err) => {
+            //         trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
+            //     }
+            //     Ok((pid, exit_status)) => if pid == child.pid as libc::pid_t {
+            //         break Ok(to_exit_status(exit_status, reasons, &child.flags));
+            //     }
+            // },
+            _ = sigterm.recv() => {
+                _interrupted += 1;
+                // reasons.iam_signaled = reasons.iam_signaled.or(Some(libc::SIGTERM));
+                // child.kill(Some(libc::SIGTERM)).await;
+                Err(io::Error::other("timedout"))
+            },
+            _ = sigint.recv() => {
+                _interrupted += 1;
+                // reasons.iam_signaled = reasons.iam_signaled.or(Some(libc::SIGINT));
+                // child.kill(Some(libc::SIGINT)).await;
+                Err(io::Error::other("timedout"))
+            },
+            output = child.wait_with_output() => match output {
+                Err(err) => {
+                    error!("got an error while waiting the child: {}", err.to_string());
+                    // reasons.io_error = reasons.io_error.or(Some(err.kind()));
+                    // child.kill(None).await;
+                    Err(io::Error::other("timedout"))
+                }
+                Ok(None) => {
+                    _interrupted += 1;
+                    // reasons.timedout = true;
+                    // child.kill(None).await;
+                    Err(io::Error::other("timedout"))
+                }
+                Ok(Some(output)) => {
+                    Ok(Output{
+                        status: output.status,
+                        stdout: output.stdout,
+                        stderr: output.stderr,
+                        exit_reasons: reasons,
+                        flags,
+                    })
+                }
+            },
+        };
+
+        // Reap all descendant processes here,
+        // to ensure there are no children left behind.
+        if let Err(err) = killpg(child_id as libc::c_int, libc::SIGKILL) {
+            trace!("killpg: {}", err);
+        }
+        result
+        // on_exit(child.flags.load().hook.on_exit.as_ref(), result).await
+    }
 }
 
 fn to_exit_status(
@@ -316,7 +399,7 @@ async fn on_exit(path: Option<&PathBuf>, result: io::Result<ExitStatus>) -> io::
 }
 
 impl Child {
-    /// Waits until the process exits or times out.
+    /// Waits until the process exits or times out, and returns ExitStatus.
     /// For the case of timeout, Ok(None) will be returned.
     async fn wait(&mut self) -> io::Result<Option<process::ExitStatus>> {
         let opts = self.flags.load();
@@ -324,6 +407,20 @@ impl Child {
             // Always some because no timeout given.
             None => self.inner.wait().await.map(Some),
             Some(dur) => match time::timeout(dur, self.inner.wait()).await {
+                Err(_elapsed) => Ok(None),
+                Ok(status) => status.map(Some),
+            },
+        }
+    }
+
+    /// Waits until the process exits or times out, and returns Output.
+    /// For the case of timeout, Ok(None) will be returned.
+    async fn wait_with_output(self) -> io::Result<Option<process::Output>> {
+        let opts = self.flags.load();
+        match opts.timeout.kill_after {
+            // Always some because no timeout given.
+            None => self.inner.wait_with_output().await.map(Some),
+            Some(dur) => match time::timeout(dur, self.inner.wait_with_output()).await {
                 Err(_elapsed) => Ok(None),
                 Ok(status) => status.map(Some),
             },

@@ -44,6 +44,8 @@ impl Cli {
 }
 
 pub(crate) mod imp {
+    use std::process::Stdio;
+
     use anyhow::Context as _;
 
     use super::{
@@ -56,16 +58,29 @@ pub(crate) mod imp {
 
     impl Tool<()> for Version {
         async fn run(self, ctx: Context) -> anyhow::Result<()> {
-            proc::Flags::from_args_os(["syx", "--", ctx.cargo.to_str().unwrap(), "--version"])
-                .command()
-                .spawn()
-                .await
-                .context("Failed to spawn process")?
-                .wait()
-                .await
-                .context("Failed to fetch wait status")?
-                .exit_ok()
-                .context("Got a failure on running the process")
+            proc::Flags::from_args_os([
+                "syx",
+                "--",
+                ctx.cargo.to_str().unwrap(),
+                // "rustup",
+                // "run",
+                // "nightly",
+                // "cargo",
+                "fmt",
+                "--all",
+                "--check",
+            ])
+            .command()
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .await
+            .context("Failed to spawn process")?
+            .wait()
+            .await
+            .context("Failed to wait output")?
+            .exit_ok()
+            .context("Failed to wait output")
         }
     }
 }
