@@ -27,7 +27,7 @@ int orphan(int n) {
         fflush(stdout);
         // the first process is monitored by run.
         sleep(max_depth-n);
-        exit(n);
+        exit(0);
     } else {
         pid_t pid    = getpid();
         pid_t group  = getpgid(0);
@@ -49,7 +49,7 @@ int orphan(int n) {
             parent
         );
         fflush(stdout);
-        exit(n);
+        exit(0);
     }
 }
 

@@ -10,6 +10,7 @@ use std::{
 };
 
 fn main() -> io::Result<()> {
+    println!("cargo::rerun-if-changed=src/orphan.c");
     let out_dir = env::var("OUT_DIR").expect("can not find OUT_DIR");
     let mut cc = Command::new("cc");
     let status = cc
