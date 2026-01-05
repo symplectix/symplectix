@@ -1,5 +1,4 @@
 #![allow(missing_docs)]
-use std::convert::Infallible;
 use std::io;
 use std::os::unix::process::ExitStatusExt;
 use std::process::ExitStatus;
@@ -27,7 +26,7 @@ static REAPER: LazyLock<Reaper> = LazyLock::new(|| {
 
 struct Reaper {
     tx: broadcast::Sender<(libc::c_int, ExitStatus)>,
-    jh: task::JoinHandle<Result<usize, Infallible>>,
+    jh: task::JoinHandle<usize>,
 }
 
 impl Drop for Reaper {
@@ -105,9 +104,7 @@ impl Reaper {
                 }
             }
 
-            unreachable!("reaped {}", reaped);
-            #[allow(unreachable_code)]
-            Ok(reaped)
+            reaped
         });
 
         Reaper { tx: tx_cloned, jh }

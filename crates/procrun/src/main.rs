@@ -89,20 +89,6 @@ where
         .context("Got a failure on running the process")
 }
 
-mod c {
-    use std::io;
-
-    pub(crate) fn kill(pid: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
-        unsafe { if libc::kill(pid, sig) == 0 { Ok(()) } else { Err(io::Error::last_os_error()) } }
-    }
-
-    pub(crate) fn killpg(grp: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
-        unsafe {
-            if libc::killpg(grp, sig) == 0 { Ok(()) } else { Err(io::Error::last_os_error()) }
-        }
-    }
-}
-
 mod fsutil {
     use std::io;
     use std::path::Path;
@@ -363,8 +349,7 @@ impl Process {
             }
         };
 
-        // Reap all descendant processes here,
-        // to ensure there are no children left behind.
+        // TODO: Reap all descendant processes here, to ensure there are no children left behind.
         killpg(child_pid);
         on_exit(flags.load().hook.on_exit.as_ref(), result).await
     }
@@ -408,6 +393,20 @@ async fn on_exit(path: Option<&PathBuf>, result: io::Result<ExitStatus>) -> io::
     result
 }
 
+mod c {
+    use std::io;
+
+    pub(crate) fn kill(pid: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
+        unsafe { if libc::kill(pid, sig) == 0 { Ok(()) } else { Err(io::Error::last_os_error()) } }
+    }
+
+    pub(crate) fn killpg(grp: libc::pid_t, sig: libc::c_int) -> io::Result<()> {
+        unsafe {
+            if libc::killpg(grp, sig) == 0 { Ok(()) } else { Err(io::Error::last_os_error()) }
+        }
+    }
+}
+
 async fn kill(pid: u32, signal: Option<libc::c_int>) {
     let gracefully = true;
     let pid = pid as libc::pid_t;
@@ -427,8 +426,6 @@ async fn kill(pid: u32, signal: Option<libc::c_int>) {
 }
 
 fn killpg(pid: u32) {
-    // Reap all descendant processes here,
-    // to ensure there are no children left behind.
     if let Err(err) = c::killpg(pid as libc::c_int, libc::SIGKILL) {
         trace!("killpg({}): {}", libc::SIGKILL, err);
     }
