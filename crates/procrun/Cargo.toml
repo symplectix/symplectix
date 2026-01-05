@@ -4,8 +4,9 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
-[lints]
-workspace = true
+[[bin]]
+name = "procrun"
+path = "bin/procrun.rs"
 
 [dependencies]
 anyhow.workspace = true
@@ -14,17 +15,15 @@ clap.workspace = true
 futures.workspace = true
 humantime.workspace = true
 libc.workspace = true
-reaper.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
-tracing-subscriber.workspace = true
 tracing.workspace = true
+tracing-subscriber.workspace = true
 
 [dev-dependencies]
-procrun_test.workspace = true
 byc.workspace = true
+procrun_test.workspace = true
 testing.workspace = true
 
-[[bin]]
-name = "procrun"
-path = "src/main.rs"
+[lints]
+workspace = true

@@ -23,6 +23,7 @@ static REAPER: LazyLock<Reaper> = LazyLock::new(|| {
 
 struct Reaper {
     tx: broadcast::Sender<(libc::c_int, ExitStatus)>,
+    #[allow(dead_code)]
     jh: task::JoinHandle<usize>,
 }
 
@@ -116,10 +117,11 @@ impl RecvError {
     }
 }
 
-pub fn subscribe() -> Channel {
+pub(crate) fn subscribe() -> Channel {
     Channel { rx: REAPER.tx.subscribe() }
 }
 
-pub fn abort() {
+#[allow(dead_code)]
+pub(crate) fn abort() {
     REAPER.jh.abort();
 }
