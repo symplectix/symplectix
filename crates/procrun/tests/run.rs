@@ -4,7 +4,6 @@ use std::ffi::OsStr;
 use std::io::{
     BufRead,
     BufReader,
-    Cursor,
 };
 use std::path::Path;
 use std::process::{
@@ -45,9 +44,9 @@ struct OrphanLog {
 fn procrun_orphan_behave_as_expected() {
     let procrun = Command::new(procrun())
         .arg(orphan())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .env("PROCRUN_LOG", "trace")
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .env("PROCRUN_LOG", "info")
         .spawn()
         .expect("failed to spawn procrun");
     let procrun_id = procrun.id();
@@ -55,23 +54,24 @@ fn procrun_orphan_behave_as_expected() {
     let out = procrun.wait_with_output().expect("failed to wait outout");
     assert!(out.status.success());
 
-    let stdout = BufReader::new(Cursor::new(out.stdout));
-    let lines = stdout
+    let stderr = BufReader::new(&out.stderr[..]);
+    let lines = stderr
         .lines()
-        .map(|line| {
+        .filter_map(|line| {
             let line = line.unwrap();
-            let kvs = line.split_terminator('\t').collect::<Vec<_>>();
-            OrphanLog {
-                pid:    kvs[1].to_owned(),
-                group:  kvs[2].to_owned(),
-                parent: kvs[3].to_owned(),
-            }
+            (!line.is_empty()).then(|| {
+                let kvs = line.split_terminator('\t').collect::<Vec<_>>();
+                println!("{kvs:?}");
+                OrphanLog {
+                    pid:    kvs[1].to_owned(),
+                    group:  kvs[2].to_owned(),
+                    parent: kvs[3].to_owned(),
+                }
+            })
         })
         .collect::<Vec<_>>();
 
-    for line in &lines {
-        println!("{line:?}")
-    }
+    assert_eq!(lines.len(), 2);
 
     // every processes belong to the same group.
     assert!(all_eq(lines.iter().map(|e| &e.group)));
@@ -81,7 +81,7 @@ fn procrun_orphan_behave_as_expected() {
     assert_eq!(head.parent, format!("parent={procrun_id}"));
 
     // last: the orphan process, should be reparented to procrun.
-    let last = &lines[lines.len() - 1];
+    let last = &lines[1];
     assert_eq!(last.parent, format!("parent={procrun_id}"));
 }
 
@@ -159,7 +159,7 @@ fn procrun_sleep_kill() {
 }
 
 #[test]
-fn procrun_sleep_timeout() {
+fn procrun_exits_with_124_when_timedout() {
     let sleep = timeout("10ms", ["sleep", "1"]).output().unwrap();
     assert!(!sleep.status.success());
     assert_eq!(sleep.status.code(), Some(124));

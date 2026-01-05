@@ -19,6 +19,11 @@ use anyhow::Context;
 use arc_swap::ArcSwap;
 use futures::future;
 use futures::prelude::*;
+use tokio::io::{
+    AsyncBufReadExt,
+    AsyncRead,
+    BufReader,
+};
 use tokio::signal::unix::{
     SignalKind,
     signal,
@@ -26,6 +31,7 @@ use tokio::signal::unix::{
 use tokio::time;
 use tracing::{
     error,
+    info,
     trace,
 };
 use tracing_subscriber::EnvFilter;
@@ -74,13 +80,8 @@ where
         assert_eq!(0, libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0));
     }
 
-    let proc = Flags::from_args_os(args)
-        .command()
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .spawn()
-        .await
-        .context("Failed to spawn process")?;
+    let proc =
+        Flags::from_args_os(args).command().spawn().await.context("Failed to spawn process")?;
 
     proc.wait()
         .await
@@ -223,16 +224,6 @@ impl Flags {
 }
 
 impl Command {
-    fn stdout<T: Into<Stdio>>(mut self, stdio: T) -> Self {
-        self.cmd.stdout(stdio);
-        self
-    }
-
-    fn stderr<T: Into<Stdio>>(mut self, stdio: T) -> Self {
-        self.cmd.stderr(stdio);
-        self
-    }
-
     #[tracing::instrument(skip(self))]
     async fn spawn(mut self) -> io::Result<Process> {
         let flags = self.flags.load();
@@ -251,6 +242,8 @@ impl Command {
             // Put the child into a new process group.
             // A process group ID of 0 will use the process ID as the PGID.
             .process_group(0)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .spawn()?;
         let child_pid = child.id().expect("fetching the process id before polling should not fail");
         Ok(Process { reaped, child, child_pid, flags: self.flags })
@@ -304,17 +297,14 @@ impl Process {
         let mut reasons = ExitReasons::default();
         let mut _interrupted = 0;
 
+        let stdout = BufReader::new(child.stdout.take().unwrap());
+        let mut stdout = stdout.lines();
+
+        let stderr = BufReader::new(child.stderr.take().unwrap());
+        let mut stderr = stderr.lines();
+
         let result = loop {
             tokio::select! {
-                biased;
-                reaped = reaped.recv() => match reaped {
-                    Err(err) => {
-                        trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
-                    }
-                    Ok((pid, exit_status)) => if pid == child_pid as libc::pid_t {
-                        break Ok(to_exit_status(exit_status, reasons, &flags));
-                    }
-                },
                 _ = sigterm.recv() => {
                     _interrupted += 1;
                     reasons.iam_signaled = reasons.iam_signaled.or(Some(libc::SIGTERM));
@@ -324,6 +314,14 @@ impl Process {
                     _interrupted += 1;
                     reasons.iam_signaled = reasons.iam_signaled.or(Some(libc::SIGINT));
                     kill(child_pid, Some(libc::SIGINT)).await;
+                },
+                reaped = reaped.recv() => match reaped {
+                    Err(err) => {
+                        trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
+                    }
+                    Ok((pid, exit_status)) => if pid == child_pid as libc::pid_t {
+                        break Ok(to_exit_status(exit_status, reasons, &flags));
+                    }
                 },
                 child_stat = wait_child(&mut child, flags.load()) => match child_stat {
                     Err(err) => {
@@ -346,12 +344,37 @@ impl Process {
                         break Ok(to_exit_status(exit_status, reasons, &flags));
                     }
                 },
+                line = stdout.next_line() => handle_line(line),
+                line = stderr.next_line() => handle_line(line),
             }
         };
+
+        handle_remaining(stdout.into_inner());
+        handle_remaining(stderr.into_inner());
 
         // TODO: Reap all descendant processes here, to ensure there are no children left behind.
         killpg(child_pid);
         on_exit(flags.load().hook.on_exit.as_ref(), result).await
+    }
+}
+
+fn handle_line(line: io::Result<Option<String>>) {
+    match line {
+        Err(err) => {
+            error!("got an error while reading stdout/stderr: {}", err.to_string());
+        }
+        Ok(None) => {
+            // info!("");
+        }
+        Ok(Some(line)) => {
+            info!("{}", line);
+        }
+    }
+}
+
+fn handle_remaining<R: AsyncRead>(buf: BufReader<R>) {
+    if !buf.buffer().is_empty() {
+        info!("{}", String::from_utf8_lossy(buf.buffer()));
     }
 }
 
