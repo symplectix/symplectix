@@ -2,9 +2,7 @@
 name = "reaper"
 version.workspace = true
 edition.workspace = true
-
-[lib]
-path = "reaper.rs"
+publish = false
 
 [dependencies]
 libc.workspace = true

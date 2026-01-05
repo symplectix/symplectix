@@ -1,3 +1,9 @@
+[package]
+name = "syx"
+version.workspace = true
+edition.workspace = true
+publish = false
+
 [workspace]
 resolver = "3"
 members = [
@@ -9,16 +15,11 @@ version = "0.0.0"
 edition = "2024"
 
 [workspace.dependencies]
-byc = { path = "crates/byc" }
-procrun = { path= "crates/procrun" }
-procrun_test = { path= "crates/procrun_test" }
-reaper = { path = "crates/reaper" }
-testing = { path = "crates/testing" }
-
 anyhow = { version = "1" }
 arc-swap = { version = "1.8" }
 bitflags = { version = "2" }
 bon = { version = "3.8" }
+byc = { path = "crates/byc" }
 cc = { version = "1" }
 clap = { version = "4.5.53", features = ["derive"] }
 futures = { version = "0.3" }
@@ -26,12 +27,16 @@ humantime = { version = "2" }
 libc = { version = "0.2" }
 libfuzzer-sys = { version = "0.4" }
 num = { version = "0.4" }
+procrun = { path = "crates/procrun" }
+procrun_test = { path = "crates/procrun_test" }
+prost = { version = "0.13" }
+prost-reflect = { version = "0.14" }
+prost-types = { version = "0.13" }
 quickcheck = { version = "1" }
 quickcheck_macros = { version = "1" }
-prost = { version = "0.13" }
-prost-types = { version = "0.13" }
-prost-reflect = { version = "0.14" }
+reaper = { path = "crates/reaper" }
 tempfile = { version = "3" }
+testing = { path = "crates/testing" }
 thiserror = { version = "1" }
 tokio = { version = "1.48", features = ["full"] }
 tracing = { version = "0.1" }
@@ -45,24 +50,18 @@ tree-sitter-md = { version = "0.5" }
 [workspace.lints.rust]
 missing_docs = "deny"
 
-[profile.dev.package.fenwicktree]
-overflow-checks = false
-
-[profile.release]
-lto = true
-codegen-units = 1
-
-[package]
+[[bin]]
 name = "syx"
-version.workspace = true
-edition.workspace = true
-publish = false
+path = "src/main.rs"
 
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
 tokio.workspace = true
 
-[[bin]]
-name = "syx"
-path = "src/main.rs"
+[profile.dev.package.fenwicktree]
+overflow-checks = false
+
+[profile.release]
+lto = true
+codegen-units = 1

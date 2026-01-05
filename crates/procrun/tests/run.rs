@@ -4,7 +4,6 @@ use std::ffi::OsStr;
 use std::io::{
     BufRead,
     BufReader,
-    Cursor,
 };
 use std::path::Path;
 use std::process::{
@@ -13,7 +12,7 @@ use std::process::{
 };
 
 fn procrun() -> &'static Path {
-    static PROCRUN_BIN: &'static str = env!("CARGO_BIN_EXE_procrun");
+    static PROCRUN_BIN: &str = env!("CARGO_BIN_EXE_procrun");
     Path::new(PROCRUN_BIN)
 }
 
@@ -41,15 +40,13 @@ struct OrphanLog {
     parent: String,
 }
 
-// Test that procrun_test/src/orphan.c behaves as expected.
-// Sometimes fail, but have no idea. Check reaper status may help?
 #[test]
-fn run_orphan_subreaper() {
+fn procrun_orphan_behave_as_expected() {
     let procrun = Command::new(procrun())
         .arg(orphan())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .env("PROCRUN_LOG", "trace")
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .env("PROCRUN_LOG", "info")
         .spawn()
         .expect("failed to spawn procrun");
     let procrun_id = procrun.id();
@@ -57,19 +54,25 @@ fn run_orphan_subreaper() {
     let out = procrun.wait_with_output().expect("failed to wait outout");
     assert!(out.status.success());
 
-    let stdout = BufReader::new(Cursor::new(out.stdout));
-    let lines = stdout
+    let stderr = BufReader::new(&out.stderr[..]);
+    let lines = stderr
         .lines()
-        .map(|line| {
+        .filter_map(|line| {
             let line = line.unwrap();
-            let kvs = line.split_terminator('\t').collect::<Vec<_>>();
-            OrphanLog {
-                pid:    kvs[1].to_owned(),
-                group:  kvs[2].to_owned(),
-                parent: kvs[3].to_owned(),
-            }
+            (!line.is_empty()).then(|| {
+                let kvs = line.split_terminator('\t').collect::<Vec<_>>();
+                println!("{kvs:?}");
+                OrphanLog {
+                    pid:    kvs[1].to_owned(),
+                    group:  kvs[2].to_owned(),
+                    parent: kvs[3].to_owned(),
+                }
+            })
         })
         .collect::<Vec<_>>();
+
+    assert_eq!(lines.len(), 2);
+
     // every processes belong to the same group.
     assert!(all_eq(lines.iter().map(|e| &e.group)));
 
@@ -78,7 +81,7 @@ fn run_orphan_subreaper() {
     assert_eq!(head.parent, format!("parent={procrun_id}"));
 
     // last: the orphan process, should be reparented to procrun.
-    let last = &lines[lines.len() - 1];
+    let last = &lines[1];
     assert_eq!(last.parent, format!("parent={procrun_id}"));
 }
 
@@ -118,33 +121,50 @@ where
 }
 
 #[test]
-fn executable() {
-    let r = from_args(["test", "-e", "/xxx"]).output().expect("procrun has no output");
-    assert!(!r.status.success());
-    let r = from_args(["test", "-e", "/tmp"]).output().expect("procrun has no output");
+fn procrun_success_status() {
+    let r = from_args(["test", "-e", "/tmp"]).output().unwrap();
     assert!(r.status.success());
-    let r = from_args(["not_command", "foo"]).output().expect("procrun has no output");
+}
+
+#[test]
+fn procrun_failure_status() {
+    let r = from_args(["test", "-e", "/xxx"]).output().unwrap();
+    assert!(!r.status.success());
+    let r = from_args(["not_command", "foo"]).output().unwrap();
     assert!(!r.status.success());
 }
 
-// bit flaky, maybe because of some io error.
 #[test]
-fn exit_code() {
-    // procrun exits with the same code with its child.
+fn procrun_exits_with_same_code_with_its_child() {
+    let exit = from_args(["sh", "-c", "exit 0"]).output().unwrap();
+    assert!(exit.status.success());
+    assert_eq!(exit.status.code(), Some(0));
+
     let exit = from_args(["sh", "-c", "exit 10"]).output().unwrap();
     assert!(!exit.status.success());
     assert_eq!(exit.status.code(), Some(10));
+
+    let exit = from_args(["sh", "-c", "exit 20"]).output().unwrap();
+    assert!(!exit.status.success());
+    assert_eq!(exit.status.code(), Some(20));
 }
 
 #[test]
-fn kill() {
+fn procrun_sleep_kill() {
     let mut sleep = from_args(["sleep", "10"]).spawn().unwrap();
-    sleep.kill().expect("failed to kill");
+    unsafe { libc::kill(sleep.id() as i32, libc::SIGTERM) };
     let status = sleep.wait().unwrap();
     assert!(!status.success());
     assert_eq!(status.code(), None); // sleep signaled
+}
 
+#[test]
+fn procrun_exits_with_124_when_timedout() {
     let sleep = timeout("10ms", ["sleep", "1"]).output().unwrap();
     assert!(!sleep.status.success());
     assert_eq!(sleep.status.code(), Some(124));
+
+    let sleep = timeout("10s", ["sleep", "1"]).output().unwrap();
+    assert!(sleep.status.success());
+    assert_eq!(sleep.status.code(), Some(0));
 }

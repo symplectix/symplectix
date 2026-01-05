@@ -1,5 +1,5 @@
-#![allow(missing_docs)]
-use std::convert::Infallible;
+//! Helper to reap processes.
+
 use std::io;
 use std::os::unix::process::ExitStatusExt;
 use std::process::ExitStatus;
@@ -12,24 +12,28 @@ use tokio::signal::unix::{
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::error::SendError;
 use tokio::task;
-use tracing::{
-    error,
-    trace,
-};
+use tracing::trace;
 
-static REAPER: LazyLock<Reaper<Result<usize, Infallible>>> = LazyLock::new(Reaper::start);
+static REAPER: LazyLock<Reaper> = LazyLock::new(|| {
+    #[cfg(target_os = "linux")]
+    unsafe {
+        assert_eq!(0, libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0));
+    }
+    Reaper::start()
+});
 
-struct Reaper<T> {
+struct Reaper {
     tx: broadcast::Sender<(libc::c_int, ExitStatus)>,
-    jh: task::JoinHandle<T>,
+    #[allow(dead_code)]
+    jh: task::JoinHandle<usize>,
 }
 
-impl Reaper<Result<usize, Infallible>> {
+impl Reaper {
     fn start() -> Self {
         let (tx, _rx) = broadcast::channel(16);
         let tx_cloned = tx.clone();
         let jh = task::spawn(async move {
-            let mut signal = signal(SignalKind::child()).expect("bug");
+            let mut signal = signal(SignalKind::child()).expect("failed to create a signal");
             let mut reaped = 0;
             while signal.recv().await.is_some() {
                 loop {
@@ -42,45 +46,36 @@ impl Reaper<Result<usize, Infallible>> {
                         -1 => {
                             // If RawOsError was constructed via last_os_error,
                             // then this function always return Some.
-                            match io::Error::last_os_error().raw_os_error().expect("bug") {
+                            match io::Error::last_os_error().raw_os_error().unwrap() {
                                 libc::ECHILD => {
-                                    // We have no children that it has not yet waited for.
+                                    trace!("ECHILD: no children that it has not yet waited for");
                                     break;
                                 }
                                 libc::EINTR => {
                                     // This likely can't happen since we are calling libc::waitpid
                                     // with WNOHANG.
-                                    trace!("got interrupted, continue reaping");
+                                    trace!("EINTR: got interrupted, continue reaping");
                                 }
                                 errno => {
-                                    error!(
+                                    trace!(
+                                        "got an error({}), or caught signal aborts the call",
                                         errno,
-                                        "an error is detected or a caught signal aborts the call"
                                     );
                                 }
                             }
                         }
                         0 => {
-                            // no processes wish to report status
+                            trace!("no children wish to report status");
                             break;
                         }
                         pid => {
                             match tx.send((pid, ExitStatus::from_raw(status))) {
-                                Ok(subscribers) => {
-                                    trace!(
-                                        pid,
-                                        subscribers,
-                                        "reaped ok {}, {}",
-                                        libc::WIFEXITED(status),
-                                        libc::WEXITSTATUS(status)
-                                    );
-                                }
+                                Ok(_subscribers) => {}
                                 Err(SendError((pid, exit_status))) => {
-                                    // no active receivers
                                     trace!(
-                                        pid,
-                                        "reaped err {}, {}, {}",
-                                        exit_status,
+                                        reaped = pid,
+                                        exit_status = exit_status.code(),
+                                        "reaped but no active receivers WIFEXITED({}) WEXITSTATUS({})",
                                         libc::WIFEXITED(status),
                                         libc::WEXITSTATUS(status)
                                     );
@@ -93,42 +88,52 @@ impl Reaper<Result<usize, Infallible>> {
                 }
             }
 
-            unreachable!("reaped {}", reaped);
-            #[allow(unreachable_code)]
-            Ok(reaped)
+            reaped
         });
 
         Reaper { tx: tx_cloned, jh }
     }
 }
 
+/// Receiving the results of reaping.
 pub struct Channel {
     rx: broadcast::Receiver<(libc::c_int, ExitStatus)>,
 }
 
+/// Returns when recv failed.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct RecvError(broadcast::error::RecvError);
 
 impl Channel {
+    /// Receives the results of reaping.
     pub async fn recv(&mut self) -> Result<(libc::c_int, ExitStatus), RecvError> {
+        // TODO: Consider not to return Closed.
         self.rx.recv().await.map_err(RecvError)
     }
 }
 
 impl RecvError {
+    /// There are no active reaper.
     pub fn closed(&self) -> bool {
         matches!(self.0, broadcast::error::RecvError::Closed)
     }
 
+    /// The receiver lagged too far behind.
+    ///
+    /// Attempting to receive again will return the oldest message
+    /// still retained by the channel.
+    /// Includes the number of skipped messages.
     pub fn lagged(&self) -> Option<u64> {
         if let broadcast::error::RecvError::Lagged(n) = self.0 { Some(n) } else { None }
     }
 }
 
+/// Gets a receiver channel.
 pub fn subscribe() -> Channel {
     Channel { rx: REAPER.tx.subscribe() }
 }
 
+/// Aborts the reaper.
 pub fn abort() {
     REAPER.jh.abort();
 }
