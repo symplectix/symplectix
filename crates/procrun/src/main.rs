@@ -1,9 +1,6 @@
 #![allow(missing_docs)]
 use std::ffi::OsString;
-use std::os::unix::process::{
-    CommandExt,
-    ExitStatusExt,
-};
+use std::os::unix::process::ExitStatusExt;
 use std::path::PathBuf;
 use std::process::{
     ExitCode,
@@ -187,7 +184,7 @@ struct Hook {
 }
 
 struct Command {
-    cmd:   process::Command,
+    cmd:   tokio::process::Command,
     flags: Arc<ArcSwap<Flags>>,
 }
 
@@ -233,7 +230,7 @@ impl Flags {
     }
 
     fn command(self) -> Command {
-        let cmd = process::Command::new(&self.program);
+        let cmd = tokio::process::Command::new(&self.program);
         let flags = Arc::new(ArcSwap::from_pointee(self));
         Command { cmd, flags }
     }
@@ -261,21 +258,14 @@ impl Command {
             ),
         })?;
 
-        self.cmd
+        let reaper = reaper::subscribe();
+        let child = self
+            .cmd
             .args(&flags.args[..])
             // Put the child into a new process group.
             // A process group ID of 0 will use the process ID as the PGID.
-            .process_group(0);
-
-        // TODO: nightly
-        // #[cfg(target_os = "linux")]
-        // {
-        //     use std::os::linux::process::CommandExt;
-        //     self.cmd.create_pidfd(true);
-        // }
-
-        let reaper = reaper::subscribe();
-        let child = tokio::process::Command::from(self.cmd).kill_on_drop(false).spawn()?;
+            .process_group(0)
+            .spawn()?;
         let child_pid = child.id().expect("fetching the process id before polling should not fail");
         Ok(Process { reaper, child, child_pid, flags: self.flags })
     }
