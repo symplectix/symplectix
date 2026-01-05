@@ -1,3 +1,6 @@
+//! A simple executable that spawns a given commands, waits them and
+//! exits gracefully.
+
 #![allow(missing_docs)]
 use std::ffi::OsString;
 use std::os::unix::process::ExitStatusExt;
@@ -21,7 +24,6 @@ use futures::future;
 use futures::prelude::*;
 use tokio::io::{
     AsyncBufReadExt,
-    AsyncRead,
     BufReader,
 };
 use tokio::signal::unix::{
@@ -69,16 +71,13 @@ where
         .with(
             tracing_subscriber::fmt::layer()
                 .with_writer(std::io::stderr)
+                .with_level(false)
                 .with_target(false)
+                .with_ansi(false)
                 .without_time(),
         )
         .with(EnvFilter::from_env("PROCRUN_LOG"))
         .init();
-
-    #[cfg(target_os = "linux")]
-    unsafe {
-        assert_eq!(0, libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0));
-    }
 
     let proc =
         Flags::from_args_os(args).command().spawn().await.context("Failed to spawn process")?;
@@ -224,7 +223,6 @@ impl Flags {
 }
 
 impl Command {
-    #[tracing::instrument(skip(self))]
     async fn spawn(mut self) -> io::Result<Process> {
         let flags = self.flags.load();
         wait_for(&flags.hook.wait_for).await.map_err(|err| match err {
@@ -250,7 +248,6 @@ impl Command {
     }
 }
 
-#[tracing::instrument]
 async fn wait_for(paths: &[PathBuf]) -> Result<(), SpawnError> {
     let wait_files = paths.iter().map(|ok_file| async move {
         let err_file = ok_file.with_extension("err");
@@ -274,16 +271,6 @@ async fn wait_for(paths: &[PathBuf]) -> Result<(), SpawnError> {
 }
 
 impl Process {
-    fn pid(&self) -> u32 {
-        self.child_pid
-    }
-
-    #[tracing::instrument(
-        skip(self),
-        fields(
-            pid = self.pid(),
-        )
-    )]
     async fn wait(self) -> io::Result<ExitStatus> {
         let Process { mut reaped, mut child, child_pid, flags } = self;
 
@@ -303,6 +290,15 @@ impl Process {
         let stderr = BufReader::new(child.stderr.take().unwrap());
         let mut stderr = stderr.lines();
 
+        let _r = tokio::task::spawn(async move {
+            loop {
+                tokio::select! {
+                    line = stdout.next_line() => handle_line(line),
+                    line = stderr.next_line() => handle_line(line),
+                }
+            }
+        });
+
         let result = loop {
             tokio::select! {
                 _ = sigterm.recv() => {
@@ -319,8 +315,11 @@ impl Process {
                     Err(err) => {
                         trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
                     }
-                    Ok((pid, exit_status)) => if pid == child_pid as libc::pid_t {
-                        break Ok(to_exit_status(exit_status, reasons, &flags));
+                    Ok((pid, exit_status)) => {
+                        trace!(reaped=pid, code=exit_status.code());
+                        if pid == child_pid as libc::pid_t {
+                            break Ok(to_exit_status(exit_status, reasons, &flags));
+                        }
                     }
                 },
                 child_stat = wait_child(&mut child, flags.load()) => match child_stat {
@@ -333,7 +332,6 @@ impl Process {
                         //
                         // Interestingly, ignoring this error seems to get the flaky tests to work properly.
                         error!("got an error while waiting the child: {}", err.to_string());
-                        kill(child_pid, None).await;
                     }
                     Ok(None) => {
                         _interrupted += 1;
@@ -341,16 +339,12 @@ impl Process {
                         kill(child_pid, None).await;
                     }
                     Ok(Some(exit_status)) => {
+                        trace!(code=exit_status.code());
                         break Ok(to_exit_status(exit_status, reasons, &flags));
                     }
                 },
-                line = stdout.next_line() => handle_line(line),
-                line = stderr.next_line() => handle_line(line),
             }
         };
-
-        handle_remaining(stdout.into_inner());
-        handle_remaining(stderr.into_inner());
 
         // TODO: Reap all descendant processes here, to ensure there are no children left behind.
         killpg(child_pid);
@@ -369,12 +363,6 @@ fn handle_line(line: io::Result<Option<String>>) {
         Ok(Some(line)) => {
             info!("{}", line);
         }
-    }
-}
-
-fn handle_remaining<R: AsyncRead>(buf: BufReader<R>) {
-    if !buf.buffer().is_empty() {
-        info!("{}", String::from_utf8_lossy(buf.buffer()));
     }
 }
 
@@ -438,19 +426,19 @@ async fn kill(pid: u32, signal: Option<libc::c_int>) {
     if gracefully {
         let signal = signal.unwrap_or(libc::SIGTERM);
         if let Err(err) = c::kill(pid, signal) {
-            trace!("kill({}): {}", signal, err);
+            trace!(pid = pid, "kill({}): {}", signal, err);
         }
-        time::sleep(Duration::from_millis(1000)).await;
+        time::sleep(Duration::from_millis(500)).await;
     }
 
     if let Err(err) = c::kill(pid, libc::SIGKILL) {
-        trace!("kill({}): {}", libc::SIGKILL, err);
+        trace!(pid = pid, "kill: {}", err);
     }
 }
 
 fn killpg(pid: u32) {
     if let Err(err) = c::killpg(pid as libc::c_int, libc::SIGKILL) {
-        trace!("killpg({}): {}", libc::SIGKILL, err);
+        trace!(pid = pid, "killpg: {}", err);
     }
 }
 

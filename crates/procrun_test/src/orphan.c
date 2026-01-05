@@ -4,7 +4,7 @@
 
 int orphan(int n) {
     pid_t child;
-    int max_depth = 3;
+    int max_depth = 5;
 
     if ((child = fork()) < 0) {
         perror("could not create a child process");
@@ -26,10 +26,10 @@ int orphan(int n) {
                 child
             );
             fflush(stdout);
+            // Sleep long enough for the descendant (n == max_depth)
+            // to be reparented.
+            sleep(10);
         }
-
-        // the first process is monitored by run.
-        sleep(max_depth-n);
         exit(0);
     } else {
         if (n < max_depth) {

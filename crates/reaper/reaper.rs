@@ -11,10 +11,7 @@ use tokio::signal::unix::{
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::error::SendError;
 use tokio::task;
-use tracing::{
-    error,
-    trace,
-};
+use tracing::trace;
 
 static REAPER: LazyLock<Reaper> = LazyLock::new(|| {
     #[cfg(target_os = "linux")]
@@ -29,18 +26,12 @@ struct Reaper {
     jh: task::JoinHandle<usize>,
 }
 
-impl Drop for Reaper {
-    fn drop(&mut self) {
-        println!("drop reaper!!");
-    }
-}
-
 impl Reaper {
     fn start() -> Self {
         let (tx, _rx) = broadcast::channel(16);
         let tx_cloned = tx.clone();
         let jh = task::spawn(async move {
-            let mut signal = signal(SignalKind::child()).expect("bug");
+            let mut signal = signal(SignalKind::child()).expect("failed to create a signal");
             let mut reaped = 0;
             while signal.recv().await.is_some() {
                 loop {
@@ -53,45 +44,36 @@ impl Reaper {
                         -1 => {
                             // If RawOsError was constructed via last_os_error,
                             // then this function always return Some.
-                            match io::Error::last_os_error().raw_os_error().expect("bug") {
+                            match io::Error::last_os_error().raw_os_error().unwrap() {
                                 libc::ECHILD => {
-                                    // We have no children that it has not yet waited for.
+                                    trace!("ECHILD: no children that it has not yet waited for");
                                     break;
                                 }
                                 libc::EINTR => {
                                     // This likely can't happen since we are calling libc::waitpid
                                     // with WNOHANG.
-                                    trace!("got interrupted, continue reaping");
+                                    trace!("EINTR: got interrupted, continue reaping");
                                 }
                                 errno => {
-                                    error!(
+                                    trace!(
+                                        "got an error({}), or caught signal aborts the call",
                                         errno,
-                                        "an error is detected or a caught signal aborts the call"
                                     );
                                 }
                             }
                         }
                         0 => {
-                            // no processes wish to report status
+                            trace!("no children wish to report status");
                             break;
                         }
                         pid => {
                             match tx.send((pid, ExitStatus::from_raw(status))) {
-                                Ok(subscribers) => {
-                                    trace!(
-                                        pid,
-                                        subscribers,
-                                        "reaped ok {}, {}",
-                                        libc::WIFEXITED(status),
-                                        libc::WEXITSTATUS(status)
-                                    );
-                                }
+                                Ok(_subscribers) => {}
                                 Err(SendError((pid, exit_status))) => {
-                                    // no active receivers
                                     trace!(
-                                        pid,
-                                        "reaped err {}, {}, {}",
-                                        exit_status,
+                                        reaped = pid,
+                                        exit_status = exit_status.code(),
+                                        "reaped but no active receivers WIFEXITED({}) WEXITSTATUS({})",
                                         libc::WIFEXITED(status),
                                         libc::WEXITSTATUS(status)
                                     );
