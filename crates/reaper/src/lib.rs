@@ -1,4 +1,5 @@
-#![allow(missing_docs)]
+//! Helper to reap processes.
+
 use std::io;
 use std::os::unix::process::ExitStatusExt;
 use std::process::ExitStatus;
@@ -94,34 +95,45 @@ impl Reaper {
     }
 }
 
+/// Receiving the results of reaping.
 pub struct Channel {
     rx: broadcast::Receiver<(libc::c_int, ExitStatus)>,
 }
 
+/// Returns when recv failed.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct RecvError(broadcast::error::RecvError);
 
 impl Channel {
+    /// Receives the results of reaping.
     pub async fn recv(&mut self) -> Result<(libc::c_int, ExitStatus), RecvError> {
+        // TODO: Consider not to return Closed.
         self.rx.recv().await.map_err(RecvError)
     }
 }
 
 impl RecvError {
+    /// There are no active reaper.
     pub fn closed(&self) -> bool {
         matches!(self.0, broadcast::error::RecvError::Closed)
     }
 
+    /// The receiver lagged too far behind.
+    ///
+    /// Attempting to receive again will return the oldest message
+    /// still retained by the channel.
+    /// Includes the number of skipped messages.
     pub fn lagged(&self) -> Option<u64> {
         if let broadcast::error::RecvError::Lagged(n) = self.0 { Some(n) } else { None }
     }
 }
 
-pub(crate) fn subscribe() -> Channel {
+/// Gets a receiver channel.
+pub fn subscribe() -> Channel {
     Channel { rx: REAPER.tx.subscribe() }
 }
 
-#[allow(dead_code)]
-pub(crate) fn abort() {
+/// Aborts the reaper.
+pub fn abort() {
     REAPER.jh.abort();
 }

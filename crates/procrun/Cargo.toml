@@ -15,6 +15,7 @@ clap.workspace = true
 futures.workspace = true
 humantime.workspace = true
 libc.workspace = true
+reaper.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true

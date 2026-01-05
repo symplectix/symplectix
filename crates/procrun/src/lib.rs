@@ -36,7 +36,6 @@ use tracing::{
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::prelude::*;
 
-mod reaper;
 #[cfg(test)]
 mod tests;
 
