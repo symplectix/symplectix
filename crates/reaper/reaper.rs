@@ -17,14 +17,26 @@ use tracing::{
     trace,
 };
 
-static REAPER: LazyLock<Reaper<Result<usize, Infallible>>> = LazyLock::new(Reaper::start);
+static REAPER: LazyLock<Reaper> = LazyLock::new(|| {
+    #[cfg(target_os = "linux")]
+    unsafe {
+        assert_eq!(0, libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0));
+    }
+    Reaper::start()
+});
 
-struct Reaper<T> {
+struct Reaper {
     tx: broadcast::Sender<(libc::c_int, ExitStatus)>,
-    jh: task::JoinHandle<T>,
+    jh: task::JoinHandle<Result<usize, Infallible>>,
 }
 
-impl Reaper<Result<usize, Infallible>> {
+impl Drop for Reaper {
+    fn drop(&mut self) {
+        println!("drop reaper!!");
+    }
+}
+
+impl Reaper {
     fn start() -> Self {
         let (tx, _rx) = broadcast::channel(16);
         let tx_cloned = tx.clone();

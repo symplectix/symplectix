@@ -189,7 +189,7 @@ struct Command {
 }
 
 struct Process {
-    reaper:    reaper::Channel,
+    reaped:    reaper::Channel,
     child:     tokio::process::Child,
     child_pid: u32,
     flags:     Arc<ArcSwap<Flags>>,
@@ -258,7 +258,7 @@ impl Command {
             ),
         })?;
 
-        let reaper = reaper::subscribe();
+        let reaped = reaper::subscribe();
         let child = self
             .cmd
             .args(&flags.args[..])
@@ -267,7 +267,7 @@ impl Command {
             .process_group(0)
             .spawn()?;
         let child_pid = child.id().expect("fetching the process id before polling should not fail");
-        Ok(Process { reaper, child, child_pid, flags: self.flags })
+        Ok(Process { reaped, child, child_pid, flags: self.flags })
     }
 }
 
@@ -306,7 +306,7 @@ impl Process {
         )
     )]
     async fn wait(self) -> io::Result<ExitStatus> {
-        let Process { mut reaper, mut child, child_pid, flags } = self;
+        let Process { mut reaped, mut child, child_pid, flags } = self;
 
         // SIGTERM: stop monitored process
         // SIGINT:  e.g., Ctrl-C at terminal
@@ -321,7 +321,7 @@ impl Process {
         let result = loop {
             tokio::select! {
                 biased;
-                reaped = reaper.recv() => match reaped {
+                reaped = reaped.recv() => match reaped {
                     Err(err) => {
                         trace!("closed({}), lagged({})", err.closed(), err.lagged().unwrap_or(0));
                     }
