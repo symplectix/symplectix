@@ -49,6 +49,7 @@ fn run_orphan_subreaper() {
         .arg(orphan())
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
+        // .stderr(Stdio::inherit())
         .env("PROCRUN_LOG", "trace")
         .spawn()
         .expect("failed to spawn procrun");
@@ -70,6 +71,11 @@ fn run_orphan_subreaper() {
             }
         })
         .collect::<Vec<_>>();
+
+    for line in &lines {
+        println!("{line:?}")
+    }
+
     // every processes belong to the same group.
     assert!(all_eq(lines.iter().map(|e| &e.group)));
 
