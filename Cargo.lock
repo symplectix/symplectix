@@ -706,6 +706,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "procfile"
+version = "0.0.0"
+dependencies = [
+ "itertools",
+]
+
+[[package]]
 name = "procrun"
 version = "0.0.0"
 dependencies = [
@@ -715,6 +722,7 @@ dependencies = [
  "clap",
  "futures",
  "humantime",
+ "itertools",
  "libc",
  "procrun_test",
  "reaper",

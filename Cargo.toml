@@ -24,6 +24,7 @@ cc = { version = "1" }
 clap = { version = "4.5.53", features = ["derive"] }
 futures = { version = "0.3" }
 humantime = { version = "2" }
+itertools = { version = "0.14" }
 libc = { version = "0.2" }
 libfuzzer-sys = { version = "0.4" }
 num = { version = "0.4" }
