@@ -28,6 +28,7 @@ itertools = { version = "0.14" }
 libc = { version = "0.2" }
 libfuzzer-sys = { version = "0.4" }
 num = { version = "0.4" }
+procrc = { path = "crates/procrc" }
 procrun = { path = "crates/procrun" }
 procrun_test = { path = "crates/procrun_test" }
 prost = { version = "0.13" }

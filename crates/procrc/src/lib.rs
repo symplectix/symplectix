@@ -5,8 +5,6 @@ use std::io::{
     BufRead,
 };
 
-use itertools::Itertools;
-
 /// Procfile entry, a pair of the command and its name.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entry {
@@ -24,13 +22,53 @@ where
     R: io::Read,
 {
     let buf = io::BufReader::new(r);
-    let mut lines = buf.lines().map_while(Result::ok).filter_map(|mut line| {
+    let lines = buf.lines().map_while(Result::ok).filter_map(|mut line| {
         // Skip comments,
         if let Some(n) = line.find('#') {
             let _comment = line.split_off(n);
         }
         // and empty lines.
         (!line.trim_ascii().is_empty()).then_some(line)
+    });
+
+    let mut entries = Vec::new();
+    for line in lines {
+        let (name, more) = line.split_once(':').ok_or(invalid_data("cannot find ':'"))?;
+        entries.push(Entry {
+            name:    name.trim_ascii().to_owned(),
+            cmdline: more
+                .trim_ascii()
+                .split(' ')
+                .filter(|t| !t.is_empty())
+                .map(|t| t.to_owned())
+                .collect(),
+        })
+    }
+    Ok(entries)
+}
+
+fn invalid_data(err: &str) -> io::Error {
+    io::Error::new(io::ErrorKind::InvalidData, err)
+}
+
+#[cfg(test)]
+fn parse_multiline<R>(r: R) -> io::Result<Vec<Entry>>
+where
+    R: io::Read,
+{
+    use itertools::Itertools;
+    let buf = io::BufReader::new(r);
+    let mut lines = buf.lines().map_while(Result::ok).filter_map(|mut line| {
+        // Skip comments,
+        if let Some(n) = line.find('#') {
+            let _comment = line.split_off(n);
+        }
+        // and empty lines.
+        if line.trim_ascii().is_empty() {
+            return None;
+        }
+        line = line.trim_ascii().to_string();
+        Some(line)
     });
 
     let mut get_entry = || -> io::Result<Option<Entry>> {
@@ -40,32 +78,35 @@ where
             .by_ref()
             // Rust stdlib may have this someday.
             // https://github.com/rust-lang/rust/issues/62208
-            .take_while_inclusive(|line| line.trim_ascii().ends_with('\\'))
+            .take_while_inclusive(|line| line.ends_with('\\'))
             .collect::<Vec<_>>();
+
         if chunk.is_empty() {
+            // No more lines.
             return Ok(None);
         }
 
         // Extract the name of each entry.
         let name = {
             // The first line must have ':', which separates name and entry body.
-            let n = chunk[0].find(':').ok_or(io::Error::other("cannot find ':'"))?;
+            let n = chunk[0].find(':').ok_or(invalid_data("cannot find ':'"))?;
             let mut split = chunk[0].split_off(n);
             assert_eq!(':', split.remove(0));
             std::mem::swap(&mut chunk[0], &mut split);
             split
         };
         if name.is_empty() {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "name not found"));
+            return Err(invalid_data("name not found"));
         }
 
         // Cleanup each line.
         chunk.retain_mut(|line| {
-            // line.retain(|c| c != ':');
             *line = line.trim_ascii().to_owned();
-            while line.ends_with('\\') || line.ends_with(' ') {
+            // Remove trailing backslash.
+            if line.ends_with('\\') {
                 line.pop();
             }
+            *line = line.trim_ascii().to_owned();
             !line.is_empty()
         });
 
@@ -76,6 +117,7 @@ where
     while let Some(entry) = get_entry()? {
         entries.push(entry);
     }
+
     Ok(entries)
 }
 
@@ -91,7 +133,10 @@ where
 mod tests {
     use std::io;
 
-    use super::parse;
+    use super::{
+        parse,
+        parse_multiline,
+    };
 
     #[test]
     fn check_parse() {
@@ -99,31 +144,19 @@ mod tests {
 # comment
   # comment
     # comment
-0:
-1: gunicorn -b :$PORT main:app
-2: abc\
---kill-after 10s --env APPLE=banana \
--- foo a b c
-3: --backslask C:\path \
-foo a=1 b=2 c=3
-4: --kill-after 10m --timeout-is-ok -- foo a 1 b 2 c 3
-5: a b c
-6: a \
-\
-b \ c \ d e
-7: \
-# aaa
---env FOO=foo \ # env
-# skip --env BAR=bar \
-a \
-b \
-c
-# :
-# foo a b c
-# : foo a b c
+s0:
+s1: gunicorn -b :$PORT main:app
+s2: abc --kill-after 10s --env APPLE=banana -- foo a b c
+s3: --backslask C:\path foo a=1 b=2 c=3
+s4: --kill-after 10m --timeout-is-ok -- foo a 1 b 2 c 3
+s5: a b c
+s6: a  b \c \d e
+s7: a  b \ \ c \d e
 "#;
         let entries = parse(io::Cursor::new(procfile)).unwrap();
-        println!("{entries:?}");
+        for entry in entries {
+            println!("{entry:?}");
+        }
     }
 
     #[test]
@@ -141,42 +174,38 @@ c
         assert!(parse(io::Cursor::new(procfile)).is_ok());
     }
 
-    //     #[test]
-    //     fn check() {
-    //         let procfile = r#"
-    // # comment
-    //   # comment
-    //     # comment
-    // xxx(aaa): foo a b c
-    // xxx(aaa): --kill-after 10s --env APPLE=banana -- foo a b c
-    // yyy(bbb): --wait /tmp/aaa --on-exit /tmp/bbb foo a=1 b=2 c=3
-    // zzz(ccc): --kill-after 10m --timeout-is-ok -- foo a 1 b 2 c 3
-    //         "#;
+    #[test]
+    fn check_multiline() {
+        let procfile = r#"
+m0:
 
-    //         let parsed = parse(io::Cursor::new(procfile)).unwrap();
-    //         assert_eq!(parsed.len(), 4);
+m1: gunicorn -b \
+:$PORT\
+main:app
 
-    //         assert_eq!(parsed[0].flags[0], "foo");
-    //         assert_eq!(parsed[0].flags[1..], ["a", "b", "c"]);
-    //         assert!(parsed[0].timeout.kill_after.is_none());
+m2: abc \
+--kill-after 10s \
+--env APPLE=banana \
+-- foo a b c
 
-    //         assert_eq!(parsed[1].program, "foo");
-    //         assert_eq!(parsed[1].args, ["a", "b", "c"]);
-    //         assert_eq!(parsed[1].envs, ["APPLE=banana"]);
-    //         assert!(parsed[1].timeout.kill_after.is_some());
+m3: --backslask \
+C:\path foo a=1 b=2 c=3
 
-    //         assert_eq!(parsed[2].program, "foo");
-    //         assert_eq!(parsed[2].args, ["a=1", "b=2", "c=3"]);
-    //         assert_eq!(parsed[2].hook.wait_for, [Path::new("/tmp/aaa")]);
-    //         assert_eq!(parsed[2].hook.on_exit.as_ref().unwrap(), Path::new("/tmp/bbb"));
+m4: --kill-after 10m --timeout-is-ok -- \
+foo a 1 b 2 c 3
 
-    //         assert_eq!(parsed[3].program, "foo");
-    //         assert_eq!(parsed[3].args, ["a", "1", "b", "2", "c", "3"]);
-    //         assert!(parsed[3].timeout.kill_after.is_some());
-    //         assert!(parsed[3].timeout.is_ok);
+m5: a b c
 
-    //         for flags in parsed {
-    //             println!("{flags:?}");
-    //         }
-    // }
+m6: a  b \c \d \
+e
+
+m6: a  b \c \ \
+\d e
+"#;
+
+        let entries = parse_multiline(io::Cursor::new(procfile)).unwrap();
+        for entry in entries {
+            println!("{entry:?}");
+        }
+    }
 }

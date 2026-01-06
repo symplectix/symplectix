@@ -1,5 +1,5 @@
 [package]
-name = "procfile"
+name = "procrc"
 version.workspace = true
 edition.workspace = true
 publish = false
