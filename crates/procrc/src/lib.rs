@@ -8,7 +8,7 @@ use std::iter;
 
 use itertools::Itertools;
 
-/// Procfile entry.
+/// Procrc entry.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entry {
     /// Indicates the command that you should execute on startup, such as:
@@ -17,49 +17,50 @@ pub struct Entry {
     pub cmdline: Vec<String>,
 }
 
-/// Parses Procfile.
+/// Parses procrc.
 pub fn parse<R>(r: R) -> io::Result<Vec<Entry>>
 where
     R: io::Read,
 {
-    let buf = io::BufReader::new(r);
-    let mut lines = buf.lines().map_while(Result::ok).filter_map(|mut line| {
-        // Skip comments,
-        if let Some(n) = line.find('#') {
-            let _comment = line.split_off(n);
+    let rc = {
+        let mut vec = Vec::new();
+        let buf = io::BufReader::new(r);
+        for line in buf.lines() {
+            let mut line = line?;
+            // Skip comments,
+            if let Some(n) = line.find('#') {
+                let _comment = line.split_off(n);
+            }
+            // and empty lines.
+            if line.trim_ascii().is_empty() {
+                continue;
+            }
+            vec.push(line);
         }
-        // and empty lines.
-        if line.trim_ascii().is_empty() {
-            return None;
-        }
-        Some(line)
-    });
+        vec
+    };
 
+    let mut rc_lines = rc.iter();
     let get_entry = || -> Option<Entry> {
-        // The all lines in the chunk are collected together to form
-        // a single Entry.
-        let chunk = lines
-            .by_ref()
-            // A '\' at the end of a line continues the line.
-            //
-            // nb. Each string produced by buf.lines() will not have a newline
-            // byte (the `0xA` byte) or `CRLF` (`0xD`, `0xA` bytes) at the end.
-            //
-            // TODO: Use iter::take_until or something.
-            // Rust stdlib may have this someday.
-            // https://github.com/rust-lang/rust/issues/62208
-            .take_while_inclusive(|line| line.ends_with('\\'))
-            // TODO: Can I remove this collect?
-            // maybe need LendingIterator or something.
-            .collect::<Vec<_>>();
-
-        let tokens =
-            Tokens::new(chunk.iter().flat_map(|line| line.chars().chain(iter::once('\n'))))
-                .collect::<Vec<_>>();
+        let tokens = Tokens::new(
+            // The all lines in the chunk are collected together to form
+            // a single Entry.
+            rc_lines
+                .by_ref()
+                // A '\' at the end of a line continues the line.
+                //
+                // TODO: Use iter::take_until or something.
+                // Rust stdlib may have this someday.
+                // https://github.com/rust-lang/rust/issues/62208
+                .take_while_inclusive(|line| line.trim_ascii().ends_with('\\'))
+                // nb. Each string produced by buf.lines() will not have a newline
+                // byte (the `0xA` byte) or `CRLF` (`0xD`, `0xA` bytes) at the end.
+                .flat_map(|line| line.chars().chain(iter::once('\n'))),
+        )
+        .collect::<Vec<_>>();
 
         if tokens.is_empty() { None } else { Some(Entry { cmdline: tokens }) }
     };
-
     Ok(iter::from_fn(get_entry).collect())
 }
 
@@ -86,7 +87,7 @@ where
 
 /// Transforms an input chars into a sequence of tokens.
 #[derive(Debug)]
-pub struct Lexer<I> {
+struct Lexer<I> {
     chars: I,
     token: String,
     quote: Option<char>,
@@ -94,7 +95,7 @@ pub struct Lexer<I> {
 
 /// Token string.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Token {
+enum Token {
     /// Just a word.
     Word(String),
     /// Need to expand.
@@ -118,7 +119,7 @@ impl<I> Tokens<I> {
 
 impl<I> Lexer<I> {
     /// Creates a new Tokens.
-    pub fn new<T>(chars: T) -> Self
+    fn new<T>(chars: T) -> Self
     where
         T: IntoIterator<Item = char, IntoIter = I>,
     {
@@ -131,10 +132,10 @@ where
     I: Iterator<Item = char>,
 {
     fn next(&mut self) -> Option<Token> {
-        self.chars.find(|c| !c.is_ascii_whitespace()).and_then(|c| self.next_token(c))
+        self.chars.find(|c| !c.is_ascii_whitespace()).map(|c| self.next_token(c))
     }
 
-    fn next_token(&mut self, mut c: char) -> Option<Token> {
+    fn next_token(&mut self, mut c: char) -> Token {
         loop {
             if let Some(ref quote) = self.quote {
                 if c == *quote {
@@ -144,12 +145,12 @@ where
                 }
             } else {
                 match c {
-                    ' ' | '\n' | '\r' | '\t' => {
+                    c if c.is_ascii_whitespace() => {
                         break;
                     }
                     '\\' => {
-                        if let Some(_x) = self.chars.next() {
-                            // self.token.push(x);
+                        if let Some(_skipped) = self.chars.next() {
+                            // dbg!(skipped);
                         } else {
                             break;
                         }
@@ -163,8 +164,8 @@ where
                 }
             }
 
-            if let Some(x) = self.chars.next() {
-                c = x;
+            if let Some(next) = self.chars.next() {
+                c = next;
             } else {
                 break;
             }
@@ -172,14 +173,10 @@ where
         self.output()
     }
 
-    fn output(&mut self) -> Option<Token> {
+    fn output(&mut self) -> Token {
         use Token::Word;
-        if self.token.is_empty() {
-            None
-        } else {
-            let token = self.token.clone();
-            self.token = String::new();
-            Some(Word(token))
-        }
+        let token = self.token.clone();
+        self.token = String::new();
+        Word(token)
     }
 }

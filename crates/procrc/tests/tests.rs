@@ -7,7 +7,7 @@ use procrc::{
 };
 
 #[test]
-fn empty_procrc() {
+fn no_entries() {
     let rc = r#""#;
     assert!(parse(io::Cursor::new(rc)).is_ok());
 
@@ -22,16 +22,13 @@ fn empty_procrc() {
 }
 
 #[test]
-fn check_multiline() {
+fn many_entries() {
     #[rustfmt::skip]
         let rc = r#"
-test0
-
-test1 gunicorn -b \
+test0 # comment
+test1 gunicorn -b \ # comment
 :$PORT \
-main:app \
-hey!!!
-
+main:app
 test2 abc \
 --kill-after 10s \
 --env APPLE=banana \
@@ -39,24 +36,26 @@ test2 abc \
 a \
 b \
 c
-
 test3 \
 "C:\path" C:\path foo a=1 b=2 c=3
 test4 --kill-after "10'm\n" \
 --timeout-is-ok -- \
 foo a 1 b 2 c 3
-
-test5 a b \
-c
+test5 a b \ \ c
 
 test6 a  b \c \d \
 e
 
 test7 a  b \c \ \
-\d e
+\c e
 "#;
 
-    for entry in parse(io::Cursor::new(rc)).expect("reading from a cursor never fails") {
+    let entries = parse(io::Cursor::new(rc)).expect("reading from a cursor never fails");
+
+    assert_eq!(entries[0].cmdline, ["test0"]);
+    assert_eq!(entries[1].cmdline, ["test1", "gunicorn", "-b", "", ":$PORT", "main:app"]);
+
+    for entry in entries {
         println!("{entry:?}");
     }
 }
@@ -84,8 +83,9 @@ fn test_get_next_tokens() {
     assert_eq!(tokens.next().unwrap(), "FOO=10's");
     assert_eq!(tokens.next(), None);
 
-    let mut tokens = Tokens::new("\"foo ; bar\"".chars());
-    assert_eq!(tokens.next().unwrap(), "foo ; bar");
+    let mut tokens = Tokens::new("\"foo\nbar\" ${BAR}".chars());
+    assert_eq!(tokens.next().unwrap(), "foo\nbar");
+    assert_eq!(tokens.next().unwrap(), "${BAR}");
     assert_eq!(tokens.next(), None);
 
     let mut tokens = Tokens::new("foo ; bar".chars());
