@@ -2,7 +2,7 @@
 use std::io;
 
 use flagrc::{
-    Parser,
+    Tokens,
     parse,
 };
 
@@ -65,7 +65,7 @@ test7 a  b \c \ \
 }
 
 fn single_token(chars: impl IntoIterator<Item = char>) -> Option<String> {
-    let mut tokens = Parser::new(chars);
+    let mut tokens = Tokens::new(chars);
     let next = tokens.next();
     // Check no more tokens.
     assert_eq!(tokens.next(), None);
@@ -91,7 +91,7 @@ fn get_single_token() {
 }
 
 fn tokens(chars: impl IntoIterator<Item = char>) -> Vec<String> {
-    let tokens = Parser::new(chars);
+    let tokens = Tokens::new(chars);
     tokens.collect()
 }
 

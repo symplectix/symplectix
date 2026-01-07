@@ -46,7 +46,7 @@ where
 
     let mut rc_lines = rc.iter();
     let get_entry = || -> Option<Entry> {
-        let tokens = Parser::new(
+        let tokens = Tokens::new(
             // The all lines in the chunk are collected together to form
             // a single Entry.
             rc_lines
@@ -73,14 +73,14 @@ where
 }
 
 /// Transforms an input chars into a sequence of tokens.
-pub struct Parser<I>
+pub struct Tokens<I>
 where
     I: Iterator,
 {
-    lex: Tokens<I>,
+    lex: Lexer<I>,
 }
 
-impl<I> Parser<I>
+impl<I> Tokens<I>
 where
     I: Iterator<Item = char>,
 {
@@ -97,11 +97,11 @@ where
     where
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Parser { lex: Tokens::new(chars) }
+        Tokens { lex: Lexer::new(chars) }
     }
 }
 
-impl<I> Iterator for Parser<I>
+impl<I> Iterator for Tokens<I>
 where
     I: Iterator<Item = char>,
 {
@@ -112,8 +112,11 @@ where
             let mut out = String::new();
             for word in token.words {
                 match word {
-                    Word::Literal(lit) => {
+                    Word::Lit(lit) => {
                         out.push_str(lit.as_str());
+                    }
+                    Word::Var(var) => {
+                        out.push_str(var.as_str());
                     }
                 }
             }
@@ -122,7 +125,7 @@ where
     }
 }
 
-struct Tokens<I>
+struct Lexer<I>
 where
     I: Iterator,
 {
@@ -138,7 +141,8 @@ struct Token {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Word {
-    Literal(String),
+    Lit(String),
+    Var(String),
 }
 
 impl Token {
@@ -150,24 +154,30 @@ impl Token {
         mem::replace(self, Token::new())
     }
 
-    fn push(&mut self, c: char) {
-        if let Some(tok) = self.words.last_mut() {
-            tok.push(c);
+    fn push_lit(&mut self, c: char) {
+        if let Some(word) = self.words.last_mut() {
+            match word {
+                Word::Lit(s) => s.push(c),
+                Word::Var(_) => self.words.push(Word::Lit(c.to_string())),
+            }
         } else {
-            self.words.push(Word::Literal(c.to_string()));
+            self.words.push(Word::Lit(c.to_string()));
+        }
+    }
+
+    fn push_var(&mut self, c: char) {
+        if let Some(word) = self.words.last_mut() {
+            match word {
+                Word::Lit(_) => self.words.push(Word::Var(c.to_string())),
+                Word::Var(s) => s.push(c),
+            }
+        } else {
+            self.words.push(Word::Var(c.to_string()));
         }
     }
 }
 
-impl Word {
-    fn push(&mut self, c: char) {
-        match self {
-            Word::Literal(s) => s.push(c),
-        }
-    }
-}
-
-impl<I> Tokens<I>
+impl<I> Lexer<I>
 where
     I: Iterator,
 {
@@ -176,11 +186,11 @@ where
         I: Iterator<Item = char>,
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Tokens { chars: chars.into_iter().peekable(), token: Token::new(), quote: None }
+        Lexer { chars: chars.into_iter().peekable(), token: Token::new(), quote: None }
     }
 }
 
-impl<I> Iterator for Tokens<I>
+impl<I> Iterator for Lexer<I>
 where
     I: Iterator<Item = char>,
 {
@@ -190,7 +200,7 @@ where
     }
 }
 
-impl<I> Tokens<I>
+impl<I> Lexer<I>
 where
     I: Iterator<Item = char>,
 {
@@ -200,7 +210,7 @@ where
                 if c == *quote {
                     self.quote = None;
                 } else {
-                    self.token.push(c);
+                    self.token.push_lit(c);
                 }
             } else {
                 match c {
@@ -223,10 +233,10 @@ where
                         {
                             dbg!("this value need to be expanded");
                         }
-                        self.token.push(c);
+                        self.token.push_lit(c);
                     }
                     c => {
-                        self.token.push(c);
+                        self.token.push_lit(c);
                     }
                 }
             }
