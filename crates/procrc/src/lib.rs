@@ -11,10 +11,10 @@ use itertools::Itertools;
 /// Procrc entry.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entry {
-    /// Indicates the command that you should execute on startup, such as:
-    /// - gunicorn -b :$PORT main:app
-    /// - rake jobs:work
-    pub cmdline: Vec<String>,
+    /// Indicates the command that you should execute such as:
+    /// - `gunicorn -b :$PORT main:app`
+    /// - `rake jobs:work`
+    pub flag: Vec<String>,
 }
 
 /// Parses procrc.
@@ -42,7 +42,7 @@ where
 
     let mut rc_lines = rc.iter();
     let get_entry = || -> Option<Entry> {
-        let tokens = Tokens::new(
+        let tokens = Parser::new(
             // The all lines in the chunk are collected together to form
             // a single Entry.
             rc_lines
@@ -63,23 +63,23 @@ where
         .filter(|t| !t.is_empty())
         .collect::<Vec<_>>();
 
-        if tokens.is_empty() { None } else { Some(Entry { cmdline: tokens }) }
+        if tokens.is_empty() { None } else { Some(Entry { flag: tokens }) }
     };
     Ok(iter::from_fn(get_entry).collect())
 }
 
 /// Transforms an input chars into a sequence of tokens.
 #[derive(Debug)]
-pub struct Tokens<I> {
-    lex: Lexer<I>,
+pub struct Parser<I> {
+    lex: Tokens<I>,
 }
 
-impl<I> Tokens<I> {
+impl<I> Parser<I> {
     /// Creates a new Tokens.
     ///
     /// ```
-    /// # use procrc::Tokens;
-    /// let mut tokens = Tokens::new("foo\"ba\"r baz".chars());
+    /// # use procrc::Parser;
+    /// let mut tokens = Parser::new("foo\"ba\"r baz".chars());
     /// assert_eq!(tokens.next().unwrap(), "foobar");
     /// assert_eq!(tokens.next().unwrap(), "baz");
     /// assert_eq!(tokens.next(), None);
@@ -88,11 +88,11 @@ impl<I> Tokens<I> {
     where
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Tokens { lex: Lexer::new(chars) }
+        Parser { lex: Tokens::new(chars) }
     }
 }
 
-impl<I> Iterator for Tokens<I>
+impl<I> Iterator for Parser<I>
 where
     I: Iterator<Item = char>,
 {
@@ -108,7 +108,7 @@ where
 }
 
 #[derive(Debug)]
-struct Lexer<I> {
+struct Tokens<I> {
     chars: I,
     token: String,
     quote: Option<char>,
@@ -120,16 +120,16 @@ enum Token {
     Env { key: String, value: String },
 }
 
-impl<I> Lexer<I> {
+impl<I> Tokens<I> {
     fn new<T>(chars: T) -> Self
     where
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Lexer { chars: chars.into_iter(), token: String::new(), quote: None }
+        Tokens { chars: chars.into_iter(), token: String::new(), quote: None }
     }
 }
 
-impl<I> Lexer<I>
+impl<I> Tokens<I>
 where
     I: Iterator<Item = char>,
 {
