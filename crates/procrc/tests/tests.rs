@@ -26,21 +26,26 @@ fn many_entries() {
     #[rustfmt::skip]
         let rc = r#"
 test0 # comment
+
 test1 gunicorn -b \ # comment
 :$PORT \
 main:app
+
 test2 abc \
---kill-after 10s \
---env APPLE=banana \
+-x 10s \
+--env A"PPL"E=banana \
 -- foo \
 a \
 b \
 c
+
 test3 \
-"C:\path" C:\path foo a=1 b=2 c=3
-test4 --kill-after "10'm\n" \
---timeout-is-ok -- \
-foo a 1 b 2 c 3
+"C:\path" D:\path
+
+test4 "10m\n" \
+           -- \
+foo a=1
+
 test5 a b \ \ c
 
 test6 a  b \c \d \
@@ -53,16 +58,44 @@ test7 a  b \c \ \
     let entries = parse(io::Cursor::new(rc)).expect("reading from a cursor never fails");
 
     assert_eq!(entries[0].cmdline, ["test0"]);
-    assert_eq!(entries[1].cmdline, ["test1", "gunicorn", "-b", "", ":$PORT", "main:app"]);
-
-    for entry in entries {
-        println!("{entry:?}");
-    }
+    assert_eq!(entries[1].cmdline, ["test1", "gunicorn", "-b", ":$PORT", "main:app"]);
+    assert_eq!(
+        entries[2].cmdline,
+        ["test2", "abc", "-x", "10s", "--env", "APPLE=banana", "--", "foo", "a", "b", "c"]
+    );
+    assert_eq!(entries[3].cmdline, ["test3", "C:\\path", "D:ath"]);
+    assert_eq!(entries[4].cmdline, ["test4", "10m\\n", "--", "foo", "a=1"]);
+    assert_eq!(entries[5].cmdline, ["test5", "a", "b", "c"]);
+    assert_eq!(entries[6].cmdline, ["test6", "a", "b", "e"]);
+    assert_eq!(entries[7].cmdline, ["test7", "a", "b", "e"]);
 }
 
 #[test]
 fn test_get_next_tokens() {
     let mut tokens = Tokens::new("".chars());
+    assert_eq!(tokens.next(), None);
+
+    let mut tokens = Tokens::new(" ".chars());
+    assert_eq!(tokens.next(), None);
+
+    let mut tokens = Tokens::new("\\ ".chars());
+    assert_eq!(tokens.next().unwrap(), "");
+    assert_eq!(tokens.next(), None);
+
+    let mut tokens = Tokens::new("'\ne'".chars());
+    assert_eq!(tokens.next().unwrap(), "\ne");
+    assert_eq!(tokens.next(), None);
+
+    let mut tokens = Tokens::new("\\\ne".chars());
+    assert_eq!(tokens.next().unwrap(), "e");
+    assert_eq!(tokens.next(), None);
+
+    let mut tokens = Tokens::new("'A\"PPL\"E'".chars());
+    assert_eq!(tokens.next().unwrap(), "A\"PPL\"E");
+    assert_eq!(tokens.next(), None);
+
+    let mut tokens = Tokens::new("A\"PPL\"E".chars());
+    assert_eq!(tokens.next().unwrap(), "APPLE");
     assert_eq!(tokens.next(), None);
 
     let mut tokens = Tokens::new("foo bar".chars());

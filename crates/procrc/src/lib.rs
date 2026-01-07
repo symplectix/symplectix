@@ -1,4 +1,4 @@
-//! A tiny library to parse Procfile.
+//! A tiny library to parse a file like Procfile.
 
 use std::io::{
     self,
@@ -57,6 +57,10 @@ where
                 // byte (the `0xA` byte) or `CRLF` (`0xD`, `0xA` bytes) at the end.
                 .flat_map(|line| line.chars().chain(iter::once('\n'))),
         )
+        // Tokens emits `Some("")` when input is eg. "\\ ".
+        // This behavior is important in the current implementation:
+        // if input is something like "\\ x", returning None will not output x.
+        .filter(|t| !t.is_empty())
         .collect::<Vec<_>>();
 
         if tokens.is_empty() { None } else { Some(Entry { cmdline: tokens }) }
@@ -64,10 +68,28 @@ where
     Ok(iter::from_fn(get_entry).collect())
 }
 
-/// Expand tokens into a string.
+/// Transforms an input chars into a sequence of tokens.
 #[derive(Debug)]
 pub struct Tokens<I> {
     lex: Lexer<I>,
+}
+
+impl<I> Tokens<I> {
+    /// Creates a new Tokens.
+    ///
+    /// ```
+    /// # use procrc::Tokens;
+    /// let mut tokens = Tokens::new("foo\"ba\"r baz".chars());
+    /// assert_eq!(tokens.next().unwrap(), "foobar");
+    /// assert_eq!(tokens.next().unwrap(), "baz");
+    /// assert_eq!(tokens.next(), None);
+    /// ```
+    pub fn new<T>(chars: T) -> Self
+    where
+        T: IntoIterator<Item = char, IntoIter = I>,
+    {
+        Tokens { lex: Lexer::new(chars) }
+    }
 }
 
 impl<I> Iterator for Tokens<I>
@@ -85,7 +107,6 @@ where
     }
 }
 
-/// Transforms an input chars into a sequence of tokens.
 #[derive(Debug)]
 struct Lexer<I> {
     chars: I,
@@ -93,32 +114,13 @@ struct Lexer<I> {
     quote: Option<char>,
 }
 
-/// Token string.
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Token {
-    /// Just a word.
     Word(String),
-    /// Need to expand.
-    Env {
-        /// Key of env.
-        key:   String,
-        /// Value of env.
-        value: String,
-    },
-}
-
-impl<I> Tokens<I> {
-    /// Creates a new Expand.
-    pub fn new<T>(chars: T) -> Self
-    where
-        T: IntoIterator<Item = char, IntoIter = I>,
-    {
-        Tokens { lex: Lexer::new(chars) }
-    }
+    Env { key: String, value: String },
 }
 
 impl<I> Lexer<I> {
-    /// Creates a new Tokens.
     fn new<T>(chars: T) -> Self
     where
         T: IntoIterator<Item = char, IntoIter = I>,
@@ -150,7 +152,7 @@ where
                     }
                     '\\' => {
                         if let Some(_skipped) = self.chars.next() {
-                            // dbg!(skipped);
+                            // dbg!(_skipped);
                         } else {
                             break;
                         }
