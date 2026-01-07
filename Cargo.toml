@@ -22,13 +22,13 @@ bon = { version = "3.8" }
 byc = { path = "crates/byc" }
 cc = { version = "1" }
 clap = { version = "4.5.53", features = ["derive"] }
+flagrc = { path = "crates/flagrc" }
 futures = { version = "0.3" }
 humantime = { version = "2" }
 itertools = { version = "0.14" }
 libc = { version = "0.2" }
 libfuzzer-sys = { version = "0.4" }
 num = { version = "0.4" }
-procrc = { path = "crates/procrc" }
 procrun = { path = "crates/procrun" }
 procrun_test = { path = "crates/procrun_test" }
 prost = { version = "0.13" }

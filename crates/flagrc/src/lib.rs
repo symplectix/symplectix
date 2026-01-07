@@ -78,7 +78,7 @@ impl<I> Parser<I> {
     /// Creates a new Tokens.
     ///
     /// ```
-    /// # use procrc::Parser;
+    /// # use flagrc::Parser;
     /// let mut tokens = Parser::new("foo\"ba\"r baz".chars());
     /// assert_eq!(tokens.next().unwrap(), "foobar");
     /// assert_eq!(tokens.next().unwrap(), "baz");

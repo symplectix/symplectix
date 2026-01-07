@@ -1,7 +1,7 @@
 #![allow(missing_docs)]
 use std::io;
 
-use procrc::{
+use flagrc::{
     Parser,
     parse,
 };
@@ -90,6 +90,20 @@ fn get_single_token() {
     assert_eq!(single_token("'A\"PPLE\"'".chars()).unwrap(), "A\"PPLE\"");
 }
 
+fn tokens(chars: impl IntoIterator<Item = char>) -> Vec<String> {
+    let tokens = Parser::new(chars);
+    tokens.collect()
+}
+
+#[test]
+fn get_tokens() {
+    assert_eq!(tokens("foo bar".chars()), ["foo", "bar"]);
+    assert_eq!(tokens("foo\"ba\"r baz".chars()), ["foobar", "baz"]);
+    assert_eq!(tokens("\"foo\nbar\" ${baz}".chars()), ["foo\nbar", "${baz}"]);
+    assert_eq!(tokens("foo; bar; baz".chars()), ["foo;", "bar;", "baz"]);
+    assert_eq!(tokens("'foo; bar'; baz".chars()), ["foo; bar;", "baz"]);
+}
+
 #[test]
 fn ignore_whitespaces() {
     assert_eq!(single_token("     A\"PPL\"E".chars()).unwrap(), "APPLE");
@@ -113,28 +127,4 @@ fn quote_in_another_quote() {
 #[test]
 fn no_matching_quote() {
     assert_eq!(single_token("foo\"bar".chars()).unwrap(), "foobar");
-}
-
-#[test]
-fn get_tokens() {
-    let mut tokens = Parser::new("foo bar".chars());
-    assert_eq!(tokens.next().unwrap(), "foo");
-    assert_eq!(tokens.next().unwrap(), "bar");
-    assert_eq!(tokens.next(), None);
-
-    let mut tokens = Parser::new("foo\"ba\"r 10s".chars());
-    assert_eq!(tokens.next().unwrap(), "foobar");
-    assert_eq!(tokens.next().unwrap(), "10s");
-    assert_eq!(tokens.next(), None);
-
-    let mut tokens = Parser::new("\"foo\nbar\" ${BAR}".chars());
-    assert_eq!(tokens.next().unwrap(), "foo\nbar");
-    assert_eq!(tokens.next().unwrap(), "${BAR}");
-    assert_eq!(tokens.next(), None);
-
-    let mut tokens = Parser::new("foo ; bar".chars());
-    assert_eq!(tokens.next().unwrap(), "foo");
-    assert_eq!(tokens.next().unwrap(), ";");
-    assert_eq!(tokens.next().unwrap(), "bar");
-    assert_eq!(tokens.next(), None);
 }
