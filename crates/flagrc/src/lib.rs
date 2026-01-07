@@ -1,10 +1,14 @@
 //! A tiny library to parse a file like Procfile.
 
+use std::ascii::AsciiExt;
 use std::io::{
     self,
     BufRead,
 };
-use std::iter;
+use std::{
+    iter,
+    mem,
+};
 
 use itertools::Itertools;
 
@@ -104,11 +108,17 @@ where
     type Item = String;
 
     fn next(&mut self) -> Option<Self::Item> {
-        use Token::Word;
-        match self.lex.next() {
-            Some(Word(word)) => Some(word),
-            _ => None,
-        }
+        self.lex.next().map(|token| {
+            let mut out = String::new();
+            for word in token.words {
+                match word {
+                    Word::Literal(lit) => {
+                        out.push_str(lit.as_str());
+                    }
+                }
+            }
+            out
+        })
     }
 }
 
@@ -117,15 +127,44 @@ where
     I: Iterator,
 {
     chars: iter::Peekable<I>,
-    token: String,
+    token: Token,
     quote: Option<char>,
-    brace: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum Token {
-    Word(String),
-    Env { key: String, value: String },
+struct Token {
+    words: Vec<Word>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Word {
+    Literal(String),
+}
+
+impl Token {
+    fn new() -> Self {
+        Token { words: Vec::new() }
+    }
+
+    fn reset(&mut self) -> Self {
+        mem::replace(self, Token::new())
+    }
+
+    fn push(&mut self, c: char) {
+        if let Some(tok) = self.words.last_mut() {
+            tok.push(c);
+        } else {
+            self.words.push(Word::Literal(c.to_string()));
+        }
+    }
+}
+
+impl Word {
+    fn push(&mut self, c: char) {
+        match self {
+            Word::Literal(s) => s.push(c),
+        }
+    }
 }
 
 impl<I> Tokens<I>
@@ -137,12 +176,17 @@ where
         I: Iterator<Item = char>,
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Tokens {
-            chars: chars.into_iter().peekable(),
-            token: String::new(),
-            quote: None,
-            brace: false,
-        }
+        Tokens { chars: chars.into_iter().peekable(), token: Token::new(), quote: None }
+    }
+}
+
+impl<I> Iterator for Tokens<I>
+where
+    I: Iterator<Item = char>,
+{
+    type Item = Token;
+    fn next(&mut self) -> Option<Token> {
+        self.chars.find(|c| !c.is_ascii_whitespace()).map(|c| self.next_token(c))
     }
 }
 
@@ -150,10 +194,6 @@ impl<I> Tokens<I>
 where
     I: Iterator<Item = char>,
 {
-    fn next(&mut self) -> Option<Token> {
-        self.chars.find(|c| !c.is_ascii_whitespace()).map(|c| self.next_token(c))
-    }
-
     fn next_token(&mut self, mut c: char) -> Token {
         loop {
             if let Some(ref quote) = self.quote {
@@ -201,9 +241,6 @@ where
     }
 
     fn output(&mut self) -> Token {
-        use Token::Word;
-        let token = self.token.clone();
-        self.token = String::new();
-        Word(token)
+        self.token.reset()
     }
 }

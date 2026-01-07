@@ -102,6 +102,13 @@ fn get_tokens() {
     assert_eq!(tokens("\"foo\nbar\" ${baz}".chars()), ["foo\nbar", "${baz}"]);
     assert_eq!(tokens("foo; bar; baz".chars()), ["foo;", "bar;", "baz"]);
     assert_eq!(tokens("'foo; bar'; baz".chars()), ["foo; bar;", "baz"]);
+
+    // bash prints "for".
+    // https://aosabook.org/en/v1/bash.html
+    assert_eq!(
+        tokens("for for in for; do for=for; done; echo $for".chars()),
+        ["for", "for", "in", "for;", "do", "for=for;", "done;", "echo", "$for"],
+    );
 }
 
 #[test]
@@ -131,5 +138,6 @@ fn no_matching_quote() {
 
 #[test]
 fn expand_envs() {
-    assert_eq!(single_token("${USER}".chars()).unwrap(), "kw");
+    // assert_eq!(single_token("$TEST".chars()).unwrap(), "ch");
+    assert_eq!(tokens("e\"${TEST}\"o world".chars()), ["echo", "world"]);
 }
