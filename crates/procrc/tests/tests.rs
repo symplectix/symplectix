@@ -2,107 +2,95 @@
 use std::io;
 
 use procrc::{
-    Entry,
-    Expand,
     Tokens,
     parse,
-    parse_multiline,
 };
 
 #[test]
-fn check_parse() {
-    let procfile = r#"
-# comment
-  # comment
-    # comment
-s0:
-s1: gunicorn -b :$PORT main:app
-s2: abc --kill-after 10s --env "APP"LE=banana -- foo a b c
-s3: --backslask C:\path foo a=1 b=2 c=3
-s4: --kill-after 10m --timeout-is-ok -- foo a 1 b 2 c 3
-s5: a b c
-s6: a  b \c \d e
-s7: a  b \ \ c \d e
+fn empty_procrc() {
+    let rc = r#""#;
+    assert!(parse(io::Cursor::new(rc)).is_ok());
+
+    let rc = r#"
 "#;
-    let entries = parse(io::Cursor::new(procfile)).unwrap();
-    for entry in entries {
-        println!("{entry:?}");
-    }
-}
+    assert!(parse(io::Cursor::new(rc)).is_ok());
 
-#[test]
-fn empty() {
-    let procfile = r#""#;
-    assert!(parse(io::Cursor::new(procfile)).is_ok());
-
-    let procfile = r#"
-"#;
-    assert!(parse(io::Cursor::new(procfile)).is_ok());
-
-    let procfile = r#"
+    let rc = r#"
 
         "#;
-    assert!(parse(io::Cursor::new(procfile)).is_ok());
+    assert!(parse(io::Cursor::new(rc)).is_ok());
 }
 
 #[test]
 fn check_multiline() {
     #[rustfmt::skip]
-        let procfile = r#"
-m0:
+        let rc = r#"
+test0
 
-m1: gunicorn -b \
-:$PORT\
-main:app
+test1 gunicorn -b \
+:$PORT \
+main:app \
+hey!!!
 
-m2: abc \
+test2 abc \
 --kill-after 10s \
 --env APPLE=banana \
--- foo a b c
+-- foo \
+a \
+b \
+c
 
-m3: --backslask \
-C:\path foo a=1 b=2 c=3
+test3 \
+"C:\path" C:\path foo a=1 b=2 c=3
+test4 --kill-after "10'm\n" \
+--timeout-is-ok -- \
+foo a 1 b 2 c 3
 
-m4: --kill-after "10'm
-" --timeout-is-ok -- \
+test5 a b \
+c
 
-foo a 1 b 2 c 3      \
-
-m5: a b c
-
-m6: a  b \c \d \
+test6 a  b \c \d \
 e
 
-m6: a  b \c \ \
+test7 a  b \c \ \
 \d e
 "#;
 
-    let entries = parse_multiline(io::Cursor::new(procfile)).unwrap();
-    for entry in entries {
+    for entry in parse(io::Cursor::new(rc)).expect("reading from a cursor never fails") {
         println!("{entry:?}");
     }
 }
 
 #[test]
 fn test_get_next_tokens() {
-    let mut tokens = Expand::new("".chars());
+    let mut tokens = Tokens::new("".chars());
     assert_eq!(tokens.next(), None);
 
-    let mut tokens = Expand::new("foo bar".chars());
+    let mut tokens = Tokens::new("foo bar".chars());
     assert_eq!(tokens.next().unwrap(), "foo");
     assert_eq!(tokens.next().unwrap(), "bar");
     assert_eq!(tokens.next(), None);
 
-    let mut tokens = Expand::new("foo\"ba\"r 10s".chars());
+    let mut tokens = Tokens::new("foo\"ba\"r 10s".chars());
     assert_eq!(tokens.next().unwrap(), "foobar");
     assert_eq!(tokens.next().unwrap(), "10s");
     assert_eq!(tokens.next(), None);
 
-    let mut tokens = Expand::new("foo\"bar".chars());
+    let mut tokens = Tokens::new("foo\"bar".chars());
     assert_eq!(tokens.next().unwrap(), "foobar");
     assert_eq!(tokens.next(), None);
 
-    let mut tokens = Expand::new("FOO=\"10's\"".chars());
+    let mut tokens = Tokens::new("FOO=\"10's\"".chars());
     assert_eq!(tokens.next().unwrap(), "FOO=10's");
+    assert_eq!(tokens.next(), None);
+
+    let mut tokens = Tokens::new("\"foo ; bar\"".chars());
+    assert_eq!(tokens.next().unwrap(), "foo ; bar");
+    assert_eq!(tokens.next(), None);
+
+    let mut tokens = Tokens::new("foo ; bar".chars());
+    assert_eq!(tokens.next().unwrap(), "foo");
+    assert_eq!(tokens.next().unwrap(), ";");
+    assert_eq!(tokens.next().unwrap(), "bar");
     assert_eq!(tokens.next(), None);
 }
