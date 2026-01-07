@@ -1,6 +1,5 @@
 //! A tiny library to parse a file like Procfile.
 
-use std::any::Any;
 use std::io::{
     self,
     BufRead,
@@ -54,8 +53,8 @@ where
                 // Rust stdlib may have this someday.
                 // https://github.com/rust-lang/rust/issues/62208
                 .take_while_inclusive(|line| line.trim_ascii().ends_with('\\'))
-                // nb. Each string produced by buf.lines() will not have a newline
-                // byte (the `0xA` byte) or `CRLF` (`0xD`, `0xA` bytes) at the end.
+                // nb. Each string produced by buf.lines() will not have a
+                // newline byte (the `0xA` byte) or `CRLF` at the end.
                 .flat_map(|line| line.chars().chain(iter::once('\n'))),
         )
         // Tokens emits `Some("")` when input is eg. "\\ ".
