@@ -1,5 +1,6 @@
 //! A tiny library to parse a file like Procfile.
 
+use std::any::Any;
 use std::io::{
     self,
     BufRead,
@@ -69,12 +70,17 @@ where
 }
 
 /// Transforms an input chars into a sequence of tokens.
-#[derive(Debug)]
-pub struct Parser<I> {
+pub struct Parser<I>
+where
+    I: Iterator,
+{
     lex: Tokens<I>,
 }
 
-impl<I> Parser<I> {
+impl<I> Parser<I>
+where
+    I: Iterator<Item = char>,
+{
     /// Creates a new Tokens.
     ///
     /// ```
@@ -107,11 +113,14 @@ where
     }
 }
 
-#[derive(Debug)]
-struct Tokens<I> {
-    chars: I,
+struct Tokens<I>
+where
+    I: Iterator,
+{
+    chars: iter::Peekable<I>,
     token: String,
     quote: Option<char>,
+    brace: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -120,12 +129,21 @@ enum Token {
     Env { key: String, value: String },
 }
 
-impl<I> Tokens<I> {
+impl<I> Tokens<I>
+where
+    I: Iterator,
+{
     fn new<T>(chars: T) -> Self
     where
+        I: Iterator<Item = char>,
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Tokens { chars: chars.into_iter(), token: String::new(), quote: None }
+        Tokens {
+            chars: chars.into_iter().peekable(),
+            token: String::new(),
+            quote: None,
+            brace: false,
+        }
     }
 }
 
@@ -159,6 +177,14 @@ where
                     }
                     '\'' | '"' => {
                         self.quote = Some(c);
+                    }
+                    '$' => {
+                        if let Some(peek) = self.chars.peek()
+                            && *peek == '{'
+                        {
+                            dbg!("this value need to be expanded");
+                        }
+                        self.token.push(c);
                     }
                     c => {
                         self.token.push(c);

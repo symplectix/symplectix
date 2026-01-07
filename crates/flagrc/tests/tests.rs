@@ -128,3 +128,8 @@ fn quote_in_another_quote() {
 fn no_matching_quote() {
     assert_eq!(single_token("foo\"bar".chars()).unwrap(), "foobar");
 }
+
+#[test]
+fn expand_envs() {
+    assert_eq!(single_token("${USER}".chars()).unwrap(), "kw");
+}
