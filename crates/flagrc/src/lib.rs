@@ -124,7 +124,8 @@ where
             let mut out = String::new();
             for word in token.words {
                 match word {
-                    Word::Sep => {}
+                    Word::TokenSeparator => {}
+                    Word::Split => {}
                     Word::Lit(lit) => {
                         out.push_str(lit.as_str());
                     }
@@ -146,6 +147,7 @@ struct Lexer<I> {
     quote: Option<char>,
 }
 
+// Tokens are represented as a list of Word.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Token {
     words: Vec<Word>,
@@ -153,8 +155,16 @@ struct Token {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Word {
-    Sep,
+    // If this exists, it means that the tokens before
+    // and after this word can be considered separate.
+    TokenSeparator,
+    // Use this marker when you want to push a new word,
+    // but cannot at the moment. e.g, when there are
+    // consecutive Vars.
+    Split,
+    // A literal string.
     Lit(String),
+    // $LIKE_THIS
     Var(String),
 }
 
@@ -170,17 +180,17 @@ impl Token {
     fn push(&mut self, c: char) {
         if let Some(word) = self.words.last_mut() {
             match word {
+                Word::TokenSeparator | Word::Split => self.words.push(Word::Lit(c.to_string())),
                 Word::Lit(s) => s.push(c),
                 Word::Var(s) => s.push(c),
-                Word::Sep => self.words.push(Word::Lit(c.to_string())),
             }
         } else {
             self.words.push(Word::Lit(c.to_string()));
         }
     }
 
-    fn new_sep(&mut self) {
-        self.words.push(Word::Sep)
+    fn split(&mut self) {
+        self.words.push(Word::Split)
     }
 
     fn new_var(&mut self) {
@@ -226,7 +236,7 @@ where
                 match c {
                     '"' => {
                         if self.in_var() {
-                            self.token.new_sep();
+                            self.token.split();
                         }
                         self.quote = None;
                     }
@@ -234,7 +244,7 @@ where
                         self.token.new_var();
                     }
                     '\\' if self.in_var() => {
-                        self.token.new_sep();
+                        self.token.split();
                         self.token.push(c);
                     }
                     c => {
@@ -253,17 +263,17 @@ where
                         break;
                     }
                     '\\' => {
-                        self.token.new_sep();
+                        self.token.split();
                     }
                     '\'' | '"' => {
                         self.quote = Some(c);
-                        self.token.new_sep();
+                        self.token.split();
                     }
                     '$' => {
                         self.token.new_var();
                     }
                     c => {
-                        self.token.new_sep();
+                        self.token.split();
                         self.token.push(c);
                     }
                 }
