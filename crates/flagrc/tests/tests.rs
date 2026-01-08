@@ -50,7 +50,7 @@ test6 a  b \c \d \
 e
 
 test7 a  b \c \ \
-\c e
+\d e
 "#;
 
     let envs = {
@@ -62,12 +62,12 @@ test7 a  b \c \ \
 
     assert_eq!(entries[0].flag, ["test0"]);
     assert_eq!(entries[1].flag, ["test1", "gunicorn", "-b", ":8080", "main:app"]);
-    assert_eq!(entries[2].flag, ["test2", "-x", "10s", "--env", "ABC=def", "--", "foo", "bar"]);
-    assert_eq!(entries[3].flag, ["test3", "C:\\path", "D:ath"]);
+    assert_eq!(entries[2].flag, ["test2", "-x", "10s", "--env", "ABC=def", "--", "foo", " bar"]);
+    assert_eq!(entries[3].flag, ["test3", "C:\\path", "D:path"]);
     assert_eq!(entries[4].flag, ["test4", "10m\\n", "--", "foo", "a=1"]);
-    assert_eq!(entries[5].flag, ["test5", "a", "b", "c"]);
-    assert_eq!(entries[6].flag, ["test6", "a", "b", "e"]);
-    assert_eq!(entries[7].flag, ["test7", "a", "b", "e"]);
+    assert_eq!(entries[5].flag, ["test5", "a", "b", "  c"]);
+    assert_eq!(entries[6].flag, ["test6", "a", "b", "c", "d", "e"]);
+    assert_eq!(entries[7].flag, ["test7", "a", "b", "c", " d", "e"]);
 }
 
 fn token(chars: impl IntoIterator<Item = char>) -> Option<String> {
@@ -124,6 +124,10 @@ fn get_tokens() {
     assert_eq!(tokens("foo; bar; baz".chars()), ["foo;", "bar;", "baz"]);
     assert_eq!(tokens("'foo; bar'; baz".chars()), ["foo; bar;", "baz"]);
 
+    assert_eq!(tokens("a b".chars()), ["a", "b"]);
+    assert_eq!(tokens("a \\ b".chars()), ["a", " b"]);
+    assert_eq!(tokens("a \\\nb".chars()), ["a", "b"]);
+
     // Shell prints "for" in this case.
     // https://aosabook.org/en/v1/bash.html
     //
@@ -166,9 +170,7 @@ fn expand_envs() {
     assert_eq!(token("e\"$TEST\"o".chars()).unwrap(), "echo");
     assert_eq!(token("$TEST\\A".chars()).unwrap(), "chA");
     assert_eq!(token("\"$TEST\\A\"".chars()).unwrap(), "ch\\A");
-    // assert_eq!(token("${TEST}".chars()).unwrap(), "ch");
-    // assert_eq!(token("${TEST}cc".chars()).unwrap(), "chcc");
-    // assert_eq!(token("$TEST{cc".chars()).unwrap(), "ch{cc");
-    // assert_eq!(token("$TEST\"cc\"".chars()).unwrap(), "chcc");
-    // assert_eq!(tokens("e\"${TEST}\"o world".chars()), ["echo", "world"]);
+    assert_eq!(token("$TEST{cc".chars()).unwrap(), "ch{cc");
+    assert_eq!(token("$TEST\"cc\"".chars()).unwrap(), "chcc");
+    assert_eq!(tokens("e\"$TEST\"o hello".chars()), ["echo", "hello"]);
 }

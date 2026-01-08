@@ -269,28 +269,16 @@ where
                         break;
                     }
                     '\\' => {
-                        if let Some(next) = self.chars.next() {
-                            match next {
-                                '\n' | '\r' | '\t' => {}
+                        if let Some(esc) = self.chars.next() {
+                            match esc {
+                                '\n' | '\r' => { /* ignore */ }
                                 c => {
                                     self.token.push(c);
                                 }
                             }
-                            // self.token.push(next);
-                            // if !next.is_ascii_whitespace() {
-                            //     self.token.push(next);
-                            // }
-                            // c = next;
-                            // continue;
-                            // if next == '$' {
-                            //     self.token.push('$');
-                            // }
                         } else {
                             break;
                         }
-                        // else {
-                        //     break;
-                        // }
                     }
                     '\'' | '"' => {
                         self.quote = Some(c);
