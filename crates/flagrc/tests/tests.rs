@@ -1,4 +1,5 @@
 #![allow(missing_docs)]
+use std::collections::HashMap;
 use std::io;
 
 use flagrc::{
@@ -9,16 +10,16 @@ use flagrc::{
 #[test]
 fn no_entries() {
     let rc = r#""#;
-    assert!(parse(io::Cursor::new(rc)).is_ok());
+    assert!(parse(io::Cursor::new(rc), None).is_ok());
 
     let rc = r#"
 "#;
-    assert!(parse(io::Cursor::new(rc)).is_ok());
+    assert!(parse(io::Cursor::new(rc), None).is_ok());
 
     let rc = r#"
 
         "#;
-    assert!(parse(io::Cursor::new(rc)).is_ok());
+    assert!(parse(io::Cursor::new(rc), None).is_ok());
 }
 
 #[test]
@@ -52,10 +53,13 @@ test7 a  b \c \ \
 \c e
 "#;
 
-    let entries = parse(io::Cursor::new(rc)).expect("reading from a cursor never fails");
+    let mut envs = HashMap::new();
+    envs.insert("PORT".to_owned(), "8080".to_owned());
+    let envs = Some(envs);
+    let entries = parse(io::Cursor::new(rc), envs).expect("reading from a cursor never fails");
 
     assert_eq!(entries[0].flag, ["test0"]);
-    assert_eq!(entries[1].flag, ["test1", "gunicorn", "-b", ":$PORT", "main:app"]);
+    assert_eq!(entries[1].flag, ["test1", "gunicorn", "-b", ":8080", "main:app"]);
     assert_eq!(entries[2].flag, ["test2", "-x", "10s", "--env", "ABC=def", "--", "foo", "bar"]);
     assert_eq!(entries[3].flag, ["test3", "C:\\path", "D:ath"]);
     assert_eq!(entries[4].flag, ["test4", "10m\\n", "--", "foo", "a=1"]);
@@ -65,7 +69,11 @@ test7 a  b \c \ \
 }
 
 fn token(chars: impl IntoIterator<Item = char>) -> Option<String> {
-    let mut tokens = Tokens::new(chars);
+    let mut envs = HashMap::new();
+    envs.insert("PORT", "8080");
+    envs.insert("TEST", "ch");
+
+    let mut tokens = Tokens::new(chars, None);
     let next = tokens.next();
     // Check no more tokens.
     assert_eq!(tokens.next(), None);
@@ -73,7 +81,7 @@ fn token(chars: impl IntoIterator<Item = char>) -> Option<String> {
 }
 
 fn tokens(chars: impl IntoIterator<Item = char>) -> Vec<String> {
-    let tokens = Tokens::new(chars);
+    let tokens = Tokens::new(chars, None);
     tokens.collect()
 }
 
@@ -99,15 +107,17 @@ fn get_single_token() {
 fn get_tokens() {
     assert_eq!(tokens("foo bar".chars()), ["foo", "bar"]);
     assert_eq!(tokens("foo\"ba\"r baz".chars()), ["foobar", "baz"]);
-    assert_eq!(tokens("\"foo\nbar\" ${baz}".chars()), ["foo\nbar", "${baz}"]);
+    assert_eq!(tokens("\"foo\nbar\" baz".chars()), ["foo\nbar", "baz"]);
     assert_eq!(tokens("foo; bar; baz".chars()), ["foo;", "bar;", "baz"]);
     assert_eq!(tokens("'foo; bar'; baz".chars()), ["foo; bar;", "baz"]);
 
-    // bash prints "for".
+    // Shell prints "for" in this case.
     // https://aosabook.org/en/v1/bash.html
+    //
+    // But procrc does not support defining a new var.
     assert_eq!(
         tokens("for for in for; do for=for; done; echo $for".chars()),
-        ["for", "for", "in", "for;", "do", "for=for;", "done;", "echo", "$for"],
+        ["for", "for", "in", "for;", "do", "for=for;", "done;", "echo", ""],
     );
 }
 

@@ -1,5 +1,6 @@
 //! A tiny library to parse a file like Procfile.
 
+use std::collections::HashMap;
 use std::io::{
     self,
     BufRead,
@@ -21,13 +22,13 @@ pub struct Entry {
 }
 
 /// Parses procrc.
-pub fn parse<R>(r: R) -> io::Result<Vec<Entry>>
+pub fn parse<R>(source: R, envs: Option<HashMap<String, String>>) -> io::Result<Vec<Entry>>
 where
     R: io::Read,
 {
     let rc = {
         let mut vec = Vec::new();
-        let buf = io::BufReader::new(r);
+        let buf = io::BufReader::new(source);
         for line in buf.lines() {
             let mut line = line?;
             // Skip comments,
@@ -59,6 +60,7 @@ where
                 // nb. Each string produced by buf.lines() will not have a
                 // newline byte (the `0xA` byte) or `CRLF` at the end.
                 .flat_map(|line| line.chars().chain(iter::once('\n'))),
+            envs.as_ref(),
         )
         // Tokens emits `Some("")` when input is eg. "\\ ".
         // This behavior is important in the current implementation:
@@ -72,14 +74,15 @@ where
 }
 
 /// Transforms an input chars into a sequence of tokens.
-pub struct Tokens<I>
+pub struct Tokens<'e, I>
 where
     I: Iterator,
 {
-    lex: Lexer<I>,
+    lex:  Lexer<I>,
+    envs: Option<&'e HashMap<String, String>>,
 }
 
-impl<I> Tokens<I>
+impl<'e, I> Tokens<'e, I>
 where
     I: Iterator<Item = char>,
 {
@@ -87,20 +90,20 @@ where
     ///
     /// ```
     /// # use flagrc::Tokens;
-    /// let mut tokens = Tokens::new("foo\"ba\"r baz".chars());
+    /// let mut tokens = Tokens::new("foo\"ba\"r baz".chars(), None);
     /// assert_eq!(tokens.next().unwrap(), "foobar");
     /// assert_eq!(tokens.next().unwrap(), "baz");
     /// assert_eq!(tokens.next(), None);
     /// ```
-    pub fn new<T>(chars: T) -> Self
+    pub fn new<T>(chars: T, envs: Option<&'e HashMap<String, String>>) -> Self
     where
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Tokens { lex: Lexer::new(chars) }
+        Tokens { lex: Lexer::new(chars), envs }
     }
 }
 
-impl<I> Iterator for Tokens<I>
+impl<'e, I> Iterator for Tokens<'e, I>
 where
     I: Iterator<Item = char>,
 {
@@ -117,7 +120,9 @@ where
                     }
                     Word::Var(var) => {
                         dbg!(&var);
-                        out.push_str(var.as_str());
+                        if let Some(val) = self.envs.as_ref().and_then(|es| es.get(var.as_str())) {
+                            out.push_str(val);
+                        }
                     }
                 }
             }
@@ -172,8 +177,8 @@ impl Token {
         self.words.push(Word::Sep)
     }
 
-    fn new_var(&mut self, c: char) {
-        self.words.push(Word::Var(c.to_string()))
+    fn new_var(&mut self) {
+        self.words.push(Word::Var(String::new()))
     }
 }
 
@@ -218,7 +223,7 @@ where
                     self.quote = None;
                     self.token.new_sep();
                 } else if c == '$' {
-                    self.token.new_var(c);
+                    self.token.new_var();
                 } else {
                     self.token.push(c);
                 }
@@ -240,7 +245,7 @@ where
                         self.quote = Some(c);
                     }
                     '$' => {
-                        self.token.new_var(c);
+                        self.token.new_var();
                     }
                     c => {
                         self.token.push(c);
