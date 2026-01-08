@@ -53,9 +53,11 @@ test7 a  b \c \ \
 \c e
 "#;
 
-    let mut envs = HashMap::new();
-    envs.insert("PORT".to_owned(), "8080".to_owned());
-    let envs = Some(envs);
+    let envs = {
+        let mut envs = HashMap::new();
+        envs.insert("PORT".to_owned(), "8080".to_owned());
+        Some(envs)
+    };
     let entries = parse(io::Cursor::new(rc), envs).expect("reading from a cursor never fails");
 
     assert_eq!(entries[0].flag, ["test0"]);
@@ -69,11 +71,14 @@ test7 a  b \c \ \
 }
 
 fn token(chars: impl IntoIterator<Item = char>) -> Option<String> {
-    let mut envs = HashMap::new();
-    envs.insert("PORT", "8080");
-    envs.insert("TEST", "ch");
+    let envs = {
+        let mut envs = HashMap::new();
+        envs.insert("PORT".to_owned(), "8080".to_owned());
+        envs.insert("TEST".to_owned(), "ch".to_owned());
+        Some(envs)
+    };
 
-    let mut tokens = Tokens::new(chars, None);
+    let mut tokens = Tokens::new(chars, envs.as_ref());
     let next = tokens.next();
     // Check no more tokens.
     assert_eq!(tokens.next(), None);
@@ -149,7 +154,9 @@ fn no_matching_quote() {
 #[test]
 fn expand_envs() {
     assert_eq!(token("\\$TEST".chars()).unwrap(), "$TEST");
-    // assert_eq!(token("$TEST".chars()).unwrap(), "ch");
+    assert_eq!(token("$TEST".chars()).unwrap(), "ch");
+    // assert_eq!(token("${TEST}".chars()).unwrap(), "ch");
+    // assert_eq!(token("${TEST}cc".chars()).unwrap(), "chcc");
     // assert_eq!(token("$TEST{cc".chars()).unwrap(), "ch{cc");
     // assert_eq!(token("$TEST\"cc\"".chars()).unwrap(), "chcc");
     // assert_eq!(tokens("e\"${TEST}\"o world".chars()), ["echo", "world"]);

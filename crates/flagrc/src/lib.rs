@@ -227,6 +227,18 @@ where
                 } else {
                     self.token.push(c);
                 }
+            } else if self.in_var() {
+                // Var token should satisfy either of:
+                // * is_ascii_alphanumeric(c)
+                // * '_'
+                //
+                // Treat chars that do not satisfy this condition as a next token.
+                // if c == '}' {
+                //     self.brace = None;
+                //     self.token.new_sep();
+                // } else {
+                //     self.token.push(c);
+                // }
             } else {
                 match c {
                     c if c.is_ascii_whitespace() => {
@@ -268,6 +280,10 @@ where
 
     fn in_double_quote(&self) -> bool {
         self.quote.as_ref().is_some_and(|c| *c == '"')
+    }
+
+    fn in_var(&self) -> bool {
+        matches!(self.token.words.last(), Some(Word::Var(_)))
     }
 
     fn output(&mut self) -> Token {
