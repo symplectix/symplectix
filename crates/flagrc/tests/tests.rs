@@ -100,8 +100,8 @@ fn get_single_token() {
     assert_eq!(token("".chars()), None);
     assert_eq!(token(" ".chars()), None);
 
-    assert_eq!(token("\\ ".chars()).unwrap(), "");
-    assert_eq!(token("\\ e".chars()).unwrap(), "e");
+    assert_eq!(token("\\ ".chars()).unwrap(), " ");
+    assert_eq!(token("\\ e".chars()).unwrap(), " e");
     assert_eq!(token("'\ne'".chars()).unwrap(), "\ne");
 
     assert_eq!(token("A\"PPL\"E".chars()).unwrap(), "APPLE");
@@ -111,6 +111,9 @@ fn get_single_token() {
     assert_eq!(token("'A\"PPL\"E'".chars()).unwrap(), "A\"PPL\"E");
     assert_eq!(token("'\"APPL\"E'".chars()).unwrap(), "\"APPL\"E");
     assert_eq!(token("'A\"PPLE\"'".chars()).unwrap(), "A\"PPLE\"");
+
+    assert_eq!(token("A\\e".chars()).unwrap(), "Ae");
+    assert_eq!(token("\"'A\\e\"".chars()).unwrap(), "'A\\e");
 }
 
 #[test]

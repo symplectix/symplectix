@@ -59,7 +59,7 @@ where
                 .take_while_inclusive(|line| line.trim_ascii().ends_with('\\'))
                 // nb. Each string produced by buf.lines() will not have a
                 // newline byte (the `0xA` byte) or `CRLF` at the end.
-                .flat_map(|line| line.chars().chain(iter::once('\n'))),
+                .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n'))),
             envs.as_ref(),
         )
         // Tokens emits `Some("")` when input is eg. "\\ ".
@@ -229,7 +229,7 @@ where
                     '$' => {
                         self.token.new_var();
                     }
-                    '\\' => {
+                    '\\' if self.in_var() => {
                         self.token.new_sep();
                         self.token.push(c);
                     }
@@ -270,12 +270,27 @@ where
                     }
                     '\\' => {
                         if let Some(next) = self.chars.next() {
-                            if next == '$' {
-                                self.token.push('$');
+                            match next {
+                                '\n' | '\r' | '\t' => {}
+                                c => {
+                                    self.token.push(c);
+                                }
                             }
+                            // self.token.push(next);
+                            // if !next.is_ascii_whitespace() {
+                            //     self.token.push(next);
+                            // }
+                            // c = next;
+                            // continue;
+                            // if next == '$' {
+                            //     self.token.push('$');
+                            // }
                         } else {
                             break;
                         }
+                        // else {
+                        //     break;
+                        // }
                     }
                     '\'' | '"' => {
                         self.quote = Some(c);
