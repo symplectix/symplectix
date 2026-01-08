@@ -1,5 +1,6 @@
 //! A tiny library to parse a file like Procfile.
 
+use std::any::Any;
 use std::collections::HashMap;
 use std::io::{
     self,
@@ -26,7 +27,7 @@ pub fn parse<R>(source: R, envs: Option<HashMap<String, String>>) -> io::Result<
 where
     R: io::Read,
 {
-    let rc = {
+    let rcfile = {
         let mut vec = Vec::new();
         let buf = io::BufReader::new(source);
         for line in buf.lines() {
@@ -44,23 +45,31 @@ where
         vec
     };
 
+    let rc_clone = rcfile.clone();
+    let rc_clone_iter = rc_clone
+        .iter()
+        // nb. Each string produced by buf.lines() will not have a
+        // newline byte (the `0xA` byte) or `CRLF` at the end.
+        .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n')));
+    let mut new_tokens = Tokens::new(rc_clone_iter, envs.as_ref());
     dbg!(
-        Tokens::new(
-            rc.clone()
-                .iter()
-                // nb. Each string produced by buf.lines() will not have a
-                // newline byte (the `0xA` byte) or `CRLF` at the end.
-                .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n'))),
-            envs.as_ref(),
-        )
-        // Tokens emits `Some("")` when input is eg. "\\ ".
-        // This behavior is important in the current implementation:
-        // if input is something like "\\ x", returning None will not output x.
-        .filter(|t| !t.is_empty())
-        .collect::<Vec<_>>()
+        new_tokens.get_all(),
+        new_tokens.get_all(),
+        new_tokens.get_all(),
+        new_tokens.get_all(),
+        new_tokens.get_all(),
+        new_tokens.get_all(),
+        new_tokens.get_all(),
+        new_tokens.get_all(),
     );
 
-    let mut rc_lines = rc.iter();
+    // Tokens emits `Some("")` when input is eg. "\\ ".
+    // This behavior is important in the current implementation:
+    // if input is something like "\\ x", returning None will not output x.
+    // .filter(|t| !t.is_empty())
+    // .collect::<Vec<_>>()
+
+    let mut rc_lines = rcfile.iter();
     let get_entry = || -> Option<Entry> {
         let tokens = Tokens::new(
             // The all lines in the chunk are collected together to form
@@ -111,6 +120,42 @@ impl<'e, I> Tokens<'e, I> {
     {
         Tokens { lex: Lexer::new(chars), envs }
     }
+
+    fn get_all(&mut self) -> Option<Token>
+    where
+        I: Iterator<Item = char>,
+    {
+        let mut vec = Vec::new();
+        for token in self.lex.by_ref() {
+            for word in token.words {
+                // if matches!(word, Word::TokenSeparator) {
+                //     return Some(Token { words: vec });
+                // }
+                // vec.push(word);
+                match word {
+                    Word::TokenSeparator => {
+                        return Some(Token { words: vec });
+                        // vec.push(out.clone());
+                        // dbg!(&vec);
+                        // mem::replace(&mut out, String::new());
+                    }
+                    Word::Split => {
+                        vec.push(word);
+                    }
+                    Word::Lit(_) => {
+                        vec.push(word);
+                    }
+                    Word::Var(ref var) => {
+                        // vec.push(word);
+                        if let Some(val) = self.envs.as_ref().and_then(|es| es.get(var.as_str())) {
+                            vec.push(Word::Var(val.clone()));
+                        }
+                    }
+                }
+            }
+        }
+        None
+    }
 }
 
 impl<'e, I> Iterator for Tokens<'e, I>
@@ -124,7 +169,11 @@ where
             let mut out = String::new();
             for word in token.words {
                 match word {
-                    Word::TokenSeparator => {}
+                    Word::TokenSeparator => {
+                        // vec.push(out.clone());
+                        // dbg!(&vec);
+                        // mem::replace(&mut out, String::new());
+                    }
                     Word::Split => {}
                     Word::Lit(lit) => {
                         out.push_str(lit.as_str());
@@ -143,7 +192,7 @@ where
 
 struct Lexer<I> {
     chars: I,
-    token: Token,
+    words: Token,
     quote: Option<char>,
 }
 
@@ -203,7 +252,7 @@ impl<I> Lexer<I> {
     where
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Lexer { chars: chars.into_iter(), token: Token::new(), quote: None }
+        Lexer { chars: chars.into_iter(), words: Token::new(), quote: None }
     }
 }
 
@@ -229,39 +278,39 @@ where
                         self.quote = None;
                     }
                     c => {
-                        self.token.push(c);
+                        self.words.push(c);
                     }
                 }
             } else if self.in_double_quote() {
                 match c {
                     '"' => {
                         if self.in_var() {
-                            self.token.split();
+                            self.words.split();
                         }
                         self.quote = None;
                     }
                     '\\' if self.in_var() => {
-                        self.token.split();
-                        self.token.push(c);
+                        self.words.split();
+                        self.words.push(c);
                     }
                     '$' => {
-                        self.token.begin_var();
+                        self.words.begin_var();
                     }
                     c => {
-                        self.token.push(c);
+                        self.words.push(c);
                     }
                 }
             } else if self.in_var() {
                 match c {
                     '\'' | '"' => {
                         self.quote = Some(c);
-                        self.token.split();
+                        self.words.split();
                     }
                     '\\' => {
-                        self.token.split();
+                        self.words.split();
                     }
                     '$' => {
-                        self.token.begin_var();
+                        self.words.begin_var();
                     }
                     c if c.is_ascii_whitespace() => {
                         break;
@@ -270,12 +319,12 @@ where
                     // * is_ascii_alphanumeric(c)
                     // * '_'
                     c if c.is_ascii_alphanumeric() || c == '_' => {
-                        self.token.push(c);
+                        self.words.push(c);
                     }
                     c => {
                         // c is not a part of Var.
-                        self.token.split();
-                        self.token.push(c);
+                        self.words.split();
+                        self.words.push(c);
                     }
                 }
             } else {
@@ -285,24 +334,25 @@ where
                     }
                     '\\' => {
                         if let Some(esc) = self.chars.next() {
-                            match esc {
-                                '\n' | '\r' => { /* ignore */ }
-                                c => {
-                                    self.token.push(c);
-                                }
+                            if !(esc == '\n' || esc == '\r') {
+                                self.words.push(esc);
                             }
                         } else {
                             break;
                         }
                     }
                     '$' => {
-                        self.token.begin_var();
+                        self.words.begin_var();
+                    }
+                    '\n' | '\r' => {
+                        self.words.words.push(Word::TokenSeparator);
+                        break;
                     }
                     c if c.is_ascii_whitespace() => {
                         break;
                     }
                     c => {
-                        self.token.push(c);
+                        self.words.push(c);
                     }
                 }
             }
@@ -325,10 +375,10 @@ where
     }
 
     fn in_var(&self) -> bool {
-        matches!(self.token.words.last(), Some(Word::Var(_)))
+        matches!(self.words.words.last(), Some(Word::Var(_)))
     }
 
     fn output(&mut self) -> Token {
-        self.token.reset()
+        self.words.reset()
     }
 }
