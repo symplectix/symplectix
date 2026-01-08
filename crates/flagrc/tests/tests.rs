@@ -86,7 +86,12 @@ fn token(chars: impl IntoIterator<Item = char>) -> Option<String> {
 }
 
 fn tokens(chars: impl IntoIterator<Item = char>) -> Vec<String> {
-    let tokens = Tokens::new(chars, None);
+    let envs = {
+        let mut envs = HashMap::new();
+        envs.insert("TEST".to_owned(), "ch".to_owned());
+        Some(envs)
+    };
+    let tokens = Tokens::new(chars, envs.as_ref());
     tokens.collect()
 }
 
@@ -155,6 +160,9 @@ fn no_matching_quote() {
 fn expand_envs() {
     assert_eq!(token("\\$TEST".chars()).unwrap(), "$TEST");
     assert_eq!(token("$TEST".chars()).unwrap(), "ch");
+    assert_eq!(token("e\"$TEST\"o".chars()).unwrap(), "echo");
+    assert_eq!(token("$TEST\\A".chars()).unwrap(), "chA");
+    assert_eq!(token("\"$TEST\\A\"".chars()).unwrap(), "ch\\A");
     // assert_eq!(token("${TEST}".chars()).unwrap(), "ch");
     // assert_eq!(token("${TEST}cc".chars()).unwrap(), "chcc");
     // assert_eq!(token("$TEST{cc".chars()).unwrap(), "ch{cc");

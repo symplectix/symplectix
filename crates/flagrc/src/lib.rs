@@ -119,7 +119,6 @@ where
                         out.push_str(lit.as_str());
                     }
                     Word::Var(var) => {
-                        dbg!(&var);
                         if let Some(val) = self.envs.as_ref().and_then(|es| es.get(var.as_str())) {
                             out.push_str(val);
                         }
@@ -212,33 +211,58 @@ where
     fn next_token(&mut self, mut c: char) -> Token {
         loop {
             if self.in_single_quote() {
-                if c == '\'' {
-                    self.quote = None;
-                    self.token.new_sep();
-                } else {
-                    self.token.push(c);
+                match c {
+                    '\'' => {
+                        self.quote = None;
+                        self.token.new_sep();
+                    }
+                    c => {
+                        self.token.push(c);
+                    }
                 }
             } else if self.in_double_quote() {
-                if c == '"' {
-                    self.quote = None;
-                    self.token.new_sep();
-                } else if c == '$' {
-                    self.token.new_var();
-                } else {
-                    self.token.push(c);
+                match c {
+                    '"' => {
+                        self.quote = None;
+                        self.token.new_sep();
+                    }
+                    '$' => {
+                        self.token.new_var();
+                    }
+                    '\\' => {
+                        self.token.new_sep();
+                        self.token.push(c);
+                    }
+                    c => {
+                        self.token.push(c);
+                    }
                 }
             } else if self.in_var() {
-                // Var token should satisfy either of:
-                // * is_ascii_alphanumeric(c)
-                // * '_'
-                //
-                // Treat chars that do not satisfy this condition as a next token.
-                // if c == '}' {
-                //     self.brace = None;
-                //     self.token.new_sep();
-                // } else {
-                //     self.token.push(c);
-                // }
+                match c {
+                    // Var token should satisfy either of:
+                    // * is_ascii_alphanumeric(c)
+                    // * '_'
+                    c if c.is_ascii_alphanumeric() || c == '_' => {
+                        self.token.push(c);
+                    }
+                    c if c.is_ascii_whitespace() => {
+                        break;
+                    }
+                    '\\' => {
+                        self.token.new_sep();
+                    }
+                    '\'' | '"' => {
+                        self.quote = Some(c);
+                        self.token.new_sep();
+                    }
+                    '$' => {
+                        self.token.new_var();
+                    }
+                    c => {
+                        self.token.new_sep();
+                        self.token.push(c);
+                    }
+                }
             } else {
                 match c {
                     c if c.is_ascii_whitespace() => {
