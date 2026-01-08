@@ -87,8 +87,8 @@ where
     /// Creates a new Tokens.
     ///
     /// ```
-    /// # use flagrc::Parser;
-    /// let mut tokens = Parser::new("foo\"ba\"r baz".chars());
+    /// # use flagrc::Tokens;
+    /// let mut tokens = Tokens::new("foo\"ba\"r baz".chars());
     /// assert_eq!(tokens.next().unwrap(), "foobar");
     /// assert_eq!(tokens.next().unwrap(), "baz");
     /// assert_eq!(tokens.next(), None);
@@ -110,8 +110,9 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         self.lex.next().map(|token| {
             let mut out = String::new();
-            for word in token.words {
+            for word in dbg!(token.words) {
                 match word {
+                    Word::Sep => {}
                     Word::Lit(lit) => {
                         out.push_str(lit.as_str());
                     }
@@ -141,6 +142,7 @@ struct Token {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Word {
+    Sep,
     Lit(String),
     Var(String),
 }
@@ -154,26 +156,24 @@ impl Token {
         mem::replace(self, Token::new())
     }
 
-    fn push_lit(&mut self, c: char) {
+    fn push(&mut self, c: char) {
         if let Some(word) = self.words.last_mut() {
             match word {
                 Word::Lit(s) => s.push(c),
-                Word::Var(_) => self.words.push(Word::Lit(c.to_string())),
+                Word::Var(s) => s.push(c),
+                Word::Sep => self.words.push(Word::Lit(c.to_string())),
             }
         } else {
             self.words.push(Word::Lit(c.to_string()));
         }
     }
 
-    fn push_var(&mut self, c: char) {
-        if let Some(word) = self.words.last_mut() {
-            match word {
-                Word::Lit(_) => self.words.push(Word::Var(c.to_string())),
-                Word::Var(s) => s.push(c),
-            }
-        } else {
-            self.words.push(Word::Var(c.to_string()));
-        }
+    fn new_sep(&mut self) {
+        self.words.push(Word::Sep)
+    }
+
+    fn new_var(&mut self, c: char) {
+        self.words.push(Word::Var(c.to_string()))
     }
 }
 
@@ -206,11 +206,21 @@ where
 {
     fn next_token(&mut self, mut c: char) -> Token {
         loop {
-            if let Some(ref quote) = self.quote {
-                if c == *quote {
+            if self.in_single_quote() {
+                if c == '\'' {
                     self.quote = None;
+                    self.token.new_sep();
                 } else {
-                    self.token.push_lit(c);
+                    self.token.push(c);
+                }
+            } else if self.in_double_quote() {
+                if c == '"' {
+                    self.quote = None;
+                    self.token.new_sep();
+                } else if c == '$' {
+                    self.token.new_var(c);
+                } else {
+                    self.token.push(c);
                 }
             } else {
                 match c {
@@ -218,8 +228,10 @@ where
                         break;
                     }
                     '\\' => {
-                        if let Some(_skipped) = self.chars.next() {
-                            // dbg!(_skipped);
+                        if let Some(next) = self.chars.next() {
+                            if next == '$' {
+                                self.token.push('$');
+                            }
                         } else {
                             break;
                         }
@@ -228,15 +240,10 @@ where
                         self.quote = Some(c);
                     }
                     '$' => {
-                        if let Some(peek) = self.chars.peek()
-                            && *peek == '{'
-                        {
-                            dbg!("this value need to be expanded");
-                        }
-                        self.token.push_lit(c);
+                        self.token.new_var(c);
                     }
                     c => {
-                        self.token.push_lit(c);
+                        self.token.push(c);
                     }
                 }
             }
@@ -248,6 +255,14 @@ where
             }
         }
         self.output()
+    }
+
+    fn in_single_quote(&self) -> bool {
+        self.quote.as_ref().is_some_and(|c| *c == '\'')
+    }
+
+    fn in_double_quote(&self) -> bool {
+        self.quote.as_ref().is_some_and(|c| *c == '"')
     }
 
     fn output(&mut self) -> Token {

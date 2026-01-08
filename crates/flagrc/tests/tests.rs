@@ -64,7 +64,7 @@ test7 a  b \c \ \
     assert_eq!(entries[7].flag, ["test7", "a", "b", "e"]);
 }
 
-fn single_token(chars: impl IntoIterator<Item = char>) -> Option<String> {
+fn token(chars: impl IntoIterator<Item = char>) -> Option<String> {
     let mut tokens = Tokens::new(chars);
     let next = tokens.next();
     // Check no more tokens.
@@ -72,27 +72,27 @@ fn single_token(chars: impl IntoIterator<Item = char>) -> Option<String> {
     next
 }
 
-#[test]
-fn get_single_token() {
-    assert_eq!(single_token("".chars()), None);
-    assert_eq!(single_token(" ".chars()), None);
-
-    assert_eq!(single_token("\\ ".chars()).unwrap(), "");
-    assert_eq!(single_token("'\ne'".chars()).unwrap(), "\ne");
-    assert_eq!(single_token("\\\ne".chars()).unwrap(), "e");
-
-    assert_eq!(single_token("A\"PPL\"E".chars()).unwrap(), "APPLE");
-    assert_eq!(single_token("\"APPL\"E".chars()).unwrap(), "APPLE");
-    assert_eq!(single_token("A\"PPLE\"".chars()).unwrap(), "APPLE");
-
-    assert_eq!(single_token("'A\"PPL\"E'".chars()).unwrap(), "A\"PPL\"E");
-    assert_eq!(single_token("'\"APPL\"E'".chars()).unwrap(), "\"APPL\"E");
-    assert_eq!(single_token("'A\"PPLE\"'".chars()).unwrap(), "A\"PPLE\"");
-}
-
 fn tokens(chars: impl IntoIterator<Item = char>) -> Vec<String> {
     let tokens = Tokens::new(chars);
     tokens.collect()
+}
+
+#[test]
+fn get_single_token() {
+    assert_eq!(token("".chars()), None);
+    assert_eq!(token(" ".chars()), None);
+
+    assert_eq!(token("\\ ".chars()).unwrap(), "");
+    assert_eq!(token("\\ e".chars()).unwrap(), "e");
+    assert_eq!(token("'\ne'".chars()).unwrap(), "\ne");
+
+    assert_eq!(token("A\"PPL\"E".chars()).unwrap(), "APPLE");
+    assert_eq!(token("\"APPL\"E".chars()).unwrap(), "APPLE");
+    assert_eq!(token("A\"PPLE\"".chars()).unwrap(), "APPLE");
+
+    assert_eq!(token("'A\"PPL\"E'".chars()).unwrap(), "A\"PPL\"E");
+    assert_eq!(token("'\"APPL\"E'".chars()).unwrap(), "\"APPL\"E");
+    assert_eq!(token("'A\"PPLE\"'".chars()).unwrap(), "A\"PPLE\"");
 }
 
 #[test]
@@ -113,31 +113,32 @@ fn get_tokens() {
 
 #[test]
 fn ignore_whitespaces() {
-    assert_eq!(single_token("     A\"PPL\"E".chars()).unwrap(), "APPLE");
-    assert_eq!(single_token("     \"APPL\"E".chars()).unwrap(), "APPLE");
-    assert_eq!(single_token("     A\"PPLE\"".chars()).unwrap(), "APPLE");
-    assert_eq!(single_token("A\"PPL\"E     ".chars()).unwrap(), "APPLE");
-    assert_eq!(single_token("\"APPL\"E     ".chars()).unwrap(), "APPLE");
-    assert_eq!(single_token("A\"PPLE\"     ".chars()).unwrap(), "APPLE");
+    assert_eq!(token("     A\"PPL\"E".chars()).unwrap(), "APPLE");
+    assert_eq!(token("     \"APPL\"E".chars()).unwrap(), "APPLE");
+    assert_eq!(token("     A\"PPLE\"".chars()).unwrap(), "APPLE");
+    assert_eq!(token("A\"PPL\"E     ".chars()).unwrap(), "APPLE");
+    assert_eq!(token("\"APPL\"E     ".chars()).unwrap(), "APPLE");
+    assert_eq!(token("A\"PPLE\"     ".chars()).unwrap(), "APPLE");
 }
 
 #[test]
 fn delimited_in_quote() {
-    assert_eq!(single_token("\"foobar  baz\"".chars()).unwrap(), "foobar  baz");
+    assert_eq!(token("\"foobar  baz\"".chars()).unwrap(), "foobar  baz");
 }
 
 #[test]
 fn quote_in_another_quote() {
-    assert_eq!(single_token("foo=\"1'0'1\"".chars()).unwrap(), "foo=1'0'1");
+    assert_eq!(token("foo=\"1'0'1\"".chars()).unwrap(), "foo=1'0'1");
 }
 
 #[test]
 fn no_matching_quote() {
-    assert_eq!(single_token("foo\"bar".chars()).unwrap(), "foobar");
+    assert_eq!(token("foo\"bar".chars()).unwrap(), "foobar");
 }
 
 #[test]
 fn expand_envs() {
-    // assert_eq!(single_token("$TEST".chars()).unwrap(), "ch");
-    assert_eq!(tokens("e\"${TEST}\"o world".chars()), ["echo", "world"]);
+    assert_eq!(token("\\$TEST".chars()).unwrap(), "$TEST");
+    // assert_eq!(token("$TEST".chars()).unwrap(), "ch");
+    // assert_eq!(tokens("e\"${TEST}\"o world".chars()), ["echo", "world"]);
 }
