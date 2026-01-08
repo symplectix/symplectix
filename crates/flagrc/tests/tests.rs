@@ -140,5 +140,7 @@ fn no_matching_quote() {
 fn expand_envs() {
     assert_eq!(token("\\$TEST".chars()).unwrap(), "$TEST");
     // assert_eq!(token("$TEST".chars()).unwrap(), "ch");
+    // assert_eq!(token("$TEST{cc".chars()).unwrap(), "ch{cc");
+    // assert_eq!(token("$TEST\"cc\"".chars()).unwrap(), "chcc");
     // assert_eq!(tokens("e\"${TEST}\"o world".chars()), ["echo", "world"]);
 }

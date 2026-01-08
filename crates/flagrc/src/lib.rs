@@ -1,6 +1,5 @@
 //! A tiny library to parse a file like Procfile.
 
-use std::ascii::AsciiExt;
 use std::io::{
     self,
     BufRead,
@@ -110,13 +109,14 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         self.lex.next().map(|token| {
             let mut out = String::new();
-            for word in dbg!(token.words) {
+            for word in token.words {
                 match word {
                     Word::Sep => {}
                     Word::Lit(lit) => {
                         out.push_str(lit.as_str());
                     }
                     Word::Var(var) => {
+                        dbg!(&var);
                         out.push_str(var.as_str());
                     }
                 }
