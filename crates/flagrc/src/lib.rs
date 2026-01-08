@@ -44,6 +44,22 @@ where
         vec
     };
 
+    dbg!(
+        Tokens::new(
+            rc.clone()
+                .iter()
+                // nb. Each string produced by buf.lines() will not have a
+                // newline byte (the `0xA` byte) or `CRLF` at the end.
+                .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n'))),
+            envs.as_ref(),
+        )
+        // Tokens emits `Some("")` when input is eg. "\\ ".
+        // This behavior is important in the current implementation:
+        // if input is something like "\\ x", returning None will not output x.
+        .filter(|t| !t.is_empty())
+        .collect::<Vec<_>>()
+    );
+
     let mut rc_lines = rc.iter();
     let get_entry = || -> Option<Entry> {
         let tokens = Tokens::new(
@@ -201,7 +217,6 @@ where
                 match c {
                     '\'' => {
                         self.quote = None;
-                        self.token.new_sep();
                     }
                     c => {
                         self.token.push(c);
@@ -210,8 +225,10 @@ where
             } else if self.in_double_quote() {
                 match c {
                     '"' => {
+                        if self.in_var() {
+                            self.token.new_sep();
+                        }
                         self.quote = None;
-                        self.token.new_sep();
                     }
                     '$' => {
                         self.token.new_var();
