@@ -178,8 +178,8 @@ impl Token {
     }
 
     fn push(&mut self, c: char) {
-        if let Some(word) = self.words.last_mut() {
-            match word {
+        if let Some(last) = self.words.last_mut() {
+            match last {
                 Word::TokenSeparator | Word::Split => self.words.push(Word::Lit(c.to_string())),
                 Word::Lit(s) => s.push(c),
                 Word::Var(s) => s.push(c),
@@ -193,7 +193,7 @@ impl Token {
         self.words.push(Word::Split)
     }
 
-    fn new_var(&mut self) {
+    fn begin_var(&mut self) {
         self.words.push(Word::Var(String::new()))
     }
 }
@@ -240,12 +240,12 @@ where
                         }
                         self.quote = None;
                     }
-                    '$' => {
-                        self.token.new_var();
-                    }
                     '\\' if self.in_var() => {
                         self.token.split();
                         self.token.push(c);
+                    }
+                    '$' => {
+                        self.token.begin_var();
                     }
                     c => {
                         self.token.push(c);
@@ -253,34 +253,35 @@ where
                 }
             } else if self.in_var() {
                 match c {
+                    '\'' | '"' => {
+                        self.quote = Some(c);
+                        self.token.split();
+                    }
+                    '\\' => {
+                        self.token.split();
+                    }
+                    '$' => {
+                        self.token.begin_var();
+                    }
+                    c if c.is_ascii_whitespace() => {
+                        break;
+                    }
                     // Var token should satisfy either of:
                     // * is_ascii_alphanumeric(c)
                     // * '_'
                     c if c.is_ascii_alphanumeric() || c == '_' => {
                         self.token.push(c);
                     }
-                    c if c.is_ascii_whitespace() => {
-                        break;
-                    }
-                    '\\' => {
-                        self.token.split();
-                    }
-                    '\'' | '"' => {
-                        self.quote = Some(c);
-                        self.token.split();
-                    }
-                    '$' => {
-                        self.token.new_var();
-                    }
                     c => {
+                        // c is not a part of Var.
                         self.token.split();
                         self.token.push(c);
                     }
                 }
             } else {
                 match c {
-                    c if c.is_ascii_whitespace() => {
-                        break;
+                    '\'' | '"' => {
+                        self.quote = Some(c);
                     }
                     '\\' => {
                         if let Some(esc) = self.chars.next() {
@@ -294,11 +295,11 @@ where
                             break;
                         }
                     }
-                    '\'' | '"' => {
-                        self.quote = Some(c);
-                    }
                     '$' => {
-                        self.token.new_var();
+                        self.token.begin_var();
+                    }
+                    c if c.is_ascii_whitespace() => {
+                        break;
                     }
                     c => {
                         self.token.push(c);
