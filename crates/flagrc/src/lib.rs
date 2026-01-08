@@ -74,18 +74,12 @@ where
 }
 
 /// Transforms an input chars into a sequence of tokens.
-pub struct Tokens<'e, I>
-where
-    I: Iterator,
-{
+pub struct Tokens<'e, I> {
     lex:  Lexer<I>,
     envs: Option<&'e HashMap<String, String>>,
 }
 
-impl<'e, I> Tokens<'e, I>
-where
-    I: Iterator<Item = char>,
-{
+impl<'e, I> Tokens<'e, I> {
     /// Creates a new Tokens.
     ///
     /// ```
@@ -130,11 +124,8 @@ where
     }
 }
 
-struct Lexer<I>
-where
-    I: Iterator,
-{
-    chars: iter::Peekable<I>,
+struct Lexer<I> {
+    chars: I,
     token: Token,
     quote: Option<char>,
 }
@@ -181,16 +172,12 @@ impl Token {
     }
 }
 
-impl<I> Lexer<I>
-where
-    I: Iterator,
-{
+impl<I> Lexer<I> {
     fn new<T>(chars: T) -> Self
     where
-        I: Iterator<Item = char>,
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Lexer { chars: chars.into_iter().peekable(), token: Token::new(), quote: None }
+        Lexer { chars: chars.into_iter(), token: Token::new(), quote: None }
     }
 }
 
