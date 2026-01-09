@@ -43,7 +43,6 @@ where
         }
         vec
     };
-    dbg!(&rcfile);
 
     let new_tokens = Tokens::new(
         rcfile
@@ -102,8 +101,7 @@ impl<I> Tokens<I> {
     /// ```
     /// # use flagrc::Tokens;
     /// let mut tokens = Tokens::new("foo\"ba\"r baz".chars(), None);
-    /// assert_eq!(tokens.next().unwrap(), "foobar");
-    /// assert_eq!(tokens.next().unwrap(), "baz");
+    /// assert_eq!(tokens.next().unwrap(), ["foobar", "baz"]);
     /// assert_eq!(tokens.next(), None);
     /// ```
     pub fn new<T>(chars: T, envs: Option<HashMap<String, String>>) -> Self
@@ -121,19 +119,14 @@ where
     type Item = Vec<String>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let tokens = self
-            .lex
-            .by_ref()
-            .take_while_inclusive(|t| !matches!(t.words.last(), Some(Word::LineBreak)));
-
         let token_to_str = |token: Token| -> String {
             let mut out = String::new();
-            for word in dbg!(token.words) {
+            for word in token.words {
                 match word {
                     Word::LineBreak => {
                         break;
                     }
-                    Word::SplitWord => {}
+                    Word::Split => {}
                     Word::Lit(lit) => out.push_str(lit.as_str()),
                     Word::Var(var) => {
                         if let Some(val) = self.envs.get(var.as_str()) {
@@ -146,8 +139,13 @@ where
             }
             out
         };
+        let tokens = self
+            .lex
+            .by_ref()
+            .take_while_inclusive(|t| !matches!(t.words.last(), Some(Word::LineBreak)))
+            .map(token_to_str);
 
-        let tokens = tokens.map(token_to_str).collect::<Vec<_>>();
+        let tokens = tokens.collect::<Vec<_>>();
         if tokens.is_empty() { None } else { Some(tokens) }
 
         // Some(tokens.map(token_to_str).collect())
@@ -220,7 +218,7 @@ enum Word {
     // Use this marker when you want to push a new word,
     // but cannot at the moment. e.g, when there are
     // consecutive Vars.
-    SplitWord,
+    Split,
     // A literal string.
     Lit(String),
     // $LIKE_THIS
@@ -240,7 +238,7 @@ impl Token {
         if let Some(last) = self.words.last_mut() {
             match last {
                 Word::LineBreak => unreachable!("should not happen"),
-                Word::SplitWord => self.words.push(Word::Lit(c.to_string())),
+                Word::Split => self.words.push(Word::Lit(c.to_string())),
                 Word::Lit(s) => s.push(c),
                 Word::Var(s) => s.push(c),
             }
@@ -255,11 +253,11 @@ impl Token {
 
     fn split(&mut self) {
         if let Some(last) = self.words.last() {
-            if !(matches!(last, Word::SplitWord)) {
-                self.words.push(Word::SplitWord);
+            if !(matches!(last, Word::Split)) {
+                self.words.push(Word::Split);
             }
         } else {
-            self.words.push(Word::SplitWord);
+            self.words.push(Word::Split);
         }
     }
 
@@ -287,7 +285,7 @@ where
 {
     type Item = Token;
     fn next(&mut self) -> Option<Token> {
-        dbg!(self.chars.find(|c| !c.is_ascii_whitespace()).map(|c| self.next_token(c)))
+        self.chars.find(|c| !c.is_ascii_whitespace()).map(|c| self.next_token(c))
     }
 }
 
@@ -339,7 +337,6 @@ where
                     }
                     c if c.is_ascii_whitespace() => {
                         break;
-                        // self.token.split();
                     }
                     // Var token should satisfy either of:
                     // * is_ascii_alphanumeric(c)
@@ -376,7 +373,6 @@ where
                     }
                     c if c.is_ascii_whitespace() => {
                         break;
-                        // self.token.split();
                     }
                     c => {
                         self.token.push(c);

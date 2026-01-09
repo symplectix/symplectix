@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::io;
 
 use flagrc::{
-    Entry,
     Tokens,
     parse,
 };
@@ -60,7 +59,6 @@ test7 a  b \c \ \
         Some(envs)
     };
     let entries = parse(io::Cursor::new(rc), envs).expect("reading from a cursor never fails");
-    dbg!(&entries);
 
     assert_eq!(entries[0].flag, ["test0"]);
     assert_eq!(entries[1].flag, ["test1", "gunicorn", "-b", ":8080", "main:app"]);
