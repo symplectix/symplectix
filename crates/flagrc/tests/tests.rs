@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::io;
 
 use flagrc::{
+    Entry,
     Tokens,
     parse,
 };
@@ -70,7 +71,7 @@ test7 a  b \c \ \
     assert_eq!(entries[7].flag, ["test7", "a", "b", "c", " d", "e"]);
 }
 
-fn token(chars: impl IntoIterator<Item = char>) -> Option<String> {
+fn token(chars: impl IntoIterator<Item = char>) -> Vec<String> {
     let envs = {
         let mut envs = HashMap::new();
         envs.insert("PORT".to_owned(), "8080".to_owned());
@@ -78,99 +79,94 @@ fn token(chars: impl IntoIterator<Item = char>) -> Option<String> {
         Some(envs)
     };
 
-    let mut tokens = Tokens::new(chars, envs.as_ref());
-    let next = tokens.next();
+    let mut tokens = Tokens::new(chars, envs);
+    let f = tokens.next().expect("no tokens");
     // Check no more tokens.
     assert_eq!(tokens.next(), None);
-    next
+    f.flag
 }
 
-fn tokens(chars: impl IntoIterator<Item = char>) -> Vec<String> {
-    let envs = {
-        let mut envs = HashMap::new();
-        envs.insert("TEST".to_owned(), "ch".to_owned());
-        Some(envs)
-    };
-    let tokens = Tokens::new(chars, envs.as_ref());
-    tokens.collect()
+#[test]
+fn empty_token() {
+    assert_eq!(token("".chars()), [""; 0]);
+    assert_eq!(token(" ".chars()), [""; 0]);
 }
 
 #[test]
 fn get_single_token() {
-    assert_eq!(token("".chars()), None);
-    assert_eq!(token(" ".chars()), None);
+    assert_eq!(token("\\ ".chars()), [" "]);
+    assert_eq!(token("\\ e".chars()), [" e"]);
+    assert_eq!(token("'\ne'".chars()), ["\ne"]);
 
-    assert_eq!(token("\\ ".chars()).unwrap(), " ");
-    assert_eq!(token("\\ e".chars()).unwrap(), " e");
-    assert_eq!(token("'\ne'".chars()).unwrap(), "\ne");
+    assert_eq!(token("A\"PPL\"E".chars()), ["APPLE"]);
+    assert_eq!(token("\"APPL\"E".chars()), ["APPLE"]);
+    assert_eq!(token("A\"PPLE\"".chars()), ["APPLE"]);
 
-    assert_eq!(token("A\"PPL\"E".chars()).unwrap(), "APPLE");
-    assert_eq!(token("\"APPL\"E".chars()).unwrap(), "APPLE");
-    assert_eq!(token("A\"PPLE\"".chars()).unwrap(), "APPLE");
+    assert_eq!(token("'A\"PPL\"E'".chars()), ["A\"PPL\"E"]);
+    assert_eq!(token("'\"APPL\"E'".chars()), ["\"APPL\"E"]);
+    assert_eq!(token("'A\"PPLE\"'".chars()), ["A\"PPLE\""]);
 
-    assert_eq!(token("'A\"PPL\"E'".chars()).unwrap(), "A\"PPL\"E");
-    assert_eq!(token("'\"APPL\"E'".chars()).unwrap(), "\"APPL\"E");
-    assert_eq!(token("'A\"PPLE\"'".chars()).unwrap(), "A\"PPLE\"");
-
-    assert_eq!(token("A\\e".chars()).unwrap(), "Ae");
-    assert_eq!(token("\"'A\\e\"".chars()).unwrap(), "'A\\e");
+    assert_eq!(token("A\\e".chars()), ["Ae"]);
+    assert_eq!(token("\"'A\\e\"".chars()), ["'A\\e"]);
 }
 
 #[test]
 fn get_tokens() {
-    assert_eq!(tokens("foo bar".chars()), ["foo", "bar"]);
-    assert_eq!(tokens("foo\"ba\"r baz".chars()), ["foobar", "baz"]);
-    assert_eq!(tokens("\"foo\nbar\" baz".chars()), ["foo\nbar", "baz"]);
-    assert_eq!(tokens("foo; bar; baz".chars()), ["foo;", "bar;", "baz"]);
-    assert_eq!(tokens("'foo; bar'; baz".chars()), ["foo; bar;", "baz"]);
+    assert_eq!(token("foo bar".chars()), ["foo", "bar"]);
+    assert_eq!(token("foo\"ba\"r baz".chars()), ["foobar", "baz"]);
+    assert_eq!(token("\"foo\nbar\" baz".chars()), ["foo\nbar", "baz"]);
+    assert_eq!(token("foo; bar; baz".chars()), ["foo;", "bar;", "baz"]);
+    assert_eq!(token("'foo; bar'; baz".chars()), ["foo; bar;", "baz"]);
 
-    assert_eq!(tokens("a b".chars()), ["a", "b"]);
-    assert_eq!(tokens("a \\ b".chars()), ["a", " b"]);
-    assert_eq!(tokens("a \\\nb".chars()), ["a", "b"]);
+    assert_eq!(token("a b".chars()), ["a", "b"]);
+    assert_eq!(token("a \\ b".chars()), ["a", " b"]);
+    assert_eq!(token("a \\\nb".chars()), ["a", "b"]);
 
     // Shell prints "for" in this case.
     // https://aosabook.org/en/v1/bash.html
     //
     // But procrc does not support defining a new var.
     assert_eq!(
-        tokens("for for in for; do for=for; done; echo $for".chars()),
+        token("for for in for; do for=for; done; echo $for".chars()),
         ["for", "for", "in", "for;", "do", "for=for;", "done;", "echo", ""],
     );
 }
 
 #[test]
 fn ignore_whitespaces() {
-    assert_eq!(token("     A\"PPL\"E".chars()).unwrap(), "APPLE");
-    assert_eq!(token("     \"APPL\"E".chars()).unwrap(), "APPLE");
-    assert_eq!(token("     A\"PPLE\"".chars()).unwrap(), "APPLE");
-    assert_eq!(token("A\"PPL\"E     ".chars()).unwrap(), "APPLE");
-    assert_eq!(token("\"APPL\"E     ".chars()).unwrap(), "APPLE");
-    assert_eq!(token("A\"PPLE\"     ".chars()).unwrap(), "APPLE");
+    assert_eq!(token("     A\"PPL\"E".chars()), ["APPLE"]);
+    assert_eq!(token("     \"APPL\"E".chars()), ["APPLE"]);
+    assert_eq!(token("     A\"PPLE\"".chars()), ["APPLE"]);
+    assert_eq!(token("A\"PPL\"E     ".chars()), ["APPLE"]);
+    assert_eq!(token("\"APPL\"E     ".chars()), ["APPLE"]);
+    assert_eq!(token("A\"PPLE\"     ".chars()), ["APPLE"]);
 }
 
 #[test]
 fn delimited_in_quote() {
-    assert_eq!(token("\"foobar  baz\"".chars()).unwrap(), "foobar  baz");
+    assert_eq!(token("\"foobar  baz\"".chars()), ["foobar  baz"]);
 }
 
 #[test]
 fn quote_in_another_quote() {
-    assert_eq!(token("foo=\"1'0'1\"".chars()).unwrap(), "foo=1'0'1");
+    assert_eq!(token("foo=\"1'0'1\"".chars()), ["foo=1'0'1"]);
 }
 
 #[test]
 fn no_matching_quote() {
-    assert_eq!(token("foo\"bar".chars()).unwrap(), "foobar");
+    assert_eq!(token("foo\"bar".chars()), ["foobar"]);
 }
 
 #[test]
 fn expand_envs() {
-    assert_eq!(token("\\$TEST".chars()).unwrap(), "$TEST");
-    assert_eq!(token("$TEST".chars()).unwrap(), "ch");
-    assert_eq!(token("e\"$TEST\"o".chars()).unwrap(), "echo");
-    assert_eq!(token("$TEST\\A".chars()).unwrap(), "chA");
-    assert_eq!(token("\"$TEST\\A\"".chars()).unwrap(), "ch\\A");
-    assert_eq!(token("$TEST{cc".chars()).unwrap(), "ch{cc");
-    assert_eq!(token("$TEST\"cc\"".chars()).unwrap(), "chcc");
-    assert_eq!(tokens("e\"$TEST\"o hello".chars()), ["echo", "hello"]);
+    assert_eq!(token("\\$TEST".chars()), ["$TEST"]);
+    assert_eq!(token("$TEST".chars()), ["ch"]);
+    assert_eq!(token("$TEST#a".chars()), ["ch#a"]);
+    assert_eq!(token("$TEST-a".chars()), ["ch-a"]);
+    assert_eq!(token("e\"$TEST\"o".chars()), ["echo"]);
+    assert_eq!(token("$TEST\\A".chars()), ["chA"]);
+    assert_eq!(token("\"$TEST\\A\"".chars()), ["ch\\A"]);
+    assert_eq!(token("$TEST{cc".chars()), ["ch{cc"]);
+    assert_eq!(token("$TEST\"cc\"".chars()), ["chcc"]);
+    assert_eq!(token("e\"$TEST\"o hello".chars()), ["echo", "hello"]);
 }

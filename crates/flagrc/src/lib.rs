@@ -51,17 +51,8 @@ where
         // nb. Each string produced by buf.lines() will not have a
         // newline byte (the `0xA` byte) or `CRLF` at the end.
         .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n')));
-    let mut new_tokens = Tokens::new(rc_clone_iter, envs.as_ref());
-    dbg!(
-        new_tokens.get_all(),
-        new_tokens.get_all(),
-        new_tokens.get_all(),
-        new_tokens.get_all(),
-        new_tokens.get_all(),
-        new_tokens.get_all(),
-        new_tokens.get_all(),
-        new_tokens.get_all(),
-    );
+    let new_tokens = Tokens::new(rc_clone_iter, envs);
+    Ok(new_tokens.collect())
 
     // Tokens emits `Some("")` when input is eg. "\\ ".
     // This behavior is important in the current implementation:
@@ -69,42 +60,42 @@ where
     // .filter(|t| !t.is_empty())
     // .collect::<Vec<_>>()
 
-    let mut rc_lines = rcfile.iter();
-    let get_entry = || -> Option<Entry> {
-        let tokens = Tokens::new(
-            // The all lines in the chunk are collected together to form
-            // a single Entry.
-            rc_lines
-                .by_ref()
-                // A '\' at the end of a line continues the line.
-                //
-                // TODO: Use iter::take_until or something.
-                // Rust stdlib may have this someday.
-                // https://github.com/rust-lang/rust/issues/62208
-                .take_while_inclusive(|line| line.trim_ascii().ends_with('\\'))
-                // nb. Each string produced by buf.lines() will not have a
-                // newline byte (the `0xA` byte) or `CRLF` at the end.
-                .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n'))),
-            envs.as_ref(),
-        )
-        // Tokens emits `Some("")` when input is eg. "\\ ".
-        // This behavior is important in the current implementation:
-        // if input is something like "\\ x", returning None will not output x.
-        .filter(|t| !t.is_empty())
-        .collect::<Vec<_>>();
+    // let mut rc_lines = rcfile.iter();
+    // let get_entry = || -> Option<Entry> {
+    //     let tokens = Tokens::new(
+    //         // The all lines in the chunk are collected together to form
+    //         // a single Entry.
+    //         rc_lines
+    //             .by_ref()
+    //             // A '\' at the end of a line continues the line.
+    //             //
+    //             // TODO: Use iter::take_until or something.
+    //             // Rust stdlib may have this someday.
+    //             // https://github.com/rust-lang/rust/issues/62208
+    //             .take_while_inclusive(|line| line.trim_ascii().ends_with('\\'))
+    //             // nb. Each string produced by buf.lines() will not have a
+    //             // newline byte (the `0xA` byte) or `CRLF` at the end.
+    //             .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n'))),
+    //         envs.as_ref(),
+    //     )
+    //     // Tokens emits `Some("")` when input is eg. "\\ ".
+    //     // This behavior is important in the current implementation:
+    //     // if input is something like "\\ x", returning None will not output x.
+    //     .filter(|t| !t.is_empty())
+    //     .collect::<Vec<_>>();
 
-        if tokens.is_empty() { None } else { Some(Entry { flag: tokens }) }
-    };
-    Ok(iter::from_fn(get_entry).collect())
+    //     if tokens.is_empty() { None } else { Some(Entry { flag: tokens }) }
+    // };
+    // Ok(iter::from_fn(get_entry).collect())
 }
 
 /// Transforms an input chars into a sequence of tokens.
-pub struct Tokens<'e, I> {
+pub struct Tokens<I> {
     lex:  Lexer<I>,
-    envs: Option<&'e HashMap<String, String>>,
+    envs: HashMap<String, String>,
 }
 
-impl<'e, I> Tokens<'e, I> {
+impl<I> Tokens<I> {
     /// Creates a new Tokens.
     ///
     /// ```
@@ -114,85 +105,109 @@ impl<'e, I> Tokens<'e, I> {
     /// assert_eq!(tokens.next().unwrap(), "baz");
     /// assert_eq!(tokens.next(), None);
     /// ```
-    pub fn new<T>(chars: T, envs: Option<&'e HashMap<String, String>>) -> Self
+    pub fn new<T>(chars: T, envs: Option<HashMap<String, String>>) -> Self
     where
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Tokens { lex: Lexer::new(chars), envs }
+        Tokens { lex: Lexer::new(chars), envs: envs.unwrap_or_else(HashMap::new) }
     }
 
     fn get_all(&mut self) -> Option<Token>
     where
         I: Iterator<Item = char>,
     {
-        let mut vec = Vec::new();
-        for token in self.lex.by_ref() {
-            for word in token.words {
-                // if matches!(word, Word::TokenSeparator) {
-                //     return Some(Token { words: vec });
-                // }
-                // vec.push(word);
-                match word {
-                    Word::TokenSeparator => {
-                        return Some(Token { words: vec });
-                        // vec.push(out.clone());
-                        // dbg!(&vec);
-                        // mem::replace(&mut out, String::new());
-                    }
-                    Word::Split => {
-                        vec.push(word);
-                    }
-                    Word::Lit(_) => {
-                        vec.push(word);
-                    }
-                    Word::Var(ref var) => {
-                        // vec.push(word);
-                        if let Some(val) = self.envs.as_ref().and_then(|es| es.get(var.as_str())) {
-                            vec.push(Word::Var(val.clone()));
-                        }
-                    }
-                }
-            }
-        }
-        None
+        self.lex.next()
+        // let mut vec = Vec::new();
+        // for token in self.lex.by_ref() {
+        //     for word in token.words {
+        //         // if matches!(word, Word::TokenSeparator) {
+        //         //     return Some(Token { words: vec });
+        //         // }
+        //         // vec.push(word);
+        //         match word {
+        //             Word::TokenSeparator => {
+        //                 return Some(Token { words: vec });
+        //                 // vec.push(out.clone());
+        //                 // dbg!(&vec);
+        //                 // mem::replace(&mut out, String::new());
+        //             }
+        //             Word::Split => {
+        //                 vec.push(word);
+        //             }
+        //             Word::Lit(_) => {
+        //                 vec.push(word);
+        //             }
+        //             Word::Var(ref var) => {
+        //                 // vec.push(word);
+        //                 if let Some(val) = self.envs.as_ref().and_then(|es| es.get(var.as_str()))
+        // {                     vec.push(Word::Var(val.clone()));
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // None
     }
 }
 
-impl<'e, I> Iterator for Tokens<'e, I>
+impl<I> Iterator for Tokens<I>
 where
     I: Iterator<Item = char>,
 {
-    type Item = String;
+    type Item = Entry;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.lex.next().map(|token| {
-            let mut out = String::new();
-            for word in token.words {
-                match word {
-                    Word::TokenSeparator => {
-                        // vec.push(out.clone());
-                        // dbg!(&vec);
-                        // mem::replace(&mut out, String::new());
-                    }
-                    Word::Split => {}
-                    Word::Lit(lit) => {
-                        out.push_str(lit.as_str());
-                    }
-                    Word::Var(var) => {
-                        if let Some(val) = self.envs.as_ref().and_then(|es| es.get(var.as_str())) {
-                            out.push_str(val);
+            Entry {
+                flag: token
+                    .words
+                    .into_iter()
+                    .filter_map(|word| match word {
+                        // Word::TokenSeparator => {
+                        //     // vec.push(out.clone());
+                        //     // dbg!(&vec);
+                        //     // mem::replace(&mut out, String::new());
+                        // }
+                        Word::Split => None,
+                        Word::Lit(lit) => Some(lit),
+                        Word::Var(var) => {
+                            if let Some(val) = self.envs.get(var.as_str()) {
+                                Some(val.to_owned())
+                            } else {
+                                Some(var)
+                            }
                         }
-                    }
-                }
+                    })
+                    .collect(),
             }
-            out
         })
     }
+
+    //     for word in token.words.iter_mut() {
+    //         todo!()
+    //         // match word {
+    //         //     // Word::TokenSeparator => {
+    //         //     //     // vec.push(out.clone());
+    //         //     //     // dbg!(&vec);
+    //         //     //     // mem::replace(&mut out, String::new());
+    //         //     // }
+    //         //     Word::Split => None,
+    //         //     Word::Lit(lit) => Some(lit),
+    //         //     Word::Var(var) => {
+    //         //         Some(var)
+    //         //         // if let Some(val) = self.envs.as_ref().and_then(|es|
+    //         // es.get(var.as_str()))         // {     out.push_str(val);
+    //         //         // }
+    //         //     }
+    //         // }
+    //     }
+    //     token
+    // })
 }
 
 struct Lexer<I> {
     chars: I,
-    words: Token,
+    token: Token,
     quote: Option<char>,
 }
 
@@ -204,9 +219,6 @@ struct Token {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Word {
-    // If this exists, it means that the tokens before
-    // and after this word can be considered separate.
-    TokenSeparator,
     // Use this marker when you want to push a new word,
     // but cannot at the moment. e.g, when there are
     // consecutive Vars.
@@ -229,7 +241,7 @@ impl Token {
     fn push(&mut self, c: char) {
         if let Some(last) = self.words.last_mut() {
             match last {
-                Word::TokenSeparator | Word::Split => self.words.push(Word::Lit(c.to_string())),
+                Word::Split => self.words.push(Word::Lit(c.to_string())),
                 Word::Lit(s) => s.push(c),
                 Word::Var(s) => s.push(c),
             }
@@ -239,11 +251,21 @@ impl Token {
     }
 
     fn split(&mut self) {
-        self.words.push(Word::Split)
+        if let Some(last) = self.words.last() {
+            if !(matches!(last, Word::Split)) {
+                self.words.push(Word::Split);
+            }
+        } else {
+            self.words.push(Word::Split);
+        }
     }
 
     fn begin_var(&mut self) {
         self.words.push(Word::Var(String::new()))
+    }
+
+    fn in_var(&self) -> bool {
+        matches!(self.words.last(), Some(Word::Var(_)))
     }
 }
 
@@ -252,7 +274,7 @@ impl<I> Lexer<I> {
     where
         T: IntoIterator<Item = char, IntoIter = I>,
     {
-        Lexer { chars: chars.into_iter(), words: Token::new(), quote: None }
+        Lexer { chars: chars.into_iter(), token: Token::new(), quote: None }
     }
 }
 
@@ -278,53 +300,54 @@ where
                         self.quote = None;
                     }
                     c => {
-                        self.words.push(c);
+                        self.token.push(c);
                     }
                 }
             } else if self.in_double_quote() {
                 match c {
                     '"' => {
                         if self.in_var() {
-                            self.words.split();
+                            self.token.split();
                         }
                         self.quote = None;
                     }
                     '\\' if self.in_var() => {
-                        self.words.split();
-                        self.words.push(c);
+                        self.token.split();
+                        self.token.push(c);
                     }
                     '$' => {
-                        self.words.begin_var();
+                        self.token.begin_var();
                     }
                     c => {
-                        self.words.push(c);
+                        self.token.push(c);
                     }
                 }
             } else if self.in_var() {
                 match c {
                     '\'' | '"' => {
                         self.quote = Some(c);
-                        self.words.split();
+                        self.token.split();
                     }
                     '\\' => {
-                        self.words.split();
+                        self.token.split();
                     }
                     '$' => {
-                        self.words.begin_var();
+                        self.token.begin_var();
                     }
                     c if c.is_ascii_whitespace() => {
-                        break;
+                        // break;
+                        self.token.split();
                     }
                     // Var token should satisfy either of:
                     // * is_ascii_alphanumeric(c)
                     // * '_'
                     c if c.is_ascii_alphanumeric() || c == '_' => {
-                        self.words.push(c);
+                        self.token.push(c);
                     }
                     c => {
                         // c is not a part of Var.
-                        self.words.split();
-                        self.words.push(c);
+                        self.token.split();
+                        self.token.push(c);
                     }
                 }
             } else {
@@ -335,24 +358,25 @@ where
                     '\\' => {
                         if let Some(esc) = self.chars.next() {
                             if !(esc == '\n' || esc == '\r') {
-                                self.words.push(esc);
+                                self.token.push(esc);
                             }
                         } else {
                             break;
                         }
                     }
                     '$' => {
-                        self.words.begin_var();
+                        self.token.begin_var();
                     }
                     '\n' | '\r' => {
-                        self.words.words.push(Word::TokenSeparator);
+                        // self.words.words.push(Word::TokenSeparator);
                         break;
                     }
                     c if c.is_ascii_whitespace() => {
-                        break;
+                        // break;
+                        self.token.split();
                     }
                     c => {
-                        self.words.push(c);
+                        self.token.push(c);
                     }
                 }
             }
@@ -375,10 +399,10 @@ where
     }
 
     fn in_var(&self) -> bool {
-        matches!(self.words.words.last(), Some(Word::Var(_)))
+        self.token.in_var()
     }
 
     fn output(&mut self) -> Token {
-        self.words.reset()
+        self.token.reset()
     }
 }
