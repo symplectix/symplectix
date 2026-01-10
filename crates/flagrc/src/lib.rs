@@ -28,7 +28,7 @@ where
     R: io::Read,
 {
     let rcfile = {
-        let mut vec = Vec::new();
+        let mut lines = Vec::new();
         let buf = io::BufReader::new(source);
         for line in buf.lines() {
             let mut line = line?;
@@ -40,12 +40,12 @@ where
             if line.trim_ascii().is_empty() {
                 continue;
             }
-            vec.push(line);
+            lines.push(line);
         }
-        vec
+        lines
     };
 
-    let new_tokens = Tokens::new(
+    let tokens = Tokens::new(
         rcfile
             .iter()
             // nb. Each string produced by buf.lines() will not have a
@@ -53,41 +53,7 @@ where
             .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n'))),
         envs,
     );
-    Ok(new_tokens.map(|flag| Entry { flag }).collect())
-
-    // Tokens emits `Some("")` when input is eg. "\\ ".
-    // This behavior is important in the current implementation:
-    // if input is something like "\\ x", returning None will not output x.
-    // .filter(|t| !t.is_empty())
-    // .collect::<Vec<_>>()
-
-    // let mut rc_lines = rcfile.iter();
-    // let get_entry = || -> Option<Entry> {
-    //     let tokens = Tokens::new(
-    //         // The all lines in the chunk are collected together to form
-    //         // a single Entry.
-    //         rc_lines
-    //             .by_ref()
-    //             // A '\' at the end of a line continues the line.
-    //             //
-    //             // TODO: Use iter::take_until or something.
-    //             // Rust stdlib may have this someday.
-    //             // https://github.com/rust-lang/rust/issues/62208
-    //             .take_while_inclusive(|line| line.trim_ascii().ends_with('\\'))
-    //             // nb. Each string produced by buf.lines() will not have a
-    //             // newline byte (the `0xA` byte) or `CRLF` at the end.
-    //             .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n'))),
-    //         envs.as_ref(),
-    //     )
-    //     // Tokens emits `Some("")` when input is eg. "\\ ".
-    //     // This behavior is important in the current implementation:
-    //     // if input is something like "\\ x", returning None will not output x.
-    //     .filter(|t| !t.is_empty())
-    //     .collect::<Vec<_>>();
-
-    //     if tokens.is_empty() { None } else { Some(Entry { flag: tokens }) }
-    // };
-    // Ok(iter::from_fn(get_entry).collect())
+    Ok(tokens.map(|flag| Entry { flag }).collect())
 }
 
 /// Transforms an input chars into a sequence of tokens.
@@ -129,8 +95,6 @@ where
                     Var(var) => {
                         if let Some(val) = self.envs.get(var.as_str()) {
                             out.push_str(val);
-                        } else {
-                            // Some(var)
                         }
                     }
                     NewLine(_) => {
@@ -143,62 +107,15 @@ where
         let tokens = self
             .lex
             .by_ref()
+            // TODO: Use iter::take_until or something.
+            // Rust stdlib may have this someday.
+            // https://github.com/rust-lang/rust/issues/62208
             .take_while_inclusive(|t| !matches!(t.words.last(), Some(Word::NewLine(_))))
             .map(token_to_str);
 
         let tokens = tokens.collect::<Vec<_>>();
         if tokens.is_empty() { None } else { Some(tokens) }
-
-        // Some(tokens.map(token_to_str).collect())
-        // for token in tokens {
-        //     self.token_to_str(token)
-        //     todo!()
-        // }
-
-        // self.lex.next().map(|token| {
-        //     let mut out = String::new();
-        //     for word in token.words {
-        //         match word {
-        //             // Word::TokenSeparator => {
-        //             //     // vec.push(out.clone());
-        //             //     // dbg!(&vec);
-        //             //     // mem::replace(&mut out, String::new());
-        //             // }
-        //             Word::SplitWord => {}
-        //             Word::Lit(lit) => out.push_str(lit.as_str()),
-        //             Word::Var(var) => {
-        //                 if let Some(val) = self.envs.get(var.as_str()) {
-        //                     out.push_str(val);
-        //                 } else {
-        //                     // Some(var)
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     out
-        // })
     }
-
-    //     for word in token.words.iter_mut() {
-    //         todo!()
-    //         // match word {
-    //         //     // Word::TokenSeparator => {
-    //         //     //     // vec.push(out.clone());
-    //         //     //     // dbg!(&vec);
-    //         //     //     // mem::replace(&mut out, String::new());
-    //         //     // }
-    //         //     Word::Split => None,
-    //         //     Word::Lit(lit) => Some(lit),
-    //         //     Word::Var(var) => {
-    //         //         Some(var)
-    //         //         // if let Some(val) = self.envs.as_ref().and_then(|es|
-    //         // es.get(var.as_str()))         // {     out.push_str(val);
-    //         //         // }
-    //         //     }
-    //         // }
-    //     }
-    //     token
-    // })
 }
 
 struct Lexer<I> {
@@ -368,6 +285,7 @@ where
                     }
                     '\\' => {
                         if let Some(esc) = self.chars.next() {
+                            // A '\' at the end of a line continues the line.
                             if !(esc == '\n' || esc == '\r') {
                                 self.token.push(esc);
                             }
