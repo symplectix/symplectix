@@ -31,26 +31,10 @@ pub fn parse<R>(source: R, vars: Option<HashMap<String, String>>) -> io::Result<
 where
     R: io::Read,
 {
-    let rcfile = {
-        let mut lines = Vec::new();
-        let buf = io::BufReader::new(source);
-        for line in buf.lines() {
-            let mut line = line?;
-            // Skip comments,
-            if let Some(n) = line.find('#') {
-                let _comment = line.split_off(n);
-            }
-            // and empty lines.
-            if line.trim_ascii().is_empty() {
-                continue;
-            }
-            lines.push(line);
-        }
-        lines
-    };
-
+    let buf = io::BufReader::new(source);
+    let rc_lines = buf.lines().collect::<Result<Vec<_>, _>>()?;
     let tokens = Tokens::new(
-        rcfile
+        rc_lines
             .iter()
             // nb. Each string produced by buf.lines() will not have a
             // newline byte (the `0xA` byte) or `CRLF` at the end.

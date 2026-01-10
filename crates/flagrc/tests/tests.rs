@@ -26,9 +26,9 @@ fn no_entries() {
 fn many_entries() {
     #[rustfmt::skip]
         let rc = r#"
-test0 # comment
+test0
 
-test1 gunicorn -b \ # comment
+test1 gunicorn -b \
 :$PORT \
 main:app
 
