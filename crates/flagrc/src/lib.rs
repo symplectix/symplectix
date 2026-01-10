@@ -1,5 +1,9 @@
 //! A tiny library to parse a file like Procfile.
 
+use std::borrow::{
+    Borrow,
+    Cow,
+};
 use std::collections::HashMap;
 use std::io::{
     self,
@@ -50,7 +54,7 @@ where
             .iter()
             // nb. Each string produced by buf.lines() will not have a
             // newline byte (the `0xA` byte) or `CRLF` at the end.
-            .flat_map(|line| line.trim_ascii().chars().chain(iter::once('\n'))),
+            .flat_map(|line| line.trim_ascii().bytes().chain(iter::once(b'\n'))),
         envs,
     );
     Ok(tokens.map(|flag| Entry { flag }).collect())
@@ -67,13 +71,13 @@ impl<I> Tokens<I> {
     ///
     /// ```
     /// # use flagrc::Tokens;
-    /// let mut tokens = Tokens::new("foo\"ba\"r baz".chars(), None);
+    /// let mut tokens = Tokens::new("foo\"ba\"r baz".bytes(), None);
     /// assert_eq!(tokens.next().unwrap(), ["foobar", "baz"]);
     /// assert_eq!(tokens.next(), None);
     /// ```
     pub fn new<T>(chars: T, envs: Option<HashMap<String, String>>) -> Self
     where
-        T: IntoIterator<Item = char, IntoIter = I>,
+        T: IntoIterator<Item = u8, IntoIter = I>,
     {
         Tokens { lex: Lexer::new(chars), envs: envs.unwrap_or_default() }
     }
@@ -81,7 +85,7 @@ impl<I> Tokens<I> {
 
 impl<I> Iterator for Tokens<I>
 where
-    I: Iterator<Item = char>,
+    I: Iterator<Item = u8>,
 {
     type Item = Vec<String>;
 
@@ -91,10 +95,15 @@ where
             for word in token.words {
                 match word {
                     Empty => {}
-                    Lit(lit) => out.push_str(lit.as_str()),
-                    Var(var) => {
-                        if let Some(val) = self.envs.get(var.as_str()) {
-                            out.push_str(val);
+                    Lit(v) => {
+                        let lit: Cow<str> = String::from_utf8_lossy(&v);
+                        out.push_str(lit.borrow());
+                    }
+                    Var(v) => {
+                        let var: Cow<str> = String::from_utf8_lossy(&v);
+                        let var: &str = var.borrow();
+                        if let Some(var) = self.envs.get(var) {
+                            out.push_str(var);
                         }
                     }
                     NewLine(_) => {
@@ -110,7 +119,7 @@ where
             // TODO: Use iter::take_until or something.
             // Rust stdlib may have this someday.
             // https://github.com/rust-lang/rust/issues/62208
-            .take_while_inclusive(|t| !matches!(t.words.last(), Some(Word::NewLine(_))))
+            .take_while_inclusive(|t| !matches!(t.words.last(), Some(NewLine(_))))
             .map(token_to_str);
 
         let tokens = tokens.collect::<Vec<_>>();
@@ -121,7 +130,7 @@ where
 struct Lexer<I> {
     chars: I,
     token: Token,
-    quote: Option<char>,
+    quote: Option<u8>,
 }
 
 // Token is a single element that make up a line.
@@ -142,15 +151,15 @@ enum Word {
     /// For examples:
     /// - Lit("$x") is just a string "$x", not a variable.
     /// - Lit("\n") is just a string "\n", not a line break.
-    Lit(String),
+    Lit(Vec<u8>),
     /// A variable $LIKE_THIS.
     ///
     /// Not support:
     /// - bracing: ${LIKE_THIS}
     /// - nesting: $$LIKE_THIS
-    Var(String),
+    Var(Vec<u8>),
     /// A word for the *non-escaped* newline delimiter.
-    NewLine(char),
+    NewLine(u8),
 }
 
 impl Token {
@@ -162,21 +171,21 @@ impl Token {
         mem::replace(self, Token::new())
     }
 
-    fn push(&mut self, c: char) {
+    fn push(&mut self, b: u8) {
         if let Some(last) = self.words.last_mut() {
             match last {
-                Empty => self.words.push(Word::Lit(c.to_string())),
-                Lit(s) => s.push(c),
-                Var(s) => s.push(c),
-                NewLine(_) => unreachable!("pushing a char onto NewLine"),
+                Empty => self.words.push(Lit(vec![b])),
+                Lit(lit) => lit.push(b),
+                Var(var) => var.push(b),
+                NewLine(_) => unreachable!("pushing a byte onto NewLine"),
             }
         } else {
-            self.words.push(Lit(c.to_string()));
+            self.words.push(Lit(vec![b]));
         }
     }
 
-    fn break_line(&mut self, c: char) {
-        self.words.push(Word::NewLine(c));
+    fn break_line(&mut self, b: u8) {
+        self.words.push(Word::NewLine(b));
     }
 
     fn split(&mut self) {
@@ -190,7 +199,7 @@ impl Token {
     }
 
     fn begin_var(&mut self) {
-        self.words.push(Var(String::new()))
+        self.words.push(Var(Vec::new()))
     }
 
     fn in_var(&self) -> bool {
@@ -201,7 +210,7 @@ impl Token {
 impl<I> Lexer<I> {
     fn new<T>(chars: T) -> Self
     where
-        T: IntoIterator<Item = char, IntoIter = I>,
+        T: IntoIterator<Item = u8, IntoIter = I>,
     {
         Lexer { chars: chars.into_iter(), token: Token::new(), quote: None }
     }
@@ -209,108 +218,107 @@ impl<I> Lexer<I> {
 
 impl<I> Iterator for Lexer<I>
 where
-    I: Iterator<Item = char>,
+    I: Iterator<Item = u8>,
 {
     type Item = Token;
     fn next(&mut self) -> Option<Token> {
-        self.chars.find(|c| !c.is_ascii_whitespace()).map(|c| self.next_token(c))
+        self.chars.find(|b| !b.is_ascii_whitespace()).map(|b| self.next_token(b))
     }
 }
 
 impl<I> Lexer<I>
 where
-    I: Iterator<Item = char>,
+    I: Iterator<Item = u8>,
 {
-    fn next_token(&mut self, mut c: char) -> Token {
+    fn next_token(&mut self, mut b: u8) -> Token {
         loop {
             if self.in_single_quote() {
-                match c {
-                    '\'' => {
+                match b {
+                    b'\'' => {
                         self.quote = None;
                     }
-                    c => {
-                        self.token.push(c);
+                    b => {
+                        self.token.push(b);
                     }
                 }
             } else if self.in_double_quote() {
-                match c {
-                    '"' => {
+                match b {
+                    b'"' => {
                         if self.in_var() {
                             self.token.split();
                         }
                         self.quote = None;
                     }
-                    '\\' if self.in_var() => {
+                    b'\\' if self.in_var() => {
                         self.token.split();
-                        self.token.push(c);
+                        self.token.push(b);
                     }
-                    '$' => {
+                    b'$' => {
                         self.token.begin_var();
                     }
-                    c => {
-                        self.token.push(c);
+                    b => {
+                        self.token.push(b);
                     }
                 }
             } else if self.in_var() {
-                match c {
-                    '\'' | '"' => {
-                        self.quote = Some(c);
+                match b {
+                    b'\'' | b'"' => {
+                        self.quote = Some(b);
                         self.token.split();
                     }
-                    '\\' => {
+                    b'\\' => {
                         self.token.split();
                     }
-                    '$' => {
+                    b'$' => {
                         self.token.begin_var();
                     }
-                    c if c.is_ascii_whitespace() => {
+                    b if b.is_ascii_whitespace() => {
                         break;
                     }
                     // Var token should satisfy either of:
                     // * is_ascii_alphanumeric(c)
                     // * '_'
-                    c if c.is_ascii_alphanumeric() || c == '_' => {
-                        self.token.push(c);
+                    b if b.is_ascii_alphanumeric() || b == b'_' => {
+                        self.token.push(b);
                     }
-                    c => {
+                    b => {
                         // c is not a part of Var.
                         self.token.split();
-                        self.token.push(c);
+                        self.token.push(b);
                     }
                 }
             } else {
-                match c {
-                    '\'' | '"' => {
-                        self.quote = Some(c);
+                match b {
+                    b'\'' | b'"' => {
+                        self.quote = Some(b);
                     }
-                    '\\' => {
+                    b'\\' => {
                         if let Some(esc) = self.chars.next() {
                             // A '\' at the end of a line continues the line.
-                            if !(esc == '\n' || esc == '\r') {
+                            if !(esc == b'\n' || esc == b'\r') {
                                 self.token.push(esc);
                             }
                         } else {
                             break;
                         }
                     }
-                    '$' => {
+                    b'$' => {
                         self.token.begin_var();
                     }
-                    '\n' | '\r' => {
-                        self.token.break_line(c);
+                    b if b.is_ascii_whitespace() => {
+                        if b == b'\n' || b == b'\r' {
+                            self.token.break_line(b);
+                        }
                         break;
                     }
-                    c if c.is_ascii_whitespace() => {
-                        break;
-                    }
-                    c => {
-                        self.token.push(c);
+                    b => {
+                        self.token.push(b);
                     }
                 }
             }
 
             if let Some(next) = self.chars.next() {
-                c = next;
+                b = next;
             } else {
                 break;
             }
@@ -319,11 +327,11 @@ where
     }
 
     fn in_single_quote(&self) -> bool {
-        self.quote.as_ref().is_some_and(|c| *c == '\'')
+        self.quote.as_ref().is_some_and(|b| *b == b'\'')
     }
 
     fn in_double_quote(&self) -> bool {
-        self.quote.as_ref().is_some_and(|c| *c == '"')
+        self.quote.as_ref().is_some_and(|b| *b == b'"')
     }
 
     fn in_var(&self) -> bool {
