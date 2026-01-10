@@ -5,12 +5,9 @@ use std::borrow::{
     Cow,
 };
 use std::collections::HashMap;
-use std::io::{
-    self,
-    Read,
-};
 use std::{
     fmt,
+    io,
     mem,
 };
 
@@ -31,8 +28,8 @@ pub fn parse<R>(source: R, vars: Option<HashMap<String, String>>) -> io::Result<
 where
     R: io::Read,
 {
-    let buf = io::BufReader::new(source);
-    let tokens = Tokens::new(buf.bytes().map_while(Result::ok), vars);
+    let rcfile = io::read_to_string(source)?;
+    let tokens = Tokens::new(rcfile.bytes(), vars);
     Ok(tokens.map(|flag| Entry { flag }).collect())
 }
 
