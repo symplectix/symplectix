@@ -121,10 +121,10 @@ fn get_tokens() {
     assert_eq!(tokens("foo; bar; baz".chars()), ["foo;", "bar;", "baz"]);
     assert_eq!(tokens("'foo; bar'; baz".chars()), ["foo; bar;", "baz"]);
 
-    assert_eq!(tokens("a b".chars()), ["a", "b"]);
-    assert_eq!(tokens("a\\ b".chars()), ["a b"]);
-    assert_eq!(tokens("a \\ b".chars()), ["a", " b"]);
-    assert_eq!(tokens("a \\\nb".chars()), ["a", "b"]);
+    assert_eq!(tokens("え び".chars()), ["え", "び"]);
+    assert_eq!(tokens("え\\ び".chars()), ["え び"]);
+    assert_eq!(tokens("え \\ び".chars()), ["え", " び"]);
+    assert_eq!(tokens("え \\\nび".chars()), ["え", "び"]);
 
     // Shell prints "for" in this case.
     // https://aosabook.org/en/v1/bash.html
