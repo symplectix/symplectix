@@ -27,7 +27,7 @@ pub struct Entry {
 }
 
 /// Parses procrc.
-pub fn parse<R>(source: R, envs: Option<HashMap<String, String>>) -> io::Result<Vec<Entry>>
+pub fn parse<R>(source: R, vars: Option<HashMap<String, String>>) -> io::Result<Vec<Entry>>
 where
     R: io::Read,
 {
@@ -55,7 +55,7 @@ where
             // nb. Each string produced by buf.lines() will not have a
             // newline byte (the `0xA` byte) or `CRLF` at the end.
             .flat_map(|line| line.trim_ascii().bytes().chain(iter::once(b'\n'))),
-        envs,
+        vars,
     );
     Ok(tokens.map(|flag| Entry { flag }).collect())
 }
@@ -63,7 +63,7 @@ where
 /// Transforms an input chars into a sequence of tokens.
 pub struct Tokens<I> {
     lex:  Lexer<I>,
-    envs: HashMap<String, String>,
+    vars: HashMap<String, String>,
 }
 
 impl<I> Tokens<I> {
@@ -75,11 +75,11 @@ impl<I> Tokens<I> {
     /// assert_eq!(tokens.next().unwrap(), ["foobar", "baz"]);
     /// assert_eq!(tokens.next(), None);
     /// ```
-    pub fn new<T>(chars: T, envs: Option<HashMap<String, String>>) -> Self
+    pub fn new<T>(chars: T, vars: Option<HashMap<String, String>>) -> Self
     where
         T: IntoIterator<Item = u8, IntoIter = I>,
     {
-        Tokens { lex: Lexer::new(chars), envs: envs.unwrap_or_default() }
+        Tokens { lex: Lexer::new(chars), vars: vars.unwrap_or_default() }
     }
 }
 
@@ -102,7 +102,7 @@ where
                     Var(v) => {
                         let var: Cow<str> = String::from_utf8_lossy(&v);
                         let var: &str = var.borrow();
-                        if let Some(var) = self.envs.get(var) {
+                        if let Some(var) = self.vars.get(var) {
                             out.push_str(var);
                         }
                     }
