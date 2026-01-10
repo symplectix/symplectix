@@ -122,6 +122,7 @@ fn get_tokens() {
     assert_eq!(tokens("'foo; bar'; baz".chars()), ["foo; bar;", "baz"]);
 
     assert_eq!(tokens("a b".chars()), ["a", "b"]);
+    assert_eq!(tokens("a\\ b".chars()), ["a b"]);
     assert_eq!(tokens("a \\ b".chars()), ["a", " b"]);
     assert_eq!(tokens("a \\\nb".chars()), ["a", "b"]);
 

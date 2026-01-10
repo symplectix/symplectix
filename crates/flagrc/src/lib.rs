@@ -10,6 +10,7 @@ use std::{
     mem,
 };
 
+use Word::*;
 use itertools::Itertools;
 
 /// Procrc entry.
@@ -123,17 +124,17 @@ where
             let mut out = String::new();
             for word in token.words {
                 match word {
-                    Word::LineBreak => {
-                        break;
-                    }
-                    Word::Split => {}
-                    Word::Lit(lit) => out.push_str(lit.as_str()),
-                    Word::Var(var) => {
+                    Empty => {}
+                    Lit(lit) => out.push_str(lit.as_str()),
+                    Var(var) => {
                         if let Some(val) = self.envs.get(var.as_str()) {
                             out.push_str(val);
                         } else {
                             // Some(var)
                         }
+                    }
+                    NewLine(_) => {
+                        break;
                     }
                 }
             }
@@ -142,7 +143,7 @@ where
         let tokens = self
             .lex
             .by_ref()
-            .take_while_inclusive(|t| !matches!(t.words.last(), Some(Word::LineBreak)))
+            .take_while_inclusive(|t| !matches!(t.words.last(), Some(Word::NewLine(_))))
             .map(token_to_str);
 
         let tokens = tokens.collect::<Vec<_>>();
@@ -206,7 +207,7 @@ struct Lexer<I> {
     quote: Option<char>,
 }
 
-// Tokens are represented as a list of Word.
+// Token is a single element that make up a line.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Token {
     words: Vec<Word>,
@@ -214,15 +215,25 @@ struct Token {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Word {
-    LineBreak,
-    // Use this marker when you want to push a new word,
-    // but cannot at the moment. e.g, when there are
-    // consecutive Vars.
-    Split,
-    // A literal string.
+    /// Empty is a dummy word that disappears when rendering a token as a string. It can be used
+    /// for the following purposes:
+    /// 1. As an empty word (of course).
+    /// 2. To split words within a single token.
+    Empty,
+    /// A literal string.
+    ///
+    /// For examples:
+    /// - Lit("$x") is just a string "$x", not a variable.
+    /// - Lit("\n") is just a string "\n", not a line break.
     Lit(String),
-    // $LIKE_THIS
+    /// A variable $LIKE_THIS.
+    ///
+    /// Not support:
+    /// - bracing: ${LIKE_THIS}
+    /// - nesting: $$LIKE_THIS
     Var(String),
+    /// A word for the *non-escaped* newline delimiter.
+    NewLine(char),
 }
 
 impl Token {
@@ -237,32 +248,32 @@ impl Token {
     fn push(&mut self, c: char) {
         if let Some(last) = self.words.last_mut() {
             match last {
-                Word::LineBreak => unreachable!("should not happen"),
-                Word::Split => self.words.push(Word::Lit(c.to_string())),
-                Word::Lit(s) => s.push(c),
-                Word::Var(s) => s.push(c),
+                Empty => self.words.push(Word::Lit(c.to_string())),
+                Lit(s) => s.push(c),
+                Var(s) => s.push(c),
+                NewLine(_) => unreachable!("pushing a char onto NewLine"),
             }
         } else {
-            self.words.push(Word::Lit(c.to_string()));
+            self.words.push(Lit(c.to_string()));
         }
     }
 
-    fn line_break(&mut self) {
-        self.words.push(Word::LineBreak);
+    fn break_line(&mut self, c: char) {
+        self.words.push(Word::NewLine(c));
     }
 
     fn split(&mut self) {
         if let Some(last) = self.words.last() {
-            if !(matches!(last, Word::Split)) {
-                self.words.push(Word::Split);
+            if !(matches!(last, Empty)) {
+                self.words.push(Empty);
             }
         } else {
-            self.words.push(Word::Split);
+            self.words.push(Empty);
         }
     }
 
     fn begin_var(&mut self) {
-        self.words.push(Word::Var(String::new()))
+        self.words.push(Var(String::new()))
     }
 
     fn in_var(&self) -> bool {
@@ -368,7 +379,7 @@ where
                         self.token.begin_var();
                     }
                     '\n' | '\r' => {
-                        self.token.line_break();
+                        self.token.break_line(c);
                         break;
                     }
                     c if c.is_ascii_whitespace() => {
