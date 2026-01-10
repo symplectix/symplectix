@@ -64,7 +64,7 @@ test7 a  b \c \ \
     assert_eq!(entries[1].flag, ["test1", "gunicorn", "-b", ":8080", "main:app"]);
     assert_eq!(entries[2].flag, ["test2", "-x", "10s", "--env", "ABC=def", "--", "foo", " bar"]);
     assert_eq!(entries[3].flag, ["test3", "C:\\path", "D:path"]);
-    assert_eq!(entries[4].flag, ["test4", "10m\\n", "--", "foo", "a=1"]);
+    assert_eq!(entries[4].flag, ["test4", "10m\\n", "", "--", "foo", "a=1"]);
     assert_eq!(entries[5].flag, ["test5", "a", "b", "  c"]);
     assert_eq!(entries[6].flag, ["test6", "a", "b", "c", "d", "e"]);
     assert_eq!(entries[7].flag, ["test7", "a", "b", "c", " d", "e"]);

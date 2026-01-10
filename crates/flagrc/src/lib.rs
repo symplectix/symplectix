@@ -7,10 +7,10 @@ use std::borrow::{
 use std::collections::HashMap;
 use std::io::{
     self,
-    BufRead,
+    Read,
 };
 use std::{
-    iter,
+    fmt,
     mem,
 };
 
@@ -32,15 +32,7 @@ where
     R: io::Read,
 {
     let buf = io::BufReader::new(source);
-    let rc_lines = buf.lines().collect::<Result<Vec<_>, _>>()?;
-    let tokens = Tokens::new(
-        rc_lines
-            .iter()
-            // nb. Each string produced by buf.lines() will not have a
-            // newline byte (the `0xA` byte) or `CRLF` at the end.
-            .flat_map(|line| line.trim_ascii().bytes().chain(iter::once(b'\n'))),
-        vars,
-    );
+    let tokens = Tokens::new(buf.bytes().map_while(Result::ok), vars);
     Ok(tokens.map(|flag| Entry { flag }).collect())
 }
 
@@ -74,7 +66,7 @@ where
     type Item = Vec<String>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let token_to_str = |token: Token| -> String {
+        let token_to_str = |token: Token| {
             let mut out = String::new();
             for word in token.words {
                 match word {
@@ -112,7 +104,7 @@ where
 }
 
 struct Lexer<I> {
-    chars: I,
+    bytes: I,
     token: Token,
     quote: Option<u8>,
 }
@@ -123,7 +115,7 @@ struct Token {
     words: Vec<Word>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 enum Word {
     /// Empty is a dummy word that disappears when rendering a token as a string. It can be used
     /// for the following purposes:
@@ -144,6 +136,17 @@ enum Word {
     Var(Vec<u8>),
     /// A word for the *non-escaped* newline delimiter.
     NewLine(u8),
+}
+
+impl fmt::Debug for Word {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Empty => f.debug_tuple("Empty").finish(),
+            Lit(v) => f.debug_tuple("Lit").field(&String::from_utf8_lossy(v)).finish(),
+            Var(v) => f.debug_tuple("Var").field(&String::from_utf8_lossy(v)).finish(),
+            NewLine(b) => f.debug_tuple("NewLine").field(&(*b as char)).finish(),
+        }
+    }
 }
 
 impl Token {
@@ -196,7 +199,7 @@ impl<I> Lexer<I> {
     where
         T: IntoIterator<Item = u8, IntoIter = I>,
     {
-        Lexer { chars: chars.into_iter(), token: Token::new(), quote: None }
+        Lexer { bytes: chars.into_iter(), token: Token::new(), quote: None }
     }
 }
 
@@ -206,7 +209,7 @@ where
 {
     type Item = Token;
     fn next(&mut self) -> Option<Token> {
-        self.chars.find(|b| !b.is_ascii_whitespace()).map(|b| self.next_token(b))
+        self.bytes.find(|b| !b.is_ascii_whitespace()).map(|b| self.next_token(b))
     }
 }
 
@@ -277,9 +280,9 @@ where
                         self.quote = Some(b);
                     }
                     b'\\' => {
-                        if let Some(esc) = self.chars.next() {
+                        if let Some(esc) = self.bytes.next() {
                             // A '\' at the end of a line continues the line.
-                            if !(esc == b'\n' || esc == b'\r') {
+                            if !(esc == b'\r' || esc == b'\n') {
                                 self.token.push(esc);
                             }
                         } else {
@@ -290,7 +293,7 @@ where
                         self.token.begin_var();
                     }
                     b if b.is_ascii_whitespace() => {
-                        if b == b'\n' || b == b'\r' {
+                        if b == b'\n' {
                             self.token.break_line(b);
                         }
                         break;
@@ -301,7 +304,7 @@ where
                 }
             }
 
-            if let Some(next) = self.chars.next() {
+            if let Some(next) = self.bytes.next() {
                 b = next;
             } else {
                 break;
