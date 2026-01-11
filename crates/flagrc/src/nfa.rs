@@ -57,7 +57,7 @@ where
             }
         }
 
-        Some(token)
+        if token.words.is_empty() { None } else { Some(token) }
     }
 }
 
@@ -121,16 +121,16 @@ impl State {
         let more = Transition::more;
 
         match self {
+            FindNextNonAsciiWhiteSpace => match b {
+                b if b.is_ascii_whitespace() => more(FindNextNonAsciiWhiteSpace, Discard),
+                _ => more(Literal, Epsilon),
+            },
             Literal => match b {
                 b if b.is_ascii_whitespace() => emit(FindNextNonAsciiWhiteSpace, Discard),
                 b'\\' => more(Escaping, Discard),
                 b'\'' => more(SingleQuoting, Discard),
                 b'"' => more(DoubleQuoting, Discard),
                 _ => more(Literal, PushLit),
-            },
-            FindNextNonAsciiWhiteSpace => match b {
-                b if b.is_ascii_whitespace() => more(FindNextNonAsciiWhiteSpace, Discard),
-                _ => more(Literal, Epsilon),
             },
             Escaping => match b {
                 b'\r' => todo!(),
@@ -188,12 +188,17 @@ mod tests {
         let mut lex = Lexer::new(source.bytes());
         assert_eq!(lex.next_token(), None);
 
-        // let source = " ".to_owned();
-        // let mut lex = Lexer::new(source.bytes());
-        // assert_eq!(lex.next_token(), None);
+        let source = " ".to_owned();
+        let mut lex = Lexer::new(source.bytes());
+        assert_eq!(lex.next_token(), None);
+
+        let source = "  ".to_owned();
+        let mut lex = Lexer::new(source.bytes());
+        assert_eq!(lex.next_token(), None);
 
         let source = "foobar".to_owned();
         let mut lex = Lexer::new(source.bytes());
         assert_eq!(lex.next_token(), Some(Token { words: vec![Lit(b"foobar".to_vec())] }));
+        assert_eq!(lex.next_token(), None);
     }
 }
