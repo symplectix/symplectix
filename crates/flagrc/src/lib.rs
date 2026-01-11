@@ -184,6 +184,18 @@ impl Token {
         }
     }
 
+    fn push_var(&mut self, b: u8) {
+        if let Some(last) = self.words.last_mut() {
+            match last {
+                Empty | Lit(_) => self.words.push(Var(vec![b])),
+                Var(v) => v.push(b),
+                NewLine(_) => unreachable!("pushing a byte onto NewLine"),
+            }
+        } else {
+            self.words.push(Var(vec![b]));
+        }
+    }
+
     fn break_line(&mut self, b: u8) {
         self.words.push(Word::NewLine(b));
     }

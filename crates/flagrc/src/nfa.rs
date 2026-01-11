@@ -31,28 +31,29 @@ where
         let mut token: Token = Token::new();
         loop {
             let Transition { new_state, action, should_emit } = self.state.transition(b);
+            self.state = new_state;
+            if should_emit {
+                break;
+            }
 
             match action {
-                Action::Epsilon => (),
+                Action::Epsilon => {
+                    // do not advance self.bytes
+                    continue;
+                }
                 Action::Discard => {
-                    if let Some(next) = self.bytes.next() {
-                        b = next;
-                    } else {
-                        break;
-                    }
+                    // discarding b
                 }
                 Action::PushLit => {
                     token.push_lit(b);
-                    if let Some(next) = self.bytes.next() {
-                        b = next;
-                    } else {
-                        break;
-                    }
+                }
+                Action::PushVar => {
+                    token.push_var(b);
                 }
             }
-
-            self.state = new_state;
-            if should_emit {
+            if let Some(next) = self.bytes.next() {
+                b = next;
+            } else {
                 break;
             }
         }
@@ -88,8 +89,10 @@ pub(crate) enum Action {
     Epsilon,
     // Consume and discard an input byte.
     Discard,
-    // Consume and put an input byte to a stack.
+    // Consume and push an input byte as a literal.
     PushLit,
+    // Consume and push an input byte as a variable.
+    PushVar,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -130,6 +133,7 @@ impl State {
                 b'\\' => more(Escaping, Discard),
                 b'\'' => more(SingleQuoting, Discard),
                 b'"' => more(DoubleQuoting, Discard),
+                b'$' => more(BeginVar, Discard),
                 _ => more(Literal, PushLit),
             },
             Escaping => match b {
@@ -162,8 +166,8 @@ impl State {
                 b'\'' => emit(SingleQuoting, Discard),
                 b'"' => emit(DoubleQuoting, Discard),
                 b if b.is_ascii_whitespace() => emit(FindNextNonAsciiWhiteSpace, Discard),
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(VarRef, PushLit),
-                _ => todo!(),
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(VarRef, PushVar),
+                _ => more(Literal, PushLit),
             },
             LineBreak => match b {
                 //
@@ -175,6 +179,8 @@ impl State {
 
 #[cfg(test)]
 mod tests {
+    use std::iter;
+
     use super::Lexer;
     use crate::Word::*;
     use crate::{
@@ -182,23 +188,46 @@ mod tests {
         Word,
     };
 
+    fn check_empty(source: &str) {
+        let mut lex = Lexer::new(source.bytes());
+        assert_eq!(lex.next_token(), None);
+    }
+
+    fn tokens(source: &str) -> Vec<Token> {
+        let mut lex = Lexer::new(source.bytes());
+        iter::from_fn(|| lex.next_token()).collect()
+    }
+
+    #[test]
+    fn test_empty() {
+        check_empty("");
+        check_empty(" ");
+        check_empty("  ");
+    }
+
+    macro_rules! Token {
+        ($( $word:expr ),+ $(,)?) => {
+            Token {
+                words: vec![
+                    $($word),+
+                ]
+            }
+        };
+    }
+
+    fn lit(bytes: &[u8]) -> Word {
+        Lit(bytes.to_vec())
+    }
+
+    fn var(bytes: &[u8]) -> Word {
+        Var(bytes.to_vec())
+    }
+
     #[test]
     fn test_nfa() {
-        let source = "".to_owned();
-        let mut lex = Lexer::new(source.bytes());
-        assert_eq!(lex.next_token(), None);
-
-        let source = " ".to_owned();
-        let mut lex = Lexer::new(source.bytes());
-        assert_eq!(lex.next_token(), None);
-
-        let source = "  ".to_owned();
-        let mut lex = Lexer::new(source.bytes());
-        assert_eq!(lex.next_token(), None);
-
-        let source = "foobar".to_owned();
-        let mut lex = Lexer::new(source.bytes());
-        assert_eq!(lex.next_token(), Some(Token { words: vec![Lit(b"foobar".to_vec())] }));
-        assert_eq!(lex.next_token(), None);
+        assert_eq!(tokens("foobar"), vec![Token![lit(b"foobar")]]);
+        assert_eq!(tokens("$foo-bar"), vec![Token![var(b"foo"), lit(b"-bar")]]);
+        assert_eq!(tokens("foo bar"), vec![Token![lit(b"foo")], Token![lit(b"bar")]]);
+        assert_eq!(tokens("$foo bar"), vec![Token![var(b"foo")], Token![lit(b"bar")]]);
     }
 }
