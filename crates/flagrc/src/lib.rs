@@ -14,6 +14,8 @@ use std::{
 use Word::*;
 use itertools::Itertools;
 
+mod nfa;
+
 /// Procrc entry.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entry {
@@ -161,6 +163,20 @@ impl Token {
                 Empty => self.words.push(Lit(vec![b])),
                 Lit(lit) => lit.push(b),
                 Var(var) => var.push(b),
+                NewLine(_) => unreachable!("pushing a byte onto NewLine"),
+            }
+        } else {
+            self.words.push(Lit(vec![b]));
+        }
+    }
+
+    /// Push b to Lit.
+    fn push_lit(&mut self, b: u8) {
+        if let Some(last) = self.words.last_mut() {
+            match last {
+                Empty => self.words.push(Lit(vec![b])),
+                Lit(l) => l.push(b),
+                Var(_) => self.words.push(Lit(vec![b])),
                 NewLine(_) => unreachable!("pushing a byte onto NewLine"),
             }
         } else {
