@@ -70,7 +70,7 @@ test7 a  b \c \ \
     assert_eq!(entries[7].flag, ["test7", "a", "b", "c", " d", "e"]);
 }
 
-fn tokens_opt(chars: impl IntoIterator<Item = u8>) -> Option<Vec<String>> {
+fn tokens_opt(bytes: impl IntoIterator<Item = u8>) -> Option<Vec<String>> {
     let envs = {
         let mut envs = HashMap::new();
         envs.insert("PORT".to_owned(), "8080".to_owned());
@@ -78,15 +78,15 @@ fn tokens_opt(chars: impl IntoIterator<Item = u8>) -> Option<Vec<String>> {
         Some(envs)
     };
 
-    let mut t = Tokens::new(chars, envs);
+    let mut t = Tokens::new(bytes, envs);
     let tokens = t.next();
     // Check no more tokens.
     assert_eq!(t.next(), None);
     tokens
 }
 
-fn tokens(chars: impl IntoIterator<Item = u8>) -> Vec<String> {
-    tokens_opt(chars).expect("no token")
+fn tokens(bytes: impl IntoIterator<Item = u8>) -> Vec<String> {
+    tokens_opt(bytes).expect("no token")
 }
 
 #[test]

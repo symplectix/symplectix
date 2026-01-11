@@ -33,7 +33,7 @@ where
     Ok(tokens.map(|flag| Entry { flag }).collect())
 }
 
-/// Transforms an input chars into a sequence of tokens.
+/// Transforms an input bytes into a sequence of tokens.
 pub struct Tokens<I> {
     lex:  Lexer<I>,
     vars: HashMap<String, String>,
@@ -48,11 +48,11 @@ impl<I> Tokens<I> {
     /// assert_eq!(tokens.next().unwrap(), ["foobar", "baz"]);
     /// assert_eq!(tokens.next(), None);
     /// ```
-    pub fn new<T>(chars: T, vars: Option<HashMap<String, String>>) -> Self
+    pub fn new<T>(bytes: T, vars: Option<HashMap<String, String>>) -> Self
     where
         T: IntoIterator<Item = u8, IntoIter = I>,
     {
-        Tokens { lex: Lexer::new(chars), vars: vars.unwrap_or_default() }
+        Tokens { lex: Lexer::new(bytes), vars: vars.unwrap_or_default() }
     }
 }
 
@@ -192,11 +192,11 @@ impl Token {
 }
 
 impl<I> Lexer<I> {
-    fn new<T>(chars: T) -> Self
+    fn new<T>(bytes: T) -> Self
     where
         T: IntoIterator<Item = u8, IntoIter = I>,
     {
-        Lexer { bytes: chars.into_iter(), token: Token::new(), quote: None }
+        Lexer { bytes: bytes.into_iter(), token: Token::new(), quote: None }
     }
 }
 
