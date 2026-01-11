@@ -233,4 +233,13 @@ mod tests {
         assert_eq!(tokens("\\ e"), vec![Token![lit(b" e")]]);
         assert_eq!(tokens("'\ne'"), vec![Token![lit(b"\ne")]]);
     }
+
+    #[test]
+    fn double_quote() {
+        assert_eq!(tokens("APPLE"), vec![Token![lit(b"APPLE")]]);
+
+        assert_eq!(tokens("A\"PPL\"E"), vec![Token![lit(b"APPLE")]]);
+        assert_eq!(tokens("\"APPL\"E"), vec![Token![lit(b"APPLE")]]);
+        assert_eq!(tokens("A\"PPLE\""), vec![Token![lit(b"APPLE")]]);
+    }
 }
