@@ -5,7 +5,6 @@ use super::{
 
 struct Lexer<I> {
     bytes: I,
-    token: Token,
     state: State,
 }
 
@@ -14,11 +13,7 @@ impl<I> Lexer<I> {
     where
         T: IntoIterator<Item = u8, IntoIter = I>,
     {
-        Lexer {
-            bytes: bytes.into_iter(),
-            token: Token::new(),
-            state: State::FindNextNonAsciiWhiteSpace,
-        }
+        Lexer { bytes: bytes.into_iter(), state: State::FindNextNonAsciiWhiteSpace }
     }
 }
 
@@ -30,7 +25,8 @@ where
         let mut b = self.bytes.next()?;
         let mut token: Token = Token::new();
         loop {
-            let Transition { new_state, action, should_emit } = self.state.transition(b);
+            let Transition { state: new_state, action, emit: should_emit } =
+                self.state.transition(b);
             self.state = new_state;
             if should_emit {
                 break;
@@ -97,22 +93,22 @@ pub(crate) enum Action {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Transition {
-    new_state:   State,
-    action:      Action,
-    should_emit: bool,
+    state:  State,
+    action: Action,
+    emit:   bool,
 }
 
 impl Transition {
-    fn new(new_state: State, action: Action, should_emit: bool) -> Self {
-        Transition { new_state, action, should_emit }
+    fn new(state: State, action: Action, emit: bool) -> Self {
+        Transition { state, action, emit }
     }
 
-    fn emit(new_state: State, action: Action) -> Self {
-        Transition { new_state, action, should_emit: true }
+    fn emit(state: State, action: Action) -> Self {
+        Transition { state, action, emit: true }
     }
 
-    fn more(new_state: State, action: Action) -> Self {
-        Transition { new_state, action, should_emit: false }
+    fn more(state: State, action: Action) -> Self {
+        Transition { state, action, emit: false }
     }
 }
 
