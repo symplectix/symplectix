@@ -226,4 +226,11 @@ mod tests {
         assert_eq!(tokens("foo bar"), vec![Token![lit(b"foo")], Token![lit(b"bar")]]);
         assert_eq!(tokens("$foo bar"), vec![Token![var(b"foo")], Token![lit(b"bar")]]);
     }
+
+    #[test]
+    fn whitespace_should_work() {
+        assert_eq!(tokens("\\ "), vec![Token![lit(b" ")]]);
+        assert_eq!(tokens("\\ e"), vec![Token![lit(b" e")]]);
+        assert_eq!(tokens("'\ne'"), vec![Token![lit(b"\ne")]]);
+    }
 }
