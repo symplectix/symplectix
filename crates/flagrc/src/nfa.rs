@@ -228,18 +228,28 @@ mod tests {
     }
 
     #[test]
-    fn whitespace_should_work() {
+    fn escape_ascii_whitespace() {
         assert_eq!(tokens("\\ "), vec![Token![lit(b" ")]]);
-        assert_eq!(tokens("\\ e"), vec![Token![lit(b" e")]]);
+        assert_eq!(tokens("\\ A"), vec![Token![lit(b" A")]]);
+
+        assert_eq!(tokens("\\\n"), vec![]);
+        assert_eq!(tokens("\\\nA"), vec![Token![lit(b"A")]]);
+    }
+
+    #[test]
+    fn escape_in_single_quote() {
         assert_eq!(tokens("'\ne'"), vec![Token![lit(b"\ne")]]);
     }
 
     #[test]
-    fn double_quote() {
+    fn double_quote_no_spaces() {
         assert_eq!(tokens("A\"PPL\"E"), vec![Token![lit(b"APPLE")]]);
         assert_eq!(tokens("\"APPL\"E"), vec![Token![lit(b"APPLE")]]);
         assert_eq!(tokens("A\"PPLE\""), vec![Token![lit(b"APPLE")]]);
+    }
 
+    #[test]
+    fn double_quote_in_single_quote() {
         assert_eq!(tokens("'A\"PPL\"E'"), vec![Token![lit(b"A\"PPL\"E")]]);
         assert_eq!(tokens("'\"APPL\"E'"), vec![Token![lit(b"\"APPL\"E")]]);
         assert_eq!(tokens("'A\"PPLE\"'"), vec![Token![lit(b"A\"PPLE\"")]]);
