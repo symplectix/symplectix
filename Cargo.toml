@@ -24,6 +24,7 @@ cc = { version = "1" }
 clap = { version = "4.5.53", features = ["derive"] }
 futures = { version = "0.3" }
 humantime = { version = "2" }
+itertools = { version = "0.14" }
 libc = { version = "0.2" }
 libfuzzer-sys = { version = "0.4" }
 num = { version = "0.4" }
@@ -35,6 +36,7 @@ prost-types = { version = "0.13" }
 quickcheck = { version = "1" }
 quickcheck_macros = { version = "1" }
 reaper = { path = "crates/reaper" }
+shtok = { path = "crates/shtok" }
 tempfile = { version = "3" }
 testing = { path = "crates/testing" }
 thiserror = { version = "1" }
