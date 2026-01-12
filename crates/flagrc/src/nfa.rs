@@ -21,17 +21,12 @@ impl<I> Lexer<I>
 where
     I: Iterator<Item = u8>,
 {
-    fn next_token(&mut self) -> Option<Token> {
+    fn next_token_nfa(&mut self) -> Option<Token> {
         let mut b = self.bytes.next()?;
-        let mut token: Token = Token::new();
+        let mut token = Token::new();
         loop {
-            let Transition { state: new_state, action, emit: should_emit } =
-                self.state.transition(b);
-            self.state = new_state;
-            if should_emit {
-                break;
-            }
-
+            let Transition { state, action, emit } = self.state.transition(b);
+            self.state = state;
             match action {
                 Action::Epsilon => {
                     // do not advance self.bytes
@@ -46,6 +41,10 @@ where
                 Action::PushVar => {
                     token.push_var(b);
                 }
+            }
+
+            if emit {
+                break;
             }
             if let Some(next) = self.bytes.next() {
                 b = next;
@@ -186,12 +185,12 @@ mod tests {
 
     fn check_empty(source: &str) {
         let mut lex = Lexer::new(source.bytes());
-        assert_eq!(lex.next_token(), None);
+        assert_eq!(lex.next_token_nfa(), None);
     }
 
     fn tokens(source: &str) -> Vec<Token> {
         let mut lex = Lexer::new(source.bytes());
-        iter::from_fn(|| lex.next_token()).collect()
+        iter::from_fn(|| lex.next_token_nfa()).collect()
     }
 
     #[test]
