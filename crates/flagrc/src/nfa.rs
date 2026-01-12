@@ -25,31 +25,20 @@ where
         let mut b = self.bytes.next()?;
         let mut token = Token::new();
         loop {
-            let Transition { state, action, emit } = self.state.transition(b);
+            let (state, action) = self.state.transition(&mut token, b);
             self.state = state;
             match action {
-                Action::Epsilon => {
-                    // do not advance self.bytes
+                Action::LeftOver => {
+                    // Do not advance bytes.
                     continue;
                 }
-                Action::Discard => {
-                    // discarding b
+                Action::NextByte => {
+                    // Keep consuming.
                 }
-                Action::PushLit => {
-                    token.push_lit(b);
-                }
-                Action::PushVar => {
-                    token.push_var(b);
-                }
-                Action::LineBreak => {
-                    token.break_line(b);
+                Action::Complete => {
                     break;
                 }
             }
-            if emit {
-                break;
-            }
-
             if let Some(next) = self.bytes.next() {
                 b = next;
             } else {
@@ -83,104 +72,121 @@ pub(crate) enum State {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Action {
-    // Do not consume an input byte.
-    Epsilon,
+    // Do not consume an input byte. Epsilon transion.
+    LeftOver,
     // Consume and discard an input byte.
-    Discard,
-    // Found the *non-escaped* newline delimiter.
-    LineBreak,
-    // Consume and push an input byte as Word::Lit.
-    PushLit,
-    // Consume and push an input byte as Word::Var.
-    PushVar,
+    NextByte,
+    // Token has completed.
+    Complete,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) struct Transition {
-    state:  State,
-    action: Action,
-    emit:   bool,
+#[inline]
+fn leftover(state: State) -> (State, Action) {
+    (state, Action::LeftOver)
 }
 
-impl Transition {
-    fn new(state: State, action: Action, emit: bool) -> Self {
-        Transition { state, action, emit }
-    }
+#[inline]
+fn nextbyte(state: State) -> (State, Action) {
+    (state, Action::NextByte)
+}
 
-    fn emit(state: State, action: Action) -> Self {
-        Transition { state, action, emit: true }
-    }
-
-    fn more(state: State, action: Action) -> Self {
-        Transition { state, action, emit: false }
-    }
+#[inline]
+fn complete(state: State) -> (State, Action) {
+    (state, Action::Complete)
 }
 
 impl State {
-    fn transition(&self, b: u8) -> Transition {
-        use Action::*;
+    fn transition(&self, token: &mut Token, b: u8) -> (State, Action) {
         use State::*;
-        let emit = Transition::emit;
-        let more = Transition::more;
 
         match self {
             FindNextNonAsciiWhiteSpace => match b {
-                b if b.is_ascii_whitespace() => more(FindNextNonAsciiWhiteSpace, Discard),
-                _ => more(NoQuote, Epsilon),
+                b if b.is_ascii_whitespace() => nextbyte(FindNextNonAsciiWhiteSpace),
+                _ => leftover(NoQuote),
             },
             NoQuote => match b {
                 b if b.is_ascii_whitespace() => {
                     if b == b'\n' {
-                        emit(FindNextNonAsciiWhiteSpace, LineBreak)
-                    } else {
-                        emit(FindNextNonAsciiWhiteSpace, Discard)
+                        token.break_line(b);
                     }
+                    complete(FindNextNonAsciiWhiteSpace)
                 }
-                b'\\' => more(NoQuoteEscape, Discard),
-                b'\'' => more(InSingleQuote, Discard),
-                b'"' => more(InDoubleQuote, Discard),
-                b'$' => more(NoQuoteVarStart, Discard),
-                _ => more(NoQuote, PushLit),
+                b'\\' => nextbyte(NoQuoteEscape),
+                b'\'' => nextbyte(InSingleQuote),
+                b'"' => nextbyte(InDoubleQuote),
+                b'$' => nextbyte(NoQuoteVarStart),
+                _ => {
+                    token.push_lit(b);
+                    nextbyte(NoQuote)
+                }
             },
             NoQuoteEscape => match b {
-                b'\r' => more(FindNextNonAsciiWhiteSpace, Discard),
-                b'\n' => more(FindNextNonAsciiWhiteSpace, Discard),
-                _ => more(NoQuote, PushLit),
+                b'\r' => nextbyte(FindNextNonAsciiWhiteSpace),
+                b'\n' => nextbyte(FindNextNonAsciiWhiteSpace),
+                _ => {
+                    token.push_lit(b);
+                    nextbyte(NoQuote)
+                }
             },
             NoQuoteVarStart => match b {
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(NoQuoteVar, Epsilon),
+                b if b.is_ascii_alphanumeric() || b == b'_' => leftover(NoQuoteVar),
                 _ => unimplemented!("Expected a variable name after $"),
             },
             NoQuoteVar => match b {
-                b'\'' => emit(InSingleQuote, Discard),
-                b'"' => emit(InDoubleQuote, Discard),
-                b if b.is_ascii_whitespace() => emit(FindNextNonAsciiWhiteSpace, Discard),
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(NoQuoteVar, PushVar),
-                _ => more(NoQuote, PushLit),
+                b'\'' => complete(InSingleQuote),
+                b'"' => complete(InDoubleQuote),
+                b if b.is_ascii_whitespace() => complete(FindNextNonAsciiWhiteSpace),
+                b if b.is_ascii_alphanumeric() || b == b'_' => {
+                    token.push_var(b);
+                    nextbyte(NoQuoteVar)
+                }
+                _ => {
+                    token.push_lit(b);
+                    nextbyte(NoQuote)
+                }
             },
             InSingleQuote => match b {
-                b'\'' => more(NoQuote, Discard),
-                _ => more(InSingleQuote, PushLit),
+                b'\'' => nextbyte(NoQuote),
+                _ => {
+                    token.push_lit(b);
+                    nextbyte(InSingleQuote)
+                }
             },
             InDoubleQuote => match b {
-                b'"' => more(NoQuote, Discard),
-                b'\\' => more(InDoubleQuoteEscape, PushLit),
-                b'$' => more(InDoubleQuoteVarStart, Discard),
-                _ => more(InDoubleQuote, PushLit),
+                b'"' => nextbyte(NoQuote),
+                b'\\' => nextbyte(InDoubleQuoteEscape),
+                b'$' => nextbyte(InDoubleQuoteVarStart),
+                _ => {
+                    token.push_lit(b);
+                    nextbyte(InDoubleQuote)
+                }
             },
             InDoubleQuoteEscape => match b {
-                b'$' => more(InDoubleQuote, PushLit),
-                _ => more(InDoubleQuote, PushLit),
+                b'$' => {
+                    token.push_lit(b);
+                    nextbyte(InDoubleQuote)
+                }
+                _ => {
+                    token.push_lit(b'\\');
+                    token.push_lit(b);
+                    nextbyte(InDoubleQuote)
+                }
             },
             InDoubleQuoteVarStart => match b {
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(InDoubleQuoteVar, Epsilon),
+                b if b.is_ascii_alphanumeric() || b == b'_' => leftover(InDoubleQuoteVar),
                 _ => unimplemented!("Expected a variable name after $"),
             },
             InDoubleQuoteVar => match b {
-                b'"' => more(NoQuote, Discard),
-                b'$' => more(InDoubleQuoteVarStart, Discard),
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(InDoubleQuoteVar, PushVar),
-                _ => more(InDoubleQuote, PushLit),
+                b'"' => nextbyte(NoQuote),
+                b'$' => nextbyte(InDoubleQuoteVarStart),
+                b if b.is_ascii_alphanumeric() || b == b'_' => {
+                    token.push_var(b);
+                    nextbyte(InDoubleQuoteVar)
+                }
+                _ => {
+                    token.push_lit(b);
+                    nextbyte(InDoubleQuote)
+                }
             },
         }
     }
@@ -233,35 +239,33 @@ mod tests {
     }
 
     #[test]
-    fn test_nfa() {
-        assert_eq!(tokens("foobar"), vec![Token![lit(b"foobar")]]);
-        assert_eq!(tokens("$foo-bar"), vec![Token![var(b"foo"), lit(b"-bar")]]);
-        assert_eq!(tokens("foo bar"), vec![Token![lit(b"foo")], Token![lit(b"bar")]]);
-        assert_eq!(tokens("$foo bar"), vec![Token![var(b"foo")], Token![lit(b"bar")]]);
-    }
-
-    #[test]
     fn no_tokens() {
-        assert_eq!(tokens("\\"), vec![]);
-        assert_eq!(tokens("\\\n"), vec![]);
-        assert_eq!(tokens("\\\n "), vec![]);
+        assert_eq!(tokens("\\"), []);
+        assert_eq!(tokens("\\\n"), []);
+        assert_eq!(tokens("\\\n "), []);
+        assert_eq!(tokens("\n \n"), []);
+        assert_eq!(tokens("\n\t\n"), []);
+        assert_eq!(tokens("\n\n\n"), []);
+        assert_eq!(tokens("\n\r\n"), []);
     }
 
     #[test]
-    fn escape_ascii_whitespace() {
-        assert_eq!(tokens("\\ "), vec![Token![lit(b" ")]]);
-        assert_eq!(tokens("\\ A"), vec![Token![lit(b" A")]]);
-        assert_eq!(tokens("\\\tA"), vec![Token![lit(b"\tA")]]);
+    fn one_token() {
+        assert_eq!(tokens("foobar"), [Token![lit(b"foobar")]]);
+        assert_eq!(tokens("$foo-bar"), [Token![var(b"foo"), lit(b"-bar")]]);
+    }
 
-        assert_eq!(tokens("\\\r\nA"), vec![Token![lit(b"A")]]);
-        assert_eq!(tokens("\\\nA"), vec![Token![lit(b"A")]]);
+    #[test]
+    fn two_tokens() {
+        assert_eq!(tokens("foo bar"), [Token![lit(b"foo")], Token![lit(b"bar")]]);
+        assert_eq!(tokens("$foo bar"), [Token![var(b"foo")], Token![lit(b"bar")]]);
     }
 
     #[test]
     fn line_breaks() {
         assert_eq!(
             tokens("$A-foo -x\n$B-bar -y\n$C-baz -z\n"),
-            vec![
+            [
                 Token![var(b"A"), lit(b"-foo")],
                 Token![lit(b"-x"), NewLine(b'\n')],
                 Token![var(b"B"), lit(b"-bar")],
@@ -273,37 +277,44 @@ mod tests {
     }
 
     #[test]
-    fn no_line_breaks() {
-        assert_eq!(tokens("\n \n"), vec![]);
-        assert_eq!(tokens("\n\t\n"), vec![]);
-        assert_eq!(tokens("\n\n\n"), vec![]);
-        assert_eq!(tokens("\n\r\n"), vec![]);
+    fn escape_ascii_whitespace() {
+        assert_eq!(tokens("\\ "), [Token![lit(b" ")]]);
+        assert_eq!(tokens("\\ A"), [Token![lit(b" A")]]);
+        assert_eq!(tokens("\\\tA"), [Token![lit(b"\tA")]]);
+
+        assert_eq!(tokens("\\\r\nA"), [Token![lit(b"A")]]);
+        assert_eq!(tokens("\\\nA"), [Token![lit(b"A")]]);
     }
 
     #[test]
     fn escape_in_single_quote() {
-        assert_eq!(tokens("'\ne'"), vec![Token![lit(b"\ne")]]);
-        assert_eq!(tokens("'\\\ne'"), vec![Token![lit(b"\\\ne")]]);
+        assert_eq!(tokens("'\ne'"), [Token![lit(b"\ne")]]);
+        assert_eq!(tokens("'\\\ne'"), [Token![lit(b"\\\ne")]]);
+    }
+
+    #[test]
+    fn escape_in_double_quote() {
+        assert_eq!(tokens("\"\\ VAR\""), [Token![lit(b"\\ VAR")]]);
+        assert_eq!(tokens("\"\\$VAR\""), [Token![lit(b"$VAR")]]);
+        assert_eq!(tokens("\"\\ $VAR\""), [Token![lit(b"\\ "), var(b"VAR")]]);
     }
 
     #[test]
     fn double_quote_no_spaces() {
-        assert_eq!(tokens("A\"PPL\"E"), vec![Token![lit(b"APPLE")]]);
-        assert_eq!(tokens("\"APPL\"E"), vec![Token![lit(b"APPLE")]]);
-        assert_eq!(tokens("A\"PPLE\""), vec![Token![lit(b"APPLE")]]);
+        assert_eq!(tokens("A\"PPL\"E"), [Token![lit(b"APPLE")]]);
+        assert_eq!(tokens("\"APPL\"E"), [Token![lit(b"APPLE")]]);
+        assert_eq!(tokens("A\"PPLE\""), [Token![lit(b"APPLE")]]);
     }
 
     #[test]
     fn double_quote_in_single_quote() {
-        assert_eq!(tokens("'A\"PPL\"E'"), vec![Token![lit(b"A\"PPL\"E")]]);
-        assert_eq!(tokens("'\"APPL\"E'"), vec![Token![lit(b"\"APPL\"E")]]);
-        assert_eq!(tokens("'A\"PPLE\"'"), vec![Token![lit(b"A\"PPLE\"")]]);
+        assert_eq!(tokens("'A\"PPL\"E'"), [Token![lit(b"A\"PPL\"E")]]);
+        assert_eq!(tokens("'\"APPL\"E'"), [Token![lit(b"\"APPL\"E")]]);
+        assert_eq!(tokens("'A\"PPLE\"'"), [Token![lit(b"A\"PPLE\"")]]);
     }
 
     #[test]
     fn vars_in_double_quote() {
-        assert_eq!(tokens("\"\\$VAR\""), [Token![lit(b"$VAR")]]);
-        assert_eq!(tokens("\"\\ $VAR\""), [Token![lit(b"\\ "), var(b"VAR")]]);
         assert_eq!(tokens("\"$VAR\""), [Token![var(b"VAR")]]);
     }
 }
