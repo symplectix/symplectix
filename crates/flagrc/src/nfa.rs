@@ -133,8 +133,8 @@ impl State {
                 _ => more(Literal, PushLit),
             },
             Escaping => match b {
-                b'\r' => todo!(),
-                b'\n' => more(Literal, Discard),
+                b'\r' => more(FindNextNonAsciiWhiteSpace, Discard),
+                b'\n' => more(FindNextNonAsciiWhiteSpace, Discard),
                 _ => more(Literal, PushLit),
             },
             SingleQuoting => match b {
@@ -228,11 +228,19 @@ mod tests {
     }
 
     #[test]
+    fn no_tokens() {
+        assert_eq!(tokens("\\"), vec![]);
+        assert_eq!(tokens("\\\n"), vec![]);
+        assert_eq!(tokens("\\\n "), vec![]);
+    }
+
+    #[test]
     fn escape_ascii_whitespace() {
         assert_eq!(tokens("\\ "), vec![Token![lit(b" ")]]);
         assert_eq!(tokens("\\ A"), vec![Token![lit(b" A")]]);
+        assert_eq!(tokens("\\\tA"), vec![Token![lit(b"\tA")]]);
 
-        assert_eq!(tokens("\\\n"), vec![]);
+        assert_eq!(tokens("\\\r\nA"), vec![Token![lit(b"A")]]);
         assert_eq!(tokens("\\\nA"), vec![Token![lit(b"A")]]);
     }
 
