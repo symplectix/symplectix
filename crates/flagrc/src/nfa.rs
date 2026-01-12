@@ -64,19 +64,21 @@ where
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum State {
     FindNextNonAsciiWhiteSpace = 0,
-    Literal = 1,
+    NoQuote = 1,
     // Found "\".
-    InEscape = 2,
+    NoQuoteEscape = 2,
     // Found "$".
-    VarStart,
-    Var,
+    NoQuoteVarStart,
+    NoQuoteVar,
     // Found "'", but an another matching quote yet.
     InSingleQuote,
     // Found '"', but an another matching quote yet.
     InDoubleQuote,
+    // Found "\" in double quote.
+    InDoubleQuoteEscape,
     // Found "$" in double quote.
-    DoubleQuotingVarStart,
-    DoubleQuotingVar,
+    InDoubleQuoteVarStart,
+    InDoubleQuoteVar,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -124,9 +126,9 @@ impl State {
         match self {
             FindNextNonAsciiWhiteSpace => match b {
                 b if b.is_ascii_whitespace() => more(FindNextNonAsciiWhiteSpace, Discard),
-                _ => more(Literal, Epsilon),
+                _ => more(NoQuote, Epsilon),
             },
-            Literal => match b {
+            NoQuote => match b {
                 b if b.is_ascii_whitespace() => {
                     if b == b'\n' {
                         emit(FindNextNonAsciiWhiteSpace, LineBreak)
@@ -134,46 +136,51 @@ impl State {
                         emit(FindNextNonAsciiWhiteSpace, Discard)
                     }
                 }
-                b'\\' => more(InEscape, Discard),
+                b'\\' => more(NoQuoteEscape, Discard),
                 b'\'' => more(InSingleQuote, Discard),
                 b'"' => more(InDoubleQuote, Discard),
-                b'$' => more(VarStart, Discard),
-                _ => more(Literal, PushLit),
+                b'$' => more(NoQuoteVarStart, Discard),
+                _ => more(NoQuote, PushLit),
             },
-            InEscape => match b {
+            NoQuoteEscape => match b {
                 b'\r' => more(FindNextNonAsciiWhiteSpace, Discard),
                 b'\n' => more(FindNextNonAsciiWhiteSpace, Discard),
-                _ => more(Literal, PushLit),
+                _ => more(NoQuote, PushLit),
             },
-            InSingleQuote => match b {
-                b'\'' => more(Literal, Discard),
-                _ => more(InSingleQuote, PushLit),
-            },
-            InDoubleQuote => match b {
-                b'"' => more(Literal, Discard),
-                b'$' => more(DoubleQuotingVarStart, Discard),
-                _ => more(InDoubleQuote, PushLit),
-            },
-            DoubleQuotingVarStart => match b {
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(DoubleQuotingVar, Epsilon),
+            NoQuoteVarStart => match b {
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(NoQuoteVar, Epsilon),
                 _ => unimplemented!("Expected a variable name after $"),
             },
-            DoubleQuotingVar => match b {
-                b'"' => more(Literal, Discard),
-                b'$' => more(DoubleQuotingVarStart, Discard),
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(DoubleQuotingVar, PushVar),
-                _ => more(InDoubleQuote, PushLit),
-            },
-            VarStart => match b {
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(Var, Epsilon),
-                _ => unimplemented!("Expected a variable name after $"),
-            },
-            Var => match b {
+            NoQuoteVar => match b {
                 b'\'' => emit(InSingleQuote, Discard),
                 b'"' => emit(InDoubleQuote, Discard),
                 b if b.is_ascii_whitespace() => emit(FindNextNonAsciiWhiteSpace, Discard),
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(Var, PushVar),
-                _ => more(Literal, PushLit),
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(NoQuoteVar, PushVar),
+                _ => more(NoQuote, PushLit),
+            },
+            InSingleQuote => match b {
+                b'\'' => more(NoQuote, Discard),
+                _ => more(InSingleQuote, PushLit),
+            },
+            InDoubleQuote => match b {
+                b'"' => more(NoQuote, Discard),
+                b'\\' => more(InDoubleQuoteEscape, PushLit),
+                b'$' => more(InDoubleQuoteVarStart, Discard),
+                _ => more(InDoubleQuote, PushLit),
+            },
+            InDoubleQuoteEscape => match b {
+                b'$' => more(InDoubleQuote, PushLit),
+                _ => more(InDoubleQuote, PushLit),
+            },
+            InDoubleQuoteVarStart => match b {
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(InDoubleQuoteVar, Epsilon),
+                _ => unimplemented!("Expected a variable name after $"),
+            },
+            InDoubleQuoteVar => match b {
+                b'"' => more(NoQuote, Discard),
+                b'$' => more(InDoubleQuoteVarStart, Discard),
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(InDoubleQuoteVar, PushVar),
+                _ => more(InDoubleQuote, PushLit),
             },
         }
     }
@@ -276,6 +283,7 @@ mod tests {
     #[test]
     fn escape_in_single_quote() {
         assert_eq!(tokens("'\ne'"), vec![Token![lit(b"\ne")]]);
+        assert_eq!(tokens("'\\\ne'"), vec![Token![lit(b"\\\ne")]]);
     }
 
     #[test]
@@ -290,5 +298,12 @@ mod tests {
         assert_eq!(tokens("'A\"PPL\"E'"), vec![Token![lit(b"A\"PPL\"E")]]);
         assert_eq!(tokens("'\"APPL\"E'"), vec![Token![lit(b"\"APPL\"E")]]);
         assert_eq!(tokens("'A\"PPLE\"'"), vec![Token![lit(b"A\"PPLE\"")]]);
+    }
+
+    #[test]
+    fn vars_in_double_quote() {
+        assert_eq!(tokens("\"\\$VAR\""), [Token![lit(b"$VAR")]]);
+        assert_eq!(tokens("\"\\ $VAR\""), [Token![lit(b"\\ "), var(b"VAR")]]);
+        assert_eq!(tokens("\"$VAR\""), [Token![var(b"VAR")]]);
     }
 }
