@@ -8,13 +8,10 @@ use std::collections::HashMap;
 use std::{
     fmt,
     io,
-    mem,
 };
 
 use Word::*;
 use itertools::Itertools;
-
-mod nfa;
 
 /// Procrc entry.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -69,7 +66,6 @@ where
             let mut out = String::new();
             for word in token.words {
                 match word {
-                    Empty => {}
                     Lit(v) => {
                         let lit: Cow<str> = String::from_utf8_lossy(&v);
                         out.push_str(lit.borrow());
@@ -104,8 +100,28 @@ where
 
 struct Lexer<I> {
     bytes: I,
-    token: Token,
-    quote: Option<u8>,
+    state: State,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum State {
+    FindNextNonAsciiWhiteSpace = 0,
+    CarriageReturn = 1,
+    NoQuote = 20,
+    // Found "\".
+    NoQuoteEscape = 21,
+    // Found "$".
+    NoQuoteVarStart = 22,
+    NoQuoteVar = 23,
+    // Found "'", but an another matching quote yet.
+    InSingleQuote = 30,
+    // Found '"', but an another matching quote yet.
+    InDoubleQuote = 40,
+    // Found "\" in double quote.
+    InDoubleQuoteEscape = 41,
+    // Found "$" in double quote.
+    InDoubleQuoteVarStart = 42,
+    InDoubleQuoteVar = 43,
 }
 
 // Token is a single element that make up a line.
@@ -116,11 +132,6 @@ struct Token {
 
 #[derive(Clone, PartialEq, Eq)]
 enum Word {
-    /// Empty is a dummy word that disappears when rendering a token as a string. It can be used
-    /// for the following purposes:
-    /// 1. As an empty word (of course).
-    /// 2. To split words within a single token.
-    Empty,
     /// A literal string.
     ///
     /// For examples:
@@ -137,10 +148,77 @@ enum Word {
     NewLine(u8),
 }
 
+impl<I> Lexer<I> {
+    fn new<T>(bytes: T) -> Self
+    where
+        T: IntoIterator<Item = u8, IntoIter = I>,
+    {
+        Lexer { bytes: bytes.into_iter(), state: State::FindNextNonAsciiWhiteSpace }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Action {
+    // Do not consume an input byte, epsilon transion.
+    LeftOver,
+    // Consume an input byte, and need the next one.
+    NextByte,
+    // Token has completed.
+    Complete,
+}
+
+#[inline]
+fn leftover(state: State) -> (State, Action) {
+    (state, Action::LeftOver)
+}
+
+#[inline]
+fn nextbyte(state: State) -> (State, Action) {
+    (state, Action::NextByte)
+}
+
+#[inline]
+fn complete(state: State) -> (State, Action) {
+    (state, Action::Complete)
+}
+
+impl<I> Iterator for Lexer<I>
+where
+    I: Iterator<Item = u8>,
+{
+    type Item = Token;
+    fn next(&mut self) -> Option<Token> {
+        let mut b = self.bytes.next()?;
+        let mut token = Token::new();
+        loop {
+            let (state, action) = token.transition(self.state, b);
+            self.state = state;
+            match action {
+                Action::LeftOver => {
+                    // Do not call bytes.next().
+                    continue;
+                }
+                Action::NextByte => {
+                    // Keep consuming.
+                }
+                Action::Complete => {
+                    break;
+                }
+            }
+            if let Some(next) = self.bytes.next() {
+                b = next;
+            } else {
+                break;
+            }
+        }
+
+        if token.words.is_empty() { None } else { Some(token) }
+    }
+}
+
 impl fmt::Debug for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Empty => f.debug_tuple("Empty").finish(),
             Lit(v) => f.debug_tuple("Lit").field(&String::from_utf8_lossy(v)).finish(),
             Var(v) => f.debug_tuple("Var").field(&String::from_utf8_lossy(v)).finish(),
             NewLine(b) => f.debug_tuple("NewLine").field(&(*b as char)).finish(),
@@ -153,45 +231,47 @@ impl Token {
         Token { words: Vec::new() }
     }
 
-    fn reset(&mut self) -> Self {
-        mem::replace(self, Token::new())
+    fn lit(&mut self) -> &mut Vec<u8> {
+        self.ensure_last_is_lit();
+        let Lit(vec) = self.words.last_mut().unwrap() else {
+            unreachable!("ensure_last_is_lit does not work as expected");
+        };
+        vec
     }
 
-    fn push(&mut self, b: u8) {
+    fn ensure_last_is_lit(&mut self) {
         if let Some(last) = self.words.last_mut() {
             match last {
-                Empty => self.words.push(Lit(vec![b])),
-                Lit(lit) => lit.push(b),
-                Var(var) => var.push(b),
+                Var(_) => {
+                    self.words.push(Lit(vec![]));
+                }
+                Lit(_) => (),
                 NewLine(_) => unreachable!("pushing a byte onto NewLine"),
             }
         } else {
-            self.words.push(Lit(vec![b]));
+            self.words.push(Lit(vec![]));
         }
     }
 
-    /// Push b to Lit.
-    fn push_lit(&mut self, b: u8) {
-        if let Some(last) = self.words.last_mut() {
-            match last {
-                Empty | Var(_) => self.words.push(Lit(vec![b])),
-                Lit(l) => l.push(b),
-                NewLine(_) => unreachable!("pushing a byte onto NewLine"),
-            }
-        } else {
-            self.words.push(Lit(vec![b]));
-        }
+    fn var(&mut self) -> &mut Vec<u8> {
+        self.ensure_last_is_var();
+        let Var(vec) = self.words.last_mut().unwrap() else {
+            unreachable!("ensure_last_is_var does not work as expected");
+        };
+        vec
     }
 
-    fn push_var(&mut self, b: u8) {
+    fn ensure_last_is_var(&mut self) {
         if let Some(last) = self.words.last_mut() {
             match last {
-                Empty | Lit(_) => self.words.push(Var(vec![b])),
-                Var(v) => v.push(b),
+                Lit(_) => {
+                    self.words.push(Var(vec![]));
+                }
+                Var(_) => (),
                 NewLine(_) => unreachable!("pushing a byte onto NewLine"),
             }
         } else {
-            self.words.push(Var(vec![b]));
+            self.words.push(Var(vec![]));
         }
     }
 
@@ -199,157 +279,302 @@ impl Token {
         self.words.push(Word::NewLine(b));
     }
 
-    fn split(&mut self) {
-        if let Some(last) = self.words.last() {
-            if !(matches!(last, Empty)) {
-                self.words.push(Empty);
-            }
-        } else {
-            self.words.push(Empty);
+    fn transition(&mut self, state: State, b: u8) -> (State, Action) {
+        use State::*;
+        match state {
+            FindNextNonAsciiWhiteSpace => match b {
+                b if b.is_ascii_whitespace() => nextbyte(FindNextNonAsciiWhiteSpace),
+                _ => leftover(NoQuote),
+            },
+            CarriageReturn => match b {
+                b'\n' => {
+                    self.break_line(b);
+                    complete(FindNextNonAsciiWhiteSpace)
+                }
+                _ => {
+                    let lit = self.lit();
+                    lit.push(b'\r');
+                    lit.push(b);
+                    nextbyte(NoQuote)
+                }
+            },
+            NoQuote => match b {
+                b'\r' => nextbyte(CarriageReturn),
+                b'\n' => {
+                    self.break_line(b);
+                    complete(FindNextNonAsciiWhiteSpace)
+                }
+                b if b.is_ascii_whitespace() => complete(FindNextNonAsciiWhiteSpace),
+                b'\\' => nextbyte(NoQuoteEscape),
+                b'\'' => nextbyte(InSingleQuote),
+                b'"' => nextbyte(InDoubleQuote),
+                b'$' => nextbyte(NoQuoteVarStart),
+                _ => {
+                    self.lit().push(b);
+                    nextbyte(NoQuote)
+                }
+            },
+            NoQuoteEscape => match b {
+                b'\r' => nextbyte(FindNextNonAsciiWhiteSpace),
+                b'\n' => nextbyte(FindNextNonAsciiWhiteSpace),
+                _ => {
+                    self.lit().push(b);
+                    nextbyte(NoQuote)
+                }
+            },
+            NoQuoteVarStart => match b {
+                b if b.is_ascii_alphanumeric() || b == b'_' => leftover(NoQuoteVar),
+                _ => unimplemented!("Expected a variable name after $"),
+            },
+            NoQuoteVar => match b {
+                b'\'' => nextbyte(InSingleQuote),
+                b'"' => nextbyte(InDoubleQuote),
+                b'\\' => nextbyte(NoQuote),
+                b if b.is_ascii_whitespace() => complete(FindNextNonAsciiWhiteSpace),
+                b if b.is_ascii_alphanumeric() || b == b'_' => {
+                    self.var().push(b);
+                    nextbyte(NoQuoteVar)
+                }
+                _ => {
+                    self.lit().push(b);
+                    nextbyte(NoQuote)
+                }
+            },
+            InSingleQuote => match b {
+                b'\'' => nextbyte(NoQuote),
+                _ => {
+                    self.lit().push(b);
+                    nextbyte(InSingleQuote)
+                }
+            },
+            InDoubleQuote => match b {
+                b'"' => nextbyte(NoQuote),
+                b'\\' => nextbyte(InDoubleQuoteEscape),
+                b'$' => nextbyte(InDoubleQuoteVarStart),
+                _ => {
+                    self.lit().push(b);
+                    nextbyte(InDoubleQuote)
+                }
+            },
+            InDoubleQuoteEscape => match b {
+                b'$' => {
+                    self.lit().push(b);
+                    nextbyte(InDoubleQuote)
+                }
+                _ => {
+                    let lit = self.lit();
+                    lit.push(b'\\');
+                    lit.push(b);
+                    nextbyte(InDoubleQuote)
+                }
+            },
+            InDoubleQuoteVarStart => match b {
+                b if b.is_ascii_alphanumeric() || b == b'_' => leftover(InDoubleQuoteVar),
+                _ => unimplemented!("Expected a variable name after $"),
+            },
+            InDoubleQuoteVar => match b {
+                b'"' => nextbyte(NoQuote),
+                b'$' => nextbyte(InDoubleQuoteVarStart),
+                b if b.is_ascii_alphanumeric() || b == b'_' => {
+                    self.var().push(b);
+                    nextbyte(InDoubleQuoteVar)
+                }
+                _ => {
+                    self.lit().push(b);
+                    nextbyte(InDoubleQuote)
+                }
+            },
         }
     }
-
-    fn begin_var(&mut self) {
-        self.words.push(Var(Vec::new()))
-    }
-
-    fn in_var(&self) -> bool {
-        matches!(self.words.last(), Some(Word::Var(_)))
-    }
 }
 
-impl<I> Lexer<I> {
-    fn new<T>(bytes: T) -> Self
-    where
-        T: IntoIterator<Item = u8, IntoIter = I>,
-    {
-        Lexer { bytes: bytes.into_iter(), token: Token::new(), quote: None }
-    }
-}
+#[cfg(test)]
+mod tests {
+    use std::iter;
 
-impl<I> Iterator for Lexer<I>
-where
-    I: Iterator<Item = u8>,
-{
-    type Item = Token;
-    fn next(&mut self) -> Option<Token> {
-        self.bytes.find(|b| !b.is_ascii_whitespace()).map(|b| self.next_token(b))
-    }
-}
+    use super::Lexer;
+    use crate::Word::*;
+    use crate::{
+        Token,
+        Word,
+    };
 
-impl<I> Lexer<I>
-where
-    I: Iterator<Item = u8>,
-{
-    fn next_token(&mut self, mut b: u8) -> Token {
-        loop {
-            if self.in_single_quote() {
-                match b {
-                    b'\'' => {
-                        self.quote = None;
-                    }
-                    b => {
-                        self.token.push(b);
-                    }
-                }
-            } else if self.in_double_quote() {
-                match b {
-                    b'"' => {
-                        if self.in_var() {
-                            self.token.split();
-                        }
-                        self.quote = None;
-                    }
-                    b'\\' if self.in_var() => {
-                        self.token.split();
-                        self.token.push(b);
-                    }
-                    b'$' => {
-                        self.token.begin_var();
-                    }
-                    b => {
-                        self.token.push(b);
-                    }
-                }
-            } else if self.in_var() {
-                match b {
-                    b'\'' | b'"' => {
-                        self.quote = Some(b);
-                        self.token.split();
-                    }
-                    b'\\' => {
-                        self.token.split();
-                    }
-                    b'$' => {
-                        self.token.begin_var();
-                    }
-                    b if b.is_ascii_whitespace() => {
-                        break;
-                    }
-                    // Var token should satisfy either of:
-                    // * is_ascii_alphanumeric(c)
-                    // * '_'
-                    b if b.is_ascii_alphanumeric() || b == b'_' => {
-                        self.token.push(b);
-                    }
-                    b => {
-                        // c is not a part of Var.
-                        self.token.split();
-                        self.token.push(b);
-                    }
-                }
-            } else {
-                match b {
-                    b'\'' | b'"' => {
-                        self.quote = Some(b);
-                    }
-                    b'\\' => {
-                        if let Some(esc) = self.bytes.next() {
-                            // A '\' at the end of a line continues the line.
-                            if !(esc == b'\r' || esc == b'\n') {
-                                self.token.push(esc);
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                    b'$' => {
-                        self.token.begin_var();
-                    }
-                    b if b.is_ascii_whitespace() => {
-                        if b == b'\n' {
-                            self.token.break_line(b);
-                        }
-                        break;
-                    }
-                    b => {
-                        self.token.push(b);
-                    }
-                }
+    fn check_empty(source: &str) {
+        let mut lex = Lexer::new(source.bytes());
+        assert_eq!(lex.next(), None);
+    }
+
+    fn tokens(source: &str) -> Vec<Token> {
+        let mut lex = Lexer::new(source.bytes());
+        iter::from_fn(|| lex.next()).collect()
+    }
+
+    #[test]
+    fn test_empty() {
+        check_empty("");
+        check_empty(" ");
+        check_empty("  ");
+    }
+
+    macro_rules! Token {
+        ($( $word:expr ),+ $(,)?) => {
+            Token {
+                words: vec![
+                    $($word),+
+                ]
             }
-
-            if let Some(next) = self.bytes.next() {
-                b = next;
-            } else {
-                break;
-            }
-        }
-        self.output()
+        };
     }
 
-    fn in_single_quote(&self) -> bool {
-        self.quote.as_ref().is_some_and(|b| *b == b'\'')
+    fn lit(bytes: &[u8]) -> Word {
+        Lit(bytes.to_vec())
     }
 
-    fn in_double_quote(&self) -> bool {
-        self.quote.as_ref().is_some_and(|b| *b == b'"')
+    fn var(bytes: &[u8]) -> Word {
+        Var(bytes.to_vec())
     }
 
-    fn in_var(&self) -> bool {
-        self.token.in_var()
+    #[test]
+    fn no_tokens() {
+        assert_eq!(tokens("\\"), []);
+        assert_eq!(tokens("\\\n"), []);
+        assert_eq!(tokens("\\\n "), []);
+        assert_eq!(tokens("\n \n"), []);
+        assert_eq!(tokens("\n\t\n"), []);
+        assert_eq!(tokens("\n\n\n"), []);
+        assert_eq!(tokens("\n\r\n"), []);
     }
 
-    fn output(&mut self) -> Token {
-        self.token.reset()
+    #[test]
+    fn get_tokens() {
+        assert_eq!(tokens("foobar"), [Token![lit(b"foobar")]]);
+        assert_eq!(tokens("$foo-bar"), [Token![var(b"foo"), lit(b"-bar")]]);
+        assert_eq!(tokens("A\\e"), [Token![lit(b"Ae")]]);
+        assert_eq!(tokens("\"'A\\e\""), [Token![lit(b"'A\\e")]]);
+
+        assert_eq!(tokens("foo bar"), [Token![lit(b"foo")], Token![lit(b"bar")]]);
+        assert_eq!(tokens("$foo bar"), [Token![var(b"foo")], Token![lit(b"bar")]]);
+        assert_eq!(
+            tokens("\"foo\nbar\r\n\" baz"),
+            [Token![lit(b"foo\nbar\r\n")], Token![lit(b"baz")]]
+        );
+    }
+
+    #[test]
+    fn get_tokens_non_ascii() {
+        assert_eq!(tokens("えび"), [Token![lit("えび".as_bytes())]]);
+        assert_eq!(tokens("え び"), [Token![lit("え".as_bytes())], Token![lit("び".as_bytes())]]);
+        assert_eq!(tokens("え\\ び"), [Token![lit("え び".as_bytes())]]);
+        assert_eq!(
+            tokens("え \\ び"),
+            [Token![lit("え".as_bytes())], Token![lit(" び".as_bytes())]]
+        );
+        assert_eq!(
+            tokens("え \\\nび"),
+            [Token![lit("え".as_bytes())], Token![lit("び".as_bytes())]]
+        );
+        assert_eq!(
+            tokens("え \\\r\nび"),
+            [Token![lit("え".as_bytes())], Token![lit("び".as_bytes())]]
+        );
+    }
+
+    #[test]
+    fn for_for_in_for() {
+        // Shell prints "for" in this case.
+        // https://aosabook.org/en/v1/bash.html
+        assert_eq!(
+            tokens("for for in for; do for=for; done; echo $for"),
+            [
+                Token![lit(b"for")],
+                Token![lit(b"for")],
+                Token![lit(b"in")],
+                Token![lit(b"for;")],
+                Token![lit(b"do")],
+                Token![lit(b"for=for;")],
+                Token![lit(b"done;")],
+                Token![lit(b"echo")],
+                Token![var(b"for")],
+            ]
+        );
+    }
+
+    #[test]
+    fn line_breaks() {
+        assert_eq!(
+            tokens("$A-foo -x\n$B-bar -y\n$C-baz -z\n"),
+            [
+                Token![var(b"A"), lit(b"-foo")],
+                Token![lit(b"-x"), NewLine(b'\n')],
+                Token![var(b"B"), lit(b"-bar")],
+                Token![lit(b"-y"), NewLine(b'\n')],
+                Token![var(b"C"), lit(b"-baz")],
+                Token![lit(b"-z"), NewLine(b'\n')]
+            ]
+        );
+        assert_eq!(
+            tokens("$A-foo -x\r\n$B-bar -y\r\n$C-baz -z\r\n"),
+            [
+                Token![var(b"A"), lit(b"-foo")],
+                Token![lit(b"-x"), NewLine(b'\n')],
+                Token![var(b"B"), lit(b"-bar")],
+                Token![lit(b"-y"), NewLine(b'\n')],
+                Token![var(b"C"), lit(b"-baz")],
+                Token![lit(b"-z"), NewLine(b'\n')]
+            ]
+        );
+    }
+
+    #[test]
+    fn escape_ascii_whitespace() {
+        assert_eq!(tokens("\\ "), [Token![lit(b" ")]]);
+        assert_eq!(tokens("\\ A"), [Token![lit(b" A")]]);
+        assert_eq!(tokens("\\\tA"), [Token![lit(b"\tA")]]);
+        assert_eq!(tokens("\\\r\nA"), [Token![lit(b"A")]]);
+        assert_eq!(tokens("\\\nA"), [Token![lit(b"A")]]);
+    }
+
+    #[test]
+    fn escape_in_single_quote() {
+        assert_eq!(tokens("'\ne'"), [Token![lit(b"\ne")]]);
+        assert_eq!(tokens("'\\\ne'"), [Token![lit(b"\\\ne")]]);
+    }
+
+    #[test]
+    fn escape_in_double_quote() {
+        assert_eq!(tokens("\"\\ VAR\""), [Token![lit(b"\\ VAR")]]);
+        assert_eq!(tokens("\"\\$VAR\""), [Token![lit(b"$VAR")]]);
+        assert_eq!(tokens("\"\\ $VAR\""), [Token![lit(b"\\ "), var(b"VAR")]]);
+    }
+
+    #[test]
+    fn double_quote_no_spaces() {
+        assert_eq!(tokens("A\"PPL\"E"), [Token![lit(b"APPLE")]]);
+        assert_eq!(tokens("\"APPL\"E"), [Token![lit(b"APPLE")]]);
+        assert_eq!(tokens("A\"PPLE\""), [Token![lit(b"APPLE")]]);
+    }
+
+    #[test]
+    fn double_quote_in_single_quote() {
+        assert_eq!(tokens("'A\"PPL\"E'"), [Token![lit(b"A\"PPL\"E")]]);
+        assert_eq!(tokens("'\"APPL\"E'"), [Token![lit(b"\"APPL\"E")]]);
+        assert_eq!(tokens("'A\"PPLE\"'"), [Token![lit(b"A\"PPLE\"")]]);
+    }
+
+    #[test]
+    fn var_in_many_ways() {
+        assert_eq!(tokens("\"$VAR\""), [Token![var(b"VAR")]]);
+        assert_eq!(tokens("$VAR"), [Token![var(b"VAR")]]);
+        assert_eq!(tokens("$VAR#a"), [Token![var(b"VAR"), lit(b"#a")]]);
+        assert_eq!(tokens("$VAR-a"), [Token![var(b"VAR"), lit(b"-a")]]);
+        assert_eq!(tokens("e\"$VAR\"o"), [Token![lit(b"e"), var(b"VAR"), lit(b"o")]]);
+        assert_eq!(tokens("$VAR\\A"), [Token![var(b"VAR"), lit(b"A")]]);
+        assert_eq!(tokens("\"$VAR\\A\""), [Token![var(b"VAR"), lit(b"\\A")]]);
+        assert_eq!(tokens("$VAR\"\""), [Token![var(b"VAR")]]);
+        assert_eq!(tokens("$VAR\"ABC\""), [Token![var(b"VAR"), lit(b"ABC")]]);
+        assert_eq!(
+            tokens("e\"$VAR\"o hello"),
+            [Token![lit(b"e"), var(b"VAR"), lit(b"o")], Token![lit(b"hello")]]
+        );
     }
 }
