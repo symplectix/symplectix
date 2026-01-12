@@ -145,8 +145,9 @@ impl State {
                 _ => unimplemented!("Expected a variable name after $"),
             },
             NoQuoteVar => match b {
-                b'\'' => complete(InSingleQuote),
-                b'"' => complete(InDoubleQuote),
+                b'\'' => nextbyte(InSingleQuote),
+                b'"' => nextbyte(InDoubleQuote),
+                b'\\' => nextbyte(NoQuote),
                 b if b.is_ascii_whitespace() => complete(FindNextNonAsciiWhiteSpace),
                 b if b.is_ascii_alphanumeric() || b == b'_' => {
                     token.push_var(b);
@@ -262,16 +263,57 @@ mod tests {
     }
 
     #[test]
-    fn one_token() {
+    fn get_tokens() {
         assert_eq!(tokens("foobar"), [Token![lit(b"foobar")]]);
         assert_eq!(tokens("$foo-bar"), [Token![var(b"foo"), lit(b"-bar")]]);
+        assert_eq!(tokens("A\\e"), [Token![lit(b"Ae")]]);
+        assert_eq!(tokens("\"'A\\e\""), [Token![lit(b"'A\\e")]]);
+
+        assert_eq!(tokens("foo bar"), [Token![lit(b"foo")], Token![lit(b"bar")]]);
+        assert_eq!(tokens("$foo bar"), [Token![var(b"foo")], Token![lit(b"bar")]]);
+        assert_eq!(
+            tokens("\"foo\nbar\r\n\" baz"),
+            [Token![lit(b"foo\nbar\r\n")], Token![lit(b"baz")]]
+        );
     }
 
     #[test]
-    fn two_tokens() {
-        assert_eq!(tokens("foo bar"), [Token![lit(b"foo")], Token![lit(b"bar")]]);
-        assert_eq!(tokens("$foo bar"), [Token![var(b"foo")], Token![lit(b"bar")]]);
-        assert_eq!(tokens("\"foo\nbar\" baz"), [Token![lit(b"foo\nbar")], Token![lit(b"baz")]]);
+    fn get_tokens_non_ascii() {
+        assert_eq!(tokens("えび"), [Token![lit("えび".as_bytes())]]);
+        assert_eq!(tokens("え び"), [Token![lit("え".as_bytes())], Token![lit("び".as_bytes())]]);
+        assert_eq!(tokens("え\\ び"), [Token![lit("え び".as_bytes())]]);
+        assert_eq!(
+            tokens("え \\ び"),
+            [Token![lit("え".as_bytes())], Token![lit(" び".as_bytes())]]
+        );
+        assert_eq!(
+            tokens("え \\\nび"),
+            [Token![lit("え".as_bytes())], Token![lit("び".as_bytes())]]
+        );
+        assert_eq!(
+            tokens("え \\\r\nび"),
+            [Token![lit("え".as_bytes())], Token![lit("び".as_bytes())]]
+        );
+    }
+
+    #[test]
+    fn for_for_in_for() {
+        // Shell prints "for" in this case.
+        // https://aosabook.org/en/v1/bash.html
+        assert_eq!(
+            tokens("for for in for; do for=for; done; echo $for"),
+            [
+                Token![lit(b"for")],
+                Token![lit(b"for")],
+                Token![lit(b"in")],
+                Token![lit(b"for;")],
+                Token![lit(b"do")],
+                Token![lit(b"for=for;")],
+                Token![lit(b"done;")],
+                Token![lit(b"echo")],
+                Token![var(b"for")],
+            ]
+        );
     }
 
     #[test]
@@ -337,7 +379,19 @@ mod tests {
     }
 
     #[test]
-    fn vars_in_double_quote() {
+    fn var_in_many_ways() {
         assert_eq!(tokens("\"$VAR\""), [Token![var(b"VAR")]]);
+        assert_eq!(tokens("$VAR"), [Token![var(b"VAR")]]);
+        assert_eq!(tokens("$VAR#a"), [Token![var(b"VAR"), lit(b"#a")]]);
+        assert_eq!(tokens("$VAR-a"), [Token![var(b"VAR"), lit(b"-a")]]);
+        assert_eq!(tokens("e\"$VAR\"o"), [Token![lit(b"e"), var(b"VAR"), lit(b"o")]]);
+        assert_eq!(tokens("$VAR\\A"), [Token![var(b"VAR"), lit(b"A")]]);
+        assert_eq!(tokens("\"$VAR\\A\""), [Token![var(b"VAR"), lit(b"\\A")]]);
+        assert_eq!(tokens("$VAR\"\""), [Token![var(b"VAR")]]);
+        assert_eq!(tokens("$VAR\"ABC\""), [Token![var(b"VAR"), lit(b"ABC")]]);
+        assert_eq!(
+            tokens("e\"$VAR\"o hello"),
+            [Token![lit(b"e"), var(b"VAR"), lit(b"o")], Token![lit(b"hello")]]
+        );
     }
 }
