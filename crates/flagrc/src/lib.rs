@@ -174,9 +174,8 @@ impl Token {
     fn push_lit(&mut self, b: u8) {
         if let Some(last) = self.words.last_mut() {
             match last {
-                Empty => self.words.push(Lit(vec![b])),
+                Empty | Var(_) => self.words.push(Lit(vec![b])),
                 Lit(l) => l.push(b),
-                Var(_) => self.words.push(Lit(vec![b])),
                 NewLine(_) => unreachable!("pushing a byte onto NewLine"),
             }
         } else {

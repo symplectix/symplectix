@@ -41,11 +41,15 @@ where
                 Action::PushVar => {
                     token.push_var(b);
                 }
+                Action::LineBreak => {
+                    token.break_line(b);
+                    break;
+                }
             }
-
             if emit {
                 break;
             }
+
             if let Some(next) = self.bytes.next() {
                 b = next;
             } else {
@@ -60,22 +64,19 @@ where
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum State {
     FindNextNonAsciiWhiteSpace = 0,
-
     Literal = 1,
-
-    // Just after '\'.
-    Escaping = 2,
-    // A $VARIABLE like this
-    BeginVar,
-    VarRef,
+    // Found "\".
+    InEscape = 2,
+    // Found "$".
+    VarStart,
+    Var,
     // Found "'", but an another matching quote yet.
-    SingleQuoting,
+    InSingleQuote,
     // Found '"', but an another matching quote yet.
-    DoubleQuoting,
-    DoubleQuotingBeginVar,
-    DoubleQuotingVarRef,
-    // Look before the *non-escaped* newline delimiter.
-    LineBreak,
+    InDoubleQuote,
+    // Found "$" in double quote.
+    DoubleQuotingVarStart,
+    DoubleQuotingVar,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -84,9 +85,11 @@ pub(crate) enum Action {
     Epsilon,
     // Consume and discard an input byte.
     Discard,
-    // Consume and push an input byte as a literal.
+    // Found the *non-escaped* newline delimiter.
+    LineBreak,
+    // Consume and push an input byte as Word::Lit.
     PushLit,
-    // Consume and push an input byte as a variable.
+    // Consume and push an input byte as Word::Var.
     PushVar,
 }
 
@@ -124,49 +127,53 @@ impl State {
                 _ => more(Literal, Epsilon),
             },
             Literal => match b {
-                b if b.is_ascii_whitespace() => emit(FindNextNonAsciiWhiteSpace, Discard),
-                b'\\' => more(Escaping, Discard),
-                b'\'' => more(SingleQuoting, Discard),
-                b'"' => more(DoubleQuoting, Discard),
-                b'$' => more(BeginVar, Discard),
+                b if b.is_ascii_whitespace() => {
+                    if b == b'\n' {
+                        emit(FindNextNonAsciiWhiteSpace, LineBreak)
+                    } else {
+                        emit(FindNextNonAsciiWhiteSpace, Discard)
+                    }
+                }
+                b'\\' => more(InEscape, Discard),
+                b'\'' => more(InSingleQuote, Discard),
+                b'"' => more(InDoubleQuote, Discard),
+                b'$' => more(VarStart, Discard),
                 _ => more(Literal, PushLit),
             },
-            Escaping => match b {
+            InEscape => match b {
                 b'\r' => more(FindNextNonAsciiWhiteSpace, Discard),
                 b'\n' => more(FindNextNonAsciiWhiteSpace, Discard),
                 _ => more(Literal, PushLit),
             },
-            SingleQuoting => match b {
+            InSingleQuote => match b {
                 b'\'' => more(Literal, Discard),
-                _ => more(SingleQuoting, PushLit),
+                _ => more(InSingleQuote, PushLit),
             },
-            DoubleQuoting => match b {
+            InDoubleQuote => match b {
                 b'"' => more(Literal, Discard),
-                b'$' => more(DoubleQuotingBeginVar, Discard),
-                _ => more(DoubleQuoting, PushLit),
+                b'$' => more(DoubleQuotingVarStart, Discard),
+                _ => more(InDoubleQuote, PushLit),
             },
-            DoubleQuotingBeginVar => match b {
-                _ => todo!(),
-                _ => todo!(),
-            },
-            DoubleQuotingVarRef => match b {
-                _ => todo!(),
-                _ => todo!(),
-            },
-            BeginVar => match b {
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(VarRef, Epsilon),
+            DoubleQuotingVarStart => match b {
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(DoubleQuotingVar, Epsilon),
                 _ => unimplemented!("Expected a variable name after $"),
             },
-            VarRef => match b {
-                b'\'' => emit(SingleQuoting, Discard),
-                b'"' => emit(DoubleQuoting, Discard),
-                b if b.is_ascii_whitespace() => emit(FindNextNonAsciiWhiteSpace, Discard),
-                b if b.is_ascii_alphanumeric() || b == b'_' => more(VarRef, PushVar),
-                _ => more(Literal, PushLit),
+            DoubleQuotingVar => match b {
+                b'"' => more(Literal, Discard),
+                b'$' => more(DoubleQuotingVarStart, Discard),
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(DoubleQuotingVar, PushVar),
+                _ => more(InDoubleQuote, PushLit),
             },
-            LineBreak => match b {
-                //
-                _ => todo!(),
+            VarStart => match b {
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(Var, Epsilon),
+                _ => unimplemented!("Expected a variable name after $"),
+            },
+            Var => match b {
+                b'\'' => emit(InSingleQuote, Discard),
+                b'"' => emit(InDoubleQuote, Discard),
+                b if b.is_ascii_whitespace() => emit(FindNextNonAsciiWhiteSpace, Discard),
+                b if b.is_ascii_alphanumeric() || b == b'_' => more(Var, PushVar),
+                _ => more(Literal, PushLit),
             },
         }
     }
@@ -241,6 +248,29 @@ mod tests {
 
         assert_eq!(tokens("\\\r\nA"), vec![Token![lit(b"A")]]);
         assert_eq!(tokens("\\\nA"), vec![Token![lit(b"A")]]);
+    }
+
+    #[test]
+    fn line_breaks() {
+        assert_eq!(
+            tokens("$A-foo -x\n$B-bar -y\n$C-baz -z\n"),
+            vec![
+                Token![var(b"A"), lit(b"-foo")],
+                Token![lit(b"-x"), NewLine(b'\n')],
+                Token![var(b"B"), lit(b"-bar")],
+                Token![lit(b"-y"), NewLine(b'\n')],
+                Token![var(b"C"), lit(b"-baz")],
+                Token![lit(b"-z"), NewLine(b'\n')]
+            ]
+        );
+    }
+
+    #[test]
+    fn no_line_breaks() {
+        assert_eq!(tokens("\n \n"), vec![]);
+        assert_eq!(tokens("\n\t\n"), vec![]);
+        assert_eq!(tokens("\n\n\n"), vec![]);
+        assert_eq!(tokens("\n\r\n"), vec![]);
     }
 
     #[test]
