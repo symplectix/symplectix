@@ -37,6 +37,7 @@ prost-types = { version = "0.13" }
 quickcheck = { version = "1" }
 quickcheck_macros = { version = "1" }
 reaper = { path = "crates/reaper" }
+shtok = { path = "crates/shtok" }
 tempfile = { version = "3" }
 testing = { path = "crates/testing" }
 thiserror = { version = "1" }
