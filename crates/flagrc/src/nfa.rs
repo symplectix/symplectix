@@ -53,21 +53,22 @@ where
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum State {
     FindNextNonAsciiWhiteSpace = 0,
-    NoQuote = 1,
+    CarriageReturn = 1,
+    NoQuote = 20,
     // Found "\".
-    NoQuoteEscape = 2,
+    NoQuoteEscape = 21,
     // Found "$".
-    NoQuoteVarStart,
-    NoQuoteVar,
+    NoQuoteVarStart = 22,
+    NoQuoteVar = 23,
     // Found "'", but an another matching quote yet.
-    InSingleQuote,
+    InSingleQuote = 30,
     // Found '"', but an another matching quote yet.
-    InDoubleQuote,
+    InDoubleQuote = 40,
     // Found "\" in double quote.
-    InDoubleQuoteEscape,
+    InDoubleQuoteEscape = 41,
     // Found "$" in double quote.
-    InDoubleQuoteVarStart,
-    InDoubleQuoteVar,
+    InDoubleQuoteVarStart = 42,
+    InDoubleQuoteVar = 43,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -104,13 +105,24 @@ impl State {
                 b if b.is_ascii_whitespace() => nextbyte(FindNextNonAsciiWhiteSpace),
                 _ => leftover(NoQuote),
             },
-            NoQuote => match b {
-                b if b.is_ascii_whitespace() => {
-                    if b == b'\n' {
-                        token.break_line(b);
-                    }
+            CarriageReturn => match b {
+                b'\n' => {
+                    token.break_line(b);
                     complete(FindNextNonAsciiWhiteSpace)
                 }
+                _ => {
+                    token.push_lit(b'\r');
+                    token.push_lit(b);
+                    nextbyte(NoQuote)
+                }
+            },
+            NoQuote => match b {
+                b'\r' => nextbyte(CarriageReturn),
+                b'\n' => {
+                    token.break_line(b);
+                    complete(FindNextNonAsciiWhiteSpace)
+                }
+                b if b.is_ascii_whitespace() => complete(FindNextNonAsciiWhiteSpace),
                 b'\\' => nextbyte(NoQuoteEscape),
                 b'\'' => nextbyte(InSingleQuote),
                 b'"' => nextbyte(InDoubleQuote),
@@ -259,12 +271,24 @@ mod tests {
     fn two_tokens() {
         assert_eq!(tokens("foo bar"), [Token![lit(b"foo")], Token![lit(b"bar")]]);
         assert_eq!(tokens("$foo bar"), [Token![var(b"foo")], Token![lit(b"bar")]]);
+        assert_eq!(tokens("\"foo\nbar\" baz"), [Token![lit(b"foo\nbar")], Token![lit(b"baz")]]);
     }
 
     #[test]
     fn line_breaks() {
         assert_eq!(
             tokens("$A-foo -x\n$B-bar -y\n$C-baz -z\n"),
+            [
+                Token![var(b"A"), lit(b"-foo")],
+                Token![lit(b"-x"), NewLine(b'\n')],
+                Token![var(b"B"), lit(b"-bar")],
+                Token![lit(b"-y"), NewLine(b'\n')],
+                Token![var(b"C"), lit(b"-baz")],
+                Token![lit(b"-z"), NewLine(b'\n')]
+            ]
+        );
+        assert_eq!(
+            tokens("$A-foo -x\r\n$B-bar -y\r\n$C-baz -z\r\n"),
             [
                 Token![var(b"A"), lit(b"-foo")],
                 Token![lit(b"-x"), NewLine(b'\n')],
@@ -281,7 +305,6 @@ mod tests {
         assert_eq!(tokens("\\ "), [Token![lit(b" ")]]);
         assert_eq!(tokens("\\ A"), [Token![lit(b" A")]]);
         assert_eq!(tokens("\\\tA"), [Token![lit(b"\tA")]]);
-
         assert_eq!(tokens("\\\r\nA"), [Token![lit(b"A")]]);
         assert_eq!(tokens("\\\nA"), [Token![lit(b"A")]]);
     }
