@@ -238,6 +238,11 @@ where
         action
     }
 
+    // It may be possible to convert nfa to dfa and create a static transition table. To implement
+    // this, I think it seems necessary to move token mutations to somewhere.
+    //
+    // n.b. If b is treated as a byte, the table size will be too large. By classifying b into a few
+    // symbols needed for tokenization and "others", the table size should much smaller.
     fn transition(&mut self, token: &mut Token, b: u8) -> (State, Action) {
         use State::*;
         match self.state {
