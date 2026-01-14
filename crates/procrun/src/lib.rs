@@ -284,7 +284,6 @@ impl Process {
         let mut sigint = signal(SignalKind::interrupt())?;
 
         let mut reasons = ExitReasons::default();
-        let mut _interrupted = 0;
 
         let stdout = BufReader::new(child.stdout.take().unwrap());
         let mut stdout = stdout.lines();
@@ -304,12 +303,10 @@ impl Process {
         let result = loop {
             tokio::select! {
                 _ = sigterm.recv() => {
-                    _interrupted += 1;
                     reasons.iam_signaled = reasons.iam_signaled.or(Some(libc::SIGTERM));
                     kill(child_pid, Some(libc::SIGTERM)).await;
                 },
                 _ = sigint.recv() => {
-                    _interrupted += 1;
                     reasons.iam_signaled = reasons.iam_signaled.or(Some(libc::SIGINT));
                     kill(child_pid, Some(libc::SIGINT)).await;
                 },
@@ -326,17 +323,12 @@ impl Process {
                 },
                 child_stat = wait_child(&mut child, flags.load()) => match child_stat {
                     Err(err) => {
-                        // IO errors occur sometimes.
-                        // There may be some conflict between the reaper implementation and wait_child.
-                        //
-                        // - Reaper uses SIGCHLD
-                        // - Tokio uses pidfd on Linux: https://github.com/tokio-rs/tokio/pull/6152
-                        //
-                        // Interestingly, ignoring this error seems to get the flaky tests to work properly.
-                        error!("got an error while waiting the child: {}", err.to_string());
+                        // If the status of the child process has already been obtained by waitpid
+                        // within the reaper loop, wait_child will return the error “No child processes”.
+                        // Since this error is expected, we simply ignore it.
+                        trace!("got an error while waiting the child: {}", err.to_string());
                     }
                     Ok(None) => {
-                        _interrupted += 1;
                         reasons.timedout = true;
                         kill(child_pid, None).await;
                     }

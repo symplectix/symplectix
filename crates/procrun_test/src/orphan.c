@@ -2,57 +2,40 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int orphan(int n) {
+// Creates orphan process to be reaped.
+int main() {
+    pid_t pid    = getpid();
+    pid_t group  = getpgid(0);
+    pid_t parent = getppid();
     pid_t child;
-    int max_depth = 5;
 
     if ((child = fork()) < 0) {
         perror("could not create a child process");
         exit(1);
     }
 
-    pid_t pid    = getpid();
-    pid_t group  = getpgid(0);
-    pid_t parent = getppid();
-
     if (child > 0) {
-        if (n == 0) {
-            fprintf(
-                stdout,
-                "Parent\tpid=%d\tgroup=%d\tparent=%d\tchild=%d\n",
-                pid,
-                group,
-                parent,
-                child
-            );
-            fflush(stdout);
-            // Sleep long enough for the descendant (n == max_depth)
-            // to be reparented.
-            sleep(10);
-        }
-        exit(0);
-    } else {
-        if (n < max_depth) {
-            orphan(n+1);
-        }
-
-        // Wait to be reparented.
-        while (getppid() == parent) {
-        }
         fprintf(
             stdout,
-            "Orphan\tpid=%d\tgroup=%d\tparent=%d\tparent_before=%d\n",
+            "Parent\tpid=%d\tgroup=%d\tparent=%d\n",
             pid,
             group,
-            getppid(),
             parent
         );
         fflush(stdout);
         exit(0);
+    } else {
+        // Wait to be reparented.
+        while (getppid() != parent) {
+        }
+        fprintf(
+            stdout,
+            "Child\tpid=%d\tgroup=%d\tparent=%d\n",
+            getpid(),
+            getpgid(0),
+            getppid()
+        );
+        fflush(stdout);
+        exit(0);
     }
-}
-
-// Creates orphan/zombie process tree to be reaped.
-int main() {
-    orphan(0);
 }
