@@ -148,10 +148,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "buildinfo"
-version = "0.0.0"
-
-[[package]]
 name = "byc"
 version = "0.0.0"
 dependencies = [
@@ -261,6 +257,15 @@ dependencies = [
  "darling_core",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "devtool"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "tokio",
 ]
 
 [[package]]
@@ -1031,15 +1036,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "syx"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "clap",
- "tokio",
 ]
 
 [[package]]
