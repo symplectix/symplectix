@@ -6,6 +6,7 @@ use std::path::{
     PathBuf,
 };
 
+mod buildinfo;
 mod format;
 
 trait DevTool {
@@ -27,6 +28,8 @@ pub struct Cli {
 
 #[derive(Debug, Clone, clap::Subcommand)]
 enum Command {
+    /// Print buildinfo collected at compile time.
+    BuildInfo(buildinfo::BuildInfo),
     /// Format code.
     Format(format::Format),
 }
@@ -42,7 +45,8 @@ impl Cli {
         let ctx = Context { cargo: PathBuf::from(env!("CARGO")) };
 
         match self.cmd {
-            Command::Format(t) => t.run(ctx),
+            Command::BuildInfo(c) => c.run(ctx),
+            Command::Format(c) => c.run(ctx),
         }
     }
 }
