@@ -41,11 +41,11 @@ jobs:
           prefix-key: "syx-v0"
           # To only cache release builds from `main`.
           save-if: ${{ github.ref == 'refs/heads/main' && matrix.profile == 'release' }}
+      - name: Print info
+        run: cargo dev info
       - name: Run clippy
         run: cargo clippy --profile ${{ matrix.profile }} --no-deps --all-targets --all-features
       - name: Run build
         run: cargo build --profile ${{ matrix.profile }} --workspace
       - name: Run test
         run: cargo test --profile ${{ matrix.profile }} --workspace
-      - name: Print build info
-        run: cargo run --profile ${{ matrix.profile }} --package buildinfo
