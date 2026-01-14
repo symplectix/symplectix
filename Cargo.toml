@@ -62,3 +62,6 @@ overflow-checks = false
 [profile.release]
 lto = true
 codegen-units = 1
+
+[profile.release.package.devtool]
+codegen-units = 32
