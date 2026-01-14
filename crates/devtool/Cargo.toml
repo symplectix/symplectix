@@ -1,0 +1,13 @@
+[package]
+name = "devtool"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true

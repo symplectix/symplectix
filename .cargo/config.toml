@@ -1,2 +1,2 @@
 [alias]
-syx = "run --package syx --release --"
+dev = "run --package devtool --release --"
