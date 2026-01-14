@@ -14,7 +14,6 @@ bit = { path = "crates/bit" }
 bits = { path = "crates/bits" }
 bits_aux = { path = "crates/bits_aux" }
 bits_buf = { path = "crates/bits_buf" }
-buildinfo = { path = "crates/buildinfo" }
 byc = { path = "crates/byc" }
 fenwicktree = { path = "crates/fenwicktree" }
 print_md_cst = { path = "crates/print_md_cst" }
