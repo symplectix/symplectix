@@ -2,11 +2,6 @@
 /bazel-*
 /.bazelrc.local
 
-# Bazel's MODULE lockfile isn't ready to check in yet:
-# Store resolved repository attributes in the Bzlmod lockfile: https://github.com/bazelbuild/bazel/issues/19026
-# Consider skipping bazel_tools@_ from lockfile: https://github.com/bazelbuild/bazel/issues/19971
-# MODULE.bazel.lock
-
 ### Temporary directory
 /tmp
 

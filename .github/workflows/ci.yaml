@@ -49,3 +49,44 @@ jobs:
         run: cargo build --profile ${{ matrix.profile }} --workspace
       - name: Run test
         run: cargo test --profile ${{ matrix.profile }} --workspace
+  bazel:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-24.04
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Restore bazel cache
+        uses: actions/cache/restore@v5
+        id: restore-bazel-cache
+        env:
+          cache-name: bazel-cache
+        with:
+          path: |
+            ~/.cache/bazel
+            ~/.cache/bazelisk
+          key: ${{ matrix.os }}-${{ env.cache-name }}-${{ github.sha }}
+          restore-keys: ${{ matrix.os }}-${{ env.cache-name }}-
+
+      - name: Build
+        run: bazel build --config=ci //...
+
+      - name: Test
+        run: bazel test --config=ci //...
+
+      # TODO: Test fuzzing targets
+      # - name: Fuzz
+      #   run: bazel build --config=fuzzing //...
+
+      - uses: actions/cache/save@v5
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.cache/bazel
+            ~/.cache/bazelisk
+          key: ${{ steps.restore-bazel-cache.outputs.cache-primary-key }}
