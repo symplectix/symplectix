@@ -1,5 +1,7 @@
 load("//bazel:rust.bzl", "rust")
 
+package(default_visibility = ["//:__subpackages__"])
+
 rust.library(
     name = "bit",
     srcs = ["bit.rs"],
