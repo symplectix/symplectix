@@ -8,8 +8,109 @@ rust.toolchain(
 )
 use_repo(rust, "rust_toolchains")
 
-# crate = use_extension(
-#     "@rules_rust//crate_universe:extension.bzl",
-#     "crate",
-#     # isolate = True,
-# )
+crate = use_extension(
+    "@rules_rust//crate_universe:extension.bzl",
+    "crate",
+    # isolate = True,
+)
+crate.spec(
+    package = "anyhow",
+    version = "1",
+)
+crate.spec(
+    package = "arc-swap",
+    version = "1.8",
+)
+crate.spec(
+    package = "bitflags",
+    version = "2",
+)
+crate.spec(
+    package = "bon",
+    version = "3.8",
+)
+crate.spec(
+    package = "cc",
+    version = "1",
+)
+crate.spec(
+    features = ["derive"],
+    package = "clap",
+    version = "4.5.53",
+)
+crate.spec(
+    package = "futures",
+    version = "0.3",
+)
+crate.spec(
+    package = "humantime",
+    version = "2",
+)
+crate.spec(
+    package = "itertools",
+    version = "0.14",
+)
+crate.spec(
+    package = "libc",
+    version = "0.2",
+)
+crate.spec(
+    package = "libfuzzer-sys",
+    version = "0.4",
+)
+crate.spec(
+    package = "num",
+    version = "0.4",
+)
+crate.spec(
+    package = "prost",
+    version = "0.13",
+)
+crate.spec(
+    package = "prost-reflect",
+    version = "0.14",
+)
+crate.spec(
+    package = "prost-types",
+    version = "0.13",
+)
+crate.spec(
+    package = "quickcheck",
+    version = "1",
+)
+crate.spec(
+    package = "quickcheck_macros",
+    version = "1",
+)
+crate.spec(
+    package = "tempfile",
+    version = "3",
+)
+crate.spec(
+    package = "thiserror",
+    version = "1",
+)
+crate.spec(
+    features = ["full"],
+    package = "tokio",
+    version = "1.48",
+)
+crate.spec(
+    package = "tracing",
+    version = "0.1",
+)
+crate.spec(
+    features = ["env-filter"],
+    package = "tracing-subscriber",
+    version = "0.3",
+)
+crate.spec(
+    package = "tree-sitter",
+    version = "0.25",
+)
+crate.spec(
+    package = "tree-sitter-md",
+    version = "0.5",
+)
+crate.from_specs()
+use_repo(crate, "crates")
