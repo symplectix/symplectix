@@ -1,6 +1,6 @@
 ### Bazel
 /bazel-*
-/.bazelrc.local
+/bazel/bazelrc/user.bazelrc
 
 ### Temporary directory
 /tmp

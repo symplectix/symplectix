@@ -1,9 +1,6 @@
 //! This crate `devtool` provides internal tooling.
 
-use std::path::{
-    Path,
-    PathBuf,
-};
+use std::path::PathBuf;
 use std::process::Stdio;
 use std::{
     env,
@@ -21,8 +18,6 @@ trait DevTool {
 
 #[derive(Debug, Clone)]
 struct Context {
-    #[allow(dead_code)]
-    cargo:      PathBuf,
     revision:   String,
     run_number: String,
 }
@@ -45,7 +40,8 @@ enum Command {
 impl Cli {
     /// Run a tool and wait its result.
     pub fn run(self) -> anyhow::Result<()> {
-        let project_root = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+        // let project_root = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+        let project_root = PathBuf::from(std::env::var("BUILD_WORKSPACE_DIRECTORY").unwrap());
         assert!(project_root.join(".git/HEAD").exists());
         // Always run tools from the project root for consistency.
         env::set_current_dir(project_root)?;
@@ -78,7 +74,7 @@ impl Cli {
         //   increments with each re-run.
         let run_number = env::var("GITHUB_RUN_NUMBER").unwrap_or("0".to_owned());
 
-        let ctx = Context { cargo: PathBuf::from(env!("CARGO")), revision, run_number };
+        let ctx = Context { revision, run_number };
 
         match self.cmd {
             Command::Info(c) => c.run(ctx),
