@@ -3,6 +3,7 @@ load("//bazel:rust.bzl", "rust")
 rust.library(
     name = "byc",
     srcs = glob(["src/*.rs"]),
+    visibility = ["//:__subpackages__"],
     deps = [
         "@crates//:bitflags",
         "@crates//:bon",

@@ -5,7 +5,7 @@ use std::io::{
     BufRead,
     BufReader,
 };
-use std::path::Path;
+use std::path::PathBuf;
 use std::process::{
     Command,
     Stdio,
@@ -13,14 +13,19 @@ use std::process::{
 use std::thread;
 use std::time::Duration;
 
-fn procrun() -> &'static Path {
-    static PROCRUN_BIN: &str = env!("CARGO_BIN_EXE_procrun");
-    Path::new(PROCRUN_BIN)
+use runfiles::{
+    Runfiles,
+    rlocation,
+};
+
+fn procrun() -> PathBuf {
+    let r = Runfiles::create().expect("failed to create Runfiles");
+    PathBuf::from(rlocation!(r, "_main/crates/procrun/procrun").unwrap())
 }
 
-fn orphan() -> &'static Path {
-    static ORPHAN_BIN: &str = procrun_test::ORPHAN_BIN;
-    Path::new(ORPHAN_BIN)
+fn orphan() -> PathBuf {
+    let r = Runfiles::create().expect("failed to create Runfiles");
+    PathBuf::from(rlocation!(r, "_main/crates/procrun/orphan").unwrap())
 }
 
 #[test]

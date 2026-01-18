@@ -1,4 +1,5 @@
-#![allow(missing_docs)]
+//! Helpers to implement tests.
+
 use std::fs::File;
 use std::path::{
     Path,
@@ -39,6 +40,7 @@ mod private {
     impl Sealed for tempfile::TempDir {}
 }
 
+/// Extension trait for TempDir.
 pub trait TempDirExt: private::Sealed {
     /// Creates a new temporary file in `self.path()`.
     ///
