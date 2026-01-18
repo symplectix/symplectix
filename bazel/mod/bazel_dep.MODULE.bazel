@@ -28,10 +28,10 @@ bazel_dep(name = "aspect_bazel_lib", version = "2.21.2")
 # bazel_dep(name = "rules_oci", version = "2.2.6")
 
 # Protocol Buffers - Google's data interchange format
-# bazel_dep(name = "protobuf", version = "31.1")
+bazel_dep(name = "protobuf", version = "31.1")
 
 # Build Protobuf and gRPC code from proto_library
-# bazel_dep(name = "rules_proto_grpc", version = "5.5.0")
+bazel_dep(name = "rules_proto_grpc", version = "5.5.0")
 # bazel_dep(name = "rules_proto_grpc_doc", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_grpcgateway", version = "<version number here>")
 # bazel_dep(name = "rules_proto_grpc_buf", version = "<version number here>")
@@ -54,7 +54,7 @@ bazel_dep(name = "rules_rust", version = rules_rust_version)
 # bazel_dep(name = "rules_rust_bindgen", version = rules_rust_version)
 # bazel_dep(name = "rules_rust_mdbook", version = rules_rust_version)
 # bazel_dep(name = "rules_rust_pyo3", version = rules_rust_version)
-# bazel_dep(name = "rules_rust_prost", version = rules_rust_version)
+bazel_dep(name = "rules_rust_prost", version = rules_rust_version)
 # bazel_dep(name = "rules_rust_protobuf", version = rules_rust_version)
 
 # Python rules for Bazel

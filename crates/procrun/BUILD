@@ -44,7 +44,7 @@ rust.test(
     crate = ":procrun",
     deps = [
         "//crates/testing",
-    ]
+    ],
 )
 
 rust.test_suite(
