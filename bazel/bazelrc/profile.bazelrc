@@ -69,6 +69,14 @@ build:release --@rules_rust//rust/settings:extra_rustc_flag=-Coverflow-checks=of
 # applies only to that target. This can be useful for passing build-wide options such as LTO.
 build:release --@rules_rust//rust/settings:extra_exec_rustc_flag=-Copt-level=3
 
+build:fuzz --config=nightly
+build:fuzz --compilation_mode=opt
+build:fuzz --config=debuginfo
+build:fuzz --config=ltothin
+build:fuzz --@rules_rust//rust/settings:codegen_units=1
+build:fuzz --@rules_rust//rust/settings:extra_rustc_flag=-Coverflow-checks=off
+build:fuzz --@rules_rust//rust/settings:extra_exec_rustc_flag=-Copt-level=3
+
 build:ci --config=clippy
 build:ci --config=rustfmt
 build:ci --config=stable
