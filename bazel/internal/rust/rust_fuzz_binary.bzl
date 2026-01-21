@@ -1,5 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 visibility("//bazel")
 
@@ -75,10 +75,13 @@ def _rust_fuzz_binary_impl(
         **kwargs
     )
 
-    sh_binary(
+    py_binary(
         name = name,
-        srcs = ["//bazel/internal/rust:exec_fuzz_target.sh"],
-        args = ["$(rootpath :{}_fuzz_target)".format(name)],
+        srcs = ["//bazel/internal/rust:exec_fuzz_target.py"],
+        main = "//bazel/internal/rust:exec_fuzz_target.py",
+        args = [
+            "$(rootpath :{}_fuzz_target)".format(name),
+        ],
         data = [":{}_fuzz_target".format(name)],
         tags = _tags + tags,
     )
@@ -145,8 +148,8 @@ _rust_fuzz_binary = macro(
     },
 )
 
+# Wraps _rust_fuzz_target to set default values to selectable expression.
 def rust_fuzz_binary(**kwargs):
-    """Wraps _rust_fuzz_target to set default values to selectable expression."""
     env = kwargs.pop("env", {})
 
     asan_options = env.get("ASAN_OPTIONS")
