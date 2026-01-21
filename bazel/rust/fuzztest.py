@@ -21,6 +21,9 @@ def _create_artifact_prefix_dir() -> str:
 if __name__ == "__main__":
     artifact_prefix = _create_artifact_prefix_dir()
 
+    if len(sys.argv) < 2:
+        raise ValueError("missing 'fuzz_target'")
+
     fuzz_target = sys.argv[1]
     fuzz_args = [
         Path(fuzz_target).name,

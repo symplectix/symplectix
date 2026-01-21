@@ -77,8 +77,8 @@ def _rust_fuzz_binary_impl(
 
     py_binary(
         name = name,
-        srcs = ["//bazel/internal/rust:exec_fuzz_target.py"],
-        main = "//bazel/internal/rust:exec_fuzz_target.py",
+        srcs = ["//bazel/rust:fuzztest.py"],
+        main = "//bazel/rust:fuzztest.py",
         args = [
             "$(rootpath :{}_fuzz_target)".format(name),
         ],

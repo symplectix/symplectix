@@ -7,6 +7,6 @@ exports_files([
 ])
 
 py_binary(
-    name = "exec_fuzz_target",
-    srcs = ["exec_fuzz_target.py"],
+    name = "fuzztest",
+    srcs = ["fuzztest.py"],
 )
