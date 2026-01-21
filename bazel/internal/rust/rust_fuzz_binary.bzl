@@ -1,20 +1,19 @@
-load(
-    "@rules_rust//rust:defs.bzl",
-    "rust_binary",
-)
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 visibility("//bazel")
 
-def _rust_fuzz_target_impl(
+def _rust_fuzz_binary_impl(
         name,
-        sanitizer = "address",
-        no_cfg_fuzzing = False,
-        no_strip_dead_code = False,
-        trace_compares = True,
-        trace_divs = True,
-        trace_geps = True,
-        disable_branch_folding = True,
-        coverage = False,
+        sanitizer,
+        cfg_fuzzing,
+        link_dead_code,
+        trace_compares,
+        trace_divs,
+        trace_geps,
+        disable_branch_folding,
+        coverage,
+        coverage_stack_depth,
         **kwargs):
     # https://github.com/rust-fuzz/cargo-fuzz
     # https://github.com/rust-fuzz/libfuzzer
@@ -22,10 +21,10 @@ def _rust_fuzz_target_impl(
     rustc_flags = []
     tags = ["fuzzing"]
 
-    if not no_cfg_fuzzing:
+    if cfg_fuzzing:
         rustc_flags.append("--cfg=fuzzing")
 
-    if not no_strip_dead_code:
+    if link_dead_code:
         rustc_flags.append("-Clink-dead-code")
 
     rustc_flags.extend([
@@ -34,9 +33,6 @@ def _rust_fuzz_target_impl(
         "-Cllvm-args=-sanitizer-coverage-inline-8bit-counters",
         "-Cllvm-args=-sanitizer-coverage-pc-table",
     ])
-
-    # if os == "linux":
-    rustc_flags.append("-Cllvm-args=-sanitizer-coverage-stack-depth")
 
     if trace_compares:
         rustc_flags.append("-Cllvm-args=-sanitizer-coverage-trace-compares")
@@ -52,6 +48,9 @@ def _rust_fuzz_target_impl(
 
     if coverage:
         rustc_flags.append("-Cinstrument-coverage")
+
+    if coverage_stack_depth:
+        rustc_flags.append("-Cllvm-args=-sanitizer-coverage-stack-depth")
 
     if sanitizer == "memory":
         rustc_flags.extend([
@@ -70,15 +69,23 @@ def _rust_fuzz_target_impl(
         _tags = []
 
     rust_binary(
-        name = name,
+        name = "{}_fuzz_target".format(name),
         rustc_flags = _rustc_flags + rustc_flags,
         tags = _tags + tags,
         **kwargs
     )
 
-rust_fuzz_target = macro(
+    sh_binary(
+        name = name,
+        srcs = ["//bazel/internal/rust:exec_fuzz_target.sh"],
+        args = ["$(rootpath :{}_fuzz_target)".format(name)],
+        data = [":{}_fuzz_target".format(name)],
+        tags = _tags + tags,
+    )
+
+_rust_fuzz_binary = macro(
     inherit_attrs = rust_binary,
-    implementation = _rust_fuzz_target_impl,
+    implementation = _rust_fuzz_binary_impl,
     attrs = {
         "sanitizer": attr.string(
             configurable = False,
@@ -88,13 +95,18 @@ rust_fuzz_target = macro(
             """,
             default = "address",
         ),
-        "no_cfg_fuzzing": attr.bool(
+        "cfg_fuzzing": attr.bool(
+            configurable = False,
+            default = True,
+        ),
+        "link_dead_code": attr.bool(
             configurable = False,
             default = False,
         ),
-        "no_strip_dead_code": attr.bool(
+        "coverage": attr.bool(
             configurable = False,
-            default = False,
+            doc = "Instrument program code with source-based code coverage information.",
+            default = True,
         ),
         "trace_compares": attr.bool(
             configurable = False,
@@ -127,10 +139,38 @@ rust_fuzz_target = macro(
             """,
             default = True,
         ),
-        "coverage": attr.bool(
-            configurable = False,
-            doc = "Instrument program code with source-based code coverage information.",
-            default = True,
+        "coverage_stack_depth": attr.bool(
+            default = False,
         ),
     },
 )
+
+def rust_fuzz_binary(**kwargs):
+    """Wraps _rust_fuzz_target to set default values to selectable expression."""
+    env = kwargs.pop("env", {})
+
+    asan_options = env.get("ASAN_OPTIONS")
+    if asan_options == None:
+        asan_options = "detect_odr_violation=0"
+    else:
+        asan_options += ":detect_odr_violation=0"
+
+    tsan_options = env.get("TSAN_OPTIONS")
+    if tsan_options == None:
+        tsan_options = "report_signal_unsafe=0"
+    else:
+        tsan_options += ":report_signal_unsafe=0"
+
+    env.update({
+        "ASAN_OPTIONS": asan_options,
+        "TSAN_OPTIONS": tsan_options,
+    })
+
+    _rust_fuzz_binary(
+        env = env,
+        coverage_stack_depth = select({
+            "@platforms//os:linux": True,
+            "//conditions:default": False,
+        }),
+        **kwargs
+    )

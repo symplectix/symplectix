@@ -7,8 +7,8 @@ load(
     "rust_test_suite",
 )
 load(
-    "//bazel/internal:rust_fuzz_target.bzl",
-    "rust_fuzz_target",
+    "//bazel/internal/rust:rust_fuzz_binary.bzl",
+    "rust_fuzz_binary",
 )
 
 rust = struct(
@@ -17,5 +17,5 @@ rust = struct(
     doc_test = rust_doc_test,
     test = rust_test,
     test_suite = rust_test_suite,
-    fuzz_target = rust_fuzz_target,
+    fuzz_binary = rust_fuzz_binary,
 )
