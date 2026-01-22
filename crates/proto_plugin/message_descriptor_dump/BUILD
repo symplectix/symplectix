@@ -1,5 +1,5 @@
-load("//bazel:proto.bzl", "proto")
-load("//bazel:rust.bzl", "rust")
+load("//build:proto.bzl", "proto")
+load("//build:rust.bzl", "rust")
 
 package(default_visibility = ["//:__subpackages__"])
 

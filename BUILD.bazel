@@ -1,4 +1,4 @@
-load("//bazel:uv.bzl", "uv")
+load("//build:uv.bzl", "uv")
 
 exports_files([
     "MODULE.bazel",

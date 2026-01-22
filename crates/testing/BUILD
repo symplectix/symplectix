@@ -1,4 +1,4 @@
-load("//bazel:rust.bzl", "rust")
+load("//build:rust.bzl", "rust")
 
 rust.library(
     name = "testing",

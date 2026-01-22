@@ -1,4 +1,4 @@
-load("//bazel:proto.bzl", "proto")
+load("//build:proto.bzl", "proto")
 load("//crates/proto_plugin/message_descriptor_dump:defs.bzl", "message_descriptor_dump")
 
 proto.library(

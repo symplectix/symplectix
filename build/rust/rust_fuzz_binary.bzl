@@ -1,7 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 
-visibility("//bazel")
+visibility("//build")
 
 def _rust_fuzz_binary_impl(
         name,
@@ -77,8 +77,8 @@ def _rust_fuzz_binary_impl(
 
     py_binary(
         name = name,
-        srcs = ["//bazel/rust:fuzztest.py"],
-        main = "//bazel/rust:fuzztest.py",
+        srcs = ["//build/rust:fuzztest.py"],
+        main = "//build/rust:fuzztest.py",
         args = [
             "$(rootpath :{}_fuzz_target)".format(name),
         ],

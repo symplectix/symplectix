@@ -1,11 +1,11 @@
 # https://bazel.build/reference/command-line-reference
 
-import %workspace%/bazel/bazelrc/preset.bazelrc
-import %workspace%/bazel/bazelrc/cache.bazelrc
-import %workspace%/bazel/bazelrc/profile.bazelrc
+import %workspace%/build/bazelrc/preset.bazelrc
+import %workspace%/build/bazelrc/cache.bazelrc
+import %workspace%/build/bazelrc/profile.bazelrc
 
 # https://bazel.build/docs/user-manual#workspace_status
 common:stamp --stamp --workspace_status_command=devtool/workspace_status.sh
 
 # Load extra bazel settings if any.
-try-import %workspace%/bazel/bazelrc/user.bazelrc
+try-import %workspace%/build/bazelrc/user.bazelrc
