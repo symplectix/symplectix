@@ -1,28 +1,31 @@
 import argparse
 import os
+import tempfile
 from pathlib import Path
 
 
 def _tmpdir() -> Path:
     if tmpdir := os.getenv("TEST_TMPDIR"):
         return Path(tmpdir)
-    elif tmpdir := os.getenv("TMPDIR"):
-        return Path(tmpdir)
-    return Path("/tmp")
+    return tempfile.TemporaryDirectory().name
 
 
-def exec(output_root: Path | None, fuzz_target: Path, fuzz_args: list[str]) -> None:
+def run(output_root: Path | None, fuzz_target: Path, fuzz_args: list[str]) -> None:
+    """Execute fuzz_target from BUILD_WORKING_DIRECTORY."""
     if output_root is None:
-        output_root = _tmpdir() / "fuzzing"
+        with tempfile.TemporaryDirectory(delete=False) as tmpdir:
+            output_root = Path(tmpdir) / "fuzzing"
+
     fuzz_target = fuzz_target.resolve()
     fuzztest_name = fuzz_target.name.removesuffix("_fuzz_target")
-    artifact_prefix = output_root / fuzztest_name / "artifact"
-    artifact_prefix.mkdir(parents=True, exist_ok=True)
 
     if bwd := os.getenv("BUILD_WORKING_DIRECTORY"):
         os.chdir(bwd)
 
-    os.execv(
+    artifact_prefix = output_root / fuzztest_name / "artifact"
+    artifact_prefix.mkdir(parents=True, exist_ok=True)
+
+    os.execv(  # noqa: S606
         fuzz_target,
         [
             fuzztest_name,
@@ -38,4 +41,4 @@ if __name__ == "__main__":
     p.add_argument("fuzz_target", type=Path)
     p.add_argument("fuzz_args", nargs="*")
     args = p.parse_args()
-    exec(**vars(args))
+    run(**vars(args))

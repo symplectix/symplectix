@@ -8,15 +8,14 @@ from typing import Literal
 def git_status() -> Literal["clean", "dirty"]:
     """Return the working tree status."""
     status = subprocess.run(
-        ["git", "status", "--porcelain"],
+        ["git", "status", "--porcelain"],  # noqa: S607
         encoding="utf-8",
         stdout=subprocess.PIPE,
         check=True,
     )
     if status.stdout:
         return "dirty"
-    else:
-        return "clean"
+    return "clean"
 
 
 def git_revision() -> str:
@@ -26,7 +25,7 @@ def git_revision() -> str:
     to reference an object in git (usually a commit).
     """
     status = subprocess.run(
-        ["git", "rev-parse", "--short=10", "HEAD"],
+        ["git", "rev-parse", "--short=10", "HEAD"],  # noqa: S607
         encoding="utf-8",
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
@@ -52,4 +51,4 @@ if __name__ == "__main__":
     if bwd := os.getenv("BUILD_WORKING_DIRECTORY"):
         os.chdir(bwd)
 
-    print("STABLE_GIT_STATUS", git_status())
+    print("STABLE_GIT_STATUS", git_status())  # noqa: T201
