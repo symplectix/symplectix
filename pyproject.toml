@@ -1,7 +1,6 @@
 [project]
 name = "syx"
 version = "0.0.0"
-readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
   "maturin",
@@ -14,13 +13,13 @@ python_version = "3.14"
 strict = true
 exclude = [
   "bazel-*",
-  ".venv",
   "venv",
+  ".venv",
 ]
 
 [tool.ruff]
 target-version = "py314"
-line-length = 80
+line-length = 100
 indent-width = 4
 
 [tool.ruff.format]

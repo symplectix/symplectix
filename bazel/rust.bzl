@@ -7,7 +7,7 @@ load(
     "rust_test_suite",
 )
 load(
-    "//build/rust:rust_fuzz_binary.bzl",
+    "//bazel/rust:rust_fuzz_binary.bzl",
     "rust_fuzz_binary",
 )
 

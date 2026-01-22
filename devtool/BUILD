@@ -1,5 +1,5 @@
 load("@aspect_bazel_lib//lib:jq.bzl", "jq")
-load("//build:rust.bzl", "rust")
+load("//bazel:rust.bzl", "rust")
 
 package(default_visibility = ["//:__subpackages__"])
 

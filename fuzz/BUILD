@@ -1,4 +1,4 @@
-load("//build:rust.bzl", "rust")
+load("//bazel:rust.bzl", "rust")
 
 package(default_visibility = ["//:__subpackages__"])
 

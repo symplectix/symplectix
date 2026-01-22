@@ -1,5 +1,5 @@
-load("//build:cc.bzl", "cc")
-load("//build:rust.bzl", "rust")
+load("//bazel:cc.bzl", "cc")
+load("//bazel:rust.bzl", "rust")
 
 package(default_visibility = ["//:__subpackages__"])
 
