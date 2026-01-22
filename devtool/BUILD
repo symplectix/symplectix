@@ -1,5 +1,6 @@
 load("@aspect_bazel_lib//lib:jq.bzl", "jq")
 load("//bazel:rust.bzl", "rust")
+load("//bazel:py.bzl", "py")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -24,6 +25,12 @@ rust.binary(
         "@crates//:anyhow",
         "@crates//:clap",
     ],
+)
+
+py.binary(
+    name = "workspace_status_py",
+    srcs = ["workspace_status.py"],
+    main = "workspace_status.py",
 )
 
 jq(

@@ -1,33 +1,41 @@
+import argparse
 import os
-import sys
 from pathlib import Path
 
 
-def _tmpdir() -> str:
+def _tmpdir() -> Path:
     if tmpdir := os.getenv("TEST_TMPDIR"):
-        return tmpdir
+        return Path(tmpdir)
     elif tmpdir := os.getenv("TMPDIR"):
-        return tmpdir
-    return "/tmp"
+        return Path(tmpdir)
+    return Path("/tmp")
 
 
-def _create_artifact_prefix_dir() -> str:
-    tmpdir = _tmpdir()
-    artifact_prefix = f"{tmpdir}/fuzzing/artifact/"
-    os.makedirs(artifact_prefix, exist_ok=True)
-    return artifact_prefix
+def exec(output_root: Path | None, fuzz_target: Path, fuzz_args: list[str]) -> None:
+    if output_root is None:
+        output_root = _tmpdir() / "fuzzing"
+    fuzz_target = fuzz_target.resolve()
+    fuzztest_name = fuzz_target.name.removesuffix("_fuzz_target")
+    artifact_prefix = output_root / fuzztest_name / "artifact"
+    artifact_prefix.mkdir(parents=True, exist_ok=True)
+
+    if bwd := os.getenv("BUILD_WORKING_DIRECTORY"):
+        os.chdir(bwd)
+
+    os.execv(
+        fuzz_target,
+        [
+            fuzztest_name,
+            f"-artifact_prefix={artifact_prefix}/",
+            *fuzz_args,
+        ],
+    )
 
 
 if __name__ == "__main__":
-    artifact_prefix = _create_artifact_prefix_dir()
-
-    if len(sys.argv) < 2:
-        raise ValueError("missing 'fuzz_target'")
-
-    fuzz_target = sys.argv[1]
-    fuzz_args = [
-        Path(fuzz_target).name,
-        f"-artifact_prefix={artifact_prefix}",
-        *sys.argv[2:],
-    ]
-    os.execv(fuzz_target, fuzz_args)
+    p = argparse.ArgumentParser()
+    p.add_argument("--output_root", type=Path)
+    p.add_argument("fuzz_target", type=Path)
+    p.add_argument("fuzz_args", nargs="*")
+    args = p.parse_args()
+    exec(**vars(args))

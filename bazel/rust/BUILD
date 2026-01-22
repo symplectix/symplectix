@@ -1,13 +1,14 @@
-load("@rules_python//python:defs.bzl", "py_binary")
 load(":rust_fuzz_binary.bzl", "rust_fuzz_binary")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 exports_files(
     [
-        "exec_fuzz_target.py",
+        "fuzztest.py",
     ],
-    visibility = ["//:__subpackages__"],
 )
 
+# You will rarely run this target directly,
+# but can use it to test the script itself.
 py_binary(
     name = "fuzztest",
     srcs = ["fuzztest.py"],
