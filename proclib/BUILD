@@ -16,7 +16,7 @@ rust.library(
         "src/tests.rs",
     ],
     deps = [
-        "//crates/reaper",
+        "//reaper",
         "@crates//:anyhow",
         "@crates//:arc-swap",
         "@crates//:clap",
