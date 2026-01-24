@@ -1,4 +1,5 @@
 load("//bazel:py.bzl", "py")
+load("//bazel:sh.bzl", "sh")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -18,4 +19,9 @@ py.binary(
     name = "fuzztest",
     srcs = ["fuzztest.py"],
     main = "fuzztest.py",
+)
+
+sh.binary(
+    name = "gen_rust_project",
+    srcs = ["gen_rust_project.sh"],
 )

@@ -4,7 +4,11 @@ package(default_visibility = ["//:__subpackages__"])
 
 rust.library(
     name = "bits",
-    srcs = glob(["src/**/*.rs"]),
+    srcs = glob([
+        "src/*.rs",
+        "src/mask/*.rs",
+        "src/block/*.rs",
+    ]),
     deps = [
         "//bit",
         "@crates//:num",
