@@ -12,7 +12,7 @@ message_descriptor_dump = rule(
         proto_compile_attrs,
         _plugins = attr.label_list(
             providers = [ProtoPluginInfo],
-            default = [Label("//crates/proto_plugin/message_descriptor_dump")],
+            default = [Label("//proto_plugin/message_descriptor_dump")],
             cfg = "exec",
             doc = "List of protoc plugins to apply",
         ),

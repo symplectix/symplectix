@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package testdata;
 
-import "crates/proto_plugin/testdata/example.proto";
+import "proto_plugin/testdata/example.proto";
 
 service CustomerService {
     rpc GetCustomer(testdata.Customer.Id) returns (testdata.Customer);

@@ -1,5 +1,5 @@
 load("//bazel:proto.bzl", "proto")
-load("//crates/proto_plugin/message_descriptor_dump:defs.bzl", "message_descriptor_dump")
+load("//proto_plugin/message_descriptor_dump:defs.bzl", "message_descriptor_dump")
 
 proto.library(
     name = "example_proto",
@@ -26,7 +26,7 @@ proto.library(
 message_descriptor_dump(
     name = "testdata_message_descriptor_dump",
     protos = [
-        "service_proto",
         ":example_proto",
+        ":service_proto",
     ],
 )
