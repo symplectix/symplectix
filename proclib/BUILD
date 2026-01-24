@@ -40,7 +40,7 @@ rust.test(
     size = "small",
     crate = ":proclib",
     deps = [
-        "//crates/testing",
+        "//testing",
     ],
 )
 
