@@ -3,6 +3,6 @@
 
 use std::env;
 
-fn main() -> procrun::ProcExit {
-    procrun::procrun(env::args_os())
+fn main() -> proclib::ProcExit {
+    proclib::run(env::args_os())
 }

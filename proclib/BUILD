@@ -3,8 +3,14 @@ load("//bazel:rust.bzl", "rust")
 
 package(default_visibility = ["//:__subpackages__"])
 
-rust.library(
+rust.binary(
     name = "procrun",
+    srcs = ["bin/procrun.rs"],
+    deps = [":proclib"],
+)
+
+rust.library(
+    name = "proclib",
     srcs = [
         "src/lib.rs",
         "src/tests.rs",
@@ -24,29 +30,21 @@ rust.library(
     ],
 )
 
-rust.binary(
-    name = "procrun_cli",
-    srcs = ["bin/procrun.rs"],
-    binary_name = "procrun",
-    deps = [
-        ":procrun",
-    ],
-)
-
 cc.binary(
     name = "orphan",
     srcs = ["bin/orphan.c"],
 )
 
 rust.test(
-    name = "procrun_test",
+    name = "proclib_test",
     size = "small",
-    crate = ":procrun",
+    crate = ":proclib",
     deps = [
         "//crates/testing",
     ],
 )
 
+# nb. using procrun instead of proclib to test.
 rust.test_suite(
     name = "procrun_test_suite",
     size = "small",
@@ -55,7 +53,7 @@ rust.test_suite(
     ],
     data = [
         ":orphan",
-        ":procrun_cli",
+        ":procrun",
     ],
     deps = [
         "//crates/byc",

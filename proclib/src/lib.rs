@@ -55,8 +55,8 @@ impl Termination for ProcExit {
     }
 }
 
-/// An entrypoint of procrun.
-pub fn procrun<T>(args: impl IntoIterator<Item = T>) -> ProcExit
+/// An entrypoint of proclib.
+pub fn run<T>(args: impl IntoIterator<Item = T>) -> ProcExit
 where
     T: Into<OsString> + Clone,
 {
