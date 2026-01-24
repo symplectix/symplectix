@@ -56,7 +56,7 @@ rust.test_suite(
         ":procrun",
     ],
     deps = [
-        "//crates/byc",
+        "//byc",
         "@crates//:libc",
         "@rules_rust//rust/runfiles",
     ],
