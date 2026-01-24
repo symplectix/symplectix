@@ -39,6 +39,10 @@ ignore = [
   "COM812",
   # Allow passing a string literal to exceptions.
   "EM101",
+  # Allow commented-out code.
+  # Prone to false positives when checking comments that resemble Python code,
+  # but are not actually Python code.
+  "ERA",
   # Allow packages that are missing an __init__.py file.
   "INP001",
   # Allow specifying long messages outside the exception class.

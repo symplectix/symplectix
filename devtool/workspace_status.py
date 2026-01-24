@@ -1,29 +1,15 @@
 #!/usr/bin/env python
+"""Helper to stamp workspace."""
 
+import datetime as dt
 import os
 import subprocess
-from typing import Literal
 
 
-def git_status() -> Literal["clean", "dirty"]:
-    """Return the working tree status."""
-    status = subprocess.run(
-        ["git", "status", "--porcelain"],  # noqa: S607
-        encoding="utf-8",
-        stdout=subprocess.PIPE,
-        check=True,
-    )
-    if status.stdout:
-        return "dirty"
-    return "clean"
-
-
-def git_revision() -> str:
-    """Return the working tree revision.
-
-    A revision refers to the id you can use as a parameter
-    to reference an object in git (usually a commit).
-    """
+def git_rev_parse() -> str:
+    """Return the working tree revision."""
+    # A revision refers to the id you can use as a parameter
+    # to reference an object in git (usually a commit).
     status = subprocess.run(
         ["git", "rev-parse", "--short=10", "HEAD"],  # noqa: S607
         encoding="utf-8",
@@ -31,24 +17,55 @@ def git_revision() -> str:
         stderr=subprocess.DEVNULL,
         check=True,
     )
-    return status.stdout
+    return status.stdout.rstrip()
 
 
-def github_run_number() -> str:
-    """Return GITHUB_RUN_NUMBER or 0.
+def git_rev_count(since: dt.datetime | None) -> int:
+    """Return the number of revisions since the given date.
 
-    A unique number for each run of a particular workflow in a repository.
-    This number begins at 1 for the workflow's first run, and increments with each new run.
-    This number does not change if you re-run the workflow run.
+    If since is not specified, return the number of revisions since
+    beginning of the history.
 
-    https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+    Note:
+    When you git clone, you need to retrieve enough history so that
+    rev count returns an expected value.
     """
-    num = os.getenv("GITHUB_RUN_NUMBER", "0")
-    return f"r{num}"
+    args = ["git", "rev-list", "--count", "HEAD"]
+    if since is not None:
+        args.extend(
+            [
+                "--since",
+                # not documented but git seems to support timezone in ISO 8601.
+                # https://github.com/git/git/blob/master/Documentation/date-formats.adoc
+                since.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            ]
+        )
+    status = subprocess.run(  # noqa: S603
+        args,
+        encoding="utf-8",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=True,
+    )
+    return status.stdout.rstrip()
+
+
+def version() -> str:
+    """Return the version string.
+
+    This is intentionally not compatible with semver.
+    To construct semver, prepend major to this version. For example:
+    >>> "1." + version()
+    """
+    now = dt.datetime.now(tz=dt.UTC)
+    (year, week, _wday) = now.isocalendar()
+    monday = now - dt.timedelta(days=now.weekday())
+    rev_count = git_rev_count(monday)
+    rev_parse = git_rev_parse()
+    return f"{year - 2000}.{week}+r{rev_count}.{rev_parse}"
 
 
 if __name__ == "__main__":
     if bwd := os.getenv("BUILD_WORKING_DIRECTORY"):
         os.chdir(bwd)
-
-    print("STABLE_GIT_STATUS", git_status())  # noqa: T201
+    print("STABLE_VERSION", version())  # noqa: T201

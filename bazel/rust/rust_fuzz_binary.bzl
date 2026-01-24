@@ -68,13 +68,13 @@ def _rust_fuzz_binary_impl(
     if _tags == None:
         _tags = []
 
+    # if you change the suffix '_fuzz_target', you must update fuzztest.py too.
     rust_binary(
         name = "{}_fuzz_target".format(name),
         rustc_flags = _rustc_flags + rustc_flags,
         tags = _tags + tags,
         **kwargs
     )
-
     py_binary(
         name = name,
         srcs = ["//bazel/rust:fuzztest.py"],

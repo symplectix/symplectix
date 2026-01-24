@@ -5,7 +5,7 @@ import %workspace%/bazel/bazelrc/cache.bazelrc
 import %workspace%/bazel/bazelrc/profile.bazelrc
 
 # https://bazel.build/docs/user-manual#workspace_status
-common:stamp --stamp --workspace_status_command=devtool/workspace_status.sh
+common:stamp --stamp --workspace_status_command=devtool/workspace_status.py
 
 # Load extra bazel settings if any.
 try-import %workspace%/bazel/bazelrc/user.bazelrc
