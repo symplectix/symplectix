@@ -1,0 +1,15 @@
+# https://bazel.build/reference/command-line-reference
+
+import %workspace%/bazel/bazelrc/preset.bazelrc
+import %workspace%/bazel/bazelrc/cache.bazelrc
+import %workspace%/bazel/bazelrc/profile.bazelrc
+
+# Force the use of Clang for C++ builds.
+build --action_env=CC=clang
+build --action_env=CXX=clang++
+
+# https://bazel.build/docs/user-manual#workspace_status
+common:stamp --stamp --workspace_status_command=bazel/tools/workspace_status.py
+
+# Load extra bazel settings if any.
+try-import %workspace%/bazel/bazelrc/user.bazelrc

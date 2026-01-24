@@ -1,0 +1,35 @@
+load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
+
+alias(
+    name = "buildifier",
+    actual = ":fix",
+)
+
+_exclude_patterns = [
+    "./.git/*",
+]
+
+_lint_warnings = [
+    "-function-docstring",
+    "-function-docstring-args",
+    "-module-docstring",
+]
+
+buildifier(
+    name = "fix",
+    exclude_patterns = _exclude_patterns,
+    lint_mode = "fix",
+    lint_warnings = _lint_warnings,
+)
+
+buildifier_test(
+    name = "check",
+    size = "small",
+    timeout = "short",
+    exclude_patterns = _exclude_patterns,
+    lint_mode = "warn",
+    lint_warnings = _lint_warnings,
+    mode = "diff",
+    no_sandbox = True,
+    workspace = "//:MODULE.bazel",
+)

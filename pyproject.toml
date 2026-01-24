@@ -1,7 +1,6 @@
 [project]
 name = "syx"
 version = "0.0.0"
-readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
   "maturin",
@@ -13,12 +12,14 @@ dependencies = [
 python_version = "3.14"
 strict = true
 exclude = [
+  "bazel-*",
+  "venv",
   ".venv",
 ]
 
 [tool.ruff]
 target-version = "py314"
-line-length = 120
+line-length = 100
 indent-width = 4
 
 [tool.ruff.format]
@@ -38,6 +39,10 @@ ignore = [
   "COM812",
   # Allow passing a string literal to exceptions.
   "EM101",
+  # Allow commented-out code.
+  # Prone to false positives when checking comments that resemble Python code,
+  # but are not actually Python code.
+  "ERA",
   # Allow packages that are missing an __init__.py file.
   "INP001",
   # Allow specifying long messages outside the exception class.

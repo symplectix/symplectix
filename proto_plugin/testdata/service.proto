@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package testdata;
+
+import "proto_plugin/testdata/example.proto";
+
+service CustomerService {
+    rpc GetCustomer(testdata.Customer.Id) returns (testdata.Customer);
+}
+
+service ProductService {
+    rpc GetReviews(testdata.Product) returns (stream testdata.Review);
+}
