@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 use std::path::PathBuf;
 use std::{
+    env,
     fs,
     io,
 };
@@ -15,6 +16,10 @@ struct Flags {
 }
 
 fn main() -> io::Result<()> {
+    if let Ok(bwd) = env::var("BUILD_WORKING_DIRECTORY") {
+        env::set_current_dir(bwd)?;
+    }
+
     let flags = Flags::parse();
     let md = fs::read_to_string(&flags.path)?;
 

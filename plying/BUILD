@@ -1,10 +1,9 @@
 load("//bazel:rust.bzl", "rust")
 
-package(default_visibility = ["//:__subpackages__"])
-
 rust.library(
     name = "plying",
     srcs = glob(["src/*.rs"]),
+    visibility = ["//:__subpackages__"],
 )
 
 rust.test(

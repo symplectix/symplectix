@@ -6,7 +6,7 @@ rust.library(
     name = "bits",
     srcs = glob(["src/**/*.rs"]),
     deps = [
-        "//crates/bit",
+        "//bit",
         "@crates//:num",
     ],
 )
