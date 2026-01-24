@@ -77,8 +77,8 @@ def _rust_fuzz_binary_impl(
     )
     py_binary(
         name = name,
-        srcs = ["//bazel/rust:fuzztest.py"],
-        main = "//bazel/rust:fuzztest.py",
+        srcs = ["//bazel/tools:fuzztest.py"],
+        main = "//bazel/tools:fuzztest.py",
         args = [
             "$(rootpath :{}_fuzz_target)".format(name),
         ],

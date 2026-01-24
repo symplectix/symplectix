@@ -9,10 +9,10 @@ from typing import Final
 _FUZZ_TARGET_SUFFIX: Final[str] = "_fuzz_target"
 
 
-def _tmpdir() -> Path:
+def _tmpdir() -> str:
     if tmpdir := os.getenv("TEST_TMPDIR"):
-        return Path(tmpdir)
-    return tempfile.TemporaryDirectory().name
+        return tmpdir
+    return tempfile.TemporaryDirectory(prefix="fuzztest-", delete=False).name
 
 
 def run(output_root: Path | None, fuzz_target: Path, fuzz_args: list[str]) -> None:
@@ -28,10 +28,9 @@ def run(output_root: Path | None, fuzz_target: Path, fuzz_args: list[str]) -> No
         os.chdir(bwd)
 
     if output_root is None:
-        tmpdir = tempfile.TemporaryDirectory(prefix="fuzztest-", delete=False)
-        output_root = Path(tmpdir.name)
+        output_root = Path(_tmpdir())
     # artifact_prefix should be handled after chdir,
-    # because it could be
+    # because output_root could be a relative path from BUILD_WORKING_DIRECTORY.
     artifact_prefix = output_root / fuzz_name / "artifact"
     artifact_prefix.mkdir(parents=True, exist_ok=True)
 
