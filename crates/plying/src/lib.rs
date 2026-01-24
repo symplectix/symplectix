@@ -6,7 +6,7 @@
 //! ```
 //! use std::ops::ControlFlow::Continue;
 //!
-//! use ano::Fold;
+//! use plying::Fold;
 //!
 //! let sum = |acc, item| Continue(acc + item);
 //! assert_eq!(sum.fold_with(0, 1..5), 10);
@@ -18,7 +18,7 @@
 //! ```
 //! use std::ops::ControlFlow::Continue;
 //!
-//! use ano::{
+//! use plying::{
 //!     Fold,
 //!     StepFn,
 //! };

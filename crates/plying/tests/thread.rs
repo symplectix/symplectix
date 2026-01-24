@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use ano::{
+use plying::{
     Fold,
     StepFn,
 };
@@ -33,6 +33,6 @@ fn thread_scope_fold() {
     assert_eq!(r.unwrap(), 63);
     let r = sum::<_, i32>().par(sum::<_, i32>().map(mul3)).fold(data.chunks(7));
     assert_eq!(r.unwrap(), 63);
-    let r = sum::<_, usize>().par(count().map(mul3)).fold_with(0, data.chunks(4));
+    let r = sum::<_, usize>().par(count().map(mul3)).fold(data.chunks(4));
     assert_eq!(r.unwrap(), 6);
 }

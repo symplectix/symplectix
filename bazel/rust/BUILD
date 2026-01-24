@@ -1,5 +1,5 @@
-load(":rust_fuzz_binary.bzl", "rust_fuzz_binary")
 load("@rules_python//python:defs.bzl", "py_binary")
+load(":rust_fuzz_binary.bzl", "rust_fuzz_binary")
 
 exports_files(
     [

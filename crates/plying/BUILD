@@ -3,23 +3,23 @@ load("//bazel:rust.bzl", "rust")
 package(default_visibility = ["//:__subpackages__"])
 
 rust.library(
-    name = "ano",
+    name = "plying",
     srcs = glob(["src/*.rs"]),
 )
 
 rust.test(
-    name = "ano_test",
+    name = "plying_test",
     size = "small",
-    crate = ":ano",
+    crate = ":plying",
 )
 
 rust.test_suite(
-    name = "ano_test_suite",
+    name = "plying_test_suite",
     size = "small",
     srcs = [
         "tests/simple.rs",
         "tests/thread.rs",
     ],
     shared_srcs = glob(["tests/helper/*"]),
-    deps = [":ano"],
+    deps = [":plying"],
 )
