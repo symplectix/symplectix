@@ -50,19 +50,14 @@ def git_rev_count(since: dt.datetime | None) -> int:
     return status.stdout.rstrip()
 
 
-def version() -> str:
-    """Return the version string.
-
-    This is intentionally not compatible with semver.
-    To construct semver, prepend major to this version. For example:
-    >>> "1." + version()
-    """
+def version(major: int = 0) -> str:
+    """Return the version string."""
     now = dt.datetime.now(tz=dt.UTC)
     (year, week, _wday) = now.isocalendar()
     monday = now - dt.timedelta(days=now.weekday())
     rev_count = git_rev_count(monday)
     rev_parse = git_rev_parse()
-    return f"{year - 2000}.{week}+r{rev_count}.{rev_parse}"
+    return f"{major}.{year - 2000}.{week}+r{rev_count}.{rev_parse}"
 
 
 if __name__ == "__main__":
