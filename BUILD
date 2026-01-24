@@ -8,7 +8,7 @@ exports_files([
 ])
 
 jq(
-    name = "workspace_status_json",
+    name = "workspace_status",
     srcs = [],
     args = [
         "--sort-keys",
@@ -22,9 +22,9 @@ jq(
 
 genrule(
     name = "version",
-    srcs = [":workspace_status_json"],
+    srcs = [":workspace_status"],
     outs = ["version.txt"],
-    cmd = "$(JQ_BIN) -r '.STABLE_VERSION' $(location :workspace_status_json) > $@",
+    cmd = "$(JQ_BIN) -r '.STABLE_VERSION' $(location :workspace_status) > $@",
     toolchains = ["@jq_toolchains//:resolved_toolchain"],
 )
 
