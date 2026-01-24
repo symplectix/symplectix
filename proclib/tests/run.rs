@@ -20,12 +20,12 @@ use runfiles::{
 
 fn procrun() -> PathBuf {
     let r = Runfiles::create().expect("failed to create Runfiles");
-    PathBuf::from(rlocation!(r, "_main/proclib/procrun").unwrap())
+    rlocation!(r, "_main/proclib/procrun").unwrap()
 }
 
 fn orphan() -> PathBuf {
     let r = Runfiles::create().expect("failed to create Runfiles");
-    PathBuf::from(rlocation!(r, "_main/proclib/orphan").unwrap())
+    rlocation!(r, "_main/proclib/orphan").unwrap()
 }
 
 #[test]
