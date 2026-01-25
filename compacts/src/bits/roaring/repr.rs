@@ -1,5 +1,16 @@
-use std::{fmt, io};
+use std::{
+    fmt,
+    io,
+};
 
+use super::{
+    Block,
+    Loc1,
+    Page,
+    Repr,
+    Run,
+    Runs,
+};
 // use byteorder::{ByteOrder, ReadBytesExt, WriteBytesExt, LE};
 
 // use crate::{
@@ -7,13 +18,13 @@ use std::{fmt, io};
 //     num::*,
 //     ops::*,
 // };
-
 use crate::{
-    bits::{Word, Words},
+    bits::{
+        Word,
+        Words,
+    },
     ops::*,
 };
-
-use super::{Block, Loc1, Page, Repr, Run, Runs};
 
 impl fmt::Debug for Repr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

@@ -1,12 +1,16 @@
-use std::{io, path::Path};
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
+use std::{
+    env,
+    io,
+};
 
 fn main() -> io::Result<()> {
     rrr_table("table.rs", 127)
 }
 
 fn rrr_table<P: AsRef<Path>>(path: P, n: usize) -> io::Result<()> {
-    use std::{env, fs::File, io::Write};
-
     fn gentab(size: usize) -> Vec<Vec<u128>> {
         let mut table = vec![vec![0u128; size]; size];
         for k in 0..size {

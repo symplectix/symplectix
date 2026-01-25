@@ -1,18 +1,22 @@
 ////! `map`
 
-use std::{
-    borrow::Cow,
-    iter::{Enumerate, FromIterator},
-    ops::RangeBounds,
-    slice,
+use std::borrow::Cow;
+use std::iter::{
+    Enumerate,
+    FromIterator,
 };
+use std::ops::RangeBounds;
+use std::slice;
 
-use crate::{
-    bits::{bit_vec::BitVec, blocks_by, Mask, Words},
-    fenwick::FenwickTree,
-    num::Word,
-    ops::*,
+use crate::bits::bit_vec::BitVec;
+use crate::bits::{
+    Mask,
+    Words,
+    blocks_by,
 };
+use crate::fenwick::FenwickTree;
+use crate::num::Word;
+use crate::ops::*;
 
 /// `BitMap<T>`
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -22,7 +26,8 @@ pub struct BitMap<T: Words> {
 }
 
 impl<T: Words> BitMap<T> {
-    /// Reserves specified capacity by multiples of T::SIZE, such that `BitMap` has at least `n` bits.
+    /// Reserves specified capacity by multiples of T::SIZE, such that `BitMap` has at least `n`
+    /// bits.
     pub fn none(n: usize) -> Self {
         let bits = BitVec::from_fn(n, || None);
         let tree = FenwickTree::with_default(blocks_by(n, T::BITS));
@@ -92,7 +97,11 @@ impl<T: Words> Bits for BitMap<T> {
     }
 
     /// ```
-    /// use compacts::{BitMap, ops::{BitsMut, Bits}};
+    /// use compacts::BitMap;
+    /// use compacts::ops::{
+    ///     Bits,
+    ///     BitsMut,
+    /// };
     /// let mut bv = BitMap::<[u64; 1024]>::none(1000);
     /// bv.put1(10);
     /// bv.put1(50);
@@ -116,7 +125,11 @@ impl<T: Words> Bits for BitMap<T> {
     }
 
     /// ```
-    /// use compacts::{BitMap, ops::{BitsMut, Bits}};
+    /// use compacts::BitMap;
+    /// use compacts::ops::{
+    ///     Bits,
+    ///     BitsMut,
+    /// };
     /// let mut bv = BitMap::<[u64; 1024]>::none(66666);
     /// bv.put1(10);
     /// bv.put1(50);
@@ -211,8 +224,7 @@ impl<'a, T: Words> Iterator for Iter<'a, T> {
     type Item = (usize, &'a [T::Word]);
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        self.iter
-            .find_map(|(i, opt)| opt.as_ref().map(|s| (i, s.as_ref_words())))
+        self.iter.find_map(|(i, opt)| opt.as_ref().map(|s| (i, s.as_ref_words())))
     }
     #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {

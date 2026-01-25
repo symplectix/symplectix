@@ -1,16 +1,30 @@
-use std::{
-    iter::{FromIterator, Peekable},
-    ops::{Range, RangeInclusive},
-    slice,
+use std::iter::{
+    FromIterator,
+    Peekable,
 };
-
-use crate::{
-    bits::{Difference, Intersection, SymmetricDifference, Union},
-    num::try_cast,
-    ops::*,
+use std::ops::{
+    Range,
+    RangeInclusive,
 };
+use std::slice;
 
-use super::{Block, Ordering, Run, Runs, EQ, GT, LT};
+use super::{
+    Block,
+    EQ,
+    GT,
+    LT,
+    Ordering,
+    Run,
+    Runs,
+};
+use crate::bits::{
+    Difference,
+    Intersection,
+    SymmetricDifference,
+    Union,
+};
+use crate::num::try_cast;
+use crate::ops::*;
 
 impl<'a> IntoIterator for &'a Runs {
     type Item = &'a Run;
@@ -110,11 +124,7 @@ impl BitsMut for Runs {
         let i = try_cast(i);
         if let Some(pos) = self.index_to_insert(i) {
             let runs = &mut self.data;
-            let run_lhs = if pos > 0 {
-                Some(*runs[pos - 1].end())
-            } else {
-                None
-            }; // should be get_mut?
+            let run_lhs = if pos > 0 { Some(*runs[pos - 1].end()) } else { None }; // should be get_mut?
             let run_rhs = runs.get(pos).map(|r| *r.start());
 
             match (run_lhs, run_rhs) {
@@ -329,7 +339,7 @@ struct Regions<I: Iterator<Item = Region>> {
     finished: bool,
     max_size: usize,
     last_val: Option<Region>,
-    regions: Peekable<I>,
+    regions:  Peekable<I>,
 }
 
 impl<I: Iterator<Item = Region>> Regions<I> {
@@ -434,19 +444,15 @@ fn regions<'a: 'r, 'b: 'r, 'r>(
     let finished = false;
     let last_val = None;
     let regions = inner_regions(this, that).peekable();
-    Regions {
-        finished,
-        max_size,
-        last_val,
-        regions,
-    }
+    Regions { finished, max_size, last_val, regions }
 }
 
 fn merge<'a: 'r, 'b: 'r, 'r>(
     this: impl IntoIterator<Item = &'a Run> + 'a,
     that: impl IntoIterator<Item = &'b Run> + 'b,
 ) -> impl Iterator<Item = Side> + 'r {
-    use {Braket::*, Side::*};
+    use Braket::*;
+    use Side::*;
 
     struct MergeBy<L, R, F>
     where
@@ -572,37 +578,21 @@ fn inner_regions<'a: 'r, 'b: 'r, 'r>(
     tuples.scan((Ket(0), Ket(0)), |(lhs, rhs), value| match value {
         (Lhs(Bra(i)), Lhs(Ket(j))) => {
             *lhs = Ket(j);
-            Some(if rhs.is_bra() {
-                Region::And(i..j)
-            } else {
-                Region::Lhs(i..j)
-            })
+            Some(if rhs.is_bra() { Region::And(i..j) } else { Region::Lhs(i..j) })
         }
 
         (Lhs(Ket(i)), Lhs(Bra(j))) => {
             *lhs = Bra(j);
-            Some(if rhs.is_bra() {
-                Region::Rhs(i..j)
-            } else {
-                Region::Not(i..j)
-            })
+            Some(if rhs.is_bra() { Region::Rhs(i..j) } else { Region::Not(i..j) })
         }
 
         (Rhs(Bra(i)), Rhs(Ket(j))) => {
             *rhs = Ket(j);
-            Some(if lhs.is_bra() {
-                Region::And(i..j)
-            } else {
-                Region::Rhs(i..j)
-            })
+            Some(if lhs.is_bra() { Region::And(i..j) } else { Region::Rhs(i..j) })
         }
         (Rhs(Ket(i)), Rhs(Bra(j))) => {
             *rhs = Bra(j);
-            Some(if lhs.is_bra() {
-                Region::Lhs(i..j)
-            } else {
-                Region::Not(i..j)
-            })
+            Some(if lhs.is_bra() { Region::Lhs(i..j) } else { Region::Not(i..j) })
         }
 
         (Lhs(Bra(i)), Rhs(Bra(j))) => {
@@ -671,9 +661,7 @@ impl Union<Self> for Runs {
 
 impl Difference<Self> for Runs {
     fn difference(&mut self, runs: &Self) {
-        *self = regions(&self.data, &runs.data)
-            .into_and_not()
-            .collect::<Runs>();
+        *self = regions(&self.data, &runs.data).into_and_not().collect::<Runs>();
     }
 }
 

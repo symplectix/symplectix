@@ -1,14 +1,20 @@
-#[allow(unused_imports)]
-use {
-    compacts::{
-        bits::{and, or, xor, Fold, Mask},
-        ops::*,
-        BitArray, BitMap, WaveletMatrix,
-    },
-    lazy_static::lazy_static,
-    quickcheck::quickcheck,
-    rand::prelude::*,
+#![allow(missing_docs)]
+use compacts::bits::{
+    Fold,
+    Mask,
+    and,
+    or,
+    xor,
 };
+use compacts::ops::*;
+use compacts::{
+    BitArray,
+    BitMap,
+    WaveletMatrix,
+};
+use lazy_static::lazy_static;
+use quickcheck::quickcheck;
+use rand::prelude::*;
 
 quickcheck! {
     fn index_all(vec: Vec<u64>) -> bool {

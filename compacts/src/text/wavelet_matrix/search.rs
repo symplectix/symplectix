@@ -1,19 +1,25 @@
-use std::{cmp, collections::BinaryHeap, marker::PhantomData};
+use std::cmp;
+use std::collections::BinaryHeap;
+use std::marker::PhantomData;
 
-use crate::{
-    num::Word,
-    ops::{Bits, Code, Text},
+use super::{
+    View,
+    WaveletMatrix,
 };
-
-use super::{View, WaveletMatrix};
+use crate::num::Word;
+use crate::ops::{
+    Bits,
+    Code,
+    Text,
+};
 
 /// `Search` is a builder of iterators that iterates over values
 /// that satisfy `min <= value < max` in `[i, j)` .
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Search<'a, T: Text> {
     view: View<'a, T>,
-    min: Option<T::Code>,
-    max: Option<T::Code>,
+    min:  Option<T::Code>,
+    max:  Option<T::Code>,
 }
 
 /// Enumerates values from most frequent item.
@@ -71,7 +77,7 @@ where
             max,
             bin: BinaryHeap::from(vec![Probe {
                 depth: 0,
-                index: index,
+                index,
                 value: T::Code::MIN,
                 _kind: PhantomData,
             }]),
@@ -83,7 +89,10 @@ impl<'a, T: Word, B: Bits> Search<'a, WaveletMatrix<T, B>> {
     /// Short for `top().take(k).collect()`.
     ///
     /// ```
-    /// use compacts::{WaveletMatrix, BitArray};
+    /// use compacts::{
+    ///     BitArray,
+    ///     WaveletMatrix,
+    /// };
     /// let mut vec = vec![5u8, 4, 5, 5, 2, 1, 5, 6, 1, 3, 5, 0];
     /// let wm = WaveletMatrix::<u8, BitArray<u64>>::from(vec.as_mut_slice());
     ///
@@ -113,7 +122,10 @@ impl<'a, T: Word, B: Bits> Search<'a, WaveletMatrix<T, B>> {
     }
 
     /// ```
-    /// use compacts::{WaveletMatrix, BitArray};
+    /// use compacts::{
+    ///     BitArray,
+    ///     WaveletMatrix,
+    /// };
     /// let mut vec = vec![5u8, 4, 5, 5, 2, 1, 5, 6, 1, 3, 5, 0];
     /// let wm = WaveletMatrix::<u8, BitArray<u64>>::from(vec.as_mut_slice());
     ///
@@ -135,7 +147,10 @@ impl<'a, T: Word, B: Bits> Search<'a, WaveletMatrix<T, B>> {
     }
 
     /// ```
-    /// use compacts::{WaveletMatrix, BitArray};
+    /// use compacts::{
+    ///     BitArray,
+    ///     WaveletMatrix,
+    /// };
     /// let mut vec = vec![5u8, 4, 5, 5, 2, 1, 5, 6, 1, 3, 5, 0];
     /// let wm = WaveletMatrix::<u8, BitArray<u64>>::from(vec.as_mut_slice());
     ///
@@ -169,14 +184,7 @@ where
     {
         let min = min.into();
         let max = max.into();
-        Search {
-            view: View {
-                idx: self.idx,
-                seq: self.seq,
-            },
-            min,
-            max,
-        }
+        Search { view: View { idx: self.idx, seq: self.seq }, min, max }
     }
 
     #[inline]
@@ -254,13 +262,7 @@ where
 {
     type Item = (usize, T);
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(Probe {
-            index: (i, j),
-            depth,
-            mut value,
-            _kind,
-        }) = self.bin.pop()
-        {
+        while let Some(Probe { index: (i, j), depth, mut value, _kind }) = self.bin.pop() {
             if depth == T::DEPTH {
                 return Some((j - i, value));
             }
@@ -276,12 +278,7 @@ where
                 let index = (rank0_beg, rank0_end);
                 let depth = depth + 1;
 
-                self.push(Probe {
-                    index,
-                    depth,
-                    value,
-                    _kind: PhantomData,
-                });
+                self.push(Probe { index, depth, value, _kind: PhantomData });
             }
 
             if rank1_beg < rank1_end {
@@ -293,12 +290,7 @@ where
                 };
                 let depth = depth + 1;
 
-                self.push(Probe {
-                    index,
-                    depth,
-                    value,
-                    _kind: PhantomData,
-                });
+                self.push(Probe { index, depth, value, _kind: PhantomData });
             };
         }
         None
@@ -306,11 +298,14 @@ where
 }
 
 mod cmpby {
-    use super::{
-        cmp::{Ordering, Reverse},
-        Probe, Word,
+    use super::cmp::{
+        Ordering,
+        Reverse,
     };
-
+    use super::{
+        Probe,
+        Word,
+    };
     use crate::ops::Code;
 
     impl<'a, By, T: Word> Probe<T, By> {

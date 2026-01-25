@@ -1,24 +1,33 @@
-use std::{
-    iter::{FusedIterator, Zip},
-    marker::PhantomData,
-    ops::RangeBounds,
-    slice,
+use std::iter::{
+    FusedIterator,
+    Zip,
 };
+use std::marker::PhantomData;
+use std::ops::RangeBounds;
+use std::slice;
 
+use crate::bits::{
+    self,
+    Words,
+    to_exclusive,
+};
+use crate::num::Word;
+use crate::ops::*;
 use crate::{
-    bits::{self, to_exclusive, Words},
-    num::Word,
-    ops::*,
-    BitArray, BitMap,
+    BitArray,
+    BitMap,
 };
 
 mod search;
 mod trace;
 
-pub use {
-    search::{Max, Min, Search, Top},
-    trace::Counts,
+pub use search::{
+    Max,
+    Min,
+    Search,
+    Top,
 };
+pub use trace::Counts;
 
 use super::View;
 
@@ -81,12 +90,7 @@ where
             bin0[l..].copy_from_slice(&bin1[..r]);
         }
 
-        WaveletMatrix {
-            size,
-            tips,
-            fids,
-            _sym,
-        }
+        WaveletMatrix { size, tips, fids, _sym }
     }
 }
 
@@ -125,34 +129,27 @@ impl<'a, T: Code, B: Words> From<&'a mut [T]> for WaveletMatrix<T, BitMap<B>> {
             bin0[l..].copy_from_slice(&bin1[..r]);
         }
 
-        WaveletMatrix {
-            _sym: PhantomData,
-            size,
-            tips,
-            fids,
-        }
+        WaveletMatrix { _sym: PhantomData, size, tips, fids }
     }
 }
 
 impl<T, B> WaveletMatrix<T, B> {
     pub fn view<R: RangeBounds<usize>>(&self, range: R) -> View<'_, Self> {
-        View {
-            idx: to_exclusive(&range, self.size),
-            seq: self,
-        }
+        View { idx: to_exclusive(&range, self.size), seq: self }
     }
 
     #[inline]
     pub(crate) fn rows(&self) -> Rows<'_, B> {
-        Rows {
-            rows: self.fids.iter().zip(&self.tips),
-        }
+        Rows { rows: self.fids.iter().zip(&self.tips) }
     }
 }
 
 impl<T: Word, B: Bits> WaveletMatrix<T, B> {
     /// ```
-    /// use compacts::{BitArray, WaveletMatrix};
+    /// use compacts::{
+    ///     BitArray,
+    ///     WaveletMatrix,
+    /// };
     /// let vec = vec![5u8, 4, 5, 5, 2, 1, 5, 6, 1, 3, 5, 0];
     /// let mut cloned = vec.clone();
     /// let wav = WaveletMatrix::<u8, BitArray<u64>>::from(cloned.as_mut_slice());

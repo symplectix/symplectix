@@ -1,24 +1,31 @@
-use std::iter::{Enumerate, FusedIterator};
+use std::iter::{
+    Enumerate,
+    FusedIterator,
+};
 
-use crate::{num::Word, ops::Bits, ops::Code};
-
-use super::{Row, Rows, View, WaveletMatrix};
+use super::{
+    Row,
+    Rows,
+    View,
+    WaveletMatrix,
+};
+use crate::num::Word;
+use crate::ops::{
+    Bits,
+    Code,
+};
 
 /// Traces nodes from top to bottom, invoking `F` for each depth to decide which route to trace.
 #[derive(Debug, Clone)]
 struct Trace<'a, B, F> {
-    index: (usize, usize),
-    rows: Enumerate<Rows<'a, B>>,
+    index:  (usize, usize),
+    rows:   Enumerate<Rows<'a, B>>,
     router: F, // invoke for each depth to decide which route to trace
 }
 
 fn trace_by<B, F>(index: (usize, usize), rows: Rows<'_, B>, router: F) -> Trace<'_, B, F> {
     let rows = rows.enumerate();
-    Trace {
-        index,
-        rows,
-        router,
-    }
+    Trace { index, rows, router }
 }
 
 fn by_value<B, T>(
@@ -29,24 +36,18 @@ fn by_value<B, T>(
 where
     T: Code,
 {
-    trace_by(index, rows, move |Data { depth, .. }| {
-        Route::from_bit(val.bit(T::DEPTH - depth - 1))
-    })
+    trace_by(index, rows, move |Data { depth, .. }| Route::from_bit(val.bit(T::DEPTH - depth - 1)))
 }
 
 impl<'a, T: Code, B> View<'a, WaveletMatrix<T, B>> {
     #[inline]
     fn trace(&self, val: T) -> Option<Trace<'a, B, impl FnMut(Data) -> Route>> {
-        self.idx
-            .as_ref()
-            .map(|&idx| by_value(idx, self.seq.rows(), val))
+        self.idx.as_ref().map(|&idx| by_value(idx, self.seq.rows(), val))
     }
 
     #[inline]
     fn trace_by<F>(&self, router: F) -> Option<Trace<'a, B, F>> {
-        self.idx
-            .as_ref()
-            .map(|&idx| trace_by(idx, self.seq.rows(), router))
+        self.idx.as_ref().map(|&idx| trace_by(idx, self.seq.rows(), router))
     }
 }
 
@@ -78,7 +79,14 @@ impl<'a, T: Code, B: Bits> View<'a, WaveletMatrix<T, B>> {
     }
 
     /// ```
-    /// use compacts::{BitArray, WaveletMatrix, ops::{Rank, Select}};
+    /// use compacts::ops::{
+    ///     Rank,
+    ///     Select,
+    /// };
+    /// use compacts::{
+    ///     BitArray,
+    ///     WaveletMatrix,
+    /// };
     /// let mut data = vec![5u8, 4, 5, 5, 2, 1, 5, 6, 1, 3, 5, 0]; // len=12
     /// let wm = WaveletMatrix::<u8, BitArray<u64>>::from(data.as_mut_slice());
     ///
@@ -101,7 +109,6 @@ impl<'a, T: Code, B: Bits> View<'a, WaveletMatrix<T, B>> {
     ///
     /// assert_eq!(wm.view(2..11).quantile(8), Some((0, 6))); // 1st 6
     /// assert_eq!(wm.view(2..11).quantile(9), None);
-    ///
     /// ```
     #[inline]
     pub fn quantile(&self, mut k: usize) -> Option<(usize, T)>
@@ -124,11 +131,7 @@ impl<'a, T: Code, B: Bits> View<'a, WaveletMatrix<T, B>> {
             };
 
             let (i, j) = trace_by(idx, seq.rows(), rf).last().unwrap().index;
-            if i + k < j {
-                Some((k, sym))
-            } else {
-                None
-            }
+            if i + k < j { Some((k, sym)) } else { None }
         })
     }
 
@@ -143,7 +146,11 @@ impl<'a, T: Code, B: Bits> View<'a, WaveletMatrix<T, B>> {
     /// Counts the occurences of `val` in this view.
     ///
     /// ```
-    /// use compacts::{BitArray, WaveletMatrix, ops::Select};
+    /// use compacts::ops::Select;
+    /// use compacts::{
+    ///     BitArray,
+    ///     WaveletMatrix,
+    /// };
     /// let mut vec = vec![5u8, 4, 5, 5, 2, 1, 5, 6, 1, 3, 5, 0];
     /// let wm = WaveletMatrix::<u8, BitArray<u64>>::from(vec.as_mut_slice());
     ///
@@ -182,7 +189,11 @@ impl<'a, T: Code, B: Bits> View<'a, WaveletMatrix<T, B>> {
     }
 
     /// ```
-    /// use compacts::{BitArray, WaveletMatrix, ops::Select};
+    /// use compacts::ops::Select;
+    /// use compacts::{
+    ///     BitArray,
+    ///     WaveletMatrix,
+    /// };
     /// let mut vec = vec![5u8, 4, 5, 5, 2, 1, 5, 6, 1, 3, 5, 0];
     /// let wm = WaveletMatrix::<u8, BitArray<u64>>::from(vec.as_mut_slice());
     ///
@@ -307,11 +318,7 @@ enum Route {
 impl Route {
     #[inline]
     fn from_bit(bit: bool) -> Route {
-        if bit {
-            Route::Rhs
-        } else {
-            Route::Lhs
-        }
+        if bit { Route::Rhs } else { Route::Lhs }
     }
 
     // #[inline]
@@ -355,26 +362,14 @@ where
             let rank0 = rank0_epos - rank0_bpos;
             let rank1 = rank1_epos - rank1_bpos;
 
-            match (self.router)(Data {
-                depth,
-                rank0,
-                rank1,
-            }) {
+            match (self.router)(Data { depth, rank0, rank1 }) {
                 Route::Lhs => {
                     self.index = (rank0_bpos, rank0_epos);
-                    Node {
-                        route: Route::Lhs,
-                        depth: depth + 1,
-                        index: self.index,
-                    }
+                    Node { route: Route::Lhs, depth: depth + 1, index: self.index }
                 }
                 Route::Rhs => {
                     self.index = (rank1_bpos + tip, rank1_epos + tip);
-                    Node {
-                        route: Route::Rhs,
-                        depth: depth + 1,
-                        index: self.index,
-                    }
+                    Node { route: Route::Rhs, depth: depth + 1, index: self.index }
                 }
             }
         })

@@ -1,9 +1,17 @@
+#![allow(missing_docs)]
 //! Defines traits to pretend `[bool]`.
 //!
 //! Both an index and a weight of bits are represented by `usize`.
 
 use std::ops::{
-    Bound, Range, RangeBounds, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
+    Bound,
+    Range,
+    RangeBounds,
+    RangeFrom,
+    RangeFull,
+    RangeInclusive,
+    RangeTo,
+    RangeToInclusive,
 };
 
 // pub(crate) use std::convert::{TryFrom, TryInto};
@@ -11,9 +19,10 @@ use std::ops::{
 pub(crate) mod private;
 pub(crate) use private::Sealed;
 
-use crate::{
-    bits::to_exclusive,
-    num::{binary_search, Word},
+use crate::bits::to_exclusive;
+use crate::num::{
+    Word,
+    binary_search,
 };
 
 /// `Text` is a sequence of `Code`. Typically, `Code` is an unsigned integer.
@@ -94,11 +103,7 @@ pub trait Bits {
     /// Returns the number of `bit`.
     #[inline]
     fn count(&self, bit: bool) -> usize {
-        if bit {
-            self.count1()
-        } else {
-            self.count0()
-        }
+        if bit { self.count1() } else { self.count0() }
     }
 
     /// Counts the occurences of `1`.
@@ -115,11 +120,7 @@ pub trait Bits {
 
     #[inline]
     fn rank<R: RangeBounds<usize>>(&self, bit: bool, range: R) -> usize {
-        if bit {
-            self.rank1(range)
-        } else {
-            self.rank0(range)
-        }
+        if bit { self.rank1(range) } else { self.rank0(range) }
     }
 
     #[inline]
@@ -156,11 +157,7 @@ pub trait Bits {
 
     #[inline]
     fn select(&self, bit: bool, n: usize) -> Option<usize> {
-        if bit {
-            self.select1(n)
-        } else {
-            self.select0(n)
-        }
+        if bit { self.select1(n) } else { self.select0(n) }
     }
 
     /// Returns the position of nth occurrence of `1`.
@@ -202,11 +199,7 @@ pub trait BitsMut: Bits {
     /// Manipulates bit at `i`.
     #[inline]
     fn put(&mut self, i: usize, bit: bool) {
-        if bit {
-            self.put1(i)
-        } else {
-            self.put0(i)
-        }
+        if bit { self.put1(i) } else { self.put0(i) }
     }
 
     /// Enables the bit at `i`.

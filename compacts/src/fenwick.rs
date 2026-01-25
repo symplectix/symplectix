@@ -1,13 +1,18 @@
-#![allow(dead_code, unused_imports)]
-
-use std::{
-    cmp,
-    convert::identity,
-    iter::{from_fn, Sum},
-    ops::{AddAssign, SubAssign},
+use std::cmp;
+use std::convert::identity;
+use std::iter::{
+    Sum,
+    from_fn,
+};
+use std::ops::{
+    AddAssign,
+    SubAssign,
 };
 
-use crate::num::{Int, Word};
+use crate::num::{
+    Int,
+    Word,
+};
 
 /// 1-based FenwickTree (or BinaryIndexedTree)
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -54,9 +59,7 @@ pub(crate) fn bwd_links(pos: usize) -> impl Iterator<Item = usize> {
 impl<T: Copy> FenwickTree<T> {
     // Assume that `ident <> ident == ident`.
     pub fn init(size: usize, ident: T) -> Self {
-        FenwickTree {
-            tree: vec![ident; size + 1],
-        }
+        FenwickTree { tree: vec![ident; size + 1] }
     }
 
     // Assume that `T::default()` is the identity.
@@ -143,11 +146,7 @@ impl<T: Copy> FenwickTree<T> {
             k /= 2;
         }
 
-        if pos < self.len() {
-            Ok(pos)
-        } else {
-            Err(pos)
-        }
+        if pos < self.len() { Ok(pos) } else { Err(pos) }
     }
 }
 
@@ -250,8 +249,9 @@ fn prev_power_of_two(mut n: usize) -> usize {
 
 #[cfg(test)]
 mod fenwick {
-    use super::*;
     use quickcheck::quickcheck;
+
+    use super::*;
 
     type Fenwick<T> = FenwickTree<T>;
 

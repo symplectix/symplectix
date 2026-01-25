@@ -1,9 +1,15 @@
 //! Module mask provides *bitwise* operations.
 
-use std::{
-    borrow::Cow,
-    cmp::Ordering::{self, Equal, Greater, Less},
-    iter::{empty, Peekable},
+use std::borrow::Cow;
+use std::cmp::Ordering::{
+    self,
+    Equal,
+    Greater,
+    Less,
+};
+use std::iter::{
+    Peekable,
+    empty,
 };
 
 /// A trait for bitwise masking.
@@ -38,7 +44,8 @@ pub trait Mask<'a>: Sized {
     }
 }
 
-// upstream crates may add new impl of trait `std::iter::Iterator` for type `&[_]` in future versions
+// upstream crates may add new impl of trait `std::iter::Iterator` for type `&[_]` in future
+// versions
 impl<'a, I, T> Mask<'a> for I
 where
     T: 'a + ?Sized + ToOwned,
@@ -89,9 +96,7 @@ where
         let lhs = &mut self.lhs;
         let rhs = &mut self.rhs;
         loop {
-            let compared = lhs
-                .peek()
-                .and_then(|(x, _)| rhs.peek().map(|(y, _)| x.cmp(y)));
+            let compared = lhs.peek().and_then(|(x, _)| rhs.peek().map(|(y, _)| x.cmp(y)));
 
             match compared {
                 Some(Less) => {

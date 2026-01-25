@@ -1,9 +1,10 @@
 use std::fmt;
 
-use crate::{
-    bits::{Word, Words},
-    ops::*,
+use crate::bits::{
+    Word,
+    Words,
 };
+use crate::ops::*;
 
 /// `Bin` has the fixed bit size specified by type parameter `T`.
 #[derive(Clone)]

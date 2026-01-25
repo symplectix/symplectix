@@ -1,8 +1,15 @@
-use std::{
-    borrow::Cow,
-    io,
-    iter::{FromIterator, Zip},
-    slice::Iter as SliceIter,
+use std::borrow::Cow;
+use std::io;
+use std::iter::{
+    FromIterator,
+    Zip,
+};
+use std::slice::Iter as SliceIter;
+
+use byteorder::{
+    LE,
+    ReadBytesExt,
+    WriteBytesExt,
 };
 
 use crate::{
@@ -12,10 +19,15 @@ use crate::{
     // },
     num::*,
     ops::*,
-    roaring::{repr::REPR_POS1_LEN, BitMap, Block, Bytes, Header, Repr},
+    roaring::{
+        BitMap,
+        Block,
+        Bytes,
+        Header,
+        Repr,
+        repr::REPR_POS1_LEN,
+    },
 };
-
-use byteorder::{ReadBytesExt, WriteBytesExt, LE};
 
 impl Default for BitMap {
     fn default() -> Self {
@@ -41,34 +53,21 @@ impl BitMap {
     }
 
     pub fn keys(&self) -> Keys<'_, u16> {
-        Keys {
-            iter: self.keys.iter(),
-        }
+        Keys { iter: self.keys.iter() }
     }
 
     pub fn values(&self) -> Values<'_> {
-        Values {
-            iter: self.data.iter(),
-        }
+        Values { iter: self.data.iter() }
     }
 
     pub fn steps(&self) -> Steps<'_, u16> {
-        Steps {
-            zipped: self.keys().zip(self.values()),
-        }
+        Steps { zipped: self.keys().zip(self.values()) }
     }
 }
 
 enum Entry<'a> {
-    Occupy {
-        idx: usize,
-        map: &'a mut BitMap,
-    },
-    Vacant {
-        idx: usize,
-        key: u16,
-        map: &'a mut BitMap,
-    },
+    Occupy { idx: usize, map: &'a mut BitMap },
+    Vacant { idx: usize, key: u16, map: &'a mut BitMap },
 }
 
 impl BitMap {
@@ -95,11 +94,7 @@ impl BitMap {
     fn entry<'a>(&'a mut self, key: &u16) -> Entry<'a> {
         match self.keys.binary_search(key) {
             Ok(idx) => Entry::Occupy { idx, map: self },
-            Err(idx) => Entry::Vacant {
-                idx,
-                key: *key,
-                map: self,
-            },
+            Err(idx) => Entry::Vacant { idx, key: *key, map: self },
         }
     }
 
@@ -271,7 +266,7 @@ impl BitMap {
     /// # assert_eq!(vec.rank1(0), 0);
     ///
     /// let vec = compacts::BitMap::<u8>::of(&[10, 20, 80, 65536, 65579]);
-    /// assert_eq!(vec.rank1(0),  0);
+    /// assert_eq!(vec.rank1(0), 0);
     /// assert_eq!(vec.rank1(80), 2);
     ///
     /// # assert_eq!(vec.rank1(  ..  ), vec.count1());
@@ -279,15 +274,15 @@ impl BitMap {
     /// # assert_eq!(vec.rank1(10..10), 0);
     /// # assert_eq!(vec.rank1(20..20), 0);
     ///
-    /// assert_eq!(vec.rank1(     ..   80), 2);
-    /// assert_eq!(vec.rank1(   10..   80), 2);
-    /// assert_eq!(vec.rank1(   20..   80), 1);
-    /// assert_eq!(vec.rank1(   10..65535), 3);
-    /// assert_eq!(vec.rank1(   10..65536), 3);
-    /// assert_eq!(vec.rank1(   20..65579), 3);
+    /// assert_eq!(vec.rank1(..80), 2);
+    /// assert_eq!(vec.rank1(10..80), 2);
+    /// assert_eq!(vec.rank1(20..80), 1);
+    /// assert_eq!(vec.rank1(10..65535), 3);
+    /// assert_eq!(vec.rank1(10..65536), 3);
+    /// assert_eq!(vec.rank1(20..65579), 3);
     /// assert_eq!(vec.rank1(65536..65579), 1);
     /// assert_eq!(vec.rank1(65536..65580), 2);
-    /// assert_eq!(vec.rank1(65536..     ), 2);
+    /// assert_eq!(vec.rank1(65536..), 2);
     /// ```
     #[inline(always)]
     pub fn rank1<I>(&self, index: I) -> u64
@@ -353,11 +348,15 @@ impl Bits for BitMap {
     // # Examples
     //
     // ```
-    // use compacts::{bit::{Block, BitMap}, ops::Bits};
+    // use compacts::bit::{
+    //     BitMap,
+    //     Block,
+    // };
+    // use compacts::ops::Bits;
     // let map = BitMap::of(&[0, 80]);
-    // assert!( map.get(0));
+    // assert!(map.get(0));
     // assert!(!map.get(1));
-    // assert!( map.get(80));
+    // assert!(map.get(80));
     // assert!(!map.get(81));
     // assert!(!map.get(96));
     // ```
@@ -450,21 +449,25 @@ impl BitRank for BitMap {
     // # Examples
     //
     // ```
-    // use compacts::{bit::BitMap, ops::{BitCount, BitRank}};
+    // use compacts::bit::BitMap;
+    // use compacts::ops::{
+    //     BitCount,
+    //     BitRank,
+    // };
     // let map = BitMap::of(&[10, 20, 80, 65536, 65579]);
-    // assert_eq!(map.rank1(   ..   ), map.count1());
+    // assert_eq!(map.rank1(..), map.count1());
     // # assert_eq!(map.rank1(0..0), 0);
     // # assert_eq!(map.rank1(1..1), 0);
     //
-    // assert_eq!(map.rank1(   .. 80), 2);
-    // assert_eq!(map.rank1(10 .. 80), 2);
-    // assert_eq!(map.rank1(20 .. 80), 1);
+    // assert_eq!(map.rank1(..80), 2);
+    // assert_eq!(map.rank1(10..80), 2);
+    // assert_eq!(map.rank1(20..80), 1);
     //
-    // assert_eq!(map.rank1(10 .. 65535), 3);
-    // assert_eq!(map.rank1(10 .. 65536), 3);
-    // assert_eq!(map.rank1(20 .. 65579), 3);
-    // assert_eq!(map.rank1(65536 .. 65579), 1);
-    // assert_eq!(map.rank1(65536 .. 65580), 2);
+    // assert_eq!(map.rank1(10..65535), 3);
+    // assert_eq!(map.rank1(10..65536), 3);
+    // assert_eq!(map.rank1(20..65579), 3);
+    // assert_eq!(map.rank1(65536..65579), 1);
+    // assert_eq!(map.rank1(65536..65580), 2);
     // ```
     //
     // # Panics
@@ -538,21 +541,19 @@ impl BitSelect0 for BitMap {
 
             // c < count
             let select0 = || {
-                use std::iter::{once, repeat_with};
+                use std::iter::{
+                    once,
+                    repeat_with,
+                };
 
-                let iter = repeat_with(|| None)
-                    .take(try_cast::<u64, usize>(len))
-                    .chain(once(Some(value)));
+                let iter =
+                    repeat_with(|| None).take(try_cast::<u64, usize>(len)).chain(once(Some(value)));
 
                 // this block is almost same with [T]
                 let mut remain = c;
                 for (k, v) in iter.enumerate() {
                     let skipped_bit = try_cast::<usize, u64>(k) * Block::BITS;
-                    let count0 = if let Some(v) = v {
-                        v.count0()
-                    } else {
-                        Block::BITS
-                    };
+                    let count0 = if let Some(v) = v { v.count0() } else { Block::BITS };
                     if remain < count0 {
                         return skipped_bit
                             + if let Some(v) = v {
@@ -577,11 +578,7 @@ impl BitSelect0 for BitMap {
         } else {
             c // empty
         };
-        if select < self.len() {
-            Some(select)
-        } else {
-            None
-        }
+        if select < self.len() { Some(select) } else { None }
     }
 }
 
@@ -612,10 +609,7 @@ where
     where
         I: IntoIterator<Item = (K, Cow<'a, Block>)>,
     {
-        iterable
-            .into_iter()
-            .map(|(k, v)| (k, v.into_owned()))
-            .collect()
+        iterable.into_iter().map(|(k, v)| (k, v.into_owned())).collect()
     }
 }
 
@@ -658,13 +652,11 @@ impl<'a> Iterator for Values<'a> {
 impl<'a, K: Word> Iterator for Steps<'a, K> {
     type Item = (K, Cow<'a, Block>);
     fn next(&mut self) -> Option<Self::Item> {
-        self.zipped.find_map(|(&index, block)| {
-            if block.any() {
-                Some((index, Cow::Borrowed(block)))
-            } else {
-                None
-            }
-        })
+        self.zipped.find_map(
+            |(&index, block)| {
+                if block.any() { Some((index, Cow::Borrowed(block))) } else { None }
+            },
+        )
     }
 }
 
@@ -729,9 +721,7 @@ impl BitMap {
     pub fn deserialize_from<R: io::Read>(mut r: R) -> io::Result<Self> {
         Header::read_from(&mut r).and_then(|desc| match desc {
             Header::Inline(map) => Ok(map),
-            Header::Serial {
-                runs, keys, pops, ..
-            } => {
+            Header::Serial { runs, keys, pops, .. } => {
                 let mut data = Vec::with_capacity(keys.len());
                 for (i, pop) in pops.into_iter().enumerate() {
                     let pop = pop as usize;
@@ -784,12 +774,7 @@ impl Bytes<&'_ [u8]> {
         match self.header {
             Header::Inline(ref map) => (map.keys[i], Cow::Borrowed(&map.data[i])),
 
-            Header::Serial {
-                ref runs,
-                ref keys,
-                ref pops,
-                ref locs,
-            } => {
+            Header::Serial { ref runs, ref keys, ref pops, ref locs } => {
                 let pop = pops[i] as usize;
                 let loc = locs[i] as usize;
                 (
@@ -804,11 +789,7 @@ impl Bytes<&'_ [u8]> {
                 )
             }
 
-            Header::NoRuns {
-                ref keys,
-                ref pops,
-                ref locs,
-            } => {
+            Header::NoRuns { ref keys, ref pops, ref locs } => {
                 let pop = pops[i] as usize;
                 let loc = locs[i] as usize;
                 (
@@ -878,12 +859,7 @@ impl Header {
                 } else {
                     let locs = Self::offsets(&mut r, blocks)?;
                     assert_eq!(locs.len(), blocks);
-                    Ok(Header::Serial {
-                        runs,
-                        keys,
-                        pops,
-                        locs,
-                    })
+                    Ok(Header::Serial { runs, keys, pops, locs })
                 }
             }
 

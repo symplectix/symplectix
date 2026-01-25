@@ -23,13 +23,13 @@ pub mod ops;
 pub mod num;
 
 mod fenwick;
-mod union_find;
 
 pub use bits::map::BitMap;
 pub use bits::pop_vec::Pop;
-
 #[doc(inline)]
-pub use bits::{bit_array::BitArray, bit_vec::BitVec};
-
+pub use bits::{
+    bit_array::BitArray,
+    bit_vec::BitVec,
+};
 #[doc(inline)]
 pub use text::wavelet_matrix::WaveletMatrix;

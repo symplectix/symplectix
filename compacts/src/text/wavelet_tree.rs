@@ -1,7 +1,10 @@
 use std::marker::PhantomData;
 
 use crate::{
-    bits::{blocks_by, Words},
+    bits::{
+        Words,
+        blocks_by,
+    },
     ops::*,
     // BitMap,
 };

@@ -20,9 +20,15 @@ mod runs;
 // #[cfg(test)]
 // mod tests;
 
-use std::cmp::Ordering::{self, Equal as EQ, Greater as GT, Less as LT};
+use std::cmp::Ordering::{
+    self,
+    Equal as EQ,
+    Greater as GT,
+    Less as LT,
+};
 
-use crate::{num::try_cast, ops::*};
+use crate::num::try_cast;
+use crate::ops::*;
 
 // #[cfg(test)]
 // pub(crate) use {posn::Pos1, runs::Runs};

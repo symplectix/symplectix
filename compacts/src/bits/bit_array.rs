@@ -2,11 +2,14 @@
 
 use std::ops::RangeBounds;
 
-use crate::{
-    bits::Words,
-    num::{self, cast, Int, Word},
-    ops::*,
+use crate::bits::Words;
+use crate::num::{
+    self,
+    Int,
+    Word,
+    cast,
 };
+use crate::ops::*;
 
 /// An immutable and uncompressed bit sequence.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -29,7 +32,7 @@ struct SumSamples {
     // L2: non-cumulative relative counts
     // L1 and L2 are interleaved into one vector,
     // each L1 entries is followed by its L2 index entries.
-    l0s: Vec<u64>,
+    l0s:   Vec<u64>,
     l1l2s: Vec<L1L2>,
 }
 
@@ -65,12 +68,7 @@ impl<T: Word> From<Vec<T>> for BitArray<T> {
         };
 
         debug_assert_eq!(ones, data.count1() as u64);
-        BitArray {
-            ones,
-            data,
-            sum_samples,
-            idx_samples,
-        }
+        BitArray { ones, data, sum_samples, idx_samples }
     }
 }
 
@@ -96,12 +94,7 @@ impl<T: Words> From<Vec<Option<Box<T>>>> for BitArray<Option<Box<T>>> {
         };
 
         debug_assert_eq!(ones, data.count1() as u64);
-        BitArray {
-            ones,
-            data,
-            sum_samples,
-            idx_samples,
-        }
+        BitArray { ones, data, sum_samples, idx_samples }
     }
 }
 
@@ -266,14 +259,9 @@ impl<T: FixedBits> Bits for BitArray<T> {
                 let i = cast::<u64, usize>(remain / SAMPLE_SIZE as u64);
                 let j = i + 1;
                 let min = l1_samples.get(i).map_or(0, |&k| cast::<u32, usize>(k));
-                let max = l1_samples
-                    .get(j)
-                    .map_or(UPPER_BLOCK, |&k| cast::<u32, usize>(k));
+                let max = l1_samples.get(j).map_or(UPPER_BLOCK, |&k| cast::<u32, usize>(k));
                 assert!(min < max);
-                (
-                    (skipped + min) / SUPER_BLOCK,
-                    (skipped + max) / SUPER_BLOCK + 1,
-                )
+                ((skipped + min) / SUPER_BLOCK, (skipped + max) / SUPER_BLOCK + 1)
             };
 
             // Lookup in L1 to find the right LowerBlock
@@ -312,7 +300,7 @@ impl<T: FixedBits> Bits for BitArray<T> {
 
         assert!(remain <= 512);
 
-        let step = u64::BITS;
+        let step = u64::BITS as usize;
         let bits = self.data.as_slice();
         loop {
             let dst = std::cmp::min(bits.size(), pos + step);

@@ -1,17 +1,34 @@
 //! Module `fixed_bits` provides primitives to interact with fixed size bits.
 
+use std::borrow::{
+    Borrow,
+    BorrowMut,
+    ToOwned,
+};
+use std::fmt::{
+    self,
+    Debug,
+    Formatter,
+};
+use std::hash::{
+    Hash,
+    Hasher,
+};
+use std::ops::{
+    Deref,
+    DerefMut,
+};
 use std::{
-    borrow::{Borrow, BorrowMut, ToOwned},
-    fmt::{self, Debug, Formatter},
-    hash::{Hash, Hasher},
     mem,
-    ops::{Deref, DerefMut},
     slice,
 };
 
-use crate::{ops::private::Sealed, ops::*};
-
-use super::{Word, Words};
+use super::{
+    Word,
+    Words,
+};
+use crate::ops::private::Sealed;
+use crate::ops::*;
 
 /// A finite, fixed size bit slice.
 #[repr(transparent)]
@@ -45,8 +62,8 @@ impl<T: Words> From<Box<[T::Word]>> for Box<FixedBits<T>> {
         assert_eq!(boxed.as_ref().len(), T::SIZE);
         mem::transmute(boxed)
         // let output: Box<FixedBits<T>> = unsafe {
-        //     let bits = FixedBits::<T>::from_raw_parts_mut(boxed.as_mut_ptr(), boxed.as_ref().len());
-        //     Box::from_raw(bits)
+        //     let bits = FixedBits::<T>::from_raw_parts_mut(boxed.as_mut_ptr(),
+        // boxed.as_ref().len());     Box::from_raw(bits)
         // };
         // mem::forget(boxed);
         // output

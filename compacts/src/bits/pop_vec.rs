@@ -1,13 +1,35 @@
-use std::{
-    cmp::Ordering,
-    fmt::{self, Debug},
-    iter::{once, repeat, repeat_with},
-    ops::{Add, AddAssign, RangeBounds, Sub, SubAssign},
+#![allow(missing_docs)]
+use std::cmp::Ordering;
+use std::fmt::{
+    self,
+    Debug,
+};
+use std::iter::{
+    once,
+    repeat,
+    repeat_with,
+};
+use std::ops::{
+    Add,
+    AddAssign,
+    RangeBounds,
+    Sub,
+    SubAssign,
 };
 
-use Ordering::{Equal as EQ, Greater as GT, Less as LT};
+use Ordering::{
+    Equal as EQ,
+    Greater as GT,
+    Less as LT,
+};
 
-use crate::{bits, fenwick::FenwickTree, num, num::Int, ops::*};
+use crate::fenwick::FenwickTree;
+use crate::num::Int;
+use crate::ops::*;
+use crate::{
+    bits,
+    num,
+};
 
 const UPPER_BLOCK: usize = 1 << 32;
 const SUPER_BLOCK: usize = 2048;
@@ -21,7 +43,7 @@ const SUPERS: usize = UPPER_BLOCK / SUPER_BLOCK; // 2097152
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pop<T> {
     samples: Samples,
-    bits: Vec<T>,
+    bits:    Vec<T>,
 }
 
 // L0: cumulative     absolute counts
@@ -72,10 +94,7 @@ impl<T: FixedBits> Pop<T> {
     /// assert!(bv.len() >= 1000);
     /// ```
     pub fn new(len: usize) -> Self {
-        Pop {
-            samples: Samples::none(len),
-            bits: bits::sized(len),
-        }
+        Pop { samples: Samples::none(len), bits: bits::sized(len) }
     }
 
     #[inline]
@@ -269,11 +288,7 @@ impl Samples {
 
             LT if up.len() == uppers => {
                 let last = lo.last_mut().unwrap(); // lo must not be empty
-                let diff = if supers > 0 {
-                    supers - last.len()
-                } else {
-                    SUPERS - last.len()
-                };
+                let diff = if supers > 0 { supers - last.len() } else { SUPERS - last.len() };
                 last.extend_by_default(diff, L1L2::l1);
             }
 

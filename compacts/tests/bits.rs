@@ -1,19 +1,25 @@
-#[allow(unused_imports)]
-use {
-    compacts::{
-        bits::{and, or, xor, Fold, Mask},
-        ops::*,
-        BitArray, BitMap, WaveletMatrix,
-    },
-    lazy_static::lazy_static,
-    rand::prelude::*,
+#![allow(missing_docs)]
+use compacts::bits::{
+    Fold,
+    Mask,
+    and,
+    or,
+    xor,
 };
+use compacts::ops::*;
+use compacts::{
+    BitArray,
+    BitMap,
+    // WaveletMatrix,
+};
+use lazy_static::lazy_static;
+use rand::prelude::*;
 
 macro_rules! generate {
     (Vec; $rng:expr, $nbits:expr, $bound:expr) => {{
         let mut build = vec![0; compacts::bits::blocks_by($bound, 64)];
         for _ in 0..$nbits {
-            build.put1($rng.gen_range(0, $bound));
+            build.put1($rng.random_range(0..$bound));
         }
         build
     }};
@@ -21,7 +27,7 @@ macro_rules! generate {
         let mut build = BitMap::none($bound);
         dbg!(build.size());
         for _ in 0..$nbits {
-            build.put1($rng.gen_range(0, $bound - 1));
+            build.put1($rng.random_range(0..$bound - 1));
         }
         build
     }};
@@ -30,23 +36,23 @@ macro_rules! generate {
 const BOUND: usize = 10_000_000;
 
 lazy_static! {
-    static ref NBITS: usize = BOUND / thread_rng().gen_range(1, 100);
+    static ref NBITS: usize = BOUND / rand::rng().random_range(1..100);
 
-    static ref V0: Vec<u64> = generate!(Vec; thread_rng(), *NBITS, BOUND);
-    static ref V1: Vec<u64> = generate!(Vec; thread_rng(), *NBITS, BOUND);
-    static ref V2: Vec<u64> = generate!(Vec; thread_rng(), *NBITS, BOUND);
+    static ref V0: Vec<u64> = generate!(Vec; rand::rng(), *NBITS, BOUND);
+    static ref V1: Vec<u64> = generate!(Vec; rand::rng(), *NBITS, BOUND);
+    static ref V2: Vec<u64> = generate!(Vec; rand::rng(), *NBITS, BOUND);
 
     static ref A0: BitArray<u64> = BitArray::from(V0.clone());
     static ref A1: BitArray<u64> = BitArray::from(V1.clone());
     static ref A2: BitArray<u64> = BitArray::from(V2.clone());
 
-    // static ref M0: BitMap<[u64; 1024]> = generate!(BitMap; thread_rng(), *NBITS, BOUND);
-    // static ref M1: BitMap<[u64; 1024]> = generate!(BitMap; thread_rng(), *NBITS, BOUND);
-    // static ref M2: BitMap<[u64; 1024]> = generate!(BitMap; thread_rng(), *NBITS, BOUND);
+    // static ref M0: BitMap<[u64; 1024]> = generate!(BitMap; rand::rng(), *NBITS, BOUND);
+    // static ref M1: BitMap<[u64; 1024]> = generate!(BitMap; rand::rng(), *NBITS, BOUND);
+    // static ref M2: BitMap<[u64; 1024]> = generate!(BitMap; rand::rng(), *NBITS, BOUND);
 
-    static ref M0: BitMap<[u64; 512]> = generate!(BitMap; thread_rng(), *NBITS, BOUND);
-    static ref M1: BitMap<[u64; 512]> = generate!(BitMap; thread_rng(), *NBITS, BOUND);
-    static ref M2: BitMap<[u64; 512]> = generate!(BitMap; thread_rng(), *NBITS, BOUND);
+    static ref M0: BitMap<[u64; 512]> = generate!(BitMap; rand::rng(), *NBITS, BOUND);
+    static ref M1: BitMap<[u64; 512]> = generate!(BitMap; rand::rng(), *NBITS, BOUND);
+    static ref M2: BitMap<[u64; 512]> = generate!(BitMap; rand::rng(), *NBITS, BOUND);
 }
 
 mod mask {
@@ -55,7 +61,7 @@ mod mask {
     macro_rules! associative {
         ($x:expr, $y:expr, $z:expr, $fn:ident) => {{
             let mut vec = vec![$x, $y, $z];
-            let mut rng = thread_rng();
+            let mut rng = rand::rng();
             let r1 = {
                 SliceRandom::shuffle(&mut vec[..], &mut rng);
                 Fold::$fn(vec.clone()).collect::<Vec<_>>()
@@ -117,11 +123,7 @@ mod mask {
     #[test]
     fn fold_mask() {
         let data = vec![&*M0, &*M1, &*M2];
-        let vec1 = Fold::and(data)
-            .or(&*M0)
-            .or(&*M1)
-            .or(&*M2)
-            .collect::<Vec<_>>();
+        let vec1 = Fold::and(data).or(&*M0).or(&*M1).or(&*M2).collect::<Vec<_>>();
         let vec2 = M0.or(&*M1).or(&*M2).collect::<Vec<_>>();
         assert_eq!(vec1, vec2);
     }

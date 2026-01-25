@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 //! `bits`
 
 macro_rules! divrem {
@@ -17,24 +18,40 @@ pub use pop_vec::Pop;
 pub mod bit_array;
 pub mod bit_vec;
 pub mod map;
-pub use {bit_array::BitArray, bit_vec::BitVec};
-
-pub use {
-    mask::{and, and_not, or, xor},
-    rrr::Rrr,
+use std::ops::{
+    Bound,
+    RangeBounds,
 };
 
-pub use {
-    mask::{And, AndNot, Or, Xor},
-    mask::{Difference, Intersection, SymmetricDifference, Union},
-    mask::{Fold, Mask},
+pub use bit_array::BitArray;
+pub use bit_vec::BitVec;
+pub use mask::{
+    And,
+    AndNot,
+    Difference,
+    Fold,
+    Intersection,
+    Mask,
+    Or,
+    SymmetricDifference,
+    Union,
+    Xor,
+    and,
+    and_not,
+    or,
+    xor,
 };
+pub use rrr::Rrr;
 
-use std::ops::{Bound, RangeBounds};
-
-use crate::{
-    num::{Int, Word},
-    ops::{private::Sealed, Bits, BitsMut, FixedBits},
+use crate::num::{
+    Int,
+    Word,
+};
+use crate::ops::private::Sealed;
+use crate::ops::{
+    Bits,
+    BitsMut,
+    FixedBits,
 };
 
 /// Computes the minimum length of the sequence to store `n` bits.
@@ -46,8 +63,9 @@ pub fn blocks<T: FixedBits>(n: usize) -> usize {
 /// Computes the minimum length of the sequence to store `n` bits.
 #[inline]
 pub const fn blocks_by(n: usize, block_size: usize) -> usize {
-    // If we want 17 bits, dividing by 32 will produce 0. So we add 1 to make sure we reserve enough.
-    // But if we want exactly a multiple of `block_size`, this will actually allocate one too many.
+    // If we want 17 bits, dividing by 32 will produce 0. So we add 1 to make sure we reserve
+    // enough. But if we want exactly a multiple of `block_size`, this will actually allocate
+    // one too many.
     n / block_size + (n % block_size > 0) as usize
 }
 
@@ -67,9 +85,7 @@ where
     T: FixedBits,
     F: FnMut() -> T,
 {
-    std::iter::from_fn(|| Some(f()))
-        .take(blocks_by(bits, T::SIZE))
-        .collect()
+    std::iter::from_fn(|| Some(f())).take(blocks_by(bits, T::SIZE)).collect()
 }
 
 pub(crate) fn to_exclusive<R: RangeBounds<usize>>(range: &R, max: usize) -> Option<(usize, usize)> {
@@ -84,11 +100,7 @@ pub(crate) fn to_exclusive<R: RangeBounds<usize>>(range: &R, max: usize) -> Opti
         Bound::Unbounded => max,
     };
 
-    if start <= end && end <= max {
-        Some((start, end))
-    } else {
-        None
-    }
+    if start <= end && end <= max { Some((start, end)) } else { None }
 }
 
 impl<T: FixedBits> Bits for [T] {
@@ -107,14 +119,14 @@ impl<T: FixedBits> Bits for [T] {
     /// ```
     /// # use compacts::ops::Bits;
     /// let v: &[u64] = &[0b_00000101u64, 0b01100011, 0b01100000];
-    /// assert!( v.bit(0));
+    /// assert!(v.bit(0));
     /// assert!(!v.bit(1));
-    /// assert!( v.bit(2));
+    /// assert!(v.bit(2));
     /// assert!(!v.bit(3));
     ///
     /// let w = &v[1..]; // slicing is performed blockwise.
-    /// assert!( w.bit(0));
-    /// assert!( w.bit(1));
+    /// assert!(w.bit(0));
+    /// assert!(w.bit(1));
     /// assert!(!w.bit(2));
     /// ```
     #[inline]
@@ -160,10 +172,10 @@ impl<T: FixedBits> Bits for [T] {
 
     /// ```
     /// # use compacts::ops::Bits;
-    /// let v: &[u64] = &[ 0,  0,  0];
+    /// let v: &[u64] = &[0, 0, 0];
     /// let w: &[u64] = &[!0, !0, !0];
     /// assert!(!v.all());
-    /// assert!( w.all());
+    /// assert!(w.all());
     /// ```
     #[inline]
     fn all(&self) -> bool {
@@ -172,10 +184,10 @@ impl<T: FixedBits> Bits for [T] {
 
     /// ```
     /// # use compacts::ops::Bits;
-    /// let v: &[u64] = &[ 0,  0,  0];
+    /// let v: &[u64] = &[0, 0, 0];
     /// let w: &[u64] = &[!0, !0, !0];
     /// assert!(!v.any());
-    /// assert!( w.any());
+    /// assert!(w.any());
     /// ```
     #[inline]
     fn any(&self) -> bool {
@@ -319,13 +331,13 @@ impl<T: FixedBits> Bits for Vec<T> {
     /// assert_eq!(v.count1(), 8);
     /// assert_eq!(w.count1(), 6);
     ///
-    /// assert!( v.bit(0));
+    /// assert!(v.bit(0));
     /// assert!(!v.bit(1));
-    /// assert!( v.bit(2));
+    /// assert!(v.bit(2));
     /// assert!(!v.bit(3));
     ///
-    /// assert!( w.bit(0));
-    /// assert!( w.bit(1));
+    /// assert!(w.bit(0));
+    /// assert!(w.bit(1));
     /// assert!(!w.bit(2));
     /// ```
     #[inline]
@@ -676,11 +688,11 @@ macro_rules! implWords {
 
 macro_rules! WordsImpls {
     ($( $BITS:expr ),*) => ($(
-        implWords!( (   u8, $BITS /   u8::BITS)
-                  , (  u16, $BITS /  u16::BITS)
-                  , (  u32, $BITS /  u32::BITS)
-                  , (  u64, $BITS /  u64::BITS)
-                  , ( u128, $BITS / u128::BITS)
+        implWords!( (   u8, $BITS /   u8::BITS as usize)
+                  , (  u16, $BITS /  u16::BITS as usize)
+                  , (  u32, $BITS /  u32::BITS as usize)
+                  , (  u64, $BITS /  u64::BITS as usize)
+                  , ( u128, $BITS / u128::BITS as usize)
                   );
     )*)
 }

@@ -1,13 +1,27 @@
-use std::{fmt::Debug, iter::Peekable, slice, vec};
-
-use crate::{
-    bits::Word,
-    bits::{Difference, Intersection, SymmetricDifference, Union},
-    num::try_cast,
-    ops::*,
+use std::fmt::Debug;
+use std::iter::Peekable;
+use std::{
+    slice,
+    vec,
 };
 
-use super::{Block, Loc1, Ordering, EQ, GT, LT};
+use super::{
+    Block,
+    EQ,
+    GT,
+    LT,
+    Loc1,
+    Ordering,
+};
+use crate::bits::{
+    Difference,
+    Intersection,
+    SymmetricDifference,
+    Union,
+    Word,
+};
+use crate::num::try_cast;
+use crate::ops::*;
 
 // /// /// A 0 based sorted bit sequence.
 // #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -139,9 +153,8 @@ impl Bits for Loc1 {
             }
             Err(loc) if loc < self.data.len() => {
                 let mut out = W::O;
-                for &b in self.data[loc..]
-                    .iter()
-                    .take_while(|&x| try_cast::<u16, usize>(*x) < i + len)
+                for &b in
+                    self.data[loc..].iter().take_while(|&x| try_cast::<u16, usize>(*x) < i + len)
                 {
                     out.put1(try_cast::<u16, usize>(b) - i);
                 }
@@ -176,11 +189,7 @@ impl BitsMut for Loc1 {
 
     fn flip(&mut self, i: usize) -> &mut Self {
         BOUNDS_CHECK!(i < self.size());
-        if self.bit(i) {
-            self.put0(i)
-        } else {
-            self.put1(i)
-        }
+        if self.bit(i) { self.put0(i) } else { self.put1(i) }
     }
 }
 
@@ -216,12 +225,9 @@ impl BitSelect for Loc1 {
 
 impl Intersection<Self> for Loc1 {
     fn intersection(&mut self, that: &Self) {
-        self.data = Cmp {
-            a: self.data.iter().peekable(),
-            b: that.data.iter().peekable(),
-        }
-        .cloned()
-        .collect();
+        self.data = Cmp { a: self.data.iter().peekable(), b: that.data.iter().peekable() }
+            .cloned()
+            .collect();
 
         struct Cmp<L: Iterator, R: Iterator> {
             a: Peekable<L>,
@@ -266,12 +272,9 @@ fn cmp_opt<T: Ord>(x: Option<&T>, y: Option<&T>, a: Ordering, b: Ordering) -> Or
 
 impl Union<Self> for Loc1 {
     fn union(&mut self, that: &Self) {
-        self.data = Cmp {
-            a: self.data.iter().peekable(),
-            b: that.data.iter().peekable(),
-        }
-        .cloned()
-        .collect();
+        self.data = Cmp { a: self.data.iter().peekable(), b: that.data.iter().peekable() }
+            .cloned()
+            .collect();
 
         struct Cmp<L: Iterator, R: Iterator> {
             a: Peekable<L>,
@@ -301,12 +304,9 @@ impl Union<Self> for Loc1 {
 
 impl Difference<Self> for Loc1 {
     fn difference(&mut self, that: &Self) {
-        self.data = Cmp {
-            a: self.data.iter().peekable(),
-            b: that.data.iter().peekable(),
-        }
-        .cloned()
-        .collect();
+        self.data = Cmp { a: self.data.iter().peekable(), b: that.data.iter().peekable() }
+            .cloned()
+            .collect();
 
         struct Cmp<L: Iterator, R: Iterator> {
             a: Peekable<L>,
@@ -340,12 +340,9 @@ impl Difference<Self> for Loc1 {
 
 impl SymmetricDifference<Self> for Loc1 {
     fn symmetric_difference(&mut self, that: &Self) {
-        self.data = Cmp {
-            a: self.data.iter().peekable(),
-            b: that.data.iter().peekable(),
-        }
-        .cloned()
-        .collect();
+        self.data = Cmp { a: self.data.iter().peekable(), b: that.data.iter().peekable() }
+            .cloned()
+            .collect();
 
         struct Cmp<L: Iterator, R: Iterator> {
             a: Peekable<L>,

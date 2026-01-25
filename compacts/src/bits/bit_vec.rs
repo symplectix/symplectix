@@ -1,9 +1,11 @@
-use std::{iter, ops::RangeBounds};
+use std::iter;
+use std::ops::RangeBounds;
 
-use crate::{
-    bits::{blocks_by, to_exclusive},
-    ops::*,
+use crate::bits::{
+    blocks_by,
+    to_exclusive,
 };
+use crate::ops::*;
 
 /// `BitVec<B>`
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -21,10 +23,7 @@ pub struct BitVec<B> {
 
 impl<B> Default for BitVec<B> {
     fn default() -> Self {
-        BitVec {
-            buf: Vec::new(),
-            len: 0,
-        }
+        BitVec { buf: Vec::new(), len: 0 }
     }
 }
 
@@ -36,10 +35,7 @@ impl<B: FixedBits> BitVec<B> {
     /// assert!(bv.is_empty() && bv.capacity() == 0);
     /// ```
     pub fn new() -> Self {
-        BitVec {
-            buf: Vec::new(),
-            len: 0,
-        }
+        BitVec { buf: Vec::new(), len: 0 }
     }
 
     /// Returns an empty `BitVec` with the at least specified capacity.
@@ -49,10 +45,7 @@ impl<B: FixedBits> BitVec<B> {
     /// assert!(bv.is_empty() && bv.capacity() >= 10);
     /// ```
     pub fn with_capacity(cap: usize) -> Self {
-        BitVec {
-            buf: Vec::with_capacity(blocks_by(cap, B::SIZE)),
-            len: 0,
-        }
+        BitVec { buf: Vec::with_capacity(blocks_by(cap, B::SIZE)), len: 0 }
     }
 
     /// Returns a zeroed `BitVec` with the specified length.
@@ -65,7 +58,8 @@ impl<B: FixedBits> BitVec<B> {
         Self::from_fn(len, B::none)
     }
 
-    /// Allocates buf by multiples of `B::SIZE`, such that `BitVec` has at least `n` length and capacity.
+    /// Allocates buf by multiples of `B::SIZE`, such that `BitVec` has at least `n` length and
+    /// capacity.
     ///
     /// ```
     /// let bv = compacts::BitVec::<u64>::from_fn(1000, || !0);
@@ -75,22 +69,17 @@ impl<B: FixedBits> BitVec<B> {
     where
         F: FnMut() -> B,
     {
-        BitVec {
-            buf: iter::from_fn(|| Some(f()))
-                .take(blocks_by(len, B::SIZE))
-                .collect(),
-            len,
-        }
+        BitVec { buf: iter::from_fn(|| Some(f())).take(blocks_by(len, B::SIZE)).collect(), len }
     }
 
     /// ```
     /// let bv = compacts::BitVec::<u64>::of(vec![0, 1, 3, 5]);
-    /// assert!( bv.bit(0));
-    /// assert!( bv.bit(1));
+    /// assert!(bv.bit(0));
+    /// assert!(bv.bit(1));
     /// assert!(!bv.bit(2));
-    /// assert!( bv.bit(3));
+    /// assert!(bv.bit(3));
     /// assert!(!bv.bit(4));
-    /// assert!( bv.bit(5));
+    /// assert!(bv.bit(5));
     /// ```
     pub fn of<A: AsRef<[usize]>>(slice: A) -> Self {
         let slice = slice.as_ref();
@@ -130,10 +119,11 @@ impl<B: FixedBits> BitVec<B> {
         self.len == 0
     }
 
-    /// Reserves capacity by multiples of `B::SIZE` for at least `additional` more buf to be inserted.
+    /// Reserves capacity by multiples of `B::SIZE` for at least `additional` more buf to be
+    /// inserted.
     ///
-    /// After calling `reserve`, capacity will be greater than or equal to `self.len() + additional`.
-    /// Does nothing if capacity is already sufficient.
+    /// After calling `reserve`, capacity will be greater than or equal to `self.len() +
+    /// additional`. Does nothing if capacity is already sufficient.
     ///
     /// ```
     /// let mut bv = compacts::BitVec::<u64>::with_capacity(0);
@@ -152,7 +142,7 @@ impl<B: FixedBits> BitVec<B> {
     /// bv.resize(100);
     /// assert!(bv.len() == 100 && dbg!(bv.capacity()) >= 100);
     /// bv.resize(10);
-    /// assert!(bv.len() == 10  && bv.capacity() >= 100);
+    /// assert!(bv.len() == 10 && bv.capacity() >= 100);
     /// ```
     pub fn resize(&mut self, new_len: usize) {
         self.resize_with(new_len, B::none)
@@ -166,7 +156,10 @@ impl<B: FixedBits> BitVec<B> {
     /// ```
     /// let mut bv = compacts::BitVec::<u64>::with_capacity(0);
     /// let mut p = 2u64;
-    /// bv.resize_with(100, || { p *= 2; p });
+    /// bv.resize_with(100, || {
+    ///     p *= 2;
+    ///     p
+    /// });
     /// ```
     pub fn resize_with<F: FnMut() -> B>(&mut self, new_len: usize, f: F) {
         if self.len < new_len {
@@ -214,7 +207,7 @@ impl<B: FixedBits> BitVec<B> {
     // }
 
     /// ```
-    /// let v = compacts::BitVec::<u64>::from_fn(1000, ||  0);
+    /// let v = compacts::BitVec::<u64>::from_fn(1000, || 0);
     /// let w = compacts::BitVec::<u64>::from_fn(1000, || !0);
     /// assert_eq!(v.count1(), 0);
     /// assert_eq!(w.count1(), 1000);
@@ -225,7 +218,7 @@ impl<B: FixedBits> BitVec<B> {
     }
 
     /// ```
-    /// let v = compacts::BitVec::<u64>::from_fn(1000, ||  0);
+    /// let v = compacts::BitVec::<u64>::from_fn(1000, || 0);
     /// let w = compacts::BitVec::<u64>::from_fn(1000, || !0);
     /// assert_eq!(v.count0(), 1000);
     /// assert_eq!(w.count0(), 0);
@@ -236,10 +229,10 @@ impl<B: FixedBits> BitVec<B> {
     }
 
     /// ```
-    /// let v = compacts::BitVec::<u64>::from_fn(1000, ||  0);
+    /// let v = compacts::BitVec::<u64>::from_fn(1000, || 0);
     /// let w = compacts::BitVec::<u64>::from_fn(1000, || !0);
     /// assert!(!v.all());
-    /// assert!( w.all());
+    /// assert!(w.all());
     /// ```
     #[inline]
     pub fn all(&self) -> bool {
@@ -247,10 +240,10 @@ impl<B: FixedBits> BitVec<B> {
     }
 
     /// ```
-    /// let v = compacts::BitVec::<u64>::from_fn(1000, ||  0);
+    /// let v = compacts::BitVec::<u64>::from_fn(1000, || 0);
     /// let w = compacts::BitVec::<u64>::from_fn(1000, || !0);
     /// assert!(!v.any());
-    /// assert!( w.any());
+    /// assert!(w.any());
     /// ```
     #[inline]
     pub fn any(&self) -> bool {
@@ -258,10 +251,10 @@ impl<B: FixedBits> BitVec<B> {
     }
 
     /// ```
-    /// let v = compacts::BitVec::<u64>::from_fn(1000, ||  0);
+    /// let v = compacts::BitVec::<u64>::from_fn(1000, || 0);
     /// let w = compacts::BitVec::<u64>::from_fn(1000, || !0);
     /// assert!(!v.any());
-    /// assert!( w.any());
+    /// assert!(w.any());
     /// ```
     #[inline]
     pub fn bit(&self, i: usize) -> bool {

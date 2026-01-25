@@ -1,12 +1,21 @@
-use crate::bits::mask::{and, or, xor, BitMask, Fold};
-
-use super::{BitMap, Bytes};
+use std::fs;
+use std::io::BufReader;
 
 use lazy_static::lazy_static;
 // use quickcheck::quickcheck;
 use rand::prelude::*;
 
-use std::{fs, io::BufReader};
+use super::{
+    BitMap,
+    Bytes,
+};
+use crate::bits::mask::{
+    BitMask,
+    Fold,
+    and,
+    or,
+    xor,
+};
 
 macro_rules! generate {
     ($rng: expr, $nbits: expr, $bound: expr) => {{
@@ -126,27 +135,21 @@ mod fold {
     use super::*;
     #[test]
     fn and() {
-        let map1 = Fold::and(vec![&*V0, &*V1, &*V2])
-            .into_steps()
-            .collect::<BitMap>();
+        let map1 = Fold::and(vec![&*V0, &*V1, &*V2]).into_steps().collect::<BitMap>();
         let map2 = V0.and(&*V1).and(&*V2).into_steps().collect::<BitMap>();
         assert_eq!(map1, map2);
     }
 
     #[test]
     fn or() {
-        let map1 = Fold::or(vec![&*V0, &*V1, &*V2])
-            .into_steps()
-            .collect::<BitMap>();
+        let map1 = Fold::or(vec![&*V0, &*V1, &*V2]).into_steps().collect::<BitMap>();
         let map2 = V0.or(&*V1).or(&*V2).into_steps().collect::<BitMap>();
         assert_eq!(map1, map2);
     }
 
     #[test]
     fn xor() {
-        let map1 = Fold::xor(vec![&*V0, &*V1, &*V2])
-            .into_steps()
-            .collect::<BitMap>();
+        let map1 = Fold::xor(vec![&*V0, &*V1, &*V2]).into_steps().collect::<BitMap>();
         let map2 = V0.xor(&*V1).xor(&*V2).into_steps().collect::<BitMap>();
         assert_eq!(map1, map2);
     }
@@ -163,8 +166,9 @@ fn rank_select() {
 }
 
 mod bytes {
-    use super::*;
     use std::io::Cursor;
+
+    use super::*;
 
     lazy_static! {
         static ref BUF0: Vec<u8> = {

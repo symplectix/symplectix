@@ -1,10 +1,18 @@
-#![allow(clippy::cast_lossless)]
+#![allow(missing_docs)]
 
 //! Module `num` defines helper traits and functions.
 
-use std::{convert::TryFrom, fmt, hash::Hash, iter::Sum, ops};
+use std::convert::TryFrom;
+use std::hash::Hash;
+use std::iter::Sum;
+use std::{
+    fmt,
+    ops,
+};
 
-use crate::{bits::to_exclusive, num, ops::*};
+use crate::bits::to_exclusive;
+use crate::num;
+use crate::ops::*;
 
 /// A trait for integral types.
 pub trait Int:
@@ -103,7 +111,7 @@ macro_rules! implInt {
         // impl Sint for $Sint {}
 
         impl FixedBits for $Word {
-            const SIZE: usize = Self::BITS;
+            const SIZE: usize = Self::BITS as usize;
             #[inline(always)]
             fn none() -> Self { Self::NONE }
         }
@@ -116,7 +124,7 @@ macro_rules! implInt {
 
         impl Bits for $Word {
             #[inline(always)]
-            fn size(&self) -> usize { Self::BITS }
+            fn size(&self) -> usize { Self::BITS as usize }
 
             #[inline]
             fn bit(&self, i: usize) -> bool { (*self & (1 << i)) != 0 }
@@ -138,7 +146,7 @@ macro_rules! implInt {
 
             #[inline(always)]
             fn rank1<R: ops::RangeBounds<usize>>(&self, range: R) -> usize {
-                let (i, j) = to_exclusive(&range, Self::BITS).expect("out of bounds");
+                let (i, j) = to_exclusive(&range, Self::BITS as usize).expect("out of bounds");
                 (*self & mask::<$Word>(i, j)).count1()
             }
             #[inline(always)]
@@ -221,11 +229,7 @@ pub(crate) fn mask<T: Int>(i: usize, j: usize) -> T {
 #[inline]
 pub(crate) fn mask1<T: Int>(i: usize) -> T {
     assert!(i <= T::BITS);
-    if i == T::BITS {
-        T::FULL
-    } else {
-        (T::_1 << i) - T::_1
-    }
+    if i == T::BITS { T::FULL } else { (T::_1 << i) - T::_1 }
 }
 
 // Helper trait to implement `select1` and `select0`
