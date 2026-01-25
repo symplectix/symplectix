@@ -62,6 +62,7 @@ pub fn blocks<T: FixedBits>(n: usize) -> usize {
 
 /// Computes the minimum length of the sequence to store `n` bits.
 #[inline]
+#[allow(clippy::manual_is_multiple_of)]
 pub const fn blocks_by(n: usize, block_size: usize) -> usize {
     // If we want 17 bits, dividing by 32 will produce 0. So we add 1 to make sure we reserve
     // enough. But if we want exactly a multiple of `block_size`, this will actually allocate
@@ -476,9 +477,10 @@ mod slice {
 
         if q0 == q1 {
             // fit in one block
-            if !f(&slice[q0], r0, r1) {
-                return;
-            }
+            f(&slice[q0], r0, r1);
+            // if !f(&slice[q0], r0, r1) {
+            //     return;
+            // }
         } else {
             // spans many blocks
             assert!(q0 < q1);

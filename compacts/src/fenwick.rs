@@ -1,4 +1,3 @@
-use std::cmp;
 use std::convert::identity;
 use std::iter::{
     Sum,
@@ -9,10 +8,7 @@ use std::ops::{
     SubAssign,
 };
 
-use crate::num::{
-    Int,
-    Word,
-};
+use crate::num::Int;
 
 /// 1-based FenwickTree (or BinaryIndexedTree)
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -152,12 +148,14 @@ impl<T: Copy> FenwickTree<T> {
 
 impl<T: Int> FenwickTree<T> {
     /// Gets an actual value at `i`.
+    #[allow(dead_code)]
     #[inline]
     pub fn get(&self, i: usize) -> T {
         self.sum::<T>(i + 1) - self.sum::<T>(i)
     }
 
     /// Sets a new value at `i`.
+    #[allow(dead_code)]
     pub fn set(&mut self, i: usize, val: T) {
         let cur = self.get(i);
         if cur <= val {
@@ -179,6 +177,7 @@ where
 }
 
 impl<T: Copy> FenwickTree<T> {
+    #[allow(dead_code)]
     pub(crate) fn fix(&mut self, pos: usize)
     where
         T: AddAssign,
@@ -200,6 +199,7 @@ impl<T: Copy> FenwickTree<T> {
         }
     }
 
+    #[allow(dead_code)]
     fn from_slice<A: AsRef<[T]>>(slice: A, ident: T) -> Self
     where
         T: AddAssign,
@@ -231,7 +231,7 @@ impl<T: Copy> FenwickTree<T> {
         F: FnMut(T) -> U,
         T: Default + AddAssign<U>,
     {
-        self.extend_by(std::iter::repeat(T::default()).take(len), f)
+        self.extend_by(std::iter::repeat_n(T::default(), len), f)
     }
 }
 
@@ -248,7 +248,7 @@ fn prev_power_of_two(mut n: usize) -> usize {
 }
 
 #[cfg(test)]
-mod fenwick {
+mod tests {
     use quickcheck::quickcheck;
 
     use super::*;
@@ -304,7 +304,7 @@ mod fenwick {
 
     #[test]
     fn search2() {
-        let mut bit = FenwickTree::from_slice(&vec![0u32], 0);
+        let mut bit = FenwickTree::from_slice(vec![0u32], 0);
 
         // [0]
         assert_eq!(bit.search(0), Ok(0));

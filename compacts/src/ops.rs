@@ -306,7 +306,7 @@ mod others {
         #[inline]
         fn bit(&self, i: usize) -> bool {
             BOUNDS_CHECK!(i < self.size());
-            self.as_ref().map_or(false, |t| t.bit(i))
+            self.as_ref().is_some_and(|t| t.bit(i))
         }
 
         #[inline]
@@ -329,11 +329,11 @@ mod others {
 
         #[inline]
         fn all(&self) -> bool {
-            self.as_ref().map_or(true, Bits::all)
+            self.as_ref().is_none_or(Bits::all)
         }
         #[inline]
         fn any(&self) -> bool {
-            self.as_ref().map_or(false, Bits::any)
+            self.as_ref().is_some_and(Bits::any)
         }
 
         #[inline]

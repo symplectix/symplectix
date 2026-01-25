@@ -6,7 +6,7 @@ use std::fmt::{
 };
 use std::iter::{
     once,
-    repeat,
+    repeat_n,
     repeat_with,
 };
 use std::ops::{
@@ -71,7 +71,7 @@ struct Samples {
 // }
 
 /// Interleaves L1[i] and L2[i] into 64bit word.
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, Hash)]
 struct L1L2(u64);
 
 /// (upper_blocks, lower_blocks, super_blocks)
@@ -270,7 +270,7 @@ impl Samples {
 
             LT if up.len() < uppers => {
                 let diff = uppers - up.len();
-                up.extend(repeat(0).take(diff));
+                up.extend(repeat_n(0, diff));
 
                 // None if bit_len is 0
                 if let Some(lo_last) = lo.last_mut() {
@@ -354,12 +354,6 @@ impl Samples {
     }
 }
 
-impl Default for L1L2 {
-    fn default() -> L1L2 {
-        L1L2(0)
-    }
-}
-
 impl Debug for L1L2 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("L1L2")
@@ -432,7 +426,7 @@ impl L1L2 {
     #[inline]
     fn l1(self) -> u64 {
         let L1L2(l1l2) = self;
-        (l1l2 & 0b_00000000000000000000000000000000_11111111111111111111111111111111_u64)
+        l1l2 & 0b_00000000000000000000000000000000_11111111111111111111111111111111_u64
     }
 
     #[inline]

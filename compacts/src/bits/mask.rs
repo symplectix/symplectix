@@ -262,7 +262,7 @@ impl<'a, T: ?Sized> Fold<'a, Cow<'a, T>>
 where
     T: 'a + ToOwned,
 {
-    pub(crate) fn fold<A, B, F>(xs: impl IntoIterator<Item = A>, mut f: F) -> Fold<'a, Cow<'a, T>>
+    pub(crate) fn new<A, B, F>(xs: impl IntoIterator<Item = A>, mut f: F) -> Fold<'a, Cow<'a, T>>
     where
         A: 'a + Mask<'a, Block = T>,
         B: 'a + Mask<'a, Block = T>,
@@ -283,7 +283,7 @@ where
         A: Mask<'a, Block = T>,
         And<'a, Box<dyn Iterator<Item = (usize, Cow<'a, T>)> + 'a>, A>: 'a + Mask<'a, Block = T>,
     {
-        Self::fold(xs, And::new)
+        Self::new(xs, And::new)
     }
 
     /// Folds `xs` into a single iterator that applies `or` to each bits.
@@ -292,7 +292,7 @@ where
         A: Mask<'a, Block = T>,
         Or<'a, Box<dyn Iterator<Item = (usize, Cow<'a, T>)> + 'a>, A>: 'a + Mask<'a, Block = T>,
     {
-        Self::fold(xs, Or::new)
+        Self::new(xs, Or::new)
     }
 
     /// Folds `xs` into a single iterator that applies `and_not` to each bits.
@@ -301,7 +301,7 @@ where
         A: Mask<'a, Block = T>,
         AndNot<'a, Box<dyn Iterator<Item = (usize, Cow<'a, T>)> + 'a>, A>: 'a + Mask<'a, Block = T>,
     {
-        Self::fold(xs, AndNot::new)
+        Self::new(xs, AndNot::new)
     }
 
     /// Folds `xs` into a single iterator that applies `xor` to each bits.
@@ -310,7 +310,7 @@ where
         A: Mask<'a, Block = T>,
         Xor<'a, Box<dyn Iterator<Item = (usize, Cow<'a, T>)> + 'a>, A>: 'a + Mask<'a, Block = T>,
     {
-        Self::fold(xs, Xor::new)
+        Self::new(xs, Xor::new)
     }
 }
 

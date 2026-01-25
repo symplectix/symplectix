@@ -94,7 +94,7 @@ where
     }
 }
 
-impl<'a, T: Code, B: Words> From<&'a mut [T]> for WaveletMatrix<T, BitMap<B>> {
+impl<T: Code, B: Words> From<&mut [T]> for WaveletMatrix<T, BitMap<B>> {
     /// Builds WaveletMatrix and returns the sorted symbols.
     /// Sorting is performed bit by bit so that symbols are sorted lexicographically.
     fn from(bin0: &mut [T]) -> Self {

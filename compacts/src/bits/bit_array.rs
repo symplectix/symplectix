@@ -1,11 +1,11 @@
 #![allow(missing_docs)]
 
+use std::iter::repeat_n;
 use std::ops::RangeBounds;
 
 use crate::bits::Words;
 use crate::num::{
     self,
-    Int,
     Word,
     cast,
 };
@@ -56,7 +56,7 @@ const NUM_SB: usize = (1 << 32) / 2048; // 2097152
 const NUM_BB: usize = 2048 / 512;
 
 fn words<T: Word>(slice: &[T], chunk_bits: usize) -> impl Iterator<Item = Option<&[T]>> {
-    assert!(chunk_bits % T::BITS == 0 && chunk_bits <= 65536);
+    assert!(chunk_bits.is_multiple_of(T::BITS) && chunk_bits <= 65536);
     slice.chunks(chunk_bits / T::BITS).map(Some)
 }
 
@@ -77,16 +77,16 @@ impl<T: Words> From<Vec<Option<Box<T>>>> for BitArray<Option<Box<T>>> {
         let (ones, sum_samples, idx_samples) = {
             let slice = data.as_slice();
             samples(slice.size(), {
-                use std::iter::repeat;
                 type FixedBits<'a, W> = Option<&'a [W]>;
-                assert!(T::BITS % SUPER_BLOCK == 0 && SUPER_BLOCK <= 65536);
+                // assert!(T::BITS % SUPER_BLOCK == 0 && SUPER_BLOCK <= 65536);
+                assert!(T::BITS.is_multiple_of(SUPER_BLOCK) && SUPER_BLOCK <= 65536);
 
                 slice.iter().flat_map(move |entry| {
                     if let Some(b) = entry.as_ref() {
                         Box::new(words(b.as_ref_words(), SUPER_BLOCK))
                             as Box<dyn Iterator<Item = FixedBits<'_, T::Word>> + '_>
                     } else {
-                        Box::new(repeat(None).take(T::BITS / SUPER_BLOCK))
+                        Box::new(repeat_n(None, T::BITS / SUPER_BLOCK))
                             as Box<dyn Iterator<Item = FixedBits<'_, T::Word>> + '_>
                     }
                 })
@@ -173,7 +173,7 @@ impl L1L2 {
 
     #[inline(always)]
     fn l1(self) -> u64 {
-        (self.0 & 0b_00000000000000000000000000000000_11111111111111111111111111111111_u64)
+        self.0 & 0b_00000000000000000000000000000000_11111111111111111111111111111111_u64
     }
 
     #[inline(always)]

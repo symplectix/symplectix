@@ -384,13 +384,13 @@ impl<B: FixedBits> Bits for BitVec<B> {
     #[inline]
     fn all(&self) -> bool {
         let (q, r) = divrem!(self.len, B::SIZE);
-        self.buf[..q].all() && self.buf.get(q).map_or(true, |p| p.rank0(..r) == 0)
+        self.buf[..q].all() && self.buf.get(q).is_none_or(|p| p.rank0(..r) == 0)
     }
 
     #[inline]
     fn any(&self) -> bool {
         let (q, r) = divrem!(self.len, B::SIZE);
-        self.buf[..q].any() || self.buf.get(q).map_or(false, |p| p.rank1(..r) > 0)
+        self.buf[..q].any() || self.buf.get(q).is_some_and(|p| p.rank1(..r) > 0)
     }
 }
 

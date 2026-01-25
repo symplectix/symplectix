@@ -308,7 +308,7 @@ mod cmpby {
     };
     use crate::ops::Code;
 
-    impl<'a, By, T: Word> Probe<T, By> {
+    impl<By, T: Word> Probe<T, By> {
         pub(super) fn guard(self, min: Option<T>, max: Option<T>) -> Option<Probe<T, By>> {
             let prefix = |sym, d| sym >> (T::DEPTH - d);
 
@@ -345,22 +345,22 @@ mod cmpby {
 
     impl<T: Word> PartialOrd for Probe<T, Top> {
         fn partial_cmp(&self, that: &Probe<T, Top>) -> Option<Ordering> {
-            let len0 = self.index.1 - self.index.0;
-            let len1 = that.index.1 - that.index.0;
-            Some(if len0 != len1 {
-                len0.cmp(&len1)
-            } else if self.value != that.value {
-                self.value.cmp(&that.value)
-            } else {
-                self.index.0.cmp(&that.index.0)
-            })
+            Some(self.cmp(that))
         }
     }
 
     impl<T: Word> Ord for Probe<T, Top> {
         #[inline]
         fn cmp(&self, that: &Probe<T, Top>) -> Ordering {
-            self.partial_cmp(that).unwrap()
+            let len0 = self.index.1 - self.index.0;
+            let len1 = that.index.1 - that.index.0;
+            if len0 != len1 {
+                len0.cmp(&len1)
+            } else if self.value != that.value {
+                self.value.cmp(&that.value)
+            } else {
+                self.index.0.cmp(&that.index.0)
+            }
         }
     }
 
@@ -374,7 +374,7 @@ mod cmpby {
 
     impl<T: Word> PartialOrd for Probe<T, Min> {
         fn partial_cmp(&self, that: &Probe<T, Min>) -> Option<Ordering> {
-            Reverse(self.value).partial_cmp(&Reverse(that.value))
+            Some(self.cmp(that))
         }
     }
     impl<T: Word> Ord for Probe<T, Min> {
@@ -393,7 +393,7 @@ mod cmpby {
 
     impl<T: Word> PartialOrd for Probe<T, Max> {
         fn partial_cmp(&self, that: &Probe<T, Max>) -> Option<Ordering> {
-            self.value.partial_cmp(&that.value)
+            Some(self.cmp(that))
         }
     }
     impl<T: Word> Ord for Probe<T, Max> {
