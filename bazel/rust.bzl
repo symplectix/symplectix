@@ -12,6 +12,9 @@ load(
     "rust_fuzz_binary",
 )
 
+# TODO: add benchmark rule here
+# https://github.com/criterion-rs/criterion.rs/blob/master/src/lib.rs
+
 rust = struct(
     binary = rust_binary,
     build_script = cargo_build_script,
