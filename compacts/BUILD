@@ -26,6 +26,11 @@ rust.test(
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
+    # depends on overflowing for now.
+    # could be removed.
+    rustc_flags = [
+        "-Coverflow-checks=off",
+    ],
     deps = [
         "@crates//:quickcheck",
     ],
