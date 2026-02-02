@@ -14,3 +14,22 @@ rust.test(
     size = "small",
     crate = ":fenwicktree",
 )
+
+rust.test_suite(
+    name = "fenwick_integration",
+    size = "small",
+    srcs = glob(["tests/*.rs"]),
+    proc_macro_deps = [
+        "@crates//:quickcheck_macros",
+    ],
+    # depends on overflowing for now.
+    # could be removed.
+    rustc_flags = [
+        "-Coverflow-checks=off",
+    ],
+    deps = [
+        ":fenwicktree",
+        "//bits",
+        "@crates//:quickcheck",
+    ],
+)

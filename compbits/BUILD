@@ -1,14 +1,13 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "compacts",
+    name = "compbits",
     srcs = glob([
         "src/*.rs",
-        "src/bits/*.rs",
-        "src/bits/roaring/*.rs",
-        "src/ops/*.rs",
-        "src/text/*.rs",
-        "src/text/wavelet_matrix/*.rs",
+        "src/bit_set/*.rs",
+        "src/bit_set/mask/*.rs",
+        "src/bit_set/ops/*.rs",
+        "src/bit_set/tests/*.rs",
     ]),
     visibility = ["//:__subpackages__"],
     deps = [":build_script"],
@@ -20,16 +19,11 @@ rust.build_script(
 )
 
 rust.test(
-    name = "compacts_test",
+    name = "compbits_test",
     size = "small",
-    crate = ":compacts",
+    crate = ":compbits",
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
-    ],
-    # depends on overflowing for now.
-    # could be removed.
-    rustc_flags = [
-        "-Coverflow-checks=off",
     ],
     deps = [
         "@crates//:quickcheck",
@@ -37,14 +31,14 @@ rust.test(
 )
 
 rust.test_suite(
-    name = "compacts_test_suite",
+    name = "compbits_test_suite",
     size = "small",
     srcs = glob(["tests/*.rs"]),
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
     deps = [
-        ":compacts",
+        ":compbits",
         "@crates//:lazy_static",
         "@crates//:quickcheck",
         "@crates//:rand",
