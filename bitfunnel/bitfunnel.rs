@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 // References:
 // [BitFunnel: Revisiting Signatures for Search](https://www.youtube.com/watch?v=1-Xoy5w5ydM)
 // [github.com/BitFunnel](https://github.com/BitFunnel)

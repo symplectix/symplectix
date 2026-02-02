@@ -28,6 +28,6 @@ fn not_implemented_yet() {
     test_debug(0);
     test_debug((1 << 16) - 1);
     test_debug((1 << 16) + 3);
-    test_debug(std::u32::MAX);
+    test_debug(u32::MAX);
     test_debug(1209387123);
 }

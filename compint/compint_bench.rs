@@ -1,3 +1,6 @@
+#![allow(missing_docs)]
+//! Benchmarking integer compression methods.
+
 use std::hint::black_box;
 
 use bitpacking::{
@@ -43,7 +46,8 @@ pub fn bench_encode(c: &mut Criterion) {
     group.bench_function("Stream VByte", |b| {
         const VBYTE: usize = 256;
         let mut buf = vec![0u8; VBYTE * varint::MAX_VARINT_LEN32];
-        let mut ctl = vec![0u8; (data.len() + 3) / 4];
+        // let mut ctl = vec![0u8; (data.len() + 3) / 4];
+        let mut ctl = vec![0u8; data.len().div_ceil(4)];
         let mut n = 0;
         b.iter(|| {
             n += streamvbyte::encode(&mut buf, &mut ctl, black_box(&data));

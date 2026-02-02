@@ -10,7 +10,8 @@ use byteorder::{
 mod streamvbyte_test;
 
 pub fn encode(buf: &mut [u8], ctl: &mut [u8], vs: &[u32]) -> usize {
-    assert_eq!(ctl.len(), (vs.len() + 3) / 4);
+    // assert_eq!(ctl.len(), (vs.len() + 3) / 4);
+    assert_eq!(ctl.len(), vs.len().div_ceil(4));
 
     let mut encoded = 0;
     // FIXME: use exact_chunks
