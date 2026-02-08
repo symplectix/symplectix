@@ -7,6 +7,7 @@ use std::{
 };
 
 fn gen_comb_table(size: usize) -> Vec<Vec<u128>> {
+    let size = size + 1;
     let mut table = vec![vec![0u128; size]; size];
     for k in 0..size {
         table[k][k] = 1; // initialize diagonal
@@ -39,8 +40,8 @@ pub static TABLE: {} = {:#?};
 }
 
 fn main() -> io::Result<()> {
-    write_comb_table("table15.rs", "[[u16; 15]; 15]", 15)?;
-    write_comb_table("table31.rs", "[[u32; 31]; 31]", 31)?;
-    write_comb_table("table63.rs", "[[u64; 63]; 63]", 63)?;
+    write_comb_table("table15.rs", "[[u16; 16]; 16]", 15)?;
+    write_comb_table("table31.rs", "[[u32; 32]; 32]", 31)?;
+    write_comb_table("table63.rs", "[[u64; 64]; 64]", 63)?;
     Ok(())
 }

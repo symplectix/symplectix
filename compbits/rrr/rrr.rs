@@ -2,17 +2,18 @@
 
 macro_rules! generate_rrr_mod {
     ($file:expr, $data:ty, $size:expr, $class_size:expr) => {
-        // It is a good idea to choose `size + 1` as a power of two,
-        // so that the bits for `class` can be fully used (bitpacking).
-        // e.g) 255: 8, 127: 7, 63: 6, 31: 5, 15: 4,
-
         include!(concat!(env!("OUT_DIR"), $file));
 
         const SIZE: usize = $size;
 
-        /// minimum bits size to represents class value.
-        // pub const CLASS_SIZE: usize = $class_size;
-        pub const CLASS_SIZE: usize = ($size + 1).isqrt();
+        // It is a good idea to choose `size + 1` as a power of two,
+        // so that the bits for `class` can be fully used (bitpacking).
+        //  7: 0b000111
+        // 15: 0b001111
+        // 31: 0b011111
+        // 63: 0b111111
+        /// Minimum bits size to represents class value.
+        pub const CLASS_SIZE: u8 = $class_size;
 
         pub fn encode(mut data: $data) -> (u32, $data) {
             data &= (1 << SIZE) - 1;
