@@ -10,12 +10,6 @@ rust.library(
         "src/bit_set/tests/*.rs",
     ]),
     visibility = ["//:__subpackages__"],
-    deps = [":build_script"],
-)
-
-rust.build_script(
-    name = "build_script",
-    srcs = ["build.rs"],
 )
 
 rust.test(
@@ -43,4 +37,36 @@ rust.test_suite(
         "@crates//:quickcheck",
         "@crates//:rand",
     ],
+)
+
+rust.library(
+    name = "rrr15",
+    srcs = glob(["rrr/*.rs"]),
+    crate_features = ["rrr15"],
+    crate_root = "rrr/rrr.rs",
+    visibility = ["//:__subpackages__"],
+    deps = [":rrr_build_script"],
+)
+
+rust.library(
+    name = "rrr31",
+    srcs = glob(["rrr/*.rs"]),
+    crate_features = ["rrr31"],
+    crate_root = "rrr/rrr.rs",
+    visibility = ["//:__subpackages__"],
+    deps = [":rrr_build_script"],
+)
+
+rust.library(
+    name = "rrr63",
+    srcs = glob(["rrr/*.rs"]),
+    crate_features = ["rrr63"],
+    crate_root = "rrr/rrr.rs",
+    visibility = ["//:__subpackages__"],
+    deps = [":rrr_build_script"],
+)
+
+rust.build_script(
+    name = "rrr_build_script",
+    srcs = ["rrr/build.rs"],
 )

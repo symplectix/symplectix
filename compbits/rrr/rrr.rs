@@ -11,7 +11,8 @@ macro_rules! generate_rrr_mod {
         const SIZE: usize = $size;
 
         /// minimum bits size to represents class value.
-        pub const CLASS_SIZE: usize = $class_size;
+        // pub const CLASS_SIZE: usize = $class_size;
+        pub const CLASS_SIZE: usize = ($size + 1).isqrt();
 
         pub fn encode(mut data: $data) -> (u32, $data) {
             data &= (1 << SIZE) - 1;
@@ -52,3 +53,24 @@ macro_rules! generate_rrr_mod {
         }
     };
 }
+
+#[cfg(feature = "rrr15")]
+mod imp {
+    generate_rrr_mod!("/table15.rs", u16, 15usize, 4);
+}
+
+#[cfg(feature = "rrr31")]
+mod imp {
+    generate_rrr_mod!("/table31.rs", u32, 31usize, 5);
+}
+
+#[cfg(feature = "rrr63")]
+mod imp {
+    generate_rrr_mod!("/table63.rs", u64, 63usize, 6);
+}
+
+pub use imp::{
+    CLASS_SIZE,
+    decode,
+    encode,
+};

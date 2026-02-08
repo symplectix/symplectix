@@ -5,8 +5,6 @@
 // - Fast, Small, Simple Rank/Select on Bitmaps
 // - Space-Efficient, High-Performance Rank & Select Structures on Uncompressed Bit Sequences
 
-#[macro_use]
-mod macros;
 #[cfg(test)]
 mod tests;
 
@@ -14,21 +12,6 @@ mod mask;
 mod ops;
 mod raw_vec;
 mod word;
-
-pub mod rrr15 {
-    #![allow(dead_code, missing_docs)]
-    generate_rrr_mod!("/table15.rs", u16, 15, 4);
-}
-
-pub mod rrr31 {
-    #![allow(dead_code, missing_docs)]
-    generate_rrr_mod!("/table31.rs", u32, 31, 5);
-}
-
-pub mod rrr63 {
-    #![allow(dead_code, missing_docs)]
-    generate_rrr_mod!("/table63.rs", u64, 63, 6);
-}
 
 mod private {
     use std::ops;
