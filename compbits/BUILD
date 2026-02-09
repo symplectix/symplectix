@@ -10,12 +10,6 @@ rust.library(
         "src/bit_set/tests/*.rs",
     ]),
     visibility = ["//:__subpackages__"],
-    deps = [":build_script"],
-)
-
-rust.build_script(
-    name = "build_script",
-    srcs = ["build.rs"],
 )
 
 rust.test(
@@ -31,7 +25,7 @@ rust.test(
 )
 
 rust.test_suite(
-    name = "compbits_test_suite",
+    name = "compbits_integration",
     size = "small",
     srcs = glob(["tests/*.rs"]),
     proc_macro_deps = [
