@@ -2,17 +2,6 @@
 
 macro_rules! generate_rrr_mod {
     ($data:ty, $size:expr, $class_size:expr) => {
-        const SIZE: usize = $size;
-
-        // It is a good idea to choose `size + 1` as a power of two,
-        // so that the bits for `class` can be fully used (bitpacking).
-        //  7: 0b000111
-        // 15: 0b001111
-        // 31: 0b011111
-        // 63: 0b111111
-        /// Minimum bits size to represents class value.
-        pub const CLASS_SIZE: u8 = $class_size;
-
         pub fn encode(mut data: $data) -> (u32, $data) {
             data &= (1 << SIZE) - 1;
 
