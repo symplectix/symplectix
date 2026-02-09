@@ -1,9 +1,7 @@
 #![allow(missing_docs)]
 
 macro_rules! generate_rrr_mod {
-    ($file:expr, $data:ty, $size:expr, $class_size:expr) => {
-        include!(concat!(env!("OUT_DIR"), $file));
-
+    ($data:ty, $size:expr, $class_size:expr) => {
         const SIZE: usize = $size;
 
         // It is a good idea to choose `size + 1` as a power of two,
@@ -55,8 +53,28 @@ macro_rules! generate_rrr_mod {
     };
 }
 
+#[cfg(feature = "rrr4")]
 mod imp {
-    generate_rrr_mod!("/table15.rs", u16, 15usize, 4);
+    include!(concat!(env!("OUT_DIR"), "/table4.rs"));
+    generate_rrr_mod!(u8, 4usize, 3);
+}
+
+#[cfg(feature = "rrr15")]
+mod imp {
+    include!(concat!(env!("OUT_DIR"), "/table15.rs"));
+    generate_rrr_mod!(u16, 15usize, 4);
+}
+
+#[cfg(feature = "rrr31")]
+mod imp {
+    include!(concat!(env!("OUT_DIR"), "/table31.rs"));
+    generate_rrr_mod!(u32, 31usize, 5);
+}
+
+#[cfg(feature = "rrr63")]
+mod imp {
+    include!(concat!(env!("OUT_DIR"), "/table63.rs"));
+    generate_rrr_mod!(u64, 63usize, 6);
 }
 
 pub use imp::{

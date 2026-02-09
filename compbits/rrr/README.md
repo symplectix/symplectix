@@ -22,11 +22,12 @@ If `b` is 4:
 - `class[3]`: `[0111, 1011, 1101, 1110]`
 - `class[4]`: `[1111]`
 
-We will describe each `block[i]` using a pair of `c` and `o`, where `o` is
+We can describe each `block[i]` using a pair of `c` and `o`, where `o` is
 the index of each `class[c]`. For example, when `b` is 4 and `c` is 1,
 assign 0 to `0001`, 1 to `0010`, 2 to `0100` and 3 to `1000`.
 
-The bit patterns in `class[c]` follow a specific order. There are `comb(b-1, c)`
-blocks starting with 0, which will precede the `comb(b-1, c-1)` blocks starting
-with 1. By applying this order during encoding/decoding, the bit patterns can
-be reconstructed from two values: `c` and `o`.
+Note that `class[c]` contains offsets for the number of `comb(b, c)`, and
+the bit patterns for each offset follow a specific order. Offsets starting with 0,
+`comb(b-1, c)`, exist and precede blocks starting with 1, `comb(b-1, c-1)`.
+By utilizing this rule during encoding/decoding, the bit patterns can be reconstructed
+efficiently from the two values `c` and `o`.

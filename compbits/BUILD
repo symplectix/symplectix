@@ -33,35 +33,11 @@ rust.test_suite(
     ],
     deps = [
         ":compbits",
-        ":rrr15",
-        ":rrr31",
-        ":rrr63",
+        "//compbits/rrr:rrr15",
+        "//compbits/rrr:rrr31",
+        "//compbits/rrr:rrr63",
         "@crates//:lazy_static",
         "@crates//:quickcheck",
         "@crates//:rand",
     ],
-)
-
-# TODO: Consider not to share the build script and source files.
-# Possibly, but this setup seems to confuse rust-analyzer.
-
-[
-    [
-        rust.library(
-            name = rrr,
-            srcs = ["rrr/{}.rs".format(rrr)],
-            visibility = ["//:__subpackages__"],
-            deps = [":rrr_build_script"],
-        ),
-    ]
-    for rrr in [
-        "rrr15",
-        "rrr31",
-        "rrr63",
-    ]
-]
-
-rust.build_script(
-    name = "rrr_build_script",
-    srcs = ["rrr/build.rs"],
 )
