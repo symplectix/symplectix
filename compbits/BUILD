@@ -46,12 +46,14 @@ rust.test_suite(
 # Possibly, but this setup seems to confuse rust-analyzer.
 
 [
-    rust.library(
-        name = rrr,
-        srcs = ["rrr/{}.rs".format(rrr)],
-        visibility = ["//:__subpackages__"],
-        deps = [":{}_build_script".format(rrr)],
-    )
+    [
+        rust.library(
+            name = rrr,
+            srcs = ["rrr/{}.rs".format(rrr)],
+            visibility = ["//:__subpackages__"],
+            deps = [":rrr_build_script"],
+        ),
+    ]
     for rrr in [
         "rrr15",
         "rrr31",
@@ -59,14 +61,7 @@ rust.test_suite(
     ]
 ]
 
-[
-    rust.build_script(
-        name = "{}_build_script".format(rrr),
-        srcs = ["rrr/{}_build.rs".format(rrr)],
-    )
-    for rrr in [
-        "rrr15",
-        "rrr31",
-        "rrr63",
-    ]
-]
+rust.build_script(
+    name = "rrr_build_script",
+    srcs = ["rrr/build.rs"],
+)
