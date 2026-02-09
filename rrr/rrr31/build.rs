@@ -1,3 +1,3 @@
 fn main() -> std::io::Result<()> {
-    rrrbuild::write_statics("[[u32; 32]; 32]", 31, 5)
+    rrrbuild::write_mod("u32", 31)
 }

@@ -5,13 +5,21 @@ rust.library(
     srcs = glob(["rrrbuild/*.rs"]),
 )
 
+rust.library(
+    name = "rrrutil",
+    srcs = glob(["rrrutil/*.rs"]),
+)
+
 [
     [
         rust.library(
             name = rrr,
             srcs = ["{}/{}.rs".format(rrr, rrr)],
             visibility = ["//:__subpackages__"],
-            deps = [":{}_build_script".format(rrr)],
+            deps = [
+                ":{}_build_script".format(rrr),
+                ":rrrutil",
+            ],
         ),
         rust.build_script(
             name = "{}_build_script".format(rrr),
@@ -31,7 +39,10 @@ rust.library(
     testonly = True,
     srcs = ["rrr4/rrr4.rs"],
     visibility = ["//:__subpackages__"],
-    deps = [":rrr4_build_script"],
+    deps = [
+        ":rrr4_build_script",
+        ":rrrutil",
+    ],
 )
 
 rust.build_script(

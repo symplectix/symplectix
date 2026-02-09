@@ -28,7 +28,7 @@ fn comb_table(size: usize) -> Vec<Vec<u64>> {
     table
 }
 
-/// Writes static values definitions e.g., precomputed comb table to OUT_DIR.
+/// Writes static values and functions to OUT_DIR.
 ///
 /// It is a good idea to choose `b + 1` as a power of two,
 /// so that the bits for `class` can be fully used (bitpacking).
@@ -36,13 +36,15 @@ fn comb_table(size: usize) -> Vec<Vec<u64>> {
 /// 15: 0b_0000_1111
 /// 31: 0b_0001_1111
 /// 63: 0b_0011_1111
-pub fn write_statics(table_type: &str, b: usize, _class_size: u8) -> io::Result<()> {
-    let class_size = u8::BITS - (b as u8).leading_zeros();
-    let dir = env::var("OUT_DIR").unwrap();
-    let mut file = fs::File::create(Path::new(&dir).join(format!("table{b}.rs")))?;
-    writeln!(
-        file,
-        r#"
+pub fn write_mod(item_type: &str, b: usize) -> io::Result<()> {
+    env::var_os("OUT_DIR").ok_or(io::Error::other("OUT_DIR not found")).and_then(|out_dir| {
+        let table = comb_table(b);
+        let table_len = b + 1;
+        let class_size = u8::BITS - (b as u8).leading_zeros();
+        let mut file = fs::File::create(Path::new(&out_dir).join(format!("rrr{b}.rs")))?;
+        writeln!(
+            file,
+            r#"
 // Size of the rrr block in bits.
 const SIZE: usize = {b};
 
@@ -50,57 +52,18 @@ const SIZE: usize = {b};
 pub const CLASS_SIZE: u8 = {class_size};
 
 #[allow(clippy::unreadable_literal)]
-static TABLE: {table_type} = {table:#?};
+static TABLE: [[{item_type}; {table_len}]; {table_len}] = {table:#?};
+
+/// Encodes data into a pair of `class` and `offset`.
+pub fn encode(data: {item_type}) -> (u32, {item_type}) {{
+    rrrutil::encode!(data)
+}}
+
+/// Decodes data from a pair of `class` and `offset`.
+pub fn decode(class: u32, offset: {item_type}) -> {item_type} {{
+    rrrutil::decode!(class, offset)
+}}
 "#,
-        // size = b,
-        // table_type = table_type,
-        table = comb_table(b)
-    )
-}
-
-/// Creates a rrr module.
-#[macro_export]
-macro_rules! rrr_mod {
-    ($data:ty, $size:expr, $class_size:expr) => {
-        /// Minimum bits size to represents class value.
-        // pub const CLASS_SIZE: u8 = $class_size;
-
-        pub fn encode(mut data: $data) -> (u32, $data) {
-            data &= (1 << SIZE) - 1;
-
-            let class = data.count_ones();
-            let offset = {
-                let mut c = class as usize;
-                let mut o = 0;
-                let mut j = 1;
-
-                while 0 < c && c <= SIZE - j {
-                    if data & (1 << (SIZE - j)) != 0 {
-                        o += TABLE[SIZE - j][c];
-                        c -= 1;
-                    }
-                    j += 1;
-                }
-                o
-            };
-            (class, offset)
-        }
-
-        pub fn decode(class: u32, offset: $data) -> $data {
-            let mut data = 0;
-            let mut c = class as usize;
-            let mut o = offset;
-            let mut j = 1usize;
-
-            while c > 0 {
-                if o >= TABLE[SIZE - j][c] {
-                    data |= 1 << (SIZE - j);
-                    o -= TABLE[SIZE - j][c];
-                    c -= 1;
-                }
-                j += 1;
-            }
-            data
-        }
-    };
+        )
+    })
 }
