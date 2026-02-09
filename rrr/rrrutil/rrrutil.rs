@@ -10,14 +10,14 @@ macro_rules! encode {
         let offset = {
             let mut c = class as usize;
             let mut o = 0;
-            let mut j = 1;
+            let mut n = SIZE - 1;
 
-            while 0 < c && c <= SIZE - j {
-                if data & (1 << (SIZE - j)) != 0 {
-                    o += COMB[SIZE - j][c];
+            while 0 < c && c <= n {
+                if data & (1 << n) != 0 {
+                    o += COMB[n][c];
                     c -= 1;
                 }
-                j += 1;
+                n -= 1;
             }
             o
         };
@@ -32,15 +32,16 @@ macro_rules! decode {
         let mut data = 0;
         let mut c = $class as usize;
         let mut o = $offset;
-        let mut j = 1usize;
+        let mut i = 1usize;
 
-        while c > 0 {
-            if o >= COMB[SIZE - j][c] {
-                data |= 1 << (SIZE - j);
-                o -= COMB[SIZE - j][c];
+        while 0 < c {
+            let n = SIZE - i;
+            if o >= COMB[n][c] {
+                data |= 1 << n;
+                o -= COMB[n][c];
                 c -= 1;
             }
-            j += 1;
+            i += 1;
         }
         data
     }};
