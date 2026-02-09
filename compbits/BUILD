@@ -33,6 +33,7 @@ rust.test_suite(
     ],
     deps = [
         ":compbits",
+        "//compbits/rrr:rrr4",
         "//compbits/rrr:rrr15",
         "//compbits/rrr:rrr31",
         "//compbits/rrr:rrr63",

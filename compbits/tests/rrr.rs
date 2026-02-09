@@ -2,49 +2,53 @@
 
 use quickcheck::quickcheck;
 
+fn rrr4_check(mut bits: u8, class: u32, offset: u8) {
+    bits &= (1 << 4) - 1;
+    let (c, o) = rrr4::encode(bits);
+    assert_eq!(c, class);
+    assert_eq!(o, offset);
+    let decoded = rrr4::decode(c, o);
+    assert_eq!(bits, decoded);
+}
+
+#[test]
+fn rrr4_encode_decode() {
+    rrr4_check(0b_0000, 0, 0);
+
+    rrr4_check(0b_0001, 1, 0);
+    rrr4_check(0b_0010, 1, 1);
+    rrr4_check(0b_0100, 1, 2);
+    rrr4_check(0b_1000, 1, 3);
+
+    rrr4_check(0b_0011, 2, 0);
+    rrr4_check(0b_0101, 2, 1);
+    rrr4_check(0b_0110, 2, 2);
+    rrr4_check(0b_1001, 2, 3);
+    rrr4_check(0b_1010, 2, 4);
+    rrr4_check(0b_1100, 2, 5);
+}
+
+fn rrr15_check(mut bits: u16, class: u32, offset: u16) {
+    bits &= (1 << 15) - 1;
+    let (c, o) = rrr15::encode(bits);
+    assert_eq!(c, class, "class does not match");
+    assert_eq!(o, offset, "offset does not match");
+    let decoded = rrr15::decode(c, o);
+    assert_eq!(bits, decoded, "decoded does not match");
+}
+
 #[test]
 fn rrr15_encode_decode() {
-    let b = 0b_0000_0000_0000_0000;
-    let (c, o) = rrr15::encode(b);
-    assert_eq!(c, 0);
-    assert_eq!(o, 0);
-    let decoded = rrr15::decode(c, o);
-    assert_eq!(b, decoded);
+    rrr15_check(0b_0000_0000_0000_0000, 0, 0);
+    rrr15_check(0b_1000_0000_0000_0000, 0, 0);
 
-    let b = 0b_1000_0000_0000_0000;
-    let (c, o) = rrr15::encode(b);
-    assert_eq!(c, 0);
-    assert_eq!(o, 0);
-    let decoded = rrr15::decode(c, o);
-    assert_eq!(0, decoded);
+    rrr15_check(0b_0000_0000_0000_0001, 1, 0);
+    rrr15_check(0b_0000_0000_0000_0010, 1, 1);
+    rrr15_check(0b_0100_0000_0000_0000, 1, 14);
 
-    let b = 0b_0100_0000_0000_0000;
-    let (c, o) = rrr15::encode(b);
-    assert_eq!(c, 1);
-    assert_eq!(o, 14);
-    let decoded = rrr15::decode(c, o);
-    assert_eq!(b, decoded);
+    rrr15_check(0b_0000_0000_0000_0011, 2, 0);
 
-    let b = 0b_0000_0000_0000_0010;
-    let (c, o) = rrr15::encode(b);
-    assert_eq!(c, 1);
-    assert_eq!(o, 1);
-    let decoded = rrr15::decode(c, o);
-    assert_eq!(b, decoded);
-
-    let b = 0b_0000_0000_0000_0011;
-    let (c, o) = rrr15::encode(b);
-    assert_eq!(c, 2);
-    assert_eq!(o, 0);
-    let decoded = rrr15::decode(c, o);
-    assert_eq!(b, decoded);
-
-    let b = 0b_0111_1111_1111_1111;
-    let (c, o) = rrr15::encode(b);
-    assert_eq!(c, 15);
-    assert_eq!(o, 0);
-    let decoded = rrr15::decode(c, o);
-    assert_eq!(b, decoded);
+    rrr15_check(0b_0111_1111_1111_1111, 15, 0);
 }
 
 #[test]
