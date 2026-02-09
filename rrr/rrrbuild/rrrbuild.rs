@@ -9,7 +9,6 @@ use std::{
 };
 
 fn comb_table(size: usize) -> Vec<Vec<u64>> {
-    let size = size + 1;
     let mut table = vec![vec![0; size]; size];
 
     #[allow(clippy::needless_range_loop)]
@@ -38,8 +37,8 @@ fn comb_table(size: usize) -> Vec<Vec<u64>> {
 /// 63: 0b_0011_1111
 pub fn write_mod(item_type: &str, b: usize) -> io::Result<()> {
     env::var_os("OUT_DIR").ok_or(io::Error::other("OUT_DIR not found")).and_then(|out_dir| {
-        let table = comb_table(b);
-        let table_len = b + 1;
+        let table = comb_table(b + 1);
+        let table_len = table.len();
         let class_size = u8::BITS - (b as u8).leading_zeros();
         let mut file = fs::File::create(Path::new(&out_dir).join(format!("rrr{b}.rs")))?;
         writeln!(
