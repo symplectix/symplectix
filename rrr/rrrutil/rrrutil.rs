@@ -1,6 +1,6 @@
 //! Provides helper (or main) tools for rrr implementations.
 
-/// Encode using static TABLE.
+/// Encode using a static table.
 #[macro_export]
 macro_rules! encode {
     ($data:expr) => {{
@@ -14,7 +14,7 @@ macro_rules! encode {
 
             while 0 < c && c <= SIZE - j {
                 if data & (1 << (SIZE - j)) != 0 {
-                    o += TABLE[SIZE - j][c];
+                    o += COMB[SIZE - j][c];
                     c -= 1;
                 }
                 j += 1;
@@ -25,7 +25,7 @@ macro_rules! encode {
     }};
 }
 
-/// Decode using static TABLE.
+/// Decode using a static table.
 #[macro_export]
 macro_rules! decode {
     ($class:expr, $offset:expr) => {{
@@ -35,9 +35,9 @@ macro_rules! decode {
         let mut j = 1usize;
 
         while c > 0 {
-            if o >= TABLE[SIZE - j][c] {
+            if o >= COMB[SIZE - j][c] {
                 data |= 1 << (SIZE - j);
-                o -= TABLE[SIZE - j][c];
+                o -= COMB[SIZE - j][c];
                 c -= 1;
             }
             j += 1;

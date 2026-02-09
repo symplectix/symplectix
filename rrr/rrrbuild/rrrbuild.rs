@@ -52,7 +52,7 @@ const SIZE: usize = {b};
 pub const CLASS_SIZE: u8 = {class_size};
 
 #[allow(clippy::unreadable_literal)]
-static TABLE: [[{item_type}; {table_len}]; {table_len}] = {table:#?};
+static COMB: [[{item_type}; {table_len}]; {table_len}] = {table:#?};
 
 /// Encodes data into a pair of `class` and `offset`.
 pub fn encode(data: {item_type}) -> (u32, {item_type}) {{
