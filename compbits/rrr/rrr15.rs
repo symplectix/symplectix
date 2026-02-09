@@ -55,19 +55,8 @@ macro_rules! generate_rrr_mod {
     };
 }
 
-#[cfg(feature = "rrr15")]
 mod imp {
     generate_rrr_mod!("/table15.rs", u16, 15usize, 4);
-}
-
-#[cfg(feature = "rrr31")]
-mod imp {
-    generate_rrr_mod!("/table31.rs", u32, 31usize, 5);
-}
-
-#[cfg(feature = "rrr63")]
-mod imp {
-    generate_rrr_mod!("/table63.rs", u64, 63usize, 6);
 }
 
 pub use imp::{
