@@ -42,3 +42,24 @@ rust.test_suite(
         "@crates//:rand",
     ],
 )
+
+[
+    [
+        rust.library(
+            name = rrr,
+            srcs = ["{}/{}.rs".format(rrr, rrr)],
+            visibility = ["//:__subpackages__"],
+            deps = [":{}_build_script".format(rrr)],
+        ),
+        rust.build_script(
+            name = "{}_build_script".format(rrr),
+            srcs = ["{}/build.rs".format(rrr)],
+        ),
+    ]
+    for rrr in [
+        "rrr4",
+        "rrr15",
+        "rrr31",
+        "rrr63",
+    ]
+]
