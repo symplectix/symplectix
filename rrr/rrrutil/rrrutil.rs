@@ -1,5 +1,4 @@
 //! Provides helper (or main) tools for rrr implementations.
-//! Static values should be defined by rrrbuild.
 
 /// Encode using a static table.
 #[macro_export]
@@ -9,11 +8,11 @@ macro_rules! encode {
 
         let class = data.count_ones();
         let offset = {
+            let mut b = SIZE;
             let mut c = class as usize;
             let mut o = 0;
-            let mut b = SIZE;
 
-            while 0 < c && c <= b {
+            while b > 0 && c > 0 {
                 b -= 1;
                 if data & (1 << b) != 0 {
                     o += COMB[b][c];
@@ -31,11 +30,11 @@ macro_rules! encode {
 macro_rules! decode {
     ($class:expr, $offset:expr) => {{
         let mut data = 0;
+        let mut b = SIZE;
         let mut c = $class as usize;
         let mut o = $offset;
-        let mut b = SIZE;
 
-        while 0 < c && 0 < b {
+        while b > 0 && c > 0 {
             b -= 1;
             if o >= COMB[b][c] {
                 data |= 1 << b;
