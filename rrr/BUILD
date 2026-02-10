@@ -86,37 +86,37 @@ rust.test(
 filegroup(
     name = "rrrbuild_testdata",
     srcs = [
-        ":math_comb_table_16_json",
-        ":math_comb_table_32_json",
+        ":comb_table_16_json",
+        ":comb_table_32_json",
     ],
 )
 
 py.binary(
-    name = "math_comb_table",
-    srcs = ["math_comb_table.py"],
+    name = "comb",
+    srcs = ["comb.py"],
     deps = ["@pypi//pydantic"],
 )
 
 lib.run_binary(
-    name = "math_comb_table_16_json",
-    outs = ["math_comb_table_16.json"],
+    name = "comb_table_16_json",
+    outs = ["comb_table_16.json"],
     args = [
         "--size",
         "16",
         "--path",
-        "$(execpath :math_comb_table_16.json)",
+        "$(execpath :comb_table_16.json)",
     ],
-    tool = ":math_comb_table",
+    tool = ":comb",
 )
 
 lib.run_binary(
-    name = "math_comb_table_32_json",
-    outs = ["math_comb_table_32.json"],
+    name = "comb_table_32_json",
+    outs = ["comb_table_32.json"],
     args = [
         "--size",
         "32",
         "--path",
-        "$(execpath :math_comb_table_32.json)",
+        "$(execpath :comb_table_32.json)",
     ],
-    tool = ":math_comb_table",
+    tool = ":comb",
 )

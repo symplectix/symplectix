@@ -5,16 +5,16 @@ from math import comb
 from pydantic import BaseModel
 
 
-class _Table(BaseModel):
-    data: list[list[int]]
+class _Comb(BaseModel):
+    table: list[list[int]]
 
 
-def _table(size: int) -> _Table:
+def _table(size: int) -> _Comb:
     table = [[0 for _ in range(size)] for _ in range(size)]
     for n in range(size):
         for k in range(size):
             table[n][k] = comb(n, k)
-    return _Table(data=table)
+    return _Comb(table=table)
 
 
 if __name__ == "__main__":
