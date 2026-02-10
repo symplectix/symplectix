@@ -73,14 +73,14 @@ rust.test(
     name = "rrrbuild_test",
     size = "small",
     crate = ":rrrbuild",
+    data = [
+        ":rrrbuild_testdata",
+    ],
     deps = [
         "@crates//:serde",
         "@crates//:serde_json",
         "@rules_rust//rust/runfiles",
     ],
-    data = [
-        ":rrrbuild_testdata",
-    ]
 )
 
 filegroup(
@@ -88,7 +88,7 @@ filegroup(
     srcs = [
         ":math_comb_table_16_json",
         ":math_comb_table_32_json",
-    ]
+    ],
 )
 
 py.binary(
