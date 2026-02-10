@@ -1,4 +1,7 @@
-//! Provides helper (or main) tools for rrr implementations.
+//! Provides helper (or main?) utilities for rrr implementations.
+
+// NOTE: COMB[n][k] is the number of ways to choose k items
+// from n items without repetition and without order.
 
 /// Encode using a static table.
 #[macro_export]
@@ -8,20 +11,20 @@ macro_rules! encode {
 
         let class = data.count_ones();
         let offset = {
+            let mut b = SIZE;
             let mut c = class as usize;
             let mut o = 0;
-            let mut n = SIZE - 1;
 
-            while 0 < c && c <= n {
-                if data & (1 << n) != 0 {
-                    o += COMB[n][c];
+            while b > 0 && c > 0 {
+                b -= 1;
+                if data & (1 << b) != 0 {
+                    o += COMB[b][c];
                     c -= 1;
                 }
-                n -= 1;
             }
             o
         };
-        (class, offset)
+        (class as u8, offset)
     }};
 }
 
@@ -30,18 +33,17 @@ macro_rules! encode {
 macro_rules! decode {
     ($class:expr, $offset:expr) => {{
         let mut data = 0;
+        let mut b = SIZE;
         let mut c = $class as usize;
         let mut o = $offset;
-        let mut i = 1usize;
 
-        while 0 < c {
-            let n = SIZE - i;
-            if o >= COMB[n][c] {
-                data |= 1 << n;
-                o -= COMB[n][c];
+        while b > 0 && c > 0 {
+            b -= 1;
+            if o >= COMB[b][c] {
+                data |= 1 << b;
+                o -= COMB[b][c];
                 c -= 1;
             }
-            i += 1;
         }
         data
     }};

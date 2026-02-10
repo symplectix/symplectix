@@ -1,14 +1,6 @@
+load("//bazel:lib.bzl", "lib")
+load("//bazel:py.bzl", "py")
 load("//bazel:rust.bzl", "rust")
-
-rust.library(
-    name = "rrrbuild",
-    srcs = glob(["rrrbuild/*.rs"]),
-)
-
-rust.library(
-    name = "rrrutil",
-    srcs = glob(["rrrutil/*.rs"]),
-)
 
 [
     [
@@ -65,4 +57,66 @@ rust.test_suite(
         ":rrr63",
         "@crates//:quickcheck",
     ],
+)
+
+rust.library(
+    name = "rrrutil",
+    srcs = glob(["rrrutil/*.rs"]),
+)
+
+rust.library(
+    name = "rrrbuild",
+    srcs = glob(["rrrbuild/*.rs"]),
+)
+
+rust.test(
+    name = "rrrbuild_test",
+    size = "small",
+    crate = ":rrrbuild",
+    data = [
+        ":rrrbuild_testdata",
+    ],
+    deps = [
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@rules_rust//rust/runfiles",
+    ],
+)
+
+filegroup(
+    name = "rrrbuild_testdata",
+    srcs = [
+        ":comb_table_16_json",
+        ":comb_table_32_json",
+    ],
+)
+
+py.binary(
+    name = "comb",
+    srcs = ["comb.py"],
+    deps = ["@pypi//pydantic"],
+)
+
+lib.run_binary(
+    name = "comb_table_16_json",
+    outs = ["comb_table_16.json"],
+    args = [
+        "--size",
+        "16",
+        "--path",
+        "$(execpath :comb_table_16.json)",
+    ],
+    tool = ":comb",
+)
+
+lib.run_binary(
+    name = "comb_table_32_json",
+    outs = ["comb_table_32.json"],
+    args = [
+        "--size",
+        "32",
+        "--path",
+        "$(execpath :comb_table_32.json)",
+    ],
+    tool = ":comb",
 )

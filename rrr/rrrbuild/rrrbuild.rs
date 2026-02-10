@@ -17,8 +17,6 @@ fn comb_table(size: usize) -> Vec<Vec<u64>> {
         table[i][0] = 1; // initialize first col
     }
 
-    // number of ways to choose k items from n items without
-    // repetition and without order.
     for n in 1..size {
         for k in 1..size {
             table[n][k] = table[n - 1][k - 1] + table[n - 1][k];
@@ -50,19 +48,63 @@ const SIZE: usize = {b};
 /// Minimum bits size to represents class value.
 pub const CLASS_SIZE: u8 = {class_size};
 
-#[allow(clippy::unreadable_literal)]
-static COMB: [[{item_type}; {table_len}]; {table_len}] = {table:#?};
-
 /// Encodes data into a pair of `class` and `offset`.
-pub fn encode(data: {item_type}) -> (u32, {item_type}) {{
+pub fn encode(data: {item_type}) -> (u8, {item_type}) {{
     rrrutil::encode!(data)
 }}
 
 /// Decodes data from a pair of `class` and `offset`.
-pub fn decode(class: u32, offset: {item_type}) -> {item_type} {{
+pub fn decode(class: u8, offset: {item_type}) -> {item_type} {{
     rrrutil::decode!(class, offset)
 }}
+
+#[allow(clippy::unreadable_literal)]
+static COMB: [[{item_type}; {table_len}]; {table_len}] = {table:?};
 "#,
         )
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use runfiles::{
+        Runfiles,
+        rlocation,
+    };
+    use serde::{
+        Deserialize,
+        Serialize,
+    };
+
+    use super::comb_table;
+
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    struct Comb {
+        table: Vec<Vec<u64>>,
+    }
+
+    // Tests that comb_table correctly constructs the binomial coefficient table.
+    // Verifies that the generated table is equivalent to another table produced by
+    // `comb.py`.
+    fn eq_to_comb_py(n: usize) {
+        let r = Runfiles::create().expect("failed to create Runfiles");
+        let path = rlocation!(r, format!("_main/rrr/comb_table_{n}.json")).unwrap();
+        let json_file =
+            fs::OpenOptions::new().read(true).open(path).expect("failed to open a json file");
+        let buf = std::io::BufReader::new(json_file);
+        let comb: Comb = serde_json::from_reader(buf).expect("failed to deserialize a table");
+        assert_eq!(comb.table, comb_table(n));
+    }
+
+    #[test]
+    fn comb_table_16() {
+        eq_to_comb_py(16);
+    }
+
+    #[test]
+    fn comb_table_32() {
+        eq_to_comb_py(32);
+    }
 }
