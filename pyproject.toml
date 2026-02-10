@@ -5,6 +5,7 @@ requires-python = ">=3.14"
 dependencies = [
   "maturin",
   "mypy",
+  "pydantic==2.12",
   "ruff",
 ]
 
@@ -45,6 +46,8 @@ ignore = [
   "ERA",
   # Allow packages that are missing an __init__.py file.
   "INP001",
+  # Allow print.
+  "T201",
   # Allow specifying long messages outside the exception class.
   "TRY003",
 ]

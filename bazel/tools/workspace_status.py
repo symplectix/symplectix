@@ -63,4 +63,4 @@ def version(major: int = 0) -> str:
 if __name__ == "__main__":
     if bwd := os.getenv("BUILD_WORKING_DIRECTORY"):
         os.chdir(bwd)
-    print("STABLE_VERSION", version())  # noqa: T201
+    print("STABLE_VERSION", version())

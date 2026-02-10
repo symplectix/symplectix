@@ -1,14 +1,6 @@
+load("//bazel:lib.bzl", "lib")
+load("//bazel:py.bzl", "py")
 load("//bazel:rust.bzl", "rust")
-
-rust.library(
-    name = "rrrbuild",
-    srcs = glob(["rrrbuild/*.rs"]),
-)
-
-rust.library(
-    name = "rrrutil",
-    srcs = glob(["rrrutil/*.rs"]),
-)
 
 [
     [
@@ -65,4 +57,66 @@ rust.test_suite(
         ":rrr63",
         "@crates//:quickcheck",
     ],
+)
+
+rust.library(
+    name = "rrrutil",
+    srcs = glob(["rrrutil/*.rs"]),
+)
+
+rust.library(
+    name = "rrrbuild",
+    srcs = glob(["rrrbuild/*.rs"]),
+)
+
+rust.test(
+    name = "rrrbuild_test",
+    size = "small",
+    crate = ":rrrbuild",
+    deps = [
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@rules_rust//rust/runfiles",
+    ],
+    data = [
+        ":rrrbuild_testdata",
+    ]
+)
+
+filegroup(
+    name = "rrrbuild_testdata",
+    srcs = [
+        ":math_comb_table_16_json",
+        ":math_comb_table_32_json",
+    ]
+)
+
+py.binary(
+    name = "math_comb_table",
+    srcs = ["math_comb_table.py"],
+    deps = ["@pypi//pydantic"],
+)
+
+lib.run_binary(
+    name = "math_comb_table_16_json",
+    outs = ["math_comb_table_16.json"],
+    args = [
+        "--size",
+        "16",
+        "--path",
+        "$(execpath :math_comb_table_16.json)",
+    ],
+    tool = ":math_comb_table",
+)
+
+lib.run_binary(
+    name = "math_comb_table_32_json",
+    outs = ["math_comb_table_32.json"],
+    args = [
+        "--size",
+        "32",
+        "--path",
+        "$(execpath :math_comb_table_32.json)",
+    ],
+    tool = ":math_comb_table",
 )

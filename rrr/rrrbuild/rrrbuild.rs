@@ -59,8 +59,53 @@ pub fn decode(class: u8, offset: {item_type}) -> {item_type} {{
 }}
 
 #[allow(clippy::unreadable_literal)]
-static COMB: [[{item_type}; {table_len}]; {table_len}] = {table:#?};
+static COMB: [[{item_type}; {table_len}]; {table_len}] = {table:?};
 "#,
         )
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use runfiles::{
+        Runfiles,
+        rlocation,
+    };
+    use serde::{
+        Deserialize,
+        Serialize,
+    };
+
+    use super::comb_table;
+
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    struct MathCombTable {
+        data: Vec<Vec<u64>>,
+    }
+
+    // Tests that comb_table correctly constructs the binomial coefficient table.
+    // Verifies that the generated table is equivalent to another table produced by
+    // `math_comb_table.py`.
+    fn eq_to_math_comb_table_py(n: usize) {
+        let r = Runfiles::create().expect("failed to create Runfiles");
+        let path = rlocation!(r, format!("_main/rrr/math_comb_table_{n}.json")).unwrap();
+        let json_file =
+            fs::OpenOptions::new().read(true).open(path).expect("failed to open a json file");
+        let buf = std::io::BufReader::new(json_file);
+        let table: MathCombTable =
+            serde_json::from_reader(buf).expect("failed to deserialize a table");
+        assert_eq!(table.data, comb_table(n));
+    }
+
+    #[test]
+    fn math_comb_table_16() {
+        eq_to_math_comb_table_py(16);
+    }
+
+    #[test]
+    fn math_comb_table_32() {
+        eq_to_math_comb_table_py(32);
+    }
 }
