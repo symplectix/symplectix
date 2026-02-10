@@ -17,8 +17,6 @@ fn comb_table(size: usize) -> Vec<Vec<u64>> {
         table[i][0] = 1; // initialize first col
     }
 
-    // number of ways to choose k items from n items without
-    // repetition and without order.
     for n in 1..size {
         for k in 1..size {
             table[n][k] = table[n - 1][k - 1] + table[n - 1][k];

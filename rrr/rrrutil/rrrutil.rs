@@ -1,4 +1,7 @@
-//! Provides helper (or main) tools for rrr implementations.
+//! Provides helper (or main?) utilities for rrr implementations.
+
+// NOTE: COMB[n][k] is the number of ways to choose k items
+// from n items without repetition and without order.
 
 /// Encode using a static table.
 #[macro_export]
