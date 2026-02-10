@@ -1,4 +1,5 @@
 //! Provides helper (or main) tools for rrr implementations.
+//! Static values should be defined by rrrbuild.
 
 /// Encode using a static table.
 #[macro_export]
@@ -10,14 +11,14 @@ macro_rules! encode {
         let offset = {
             let mut c = class as usize;
             let mut o = 0;
-            let mut n = SIZE - 1;
+            let mut b = SIZE;
 
-            while 0 < c && c <= n {
-                if data & (1 << n) != 0 {
-                    o += COMB[n][c];
+            while 0 < c && c <= b {
+                b -= 1;
+                if data & (1 << b) != 0 {
+                    o += COMB[b][c];
                     c -= 1;
                 }
-                n -= 1;
             }
             o
         };
@@ -32,16 +33,15 @@ macro_rules! decode {
         let mut data = 0;
         let mut c = $class as usize;
         let mut o = $offset;
-        let mut i = 1usize;
+        let mut b = SIZE;
 
-        while 0 < c {
-            let n = SIZE - i;
-            if o >= COMB[n][c] {
-                data |= 1 << n;
-                o -= COMB[n][c];
+        while 0 < c && 0 < b {
+            b -= 1;
+            if o >= COMB[b][c] {
+                data |= 1 << b;
+                o -= COMB[b][c];
                 c -= 1;
             }
-            i += 1;
         }
         data
     }};
