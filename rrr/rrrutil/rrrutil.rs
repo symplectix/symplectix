@@ -21,7 +21,7 @@ macro_rules! encode {
             }
             o
         };
-        (class, offset)
+        (class as u8, offset)
     }};
 }
 

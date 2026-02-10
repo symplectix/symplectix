@@ -2,7 +2,7 @@
 
 use quickcheck::quickcheck;
 
-fn rrr4_check(mut bits: u8, class: u32, offset: u8) {
+fn rrr4_check(mut bits: u8, class: u8, offset: u8) {
     bits &= (1 << 4) - 1;
     let (c, o) = rrr4::encode(bits);
     assert_eq!(c, class, "class does not match");

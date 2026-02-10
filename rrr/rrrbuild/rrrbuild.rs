@@ -50,18 +50,18 @@ const SIZE: usize = {b};
 /// Minimum bits size to represents class value.
 pub const CLASS_SIZE: u8 = {class_size};
 
-#[allow(clippy::unreadable_literal)]
-static COMB: [[{item_type}; {table_len}]; {table_len}] = {table:#?};
-
 /// Encodes data into a pair of `class` and `offset`.
-pub fn encode(data: {item_type}) -> (u32, {item_type}) {{
+pub fn encode(data: {item_type}) -> (u8, {item_type}) {{
     rrrutil::encode!(data)
 }}
 
 /// Decodes data from a pair of `class` and `offset`.
-pub fn decode(class: u32, offset: {item_type}) -> {item_type} {{
+pub fn decode(class: u8, offset: {item_type}) -> {item_type} {{
     rrrutil::decode!(class, offset)
 }}
+
+#[allow(clippy::unreadable_literal)]
+static COMB: [[{item_type}; {table_len}]; {table_len}] = {table:#?};
 "#,
         )
     })
