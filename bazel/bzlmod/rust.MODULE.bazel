@@ -100,7 +100,7 @@ crate.spec(
 )
 crate.spec(
     package = "rand",
-    version = "0.9",
+    version = "0.10",
 )
 crate.spec(
     features = ["derive"],
