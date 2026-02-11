@@ -6,7 +6,7 @@ dependencies = [
   "maturin",
   "mypy",
   "pydantic==2.12",
-  "ruff",
+  "ruff==0.15.0",
 ]
 
 [tool.mypy]
