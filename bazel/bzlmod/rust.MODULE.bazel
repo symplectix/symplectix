@@ -122,7 +122,7 @@ crate.spec(
 crate.spec(
     features = ["full"],
     package = "tokio",
-    version = "1.48",
+    version = "1.49",
 )
 crate.spec(
     package = "tracing",

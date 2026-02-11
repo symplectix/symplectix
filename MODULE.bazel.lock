@@ -670,7 +670,7 @@
     "@@rules_rust+//crate_universe:extension.bzl%crate": {
       "general": {
         "bzlTransitiveDigest": "vUYjMJ1QpOAr2+kCbv+uihWvLiaE593WMbK1jben+So=",
-        "usagesDigest": "zA4TFlga5ASRgYPV5NeaBKoLMH6/mRa5ZQdR6yWpU/M=",
+        "usagesDigest": "4JYjsLxthsY9uY71w38+1c6mhQs7eEO/RPqoMVZwGtg=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {
