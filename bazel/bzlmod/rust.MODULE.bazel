@@ -100,7 +100,7 @@ crate.spec(
 )
 crate.spec(
     package = "rand",
-    version = "0.9",
+    version = "0.10",
 )
 crate.spec(
     features = ["derive"],
@@ -122,7 +122,7 @@ crate.spec(
 crate.spec(
     features = ["full"],
     package = "tokio",
-    version = "1.48",
+    version = "1.49",
 )
 crate.spec(
     package = "tracing",
