@@ -1,6 +1,25 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
+    name = "bitop",
+    srcs = glob(["bitop/*.rs"]),
+    visibility = ["//:__subpackages__"],
+    deps = ["@crates//:num"],
+)
+
+rust.test(
+    name = "bitop_test",
+    crate = ":bitop",
+    size = "small",
+)
+
+rust.doc_test(
+    name = "bitop_doc_test",
+    crate = ":bitop",
+    size = "small",
+)
+
+rust.library(
     name = "compbits",
     srcs = glob([
         "src/*.rs",
@@ -10,6 +29,9 @@ rust.library(
         "src/bit_set/tests/*.rs",
     ]),
     visibility = ["//:__subpackages__"],
+    deps = [
+        ":bitop",
+    ],
 )
 
 rust.test(
@@ -32,6 +54,7 @@ rust.test_suite(
         "@crates//:quickcheck_macros",
     ],
     deps = [
+        ":bitop",
         ":compbits",
         "@crates//:lazy_static",
         "@crates//:quickcheck",
