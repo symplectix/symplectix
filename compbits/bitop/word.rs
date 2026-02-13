@@ -87,8 +87,8 @@ impl SelectHelper for u64 {
 impl SelectHelper for u128 {
     #[inline]
     fn select1(self, c: u64) -> Option<u64> {
-        let slice = [self as u64, (self >> 64) as u64];
-        slice.select1(c)
+        let arr = [self as u64, (self >> 64) as u64];
+        arr.select1(c)
     }
 }
 
@@ -250,11 +250,14 @@ macro_rules! impls_for_word {
         }
     )*)
 }
-impls_for_word!(u8, u16, u32, u64);
+impls_for_word!(u8, u16, u32, u64, u128);
 
 #[cfg(test)]
 mod tests {
-    use crate::Bits;
+    use crate::{
+        Bits,
+        BitsMut,
+    };
 
     #[test]
     fn u16_word() {
@@ -278,7 +281,9 @@ mod tests {
             b.set1(i);
         }
         assert_eq!(b.select1(0), Some(0));
+        assert_eq!(b.select1(1), Some(2));
         assert_eq!(b.select0(0), Some(1));
+        assert_eq!(b.select0(1), Some(3));
 
         assert_eq!(b.select1(60), Some(120));
         assert_eq!(b.select1(61), Some(122));
