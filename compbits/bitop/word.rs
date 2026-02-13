@@ -84,22 +84,13 @@ impl SelectHelper for u64 {
     }
 }
 
-// impl SelectHelper for u128 {
-//     /// ```
-//     /// # use bits::block::*;
-//     /// let mut n: u128 = 0;
-//     /// for i in (0..128).step_by(2) {
-//     ///     n.set1(i);
-//     /// }
-//     /// assert_eq!(n.select1(60), Some(120));
-//     /// assert_eq!(n.select1(61), Some(122));
-//     /// ```
-//     #[inline]
-//     fn select1(self, c: usize) -> Option<usize> {
-//         let this = [self as u64, (self >> 64) as u64];
-//         Bits::new(&this).select1(c)
-//     }
-// }
+impl SelectHelper for u128 {
+    #[inline]
+    fn select1(self, c: u64) -> Option<u64> {
+        let slice = [self as u64, (self >> 64) as u64];
+        slice.select1(c)
+    }
+}
 
 // Sebastiano Vigna, “Broadword Implementation of Rank/Select Queries”.
 // Returns 72 when not found.
@@ -278,5 +269,18 @@ mod tests {
         let b: u32 = 0b_0011_1000_0011_0010_0011_1000_0011_0010;
         assert_eq!(b.word::<u16>(16, 7), 0b011_0010);
         assert_eq!(b.word::<u16>(24, 7), 0b011_1000);
+    }
+
+    #[test]
+    fn u128_select() {
+        let mut b: u128 = 0;
+        for i in (0..128).step_by(2) {
+            b.set1(i);
+        }
+        assert_eq!(b.select1(0), Some(0));
+        assert_eq!(b.select0(0), Some(1));
+
+        assert_eq!(b.select1(60), Some(120));
+        assert_eq!(b.select1(61), Some(122));
     }
 }
