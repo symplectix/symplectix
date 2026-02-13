@@ -30,3 +30,12 @@ impl<T: Block> Block for Box<T> {
         Box::new(T::empty())
     }
 }
+
+impl<T: Block> Block for Option<T> {
+    const BITS: u64 = T::BITS;
+
+    #[inline]
+    fn empty() -> Self {
+        None
+    }
+}

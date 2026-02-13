@@ -607,3 +607,137 @@ impl<T: Bits> Bits for Box<T> {
         self.as_ref().select0(n)
     }
 }
+
+/// Note that `None` does not imply empty bits. `None` is
+/// a bit sequence all set to 0.
+impl<T: Block> Bits for Option<T> {
+    #[inline]
+    fn bits(&self) -> u64 {
+        T::BITS
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert_eq!(b.count1(), 0);
+    /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
+    /// assert_eq!(b.count1(), 1);
+    /// ```
+    #[inline]
+    fn count1(&self) -> u64 {
+        self.as_ref().map_or(0, Bits::count1)
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert_eq!(b.count0(), 24);
+    /// let b: Option<[u8; 3]> = Some([0, 0, 0]);
+    /// assert_eq!(b.count0(), 24);
+    /// ```
+    #[inline]
+    fn count0(&self) -> u64 {
+        self.as_ref().map_or(T::BITS, Bits::count0)
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert!(!b.all());
+    /// let b: Option<[u8; 3]> = Some([!0, !0, !0]);
+    /// assert!(b.all());
+    /// ```
+    #[inline]
+    fn all(&self) -> bool {
+        self.as_ref().is_some_and(Bits::all)
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert!(!b.any());
+    /// let b: Option<[u8; 3]> = Some([0, 0, 0]);
+    /// assert!(!b.any());
+    /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
+    /// assert!(b.any());
+    /// ```
+    #[inline]
+    fn any(&self) -> bool {
+        self.as_ref().is_some_and(Bits::any)
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert!(!b.bit(8));
+    /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
+    /// assert!(b.bit(8));
+    /// ```
+    #[inline]
+    fn bit(&self, i: u64) -> bool {
+        self.as_ref().is_some_and(|b| b.bit(i))
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert_eq!(b.word::<u8>(0, 3), 0b_000);
+    /// let b: Option<[u8; 3]> = Some([1, 1, 1]);
+    /// assert_eq!(b.word::<u8>(0, 3), 0b_001);
+    /// ```
+    #[inline]
+    fn word<B: Word>(&self, i: u64, len: u64) -> B {
+        self.as_ref().map_or(B::empty(), |b| b.word(i, len))
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert_eq!(b.rank1(..10), 0);
+    /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
+    /// assert_eq!(b.rank1(..10), 1);
+    /// ```
+    #[inline]
+    fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        self.as_ref().map_or(0, |b| b.rank1(r))
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert_eq!(b.rank0(..10), 10);
+    /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
+    /// assert_eq!(b.rank0(..10), 9);
+    /// ```
+    #[inline]
+    fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        let (i, j) = crate::range(&r, 0, self.bits());
+        self.as_ref().map_or(j - i, |b| b.rank0(r))
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert_eq!(b.select1(0), None);
+    /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
+    /// assert_eq!(b.select1(0), Some(8));
+    /// ```
+    #[inline]
+    fn select1(&self, n: u64) -> Option<u64> {
+        self.as_ref().and_then(|b| b.select1(n))
+    }
+
+    /// ```
+    /// # use bitop::Bits;
+    /// let b: Option<[u8; 3]> = None;
+    /// assert_eq!(b.select0(0), Some(0));
+    /// assert_eq!(b.select0(100), None);
+    ///
+    /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
+    /// assert_eq!(b.select0(10), Some(11));
+    /// ```
+    #[inline]
+    fn select0(&self, n: u64) -> Option<u64> {
+        (n < self.count0()).then(|| self.as_ref().map_or(Some(n), |b| b.select0(n))).flatten()
+    }
+}

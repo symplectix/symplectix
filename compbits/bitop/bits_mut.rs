@@ -61,3 +61,15 @@ impl<T: BitsMut> BitsMut for Box<T> {
         self.as_mut().set0(i)
     }
 }
+
+impl<T: Block> BitsMut for Option<T> {
+    #[inline]
+    fn set1(&mut self, i: u64) {
+        self.get_or_insert_with(T::empty).set1(i)
+    }
+
+    #[inline]
+    fn set0(&mut self, i: u64) {
+        self.get_or_insert_with(T::empty).set0(i)
+    }
+}
