@@ -550,3 +550,60 @@ impl<T: Block> Bits for Vec<T> {
         self.as_slice().select0(n)
     }
 }
+
+impl<T: Bits> Bits for Box<T> {
+    #[inline]
+    fn bits(&self) -> u64 {
+        self.as_ref().bits()
+    }
+
+    #[inline]
+    fn count1(&self) -> u64 {
+        self.as_ref().count1()
+    }
+
+    #[inline]
+    fn count0(&self) -> u64 {
+        self.as_ref().count0()
+    }
+
+    #[inline]
+    fn all(&self) -> bool {
+        self.as_ref().all()
+    }
+
+    #[inline]
+    fn any(&self) -> bool {
+        self.as_ref().any()
+    }
+
+    #[inline]
+    fn bit(&self, i: u64) -> bool {
+        self.as_ref().bit(i)
+    }
+
+    #[inline]
+    fn word<B: Word>(&self, i: u64, len: u64) -> B {
+        self.as_ref().word(i, len)
+    }
+
+    #[inline]
+    fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        self.as_ref().rank1(r)
+    }
+
+    #[inline]
+    fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        self.as_ref().rank0(r)
+    }
+
+    #[inline]
+    fn select1(&self, n: u64) -> Option<u64> {
+        self.as_ref().select1(n)
+    }
+
+    #[inline]
+    fn select0(&self, n: u64) -> Option<u64> {
+        self.as_ref().select0(n)
+    }
+}

@@ -21,3 +21,12 @@ impl<T: Word, const N: usize> Block for [T; N] {
         [T::empty(); N]
     }
 }
+
+impl<T: Block> Block for Box<T> {
+    const BITS: u64 = T::BITS;
+
+    #[inline]
+    fn empty() -> Self {
+        Box::new(T::empty())
+    }
+}

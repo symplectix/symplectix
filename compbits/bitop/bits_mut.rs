@@ -49,3 +49,15 @@ impl<T: Block> BitsMut for Vec<T> {
         self.as_mut_slice().set0(i)
     }
 }
+
+impl<T: BitsMut> BitsMut for Box<T> {
+    #[inline]
+    fn set1(&mut self, i: u64) {
+        self.as_mut().set1(i)
+    }
+
+    #[inline]
+    fn set0(&mut self, i: u64) {
+        self.as_mut().set0(i)
+    }
+}
