@@ -493,3 +493,60 @@ impl<T: Block, const N: usize> Bits for [T; N] {
         self.as_slice().select0(n)
     }
 }
+
+impl<T: Block> Bits for Vec<T> {
+    #[inline]
+    fn bits(&self) -> u64 {
+        T::BITS * self.as_slice().len() as u64
+    }
+
+    #[inline]
+    fn count1(&self) -> u64 {
+        self.as_slice().count1()
+    }
+
+    #[inline]
+    fn count0(&self) -> u64 {
+        self.as_slice().count0()
+    }
+
+    #[inline]
+    fn all(&self) -> bool {
+        self.as_slice().all()
+    }
+
+    #[inline]
+    fn any(&self) -> bool {
+        self.as_slice().any()
+    }
+
+    #[inline]
+    fn bit(&self, i: u64) -> bool {
+        self.as_slice().bit(i)
+    }
+
+    #[inline]
+    fn word<B: Word>(&self, i: u64, len: u64) -> B {
+        self.as_slice().word(i, len)
+    }
+
+    #[inline]
+    fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        self.as_slice().rank1(r)
+    }
+
+    #[inline]
+    fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        self.as_slice().rank0(r)
+    }
+
+    #[inline]
+    fn select1(&self, n: u64) -> Option<u64> {
+        self.as_slice().select1(n)
+    }
+
+    #[inline]
+    fn select0(&self, n: u64) -> Option<u64> {
+        self.as_slice().select0(n)
+    }
+}

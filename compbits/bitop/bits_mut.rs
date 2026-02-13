@@ -37,3 +37,15 @@ impl<T: Block, const N: usize> BitsMut for [T; N] {
         self.as_mut_slice().set0(i)
     }
 }
+
+impl<T: Block> BitsMut for Vec<T> {
+    #[inline]
+    fn set1(&mut self, i: u64) {
+        self.as_mut_slice().set1(i)
+    }
+
+    #[inline]
+    fn set0(&mut self, i: u64) {
+        self.as_mut_slice().set0(i)
+    }
+}
