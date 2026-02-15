@@ -4,10 +4,10 @@ use core::iter::{
     Peekable,
 };
 
-use super::{
+use crate::{
+    Assign,
     Mask,
     compare,
-    helper,
 };
 
 pub struct Not<A, B> {
@@ -45,7 +45,7 @@ where
 
 impl<A: Mask, B: Mask> Mask for Not<A, B>
 where
-    A::Bits: helper::Assign<B::Bits>,
+    A::Bits: Assign<B::Bits>,
 {
     type Bits = A::Bits;
     type Iter = Difference<A::Iter, B::Iter>;
@@ -62,7 +62,7 @@ impl<A, B, S1, S2> Iterator for Difference<A, B>
 where
     A: Iterator<Item = (usize, S1)>,
     B: Iterator<Item = (usize, S2)>,
-    S1: helper::Assign<S2>,
+    S1: Assign<S2>,
 {
     type Item = (usize, S1);
     fn next(&mut self) -> Option<Self::Item> {
@@ -75,7 +75,7 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    helper::Assign::not(&mut s1, &s2);
+                    Assign::not(&mut s1, &s2);
                     return Some((i, s1));
                 }
                 Greater => {

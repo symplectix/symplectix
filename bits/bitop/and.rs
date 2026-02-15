@@ -4,9 +4,9 @@ use core::iter::{
     Peekable,
 };
 
-use super::{
+use crate::{
+    Assign,
     Mask,
-    helper,
 };
 
 pub struct And<A, B> {
@@ -45,7 +45,7 @@ where
 
 impl<A: Mask, B: Mask> Mask for And<A, B>
 where
-    A::Bits: helper::Assign<B::Bits>,
+    A::Bits: Assign<B::Bits>,
 {
     type Bits = A::Bits;
     type Iter = Intersection<A::Iter, B::Iter>;
@@ -61,7 +61,7 @@ impl<A, B, T, U> Iterator for Intersection<A, B>
 where
     A: Iterator<Item = (usize, T)>,
     B: Iterator<Item = (usize, U)>,
-    T: helper::Assign<U>,
+    T: Assign<U>,
 {
     type Item = (usize, T);
 
@@ -78,7 +78,7 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    helper::Assign::and(&mut s1, &s2);
+                    Assign::and(&mut s1, &s2);
                     break Some((i, s1));
                 }
                 Greater => {

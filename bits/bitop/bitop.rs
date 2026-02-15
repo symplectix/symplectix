@@ -1,5 +1,6 @@
 //! Defines bit operations and their implementations for builtin types.
 
+use core::cmp::Ordering;
 use core::iter::successors;
 use core::ops::{
     Bound,
@@ -15,6 +16,23 @@ pub use bits::Bits;
 pub use bits_mut::BitsMut;
 pub use block::Block;
 pub use word::Word;
+
+mod mask;
+
+pub use mask::{
+    Assign,
+    Mask,
+};
+
+mod and;
+mod not;
+mod or;
+mod xor;
+
+pub use and::And;
+pub use not::Not;
+pub use or::Or;
+pub use xor::Xor;
 
 // TODO: Use type parameters instead of an argument.
 // Type parameters can not be used in const expressions.
@@ -112,6 +130,19 @@ const fn next_multiple_of(x: u64, n: u64) -> u64 {
     // https://doc.rust-lang.org/std/primitive.usize.html#method.checked_next_multiple_of
     // https://github.com/rust-lang/rust/issues/88581
     x + (n - x % n)
+}
+
+pub(crate) fn compare<X, Y>(
+    x: Option<&(usize, X)>,
+    y: Option<&(usize, Y)>,
+    when_x_is_none: Ordering,
+    when_y_is_none: Ordering,
+) -> Ordering {
+    match (x, y) {
+        (None, _) => when_x_is_none,
+        (_, None) => when_y_is_none,
+        (Some((i, _x)), Some((j, _y))) => i.cmp(j),
+    }
 }
 
 #[cfg(test)]
