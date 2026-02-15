@@ -1,0 +1,56 @@
+use std::borrow::Cow;
+
+use crate::{
+    Bits,
+    BitsMut,
+    Word,
+};
+
+/// Fixed sized bits.
+pub trait Block: Clone + Bits + BitsMut {
+    /// The number of bits, which must always be equal to `Bits::bits`.
+    const BITS: u64;
+
+    /// Constructs an empty bits block.
+    fn empty() -> Self;
+}
+
+impl<T: Word, const N: usize> Block for [T; N] {
+    const BITS: u64 = T::BITS * N as u64;
+
+    #[inline]
+    fn empty() -> Self {
+        [T::empty(); N]
+    }
+}
+
+impl<T: Block> Block for Box<T> {
+    const BITS: u64 = T::BITS;
+
+    #[inline]
+    fn empty() -> Self {
+        Box::new(T::empty())
+    }
+}
+
+impl<T: Block> Block for Option<T> {
+    const BITS: u64 = T::BITS;
+
+    #[inline]
+    fn empty() -> Self {
+        None
+    }
+}
+
+impl<T, B> Block for Cow<'_, T>
+where
+    T: ?Sized + ToOwned<Owned = B> + Bits,
+    B: Block,
+{
+    const BITS: u64 = B::BITS;
+
+    #[inline]
+    fn empty() -> Self {
+        Cow::Owned(B::empty())
+    }
+}
