@@ -52,6 +52,14 @@ where
     }
 }
 
+impl<'a, T: Block> Mask for &'a [T] {
+    type Bits = Cow<'a, T>;
+    type Iter = Blocks<'a, T>;
+    fn into_mask(self) -> Self::Iter {
+        Blocks { blocks: self.iter().enumerate() }
+    }
+}
+
 impl<'a, B, const N: usize> Mask for &'a [B; N]
 where
     &'a [B]: Mask,
@@ -64,11 +72,11 @@ where
     }
 }
 
-impl<'a, T: Block> Mask for &'a [T] {
-    type Bits = Cow<'a, T>;
-    type Iter = Blocks<'a, T>;
+impl<'a, T: Block> Mask for &'a Vec<T> {
+    type Bits = <&'a [T] as Mask>::Bits;
+    type Iter = <&'a [T] as Mask>::Iter;
     fn into_mask(self) -> Self::Iter {
-        Blocks { blocks: self.iter().enumerate() }
+        self.as_slice().into_mask()
     }
 }
 

@@ -1,8 +1,14 @@
+use std::borrow::Cow;
 use std::ops::RangeBounds;
 
 use crate::{
+    And,
     Block,
+    Mask,
+    Not,
+    Or,
     Word,
+    Xor,
 };
 
 /// A bit sequence, consisting of 1s and 0s.
@@ -263,6 +269,93 @@ pub trait Bits {
     #[inline]
     fn search0(&self, n: u64) -> Option<u64> {
         (n < self.count0()).then(|| binary_search(0, self.bits(), |k| self.rank0(..k) > n) - 1)
+    }
+
+    /// Returns the intersection as an iterator of blocks.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::borrow::Cow;
+    /// # use bitop::Bits;
+    /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
+    /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
+    /// let mut iter = a.and(&b).into_iter();
+    /// assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000100)));
+    /// assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b01000000)));
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    fn and<'a, That>(&'a self, that: That) -> And<&'a Self, That>
+    where
+        And<&'a Self, That>: Mask,
+    {
+        And { a: &self, b: that }
+    }
+
+    /// Returns the union as an iterator of blocks.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::borrow::Cow;
+    /// # use bitop::Bits;
+    /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
+    /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
+    /// let mut iter = a.not(&b).into_iter();
+    /// assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000001)));
+    /// assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b01100011)));
+    /// assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b00100000)));
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    fn not<'a, That>(&'a self, that: That) -> Not<&'a Self, That>
+    where
+        Not<&'a Self, That>: Mask,
+    {
+        Not { a: &self, b: that }
+    }
+
+    /// Returns the difference as an iterator of blocks.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::borrow::Cow;
+    /// # use bitop::Bits;
+    /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
+    /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
+    /// let mut iter = a.or(&b).into_iter();
+    /// assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000101)));
+    /// assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b11100011)));
+    /// assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b01100000)));
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    fn or<'a, That>(&'a self, that: That) -> Or<&'a Self, That>
+    where
+        Or<&'a Self, That>: Mask,
+    {
+        Or { a: &self, b: that }
+    }
+
+    /// Returns the symmetric difference as an iterator of blocks.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::borrow::Cow;
+    /// # use bitop::Bits;
+    /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
+    /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
+    /// let mut iter = a.xor(&b).into_iter();
+    /// assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000001)));
+    /// assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b11100011)));
+    /// assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b00100000)));
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    fn xor<'a, That>(&'a self, that: That) -> Xor<&'a Self, That>
+    where
+        Xor<&'a Self, That>: Mask,
+    {
+        Xor { a: &self, b: that }
     }
 }
 
@@ -739,5 +832,65 @@ impl<T: Block> Bits for Option<T> {
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         (n < self.count0()).then(|| self.as_ref().map_or(Some(n), |b| b.select0(n))).flatten()
+    }
+}
+
+impl<T> Bits for Cow<'_, T>
+where
+    T: ?Sized + ToOwned + Bits,
+{
+    #[inline]
+    fn bits(&self) -> u64 {
+        self.as_ref().bits()
+    }
+
+    #[inline]
+    fn count1(&self) -> u64 {
+        self.as_ref().count1()
+    }
+
+    #[inline]
+    fn count0(&self) -> u64 {
+        self.as_ref().count0()
+    }
+
+    #[inline]
+    fn all(&self) -> bool {
+        self.as_ref().all()
+    }
+
+    #[inline]
+    fn any(&self) -> bool {
+        self.as_ref().any()
+    }
+
+    #[inline]
+    fn bit(&self, i: u64) -> bool {
+        self.as_ref().bit(i)
+    }
+
+    #[inline]
+    fn word<B: Word>(&self, i: u64, len: u64) -> B {
+        self.as_ref().word(i, len)
+    }
+
+    #[inline]
+    fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        self.as_ref().rank1(r)
+    }
+
+    #[inline]
+    fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        self.as_ref().rank0(r)
+    }
+
+    #[inline]
+    fn select1(&self, n: u64) -> Option<u64> {
+        self.as_ref().select1(n)
+    }
+
+    #[inline]
+    fn select0(&self, n: u64) -> Option<u64> {
+        self.as_ref().select0(n)
     }
 }

@@ -6,6 +6,7 @@ use core::iter::{
 
 use crate::{
     Assign,
+    Block,
     Mask,
 };
 
@@ -45,7 +46,7 @@ where
 
 impl<A: Mask, B: Mask> Mask for And<A, B>
 where
-    A::Bits: Assign<B::Bits>,
+    A::Bits: Block + Assign<B::Bits>,
 {
     type Bits = A::Bits;
     type Iter = Intersection<A::Iter, B::Iter>;
@@ -61,7 +62,7 @@ impl<A, B, T, U> Iterator for Intersection<A, B>
 where
     A: Iterator<Item = (usize, T)>,
     B: Iterator<Item = (usize, U)>,
-    T: Assign<U>,
+    T: Block + Assign<U>,
 {
     type Item = (usize, T);
 
@@ -79,7 +80,11 @@ where
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
                     Assign::and(&mut s1, &s2);
-                    break Some((i, s1));
+                    if s1.any() {
+                        break Some((i, s1));
+                    } else {
+                        continue;
+                    }
                 }
                 Greater => {
                     b.next();

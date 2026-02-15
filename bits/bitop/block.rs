@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     Bits,
     BitsMut,
@@ -37,5 +39,18 @@ impl<T: Block> Block for Option<T> {
     #[inline]
     fn empty() -> Self {
         None
+    }
+}
+
+impl<T, B> Block for Cow<'_, T>
+where
+    T: ?Sized + ToOwned<Owned = B> + Bits,
+    B: Block,
+{
+    const BITS: u64 = B::BITS;
+
+    #[inline]
+    fn empty() -> Self {
+        Cow::Owned(B::empty())
     }
 }
