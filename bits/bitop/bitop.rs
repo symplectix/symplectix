@@ -20,9 +20,12 @@ pub use word::Word;
 mod mask;
 
 pub use mask::{
-    Assign,
+    Difference,
     FromMask,
+    Intersection,
     IntoMask,
+    SymmetricDifference,
+    Union,
 };
 
 mod and;

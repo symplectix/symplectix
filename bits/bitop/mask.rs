@@ -81,157 +81,291 @@ impl<'a, T: Block> Iterator for Blocks<'a, T> {
     }
 }
 
-pub trait Assign<That: ?Sized> {
-    fn and(a: &mut Self, b: &That);
-    fn not(a: &mut Self, b: &That);
-    fn or(a: &mut Self, b: &That);
-    fn xor(a: &mut Self, b: &That);
+/// Performs inplace intersection.
+pub trait Intersection<That: ?Sized> {
+    /// self & that.
+    fn intersection(&mut self, that: &That);
+}
+
+/// Performs inplace union.
+pub trait Union<That: ?Sized> {
+    /// self | that.
+    fn union(&mut self, that: &That);
+}
+
+/// Performs inplace difference.
+pub trait Difference<That: ?Sized> {
+    /// self & not that.
+    fn difference(&mut self, that: &That);
+}
+
+/// Performs inplace symmetric difference.
+pub trait SymmetricDifference<That: ?Sized> {
+    /// self ^ that.
+    fn symmetric_difference(&mut self, that: &That);
 }
 
 macro_rules! impl_Assign_for_word {
     ($( $Word:ty )*) => ($(
-        impl Assign<$Word> for $Word {
+        impl Intersection<$Word> for $Word {
             #[inline]
-            fn and(a: &mut Self, b: &$Word) {
-                *a &= *b;
+            fn intersection(&mut self, that: &$Word) {
+                *self &= *that;
             }
+        }
+        impl Union<$Word> for $Word {
             #[inline]
-            fn not(a: &mut Self, b: &$Word) {
-                *a &= !*b;
+            fn union(&mut self, that: &$Word) {
+                *self |= *that;
             }
+        }
+        impl Difference<$Word> for $Word {
             #[inline]
-            fn or(a: &mut Self, b: &$Word) {
-                *a |= *b;
+            fn difference(&mut self, that: &$Word) {
+                *self &= !*that;
             }
+        }
+        impl SymmetricDifference<$Word> for $Word {
             #[inline]
-            fn xor(a: &mut Self, b: &$Word) {
-                *a ^= *b;
+            fn symmetric_difference(&mut self, that: &$Word) {
+                *self ^= *that;
             }
         }
     )*)
 }
 impl_Assign_for_word!(u8 u16 u32 u64 u128);
 
-impl<A, B> Assign<[B]> for [A]
+impl<A, B> Intersection<[B]> for [A]
 where
-    A: Assign<B>,
+    A: Intersection<B>,
 {
-    fn and(this: &mut Self, that: &[B]) {
-        assert_eq!(this.len(), that.len());
-        for (v1, v2) in this.iter_mut().zip(that) {
-            Assign::and(v1, v2);
-        }
-    }
-
-    fn not(this: &mut Self, that: &[B]) {
-        assert_eq!(this.len(), that.len());
-        for (v1, v2) in this.iter_mut().zip(that) {
-            Assign::not(v1, v2);
-        }
-    }
-
-    fn or(this: &mut Self, that: &[B]) {
-        assert_eq!(this.len(), that.len());
-        for (v1, v2) in this.iter_mut().zip(that) {
-            Assign::or(v1, v2);
-        }
-    }
-
-    fn xor(this: &mut Self, that: &[B]) {
-        assert_eq!(this.len(), that.len());
-        for (v1, v2) in this.iter_mut().zip(that) {
-            Assign::xor(v1, v2);
+    fn intersection(&mut self, that: &[B]) {
+        assert_eq!(self.len(), that.len());
+        for (v1, v2) in self.iter_mut().zip(that) {
+            v1.intersection(v2);
         }
     }
 }
 
-impl<A, B: ?Sized, const N: usize> Assign<B> for [A; N]
+impl<A, B> Union<[B]> for [A]
 where
-    [A]: Assign<B>,
+    A: Union<B>,
 {
-    #[inline]
-    fn and(this: &mut Self, that: &B) {
-        <[A] as Assign<B>>::and(this.as_mut(), that)
-    }
-    #[inline]
-    fn not(this: &mut Self, that: &B) {
-        <[A] as Assign<B>>::not(this.as_mut(), that)
-    }
-    #[inline]
-    fn or(this: &mut Self, that: &B) {
-        <[A] as Assign<B>>::or(this.as_mut(), that)
-    }
-    #[inline]
-    fn xor(this: &mut Self, that: &B) {
-        <[A] as Assign<B>>::xor(this.as_mut(), that)
+    fn union(&mut self, that: &[B]) {
+        assert_eq!(self.len(), that.len());
+        for (v1, v2) in self.iter_mut().zip(that) {
+            v1.union(v2);
+        }
     }
 }
 
-impl<A, B: ?Sized> Assign<B> for Vec<A>
+impl<A, B> Difference<[B]> for [A]
 where
-    [A]: Assign<B>,
+    A: Difference<B>,
 {
-    #[inline]
-    fn and(this: &mut Self, that: &B) {
-        <[A] as Assign<B>>::and(this.as_mut(), that)
-    }
-    #[inline]
-    fn not(this: &mut Self, that: &B) {
-        <[A] as Assign<B>>::not(this.as_mut(), that)
-    }
-    #[inline]
-    fn or(this: &mut Self, that: &B) {
-        <[A] as Assign<B>>::or(this.as_mut(), that)
-    }
-    #[inline]
-    fn xor(this: &mut Self, that: &B) {
-        <[A] as Assign<B>>::xor(this.as_mut(), that)
+    fn difference(&mut self, that: &[B]) {
+        assert_eq!(self.len(), that.len());
+        for (v1, v2) in self.iter_mut().zip(that) {
+            v1.difference(v2);
+        }
     }
 }
 
-impl<T, U> Assign<U> for Box<T>
+impl<A, B> SymmetricDifference<[B]> for [A]
 where
-    T: ?Sized + Assign<U>,
-    U: ?Sized,
+    A: SymmetricDifference<B>,
 {
-    #[inline]
-    fn and(this: &mut Self, that: &U) {
-        <T as Assign<U>>::and(this, that)
-    }
-    #[inline]
-    fn not(this: &mut Self, that: &U) {
-        <T as Assign<U>>::not(this, that)
-    }
-    #[inline]
-    fn or(this: &mut Self, that: &U) {
-        <T as Assign<U>>::or(this, that)
-    }
-    #[inline]
-    fn xor(this: &mut Self, that: &U) {
-        <T as Assign<U>>::xor(this, that)
+    fn symmetric_difference(&mut self, that: &[B]) {
+        assert_eq!(self.len(), that.len());
+        for (v1, v2) in self.iter_mut().zip(that) {
+            v1.symmetric_difference(v2);
+        }
     }
 }
 
-impl<'a, 'b, T, U> Assign<Cow<'b, U>> for Cow<'a, T>
+impl<A, B: ?Sized, const N: usize> Intersection<B> for [A; N]
 where
-    T: ?Sized + ToOwned,
-    U: ?Sized + ToOwned,
-    T::Owned: Assign<U>,
+    [A]: Intersection<B>,
 {
     #[inline]
-    fn and(this: &mut Self, that: &Cow<'b, U>) {
-        <T::Owned as Assign<U>>::and(this.to_mut(), that.as_ref())
-    }
-    #[inline]
-    fn not(this: &mut Self, that: &Cow<'b, U>) {
-        <T::Owned as Assign<U>>::not(this.to_mut(), that.as_ref())
-    }
-    #[inline]
-    fn or(this: &mut Self, that: &Cow<'b, U>) {
-        <T::Owned as Assign<U>>::or(this.to_mut(), that.as_ref())
-    }
-    #[inline]
-    fn xor(this: &mut Self, that: &Cow<'b, U>) {
-        <T::Owned as Assign<U>>::xor(this.to_mut(), that.as_ref())
+    fn intersection(&mut self, that: &B) {
+        self.as_mut_slice().intersection(that);
     }
 }
+impl<A, B: ?Sized, const N: usize> Union<B> for [A; N]
+where
+    [A]: Union<B>,
+{
+    #[inline]
+    fn union(&mut self, that: &B) {
+        self.as_mut_slice().union(that);
+    }
+}
+impl<A, B: ?Sized, const N: usize> Difference<B> for [A; N]
+where
+    [A]: Difference<B>,
+{
+    #[inline]
+    fn difference(&mut self, that: &B) {
+        self.as_mut_slice().difference(that);
+    }
+}
+impl<A, B: ?Sized, const N: usize> SymmetricDifference<B> for [A; N]
+where
+    [A]: SymmetricDifference<B>,
+{
+    #[inline]
+    fn symmetric_difference(&mut self, that: &B) {
+        self.as_mut_slice().symmetric_difference(that);
+    }
+}
+
+impl<A, B: ?Sized> Intersection<B> for Vec<A>
+where
+    [A]: Intersection<B>,
+{
+    #[inline]
+    fn intersection(&mut self, that: &B) {
+        self.as_mut_slice().intersection(that);
+    }
+}
+impl<A, B: ?Sized> Union<B> for Vec<A>
+where
+    [A]: Union<B>,
+{
+    #[inline]
+    fn union(&mut self, that: &B) {
+        self.as_mut_slice().union(that);
+    }
+}
+impl<A, B: ?Sized> Difference<B> for Vec<A>
+where
+    [A]: Difference<B>,
+{
+    #[inline]
+    fn difference(&mut self, that: &B) {
+        self.as_mut_slice().difference(that);
+    }
+}
+impl<A, B: ?Sized> SymmetricDifference<B> for Vec<A>
+where
+    [A]: SymmetricDifference<B>,
+{
+    #[inline]
+    fn symmetric_difference(&mut self, that: &B) {
+        self.as_mut_slice().symmetric_difference(that);
+    }
+}
+
+impl<A, B> Intersection<B> for Box<A>
+where
+    A: ?Sized + Intersection<B>,
+    B: ?Sized,
+{
+    #[inline]
+    fn intersection(&mut self, that: &B) {
+        self.as_mut().intersection(that);
+    }
+}
+impl<A, B> Union<B> for Box<A>
+where
+    A: ?Sized + Union<B>,
+    B: ?Sized,
+{
+    #[inline]
+    fn union(&mut self, that: &B) {
+        self.as_mut().union(that);
+    }
+}
+impl<A, B> Difference<B> for Box<A>
+where
+    A: ?Sized + Difference<B>,
+    B: ?Sized,
+{
+    #[inline]
+    fn difference(&mut self, that: &B) {
+        self.as_mut().difference(that);
+    }
+}
+impl<A, B> SymmetricDifference<B> for Box<A>
+where
+    A: ?Sized + SymmetricDifference<B>,
+    B: ?Sized,
+{
+    #[inline]
+    fn symmetric_difference(&mut self, that: &B) {
+        self.as_mut().symmetric_difference(that);
+    }
+}
+
+impl<'a, 'b, A, B> Intersection<Cow<'b, B>> for Cow<'a, A>
+where
+    A: ?Sized + ToOwned,
+    B: ?Sized + ToOwned,
+    A::Owned: Intersection<B>,
+{
+    #[inline]
+    fn intersection(&mut self, that: &Cow<'b, B>) {
+        self.to_mut().intersection(that.as_ref());
+    }
+}
+
+impl<'a, 'b, A, B> Union<Cow<'b, B>> for Cow<'a, A>
+where
+    A: ?Sized + ToOwned,
+    B: ?Sized + ToOwned,
+    A::Owned: Union<B>,
+{
+    #[inline]
+    fn union(&mut self, that: &Cow<'b, B>) {
+        self.to_mut().union(that.as_ref());
+    }
+}
+
+impl<'a, 'b, A, B> Difference<Cow<'b, B>> for Cow<'a, A>
+where
+    A: ?Sized + ToOwned,
+    B: ?Sized + ToOwned,
+    A::Owned: Difference<B>,
+{
+    #[inline]
+    fn difference(&mut self, that: &Cow<'b, B>) {
+        self.to_mut().difference(that.as_ref());
+    }
+}
+
+impl<'a, 'b, A, B> SymmetricDifference<Cow<'b, B>> for Cow<'a, A>
+where
+    A: ?Sized + ToOwned,
+    B: ?Sized + ToOwned,
+    A::Owned: SymmetricDifference<B>,
+{
+    #[inline]
+    fn symmetric_difference(&mut self, that: &Cow<'b, B>) {
+        self.to_mut().symmetric_difference(that.as_ref());
+    }
+}
+
+// impl<'a, 'b, T, U> Assign<Cow<'b, U>> for Cow<'a, T>
+// where
+//     T: ?Sized + ToOwned,
+//     U: ?Sized + ToOwned,
+//     T::Owned: Assign<U>,
+// {
+//     #[inline]
+//     fn and(this: &mut Self, that: &Cow<'b, U>) {
+//         <T::Owned as Assign<U>>::and(this.to_mut(), that.as_ref())
+//     }
+//     #[inline]
+//     fn not(this: &mut Self, that: &Cow<'b, U>) {
+//         <T::Owned as Assign<U>>::not(this.to_mut(), that.as_ref())
+//     }
+//     #[inline]
+//     fn or(this: &mut Self, that: &Cow<'b, U>) {
+//         <T::Owned as Assign<U>>::or(this.to_mut(), that.as_ref())
+//     }
+//     #[inline]
+//     fn xor(this: &mut Self, that: &Cow<'b, U>) {
+//         <T::Owned as Assign<U>>::xor(this.to_mut(), that.as_ref())
+//     }
+// }

@@ -5,17 +5,18 @@ use core::iter::{
 };
 
 use crate::{
-    Assign,
     IntoMask,
+    Union,
     compare,
 };
 
+/// A or B.
 pub struct Or<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct Union<A: Iterator, B: Iterator> {
+pub struct OrMask<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
@@ -46,21 +47,21 @@ where
 
 impl<A: IntoMask, B: IntoMask<Bits = A::Bits>> IntoMask for Or<A, B>
 where
-    A::Bits: Assign<B::Bits>,
+    A::Bits: Union<B::Bits>,
 {
     type Bits = A::Bits;
-    type Mask = Union<A::Mask, B::Mask>;
+    type Mask = OrMask<A::Mask, B::Mask>;
     #[inline]
     fn into_mask(self) -> Self::Mask {
-        Union { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+        OrMask { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
     }
 }
 
-impl<A, B, S> Iterator for Union<A, B>
+impl<A, B, S> Iterator for OrMask<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,
-    S: Assign<S>,
+    S: Union<S>,
 {
     type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {
@@ -72,7 +73,7 @@ where
                 let (i, mut l) = x.next().expect("unreachable");
                 let (j, r) = y.next().expect("unreachable");
                 debug_assert_eq!(i, j);
-                Assign::or(&mut l, &r);
+                l.union(&r);
                 Some((i, l))
             }
             Greater => y.next(),

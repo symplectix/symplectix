@@ -289,7 +289,7 @@ pub trait Bits {
     where
         And<&'a Self, That>: IntoMask,
     {
-        And { a: &self, b: that }
+        And { a: self, b: that }
     }
 
     /// Returns the union as an iterator of blocks.
@@ -311,7 +311,7 @@ pub trait Bits {
     where
         Not<&'a Self, That>: IntoMask,
     {
-        Not { a: &self, b: that }
+        Not { a: self, b: that }
     }
 
     /// Returns the difference as an iterator of blocks.
@@ -333,7 +333,7 @@ pub trait Bits {
     where
         Or<&'a Self, That>: IntoMask,
     {
-        Or { a: &self, b: that }
+        Or { a: self, b: that }
     }
 
     /// Returns the symmetric difference as an iterator of blocks.
@@ -355,7 +355,7 @@ pub trait Bits {
     where
         Xor<&'a Self, That>: IntoMask,
     {
-        Xor { a: &self, b: that }
+        Xor { a: self, b: that }
     }
 }
 

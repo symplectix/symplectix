@@ -5,17 +5,18 @@ use core::iter::{
 };
 
 use crate::{
-    Assign,
+    Difference,
     IntoMask,
     compare,
 };
 
+/// A and not B.
 pub struct Not<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct Difference<A: Iterator, B: Iterator> {
+pub struct NotMask<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
@@ -45,24 +46,21 @@ where
 
 impl<A: IntoMask, B: IntoMask> IntoMask for Not<A, B>
 where
-    A::Bits: Assign<B::Bits>,
+    A::Bits: Difference<B::Bits>,
 {
     type Bits = A::Bits;
-    type Mask = Difference<A::Mask, B::Mask>;
+    type Mask = NotMask<A::Mask, B::Mask>;
     #[inline]
     fn into_mask(self) -> Self::Mask {
-        Difference {
-            a: self.a.into_mask().fuse().peekable(),
-            b: self.b.into_mask().fuse().peekable(),
-        }
+        NotMask { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
     }
 }
 
-impl<A, B, S1, S2> Iterator for Difference<A, B>
+impl<A, B, S1, S2> Iterator for NotMask<A, B>
 where
     A: Iterator<Item = (usize, S1)>,
     B: Iterator<Item = (usize, S2)>,
-    S1: Assign<S2>,
+    S1: Difference<S2>,
 {
     type Item = (usize, S1);
     fn next(&mut self) -> Option<Self::Item> {
@@ -75,7 +73,7 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    Assign::not(&mut s1, &s2);
+                    s1.difference(&s2);
                     return Some((i, s1));
                 }
                 Greater => {

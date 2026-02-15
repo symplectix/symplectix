@@ -5,17 +5,18 @@ use core::iter::{
 };
 
 use crate::{
-    Assign,
     IntoMask,
+    SymmetricDifference,
     compare,
 };
 
+/// A xor B.
 pub struct Xor<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct SymmetricDifference<A: Iterator, B: Iterator> {
+pub struct XorMask<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
@@ -47,24 +48,21 @@ where
 
 impl<A: IntoMask, B: IntoMask<Bits = A::Bits>> IntoMask for Xor<A, B>
 where
-    A::Bits: Assign<B::Bits>,
+    A::Bits: SymmetricDifference<B::Bits>,
 {
     type Bits = A::Bits;
-    type Mask = SymmetricDifference<A::Mask, B::Mask>;
+    type Mask = XorMask<A::Mask, B::Mask>;
     #[inline]
     fn into_mask(self) -> Self::Mask {
-        SymmetricDifference {
-            a: self.a.into_mask().fuse().peekable(),
-            b: self.b.into_mask().fuse().peekable(),
-        }
+        XorMask { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
     }
 }
 
-impl<A, B, S> Iterator for SymmetricDifference<A, B>
+impl<A, B, S> Iterator for XorMask<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,
-    S: Assign<S>,
+    S: SymmetricDifference<S>,
 {
     type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {
@@ -76,7 +74,7 @@ where
                 let (i, mut l) = a.next().expect("unreachable");
                 let (j, r) = b.next().expect("unreachable");
                 debug_assert_eq!(i, j);
-                Assign::xor(&mut l, &r);
+                l.symmetric_difference(&r);
                 Some((i, l))
             }
             Greater => b.next(),

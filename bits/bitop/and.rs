@@ -5,17 +5,18 @@ use core::iter::{
 };
 
 use crate::{
-    Assign,
     Block,
+    Intersection,
     IntoMask,
 };
 
+/// A and B.
 pub struct And<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct Intersection<A: Iterator, B: Iterator> {
+pub struct AndMask<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
@@ -46,23 +47,20 @@ where
 
 impl<A: IntoMask, B: IntoMask> IntoMask for And<A, B>
 where
-    A::Bits: Block + Assign<B::Bits>,
+    A::Bits: Block + Intersection<B::Bits>,
 {
     type Bits = A::Bits;
-    type Mask = Intersection<A::Mask, B::Mask>;
+    type Mask = AndMask<A::Mask, B::Mask>;
     fn into_mask(self) -> Self::Mask {
-        Intersection {
-            a: self.a.into_mask().fuse().peekable(),
-            b: self.b.into_mask().fuse().peekable(),
-        }
+        AndMask { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
     }
 }
 
-impl<A, B, T, U> Iterator for Intersection<A, B>
+impl<A, B, T, U> Iterator for AndMask<A, B>
 where
     A: Iterator<Item = (usize, T)>,
     B: Iterator<Item = (usize, U)>,
-    T: Block + Assign<U>,
+    T: Block + Intersection<U>,
 {
     type Item = (usize, T);
 
@@ -79,7 +77,7 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    Assign::and(&mut s1, &s2);
+                    s1.intersection(&s2);
                     if s1.any() {
                         break Some((i, s1));
                     } else {
