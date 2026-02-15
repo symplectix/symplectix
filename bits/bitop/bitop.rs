@@ -21,7 +21,8 @@ mod mask;
 
 pub use mask::{
     Assign,
-    Mask,
+    FromMask,
+    IntoMask,
 };
 
 mod and;

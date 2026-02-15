@@ -6,7 +6,7 @@ use core::iter::{
 
 use crate::{
     Assign,
-    Mask,
+    IntoMask,
     compare,
 };
 
@@ -33,24 +33,24 @@ pub struct Difference<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for Not<A, B>
 where
-    Self: Mask,
+    Self: IntoMask,
 {
-    type Item = (usize, <Self as Mask>::Bits);
-    type IntoIter = <Self as Mask>::Iter;
+    type Item = (usize, <Self as IntoMask>::Bits);
+    type IntoIter = <Self as IntoMask>::Mask;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.into_mask()
     }
 }
 
-impl<A: Mask, B: Mask> Mask for Not<A, B>
+impl<A: IntoMask, B: IntoMask> IntoMask for Not<A, B>
 where
     A::Bits: Assign<B::Bits>,
 {
     type Bits = A::Bits;
-    type Iter = Difference<A::Iter, B::Iter>;
+    type Mask = Difference<A::Mask, B::Mask>;
     #[inline]
-    fn into_mask(self) -> Self::Iter {
+    fn into_mask(self) -> Self::Mask {
         Difference {
             a: self.a.into_mask().fuse().peekable(),
             b: self.b.into_mask().fuse().peekable(),

@@ -4,7 +4,7 @@ use std::ops::RangeBounds;
 use crate::{
     And,
     Block,
-    Mask,
+    IntoMask,
     Not,
     Or,
     Word,
@@ -19,6 +19,45 @@ use crate::{
 /// - At least two of bits, count1, and count0
 /// - At least one of rank1 and rank0
 pub trait Bits {
+    /// Reads a bit at `i`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bitop::Bits;
+    /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
+    /// assert!(v.bit(0));
+    /// assert!(v.bit(64));
+    /// assert!(!v.bit(128));
+    /// // Returns false if out of bounds.
+    /// assert!(!v.bit(200));
+    /// ```
+    fn bit(&self, i: u64) -> bool;
+
+    /// Reads a word from `i`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use bitop::Bits;
+    /// let v: &[u16] = &[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001];
+    /// assert_eq!(v.word::<u8>(0, 4), 0b0011);
+    /// assert_eq!(v.word::<u8>(8, 4), 0b0001);
+    /// assert_eq!(v.word::<u8>(14, 4), 0b0111);
+    /// assert_eq!(v.word::<u8>(30, 4), 0b0010);
+    /// ```
+    fn word<T: Word>(&self, i: u64, len: u64) -> T {
+        debug_assert!(i < self.bits() && len <= T::BITS);
+
+        let mut word = T::empty();
+        for b in 0..len {
+            if self.bit(i + b) {
+                word.set1(b);
+            }
+        }
+        word
+    }
+
     /// The number of bits, which must always be equal to `count1() + count0()`.
     ///
     /// # Examples
@@ -109,45 +148,6 @@ pub trait Bits {
     #[inline]
     fn any(&self) -> bool {
         self.count1() > 0
-    }
-
-    /// Reads a bit at `i`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use bitop::Bits;
-    /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
-    /// assert!(v.bit(0));
-    /// assert!(v.bit(64));
-    /// assert!(!v.bit(128));
-    /// // Returns false if out of bounds.
-    /// assert!(!v.bit(200));
-    /// ```
-    fn bit(&self, i: u64) -> bool;
-
-    /// Reads a word from `i`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use bitop::Bits;
-    /// let v: &[u16] = &[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001];
-    /// assert_eq!(v.word::<u8>(0, 4), 0b0011);
-    /// assert_eq!(v.word::<u8>(8, 4), 0b0001);
-    /// assert_eq!(v.word::<u8>(14, 4), 0b0111);
-    /// assert_eq!(v.word::<u8>(30, 4), 0b0010);
-    /// ```
-    fn word<T: Word>(&self, i: u64, len: u64) -> T {
-        debug_assert!(i < self.bits() && len <= T::BITS);
-
-        let mut word = T::empty();
-        for b in 0..len {
-            if self.bit(i + b) {
-                word.set1(b);
-            }
-        }
-        word
     }
 
     /// The number of 1 in the given range.
@@ -287,7 +287,7 @@ pub trait Bits {
     /// ```
     fn and<'a, That>(&'a self, that: That) -> And<&'a Self, That>
     where
-        And<&'a Self, That>: Mask,
+        And<&'a Self, That>: IntoMask,
     {
         And { a: &self, b: that }
     }
@@ -309,7 +309,7 @@ pub trait Bits {
     /// ```
     fn not<'a, That>(&'a self, that: That) -> Not<&'a Self, That>
     where
-        Not<&'a Self, That>: Mask,
+        Not<&'a Self, That>: IntoMask,
     {
         Not { a: &self, b: that }
     }
@@ -331,7 +331,7 @@ pub trait Bits {
     /// ```
     fn or<'a, That>(&'a self, that: That) -> Or<&'a Self, That>
     where
-        Or<&'a Self, That>: Mask,
+        Or<&'a Self, That>: IntoMask,
     {
         Or { a: &self, b: that }
     }
@@ -353,7 +353,7 @@ pub trait Bits {
     /// ```
     fn xor<'a, That>(&'a self, that: That) -> Xor<&'a Self, That>
     where
-        Xor<&'a Self, That>: Mask,
+        Xor<&'a Self, That>: IntoMask,
     {
         Xor { a: &self, b: that }
     }

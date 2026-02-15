@@ -7,7 +7,7 @@ use core::iter::{
 use crate::{
     Assign,
     Block,
-    Mask,
+    IntoMask,
 };
 
 pub struct And<A, B> {
@@ -34,23 +34,23 @@ pub struct Intersection<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for And<A, B>
 where
-    Self: Mask,
+    Self: IntoMask,
 {
-    type Item = (usize, <Self as Mask>::Bits);
-    type IntoIter = <Self as Mask>::Iter;
+    type Item = (usize, <Self as IntoMask>::Bits);
+    type IntoIter = <Self as IntoMask>::Mask;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.into_mask()
     }
 }
 
-impl<A: Mask, B: Mask> Mask for And<A, B>
+impl<A: IntoMask, B: IntoMask> IntoMask for And<A, B>
 where
     A::Bits: Block + Assign<B::Bits>,
 {
     type Bits = A::Bits;
-    type Iter = Intersection<A::Iter, B::Iter>;
-    fn into_mask(self) -> Self::Iter {
+    type Mask = Intersection<A::Mask, B::Mask>;
+    fn into_mask(self) -> Self::Mask {
         Intersection {
             a: self.a.into_mask().fuse().peekable(),
             b: self.b.into_mask().fuse().peekable(),

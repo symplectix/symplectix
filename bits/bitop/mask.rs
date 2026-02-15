@@ -5,77 +5,66 @@ use std::borrow::{
 use std::iter::Enumerate;
 use std::slice;
 
-use crate::{
-    And,
-    Block,
-    Not,
-    Or,
-    Xor,
-};
+use crate::Block;
 
-pub trait Mask: Sized {
+/// A helper trait for bit masking.
+///
+/// A mask defines which bits you want to keep, and which bits
+/// you want to clear. Masking is to apply a mask to an another bit
+/// container.
+pub trait IntoMask: Sized {
+    /// Type of a bit container.
     type Bits;
-    type Iter: Iterator<Item = (usize, Self::Bits)>;
 
-    fn into_mask(self) -> Self::Iter;
+    /// An iterator which yields Bits with its index.
+    type Mask: Iterator<Item = (usize, Self::Bits)>;
 
-    #[inline]
-    fn and<That: Mask>(self, that: That) -> And<Self, That> {
-        And { a: self, b: that }
-    }
-
-    #[inline]
-    fn not<That: Mask>(self, that: That) -> Not<Self, That> {
-        Not { a: self, b: that }
-    }
-
-    #[inline]
-    fn or<That: Mask>(self, that: That) -> Or<Self, That> {
-        Or { a: self, b: that }
-    }
-
-    #[inline]
-    fn xor<That: Mask>(self, that: That) -> Xor<Self, That> {
-        Xor { a: self, b: that }
-    }
+    /// Returns an iterator which performs bitwise ops lazily.
+    fn into_mask(self) -> Self::Mask;
 }
 
-impl<'inner, T: ?Sized> Mask for &&'inner T
+/// A helper trait for bit masking.
+pub trait FromMask<B>: Sized {
+    /// Creates a value from a mask.
+    fn from_mask<T: IntoMask<Bits = B>>(iter: T) -> Self;
+}
+
+impl<'inner, T: ?Sized> IntoMask for &&'inner T
 where
-    &'inner T: Mask,
+    &'inner T: IntoMask,
 {
-    type Bits = <&'inner T as Mask>::Bits;
-    type Iter = <&'inner T as Mask>::Iter;
+    type Bits = <&'inner T as IntoMask>::Bits;
+    type Mask = <&'inner T as IntoMask>::Mask;
     #[inline]
-    fn into_mask(self) -> Self::Iter {
-        Mask::into_mask(*self)
+    fn into_mask(self) -> Self::Mask {
+        IntoMask::into_mask(*self)
     }
 }
 
-impl<'a, T: Block> Mask for &'a [T] {
+impl<'a, T: Block> IntoMask for &'a [T] {
     type Bits = Cow<'a, T>;
-    type Iter = Blocks<'a, T>;
-    fn into_mask(self) -> Self::Iter {
+    type Mask = Blocks<'a, T>;
+    fn into_mask(self) -> Self::Mask {
         Blocks { blocks: self.iter().enumerate() }
     }
 }
 
-impl<'a, B, const N: usize> Mask for &'a [B; N]
+impl<'a, B, const N: usize> IntoMask for &'a [B; N]
 where
-    &'a [B]: Mask,
+    &'a [B]: IntoMask,
 {
-    type Bits = <&'a [B] as Mask>::Bits;
-    type Iter = <&'a [B] as Mask>::Iter;
+    type Bits = <&'a [B] as IntoMask>::Bits;
+    type Mask = <&'a [B] as IntoMask>::Mask;
     #[inline]
-    fn into_mask(self) -> Self::Iter {
+    fn into_mask(self) -> Self::Mask {
         self.as_ref().into_mask()
     }
 }
 
-impl<'a, T: Block> Mask for &'a Vec<T> {
-    type Bits = <&'a [T] as Mask>::Bits;
-    type Iter = <&'a [T] as Mask>::Iter;
-    fn into_mask(self) -> Self::Iter {
+impl<'a, T: Block> IntoMask for &'a Vec<T> {
+    type Bits = <&'a [T] as IntoMask>::Bits;
+    type Mask = <&'a [T] as IntoMask>::Mask;
+    fn into_mask(self) -> Self::Mask {
         self.as_slice().into_mask()
     }
 }

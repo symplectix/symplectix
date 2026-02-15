@@ -6,7 +6,7 @@ use core::iter::{
 
 use crate::{
     Assign,
-    Mask,
+    IntoMask,
     compare,
 };
 
@@ -35,24 +35,24 @@ pub struct SymmetricDifference<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for Xor<A, B>
 where
-    Self: Mask,
+    Self: IntoMask,
 {
-    type Item = (usize, <Self as Mask>::Bits);
-    type IntoIter = <Self as Mask>::Iter;
+    type Item = (usize, <Self as IntoMask>::Bits);
+    type IntoIter = <Self as IntoMask>::Mask;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.into_mask()
     }
 }
 
-impl<A: Mask, B: Mask<Bits = A::Bits>> Mask for Xor<A, B>
+impl<A: IntoMask, B: IntoMask<Bits = A::Bits>> IntoMask for Xor<A, B>
 where
     A::Bits: Assign<B::Bits>,
 {
     type Bits = A::Bits;
-    type Iter = SymmetricDifference<A::Iter, B::Iter>;
+    type Mask = SymmetricDifference<A::Mask, B::Mask>;
     #[inline]
-    fn into_mask(self) -> Self::Iter {
+    fn into_mask(self) -> Self::Mask {
         SymmetricDifference {
             a: self.a.into_mask().fuse().peekable(),
             b: self.b.into_mask().fuse().peekable(),
