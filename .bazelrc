@@ -1,8 +1,8 @@
 # https://bazel.build/reference/command-line-reference
 
 import %workspace%/bazel/bazelrc/preset.bazelrc
-import %workspace%/bazel/bazelrc/cache.bazelrc
 import %workspace%/bazel/bazelrc/profile.bazelrc
+import %workspace%/bazel/bazelrc/ci.bazelrc
 
 # Force the use of Clang for C++ builds.
 build --action_env=CC=clang

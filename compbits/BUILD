@@ -10,6 +10,9 @@ rust.library(
         "src/bit_set/tests/*.rs",
     ]),
     visibility = ["//:__subpackages__"],
+    deps = [
+        "//bits/bitop",
+    ],
 )
 
 rust.test(
@@ -33,6 +36,7 @@ rust.test_suite(
     ],
     deps = [
         ":compbits",
+        "//bits/bitop",
         "@crates//:lazy_static",
         "@crates//:quickcheck",
         "@crates//:rand",
