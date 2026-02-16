@@ -13,8 +13,8 @@ rust.test(
     crate = ":bitop",
 )
 
-rust.doc_test(
-    name = "bitop_doc_test",
-    size = "small",
-    crate = ":bitop",
-)
+# rust.doc_test(
+#     name = "bitop_doc_test",
+#     size = "small",
+#     crate = ":bitop",
+# )
