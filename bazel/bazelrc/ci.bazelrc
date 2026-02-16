@@ -15,3 +15,14 @@ common:ci --repository_cache=~/.cache/bazel/repository/
 # https://bazel.build/reference/command-line-reference#flag--experimental_disk_cache_gc_max_age
 common:ci --experimental_disk_cache_gc_max_size=5G
 common:ci --experimental_disk_cache_gc_max_age=5d
+
+# Allow skipping build/test targets on CI.
+common:ci --build_tag_filters=-no-ci
+common:ci --test_tag_filters=-no-ci
+
+# Enable linting.
+common:ci --config=clippy
+common:ci --config=rustfmt
+
+common:ci --config=stable
+common:ci --config=release
