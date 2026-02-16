@@ -11,8 +11,5 @@ build --action_env=CXX=clang++
 # https://bazel.build/docs/user-manual#workspace_status
 common:stamp --stamp --workspace_status_command=bazel/tools/workspace_status.py
 
-common:ci --build_tag_filters=-no-ci
-common:ci --test_tag_filters=-no-ci
-
 # Load extra bazel settings if any.
 try-import %workspace%/bazel/bazelrc/user.bazelrc
