@@ -6,7 +6,7 @@ use core::iter::{
 
 use crate::{
     Difference,
-    IntoMask,
+    IntoBlocks,
     compare,
 };
 
@@ -34,25 +34,28 @@ pub struct NotMask<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for Not<A, B>
 where
-    Self: IntoMask,
+    Self: IntoBlocks,
 {
-    type Item = (usize, <Self as IntoMask>::Bits);
-    type IntoIter = <Self as IntoMask>::Mask;
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_mask()
+        self.into_blocks()
     }
 }
 
-impl<A: IntoMask, B: IntoMask> IntoMask for Not<A, B>
+impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Not<A, B>
 where
-    A::Bits: Difference<B::Bits>,
+    A::Block: Difference<B::Block>,
 {
-    type Bits = A::Bits;
-    type Mask = NotMask<A::Mask, B::Mask>;
+    type Block = A::Block;
+    type Blocks = NotMask<A::Blocks, B::Blocks>;
     #[inline]
-    fn into_mask(self) -> Self::Mask {
-        NotMask { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+    fn into_blocks(self) -> Self::Blocks {
+        NotMask {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
+        }
     }
 }
 

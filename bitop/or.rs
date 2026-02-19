@@ -5,7 +5,7 @@ use core::iter::{
 };
 
 use crate::{
-    IntoMask,
+    IntoBlocks,
     Union,
     compare,
 };
@@ -35,25 +35,28 @@ pub struct OrMask<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for Or<A, B>
 where
-    Self: IntoMask,
+    Self: IntoBlocks,
 {
-    type Item = (usize, <Self as IntoMask>::Bits);
-    type IntoIter = <Self as IntoMask>::Mask;
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_mask()
+        self.into_blocks()
     }
 }
 
-impl<A: IntoMask, B: IntoMask<Bits = A::Bits>> IntoMask for Or<A, B>
+impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Or<A, B>
 where
-    A::Bits: Union<B::Bits>,
+    A::Block: Union<B::Block>,
 {
-    type Bits = A::Bits;
-    type Mask = OrMask<A::Mask, B::Mask>;
+    type Block = A::Block;
+    type Blocks = OrMask<A::Blocks, B::Blocks>;
     #[inline]
-    fn into_mask(self) -> Self::Mask {
-        OrMask { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+    fn into_blocks(self) -> Self::Blocks {
+        OrMask {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
+        }
     }
 }
 

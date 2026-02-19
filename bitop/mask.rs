@@ -12,68 +12,68 @@ use crate::Block;
 /// A mask defines which bits you want to keep, and which bits
 /// you want to clear. Masking is to apply a mask to an another bit
 /// container.
-pub trait IntoMask: Sized {
+pub trait IntoBlocks: Sized {
     /// Type of a bit container.
-    type Bits;
+    type Block;
 
-    /// An iterator which yields Bits with its index.
-    type Mask: Iterator<Item = (usize, Self::Bits)>;
+    /// An iterator which yields `Block`s with its index.
+    type Blocks: Iterator<Item = (usize, Self::Block)>;
 
     /// Returns an iterator which performs bitwise ops lazily.
-    fn into_mask(self) -> Self::Mask;
+    fn into_blocks(self) -> Self::Blocks;
 }
 
 /// A helper trait for bit masking.
 pub trait FromMask<B>: Sized {
     /// Creates a value from a mask.
-    fn from_mask<T: IntoMask<Bits = B>>(iter: T) -> Self;
+    fn from_mask<T: IntoBlocks<Block = B>>(iter: T) -> Self;
 }
 
-impl<'inner, T: ?Sized> IntoMask for &&'inner T
+impl<'inner, T: ?Sized> IntoBlocks for &&'inner T
 where
-    &'inner T: IntoMask,
+    &'inner T: IntoBlocks,
 {
-    type Bits = <&'inner T as IntoMask>::Bits;
-    type Mask = <&'inner T as IntoMask>::Mask;
+    type Block = <&'inner T as IntoBlocks>::Block;
+    type Blocks = <&'inner T as IntoBlocks>::Blocks;
     #[inline]
-    fn into_mask(self) -> Self::Mask {
-        IntoMask::into_mask(*self)
+    fn into_blocks(self) -> Self::Blocks {
+        IntoBlocks::into_blocks(*self)
     }
 }
 
-impl<'a, T: Block> IntoMask for &'a [T] {
-    type Bits = Cow<'a, T>;
-    type Mask = Blocks<'a, T>;
-    fn into_mask(self) -> Self::Mask {
-        Blocks { blocks: self.iter().enumerate() }
+impl<'a, T: Block> IntoBlocks for &'a [T] {
+    type Block = Cow<'a, T>;
+    type Blocks = SliceBlocks<'a, T>;
+    fn into_blocks(self) -> Self::Blocks {
+        SliceBlocks { blocks: self.iter().enumerate() }
     }
 }
 
-impl<'a, B, const N: usize> IntoMask for &'a [B; N]
+impl<'a, B, const N: usize> IntoBlocks for &'a [B; N]
 where
-    &'a [B]: IntoMask,
+    &'a [B]: IntoBlocks,
 {
-    type Bits = <&'a [B] as IntoMask>::Bits;
-    type Mask = <&'a [B] as IntoMask>::Mask;
+    type Block = <&'a [B] as IntoBlocks>::Block;
+    type Blocks = <&'a [B] as IntoBlocks>::Blocks;
     #[inline]
-    fn into_mask(self) -> Self::Mask {
-        self.as_ref().into_mask()
+    fn into_blocks(self) -> Self::Blocks {
+        self.as_ref().into_blocks()
     }
 }
 
-impl<'a, T: Block> IntoMask for &'a Vec<T> {
-    type Bits = <&'a [T] as IntoMask>::Bits;
-    type Mask = <&'a [T] as IntoMask>::Mask;
-    fn into_mask(self) -> Self::Mask {
-        self.as_slice().into_mask()
+impl<'a, T: Block> IntoBlocks for &'a Vec<T> {
+    type Block = <&'a [T] as IntoBlocks>::Block;
+    type Blocks = <&'a [T] as IntoBlocks>::Blocks;
+    fn into_blocks(self) -> Self::Blocks {
+        self.as_slice().into_blocks()
     }
 }
 
-pub struct Blocks<'a, T> {
+pub struct SliceBlocks<'a, T> {
     blocks: Enumerate<slice::Iter<'a, T>>,
 }
 
-impl<'a, T: Block> Iterator for Blocks<'a, T> {
+impl<'a, T: Block> Iterator for SliceBlocks<'a, T> {
     type Item = (usize, Cow<'a, T>);
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {

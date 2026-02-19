@@ -7,7 +7,7 @@ use core::iter::{
 use crate::{
     Block,
     Intersection,
-    IntoMask,
+    IntoBlocks,
 };
 
 /// A and B.
@@ -35,24 +35,27 @@ pub struct AndMask<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for And<A, B>
 where
-    Self: IntoMask,
+    Self: IntoBlocks,
 {
-    type Item = (usize, <Self as IntoMask>::Bits);
-    type IntoIter = <Self as IntoMask>::Mask;
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_mask()
+        self.into_blocks()
     }
 }
 
-impl<A: IntoMask, B: IntoMask> IntoMask for And<A, B>
+impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for And<A, B>
 where
-    A::Bits: Block + Intersection<B::Bits>,
+    A::Block: Block + Intersection<B::Block>,
 {
-    type Bits = A::Bits;
-    type Mask = AndMask<A::Mask, B::Mask>;
-    fn into_mask(self) -> Self::Mask {
-        AndMask { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+    type Block = A::Block;
+    type Blocks = AndMask<A::Blocks, B::Blocks>;
+    fn into_blocks(self) -> Self::Blocks {
+        AndMask {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
+        }
     }
 }
 

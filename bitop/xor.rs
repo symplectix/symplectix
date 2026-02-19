@@ -5,7 +5,7 @@ use core::iter::{
 };
 
 use crate::{
-    IntoMask,
+    IntoBlocks,
     SymmetricDifference,
     compare,
 };
@@ -36,25 +36,28 @@ pub struct XorMask<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for Xor<A, B>
 where
-    Self: IntoMask,
+    Self: IntoBlocks,
 {
-    type Item = (usize, <Self as IntoMask>::Bits);
-    type IntoIter = <Self as IntoMask>::Mask;
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_mask()
+        self.into_blocks()
     }
 }
 
-impl<A: IntoMask, B: IntoMask<Bits = A::Bits>> IntoMask for Xor<A, B>
+impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Xor<A, B>
 where
-    A::Bits: SymmetricDifference<B::Bits>,
+    A::Block: SymmetricDifference<B::Block>,
 {
-    type Bits = A::Bits;
-    type Mask = XorMask<A::Mask, B::Mask>;
+    type Block = A::Block;
+    type Blocks = XorMask<A::Blocks, B::Blocks>;
     #[inline]
-    fn into_mask(self) -> Self::Mask {
-        XorMask { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
+    fn into_blocks(self) -> Self::Blocks {
+        XorMask {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
+        }
     }
 }
 

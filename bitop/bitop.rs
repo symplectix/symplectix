@@ -25,7 +25,7 @@ pub use mask::{
     Difference,
     FromMask,
     Intersection,
-    IntoMask,
+    IntoBlocks,
     SymmetricDifference,
     Union,
 };

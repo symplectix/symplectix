@@ -4,7 +4,7 @@ use std::ops::RangeBounds;
 use crate::{
     And,
     Block,
-    IntoMask,
+    IntoBlocks,
     Not,
     Or,
     Word,
@@ -287,7 +287,7 @@ pub trait Bits {
     /// ```
     fn and<'a, That>(&'a self, that: That) -> And<&'a Self, That>
     where
-        And<&'a Self, That>: IntoMask,
+        And<&'a Self, That>: IntoBlocks,
     {
         And { a: self, b: that }
     }
@@ -309,7 +309,7 @@ pub trait Bits {
     /// ```
     fn not<'a, That>(&'a self, that: That) -> Not<&'a Self, That>
     where
-        Not<&'a Self, That>: IntoMask,
+        Not<&'a Self, That>: IntoBlocks,
     {
         Not { a: self, b: that }
     }
@@ -331,7 +331,7 @@ pub trait Bits {
     /// ```
     fn or<'a, That>(&'a self, that: That) -> Or<&'a Self, That>
     where
-        Or<&'a Self, That>: IntoMask,
+        Or<&'a Self, That>: IntoBlocks,
     {
         Or { a: self, b: that }
     }
@@ -353,7 +353,7 @@ pub trait Bits {
     /// ```
     fn xor<'a, That>(&'a self, that: That) -> Xor<&'a Self, That>
     where
-        Xor<&'a Self, That>: IntoMask,
+        Xor<&'a Self, That>: IntoBlocks,
     {
         Xor { a: self, b: that }
     }
