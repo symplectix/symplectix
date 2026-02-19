@@ -16,23 +16,10 @@ pub struct Xor<A, B> {
     pub(crate) b: B,
 }
 
-pub struct XorMask<A: Iterator, B: Iterator> {
+pub struct SymmetricDifference<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
-
-// impl<A: Bits, B: Bits> Bits for Xor<A, B> {
-//     /// This could be an incorrect value, different from the consumed result.
-//     #[inline]
-//     fn len(this: &Self) -> usize {
-//         cmp::max(Bits::len(&this.a), Bits::len(&this.b))
-//     }
-
-//     #[inline]
-//     fn test(this: &Self, i: usize) -> bool {
-//         Bits::test(&this.a, i) ^ Bits::test(&this.b, i)
-//     }
-// }
 
 impl<A, B> IntoIterator for Xor<A, B>
 where
@@ -51,17 +38,17 @@ where
     A::Block: Masking<B::Block>,
 {
     type Block = A::Block;
-    type Blocks = XorMask<A::Blocks, B::Blocks>;
+    type Blocks = SymmetricDifference<A::Blocks, B::Blocks>;
     #[inline]
     fn into_blocks(self) -> Self::Blocks {
-        XorMask {
+        SymmetricDifference {
             a: self.a.into_blocks().fuse().peekable(),
             b: self.b.into_blocks().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, S> Iterator for XorMask<A, B>
+impl<A, B, S> Iterator for SymmetricDifference<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,

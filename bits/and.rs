@@ -16,22 +16,10 @@ pub struct And<A, B> {
     pub(crate) b: B,
 }
 
-pub struct AndMask<A: Iterator, B: Iterator> {
+pub struct Intersection<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
-
-// impl<A: Bits, B: Bits> Bits for And<A, B> {
-//     /// This could be an incorrect value, different from the consumed result.
-//     #[inline]
-//     fn len(this: &Self) -> usize {
-//         cmp::min(Bits::len(&this.a), Bits::len(&this.b))
-//     }
-//     #[inline]
-//     fn test(this: &Self, i: usize) -> bool {
-//         Bits::test(&this.a, i) && Bits::test(&this.b, i)
-//     }
-// }
 
 impl<A, B> IntoIterator for And<A, B>
 where
@@ -50,16 +38,16 @@ where
     A::Block: Block + Masking<B::Block>,
 {
     type Block = A::Block;
-    type Blocks = AndMask<A::Blocks, B::Blocks>;
+    type Blocks = Intersection<A::Blocks, B::Blocks>;
     fn into_blocks(self) -> Self::Blocks {
-        AndMask {
+        Intersection {
             a: self.a.into_blocks().fuse().peekable(),
             b: self.b.into_blocks().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, T, U> Iterator for AndMask<A, B>
+impl<A, B, T, U> Iterator for Intersection<A, B>
 where
     A: Iterator<Item = (usize, T)>,
     B: Iterator<Item = (usize, U)>,

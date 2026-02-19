@@ -16,22 +16,10 @@ pub struct Or<A, B> {
     pub(crate) b: B,
 }
 
-pub struct OrMask<A: Iterator, B: Iterator> {
+pub struct Union<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
-
-// impl<A: Bits, B: Bits> Bits for Or<A, B> {
-//     /// This could be an incorrect value, different from the consumed result.
-//     #[inline]
-//     fn len(this: &Self) -> usize {
-//         cmp::max(Bits::len(&this.a), Bits::len(&this.b))
-//     }
-//     #[inline]
-//     fn test(this: &Self, i: usize) -> bool {
-//         Bits::test(&this.a, i) || Bits::test(&this.b, i)
-//     }
-// }
 
 impl<A, B> IntoIterator for Or<A, B>
 where
@@ -50,17 +38,17 @@ where
     A::Block: Masking<B::Block>,
 {
     type Block = A::Block;
-    type Blocks = OrMask<A::Blocks, B::Blocks>;
+    type Blocks = Union<A::Blocks, B::Blocks>;
     #[inline]
     fn into_blocks(self) -> Self::Blocks {
-        OrMask {
+        Union {
             a: self.a.into_blocks().fuse().peekable(),
             b: self.b.into_blocks().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, S> Iterator for OrMask<A, B>
+impl<A, B, S> Iterator for Union<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,

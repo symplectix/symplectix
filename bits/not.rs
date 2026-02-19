@@ -16,21 +16,10 @@ pub struct Not<A, B> {
     pub(crate) b: B,
 }
 
-pub struct NotMask<A: Iterator, B: Iterator> {
+pub struct Difference<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
-
-// impl<A: Bits, B: Bits> Bits for AndNot<A, B> {
-//     #[inline]
-//     fn len(this: &Self) -> usize {
-//         Bits::len(&this.a)
-//     }
-//     #[inline]
-//     fn test(this: &Self, i: usize) -> bool {
-//         Bits::test(&this.a, i) & !Bits::test(&this.b, i)
-//     }
-// }
 
 impl<A, B> IntoIterator for Not<A, B>
 where
@@ -49,17 +38,17 @@ where
     A::Block: Masking<B::Block>,
 {
     type Block = A::Block;
-    type Blocks = NotMask<A::Blocks, B::Blocks>;
+    type Blocks = Difference<A::Blocks, B::Blocks>;
     #[inline]
     fn into_blocks(self) -> Self::Blocks {
-        NotMask {
+        Difference {
             a: self.a.into_blocks().fuse().peekable(),
             b: self.b.into_blocks().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, S1, S2> Iterator for NotMask<A, B>
+impl<A, B, S1, S2> Iterator for Difference<A, B>
 where
     A: Iterator<Item = (usize, S1)>,
     B: Iterator<Item = (usize, S2)>,
