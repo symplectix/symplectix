@@ -35,9 +35,6 @@ pub use not::Not;
 pub use or::Or;
 pub use xor::Xor;
 
-#[cfg(test)]
-mod buf_test;
-
 // TODO: Use type parameters instead of an argument.
 // Type parameters can not be used in const expressions.
 // Blocked by Rust issue #60551.

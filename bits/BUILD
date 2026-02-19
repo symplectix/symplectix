@@ -21,3 +21,16 @@ rust.doc_test(
     # due to an LLVM version mismatch. Skip the test for now.
     tags = ["no-ci"],
 )
+
+rust.test_suite(
+    name = "bits_integration",
+    size = "small",
+    srcs = glob(["tests/*.rs"]),
+    proc_macro_deps = [
+        "@crates//:quickcheck_macros",
+    ],
+    deps = [
+        ":bits",
+        "@crates//:quickcheck",
+    ],
+)
