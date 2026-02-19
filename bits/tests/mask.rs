@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use bits::{
     BitsMut,
     Buf,
@@ -5,7 +6,7 @@ use bits::{
 };
 
 #[test]
-fn masking_and() {
+fn and() {
     let mut a = Buf::<[u64; 4]>::new();
     a.set1(0);
     a.set1(1);
@@ -26,7 +27,7 @@ fn masking_and() {
 }
 
 #[test]
-fn masking_or() {
+fn or() {
     let mut a = Buf::<[u64; 4]>::new();
     a.set1(0);
     a.set1(1);
@@ -45,7 +46,7 @@ fn masking_or() {
 }
 
 #[test]
-fn masking_not() {
+fn not() {
     let mut a = Buf::<[u64; 4]>::new();
     a.set1(0);
     a.set1(1);
@@ -67,7 +68,7 @@ fn masking_not() {
 }
 
 #[test]
-fn masking_xor() {
+fn xor() {
     let mut a = Buf::<[u64; 4]>::new();
     a.set1(0);
     a.set1(1);

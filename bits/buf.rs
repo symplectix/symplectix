@@ -30,6 +30,7 @@ pub struct Buf<A: private::Repr>(
 );
 
 impl<B: Word, const N: usize> Buf<[B; N]> {
+    /// Constructs a new buffer.
     pub fn new() -> Self {
         Buf(None)
     }
@@ -37,11 +38,13 @@ impl<B: Word, const N: usize> Buf<[B; N]> {
     // TODO: const fn when as_deref and as_deref_mut is const fn.
     // https://github.com/rust-lang/rust/issues/14387
 
+    /// Returns a slice of buffer, None if empty.
     #[inline]
     pub fn as_ref(&self) -> Option<&[B]> {
         self.0.as_deref().map(|a| a.as_slice())
     }
 
+    /// Returns a mutable slice of buffer, None if empty.
     #[inline]
     pub fn as_mut(&mut self) -> Option<&mut [B]> {
         self.0.as_deref_mut().map(|a| a.as_mut_slice())
