@@ -79,7 +79,7 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    s1.intersection(&s2);
+                    Masking::and(&mut s1, &s2);
                     if s1.any() {
                         break Some((i, s1));
                     } else {

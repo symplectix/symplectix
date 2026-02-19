@@ -139,54 +139,51 @@ impl<B: Word, const N: usize> Block for Buf<[B; N]> {
 }
 
 impl<const N: usize> Masking<Self> for Buf<[u64; N]> {
-    fn intersection(&mut self, that: &Self) {
-        match (self.as_mut(), that.as_ref()) {
+    fn and(data: &mut Self, that: &Self) {
+        match (data.as_mut(), that.as_ref()) {
             (Some(this), Some(that)) => {
                 for (a, b) in this.iter_mut().zip(that) {
                     *a &= *b;
                 }
             }
             (Some(_), None) => {
-                *self = Buf::new();
+                *data = Buf::new();
             }
             _ => {}
         }
     }
 
-    #[inline]
-    fn union(&mut self, that: &Self) {
-        match (self.as_mut(), that.as_ref()) {
+    fn or(data: &mut Self, that: &Self) {
+        match (data.as_mut(), that.as_ref()) {
             (Some(this), Some(that)) => {
                 for (a, b) in this.iter_mut().zip(that) {
                     *a |= *b;
                 }
             }
             (None, Some(that)) => {
-                self.or_empty().copy_from_slice(that);
+                data.or_empty().copy_from_slice(that);
             }
             _ => {}
         }
     }
 
-    #[inline]
-    fn difference(&mut self, that: &Self) {
-        if let (Some(this), Some(that)) = (self.as_mut(), that.as_ref()) {
+    fn not(data: &mut Self, that: &Self) {
+        if let (Some(this), Some(that)) = (data.as_mut(), that.as_ref()) {
             for (a, b) in this.iter_mut().zip(that) {
                 *a &= !*b;
             }
         }
     }
 
-    #[inline]
-    fn symmetric_difference(&mut self, that: &Self) {
-        match (self.as_mut(), that.as_ref()) {
+    fn xor(data: &mut Self, that: &Self) {
+        match (data.as_mut(), that.as_ref()) {
             (Some(this), Some(that)) => {
                 for (a, b) in this.iter_mut().zip(that) {
                     *a ^= *b;
                 }
             }
             (None, Some(that)) => {
-                self.or_empty().copy_from_slice(that);
+                data.or_empty().copy_from_slice(that);
             }
             _ => {}
         }

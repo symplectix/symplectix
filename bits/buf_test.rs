@@ -98,7 +98,7 @@ fn select1_select0() {
 }
 
 #[test]
-fn intersection() {
+fn masking_and() {
     let mut a = Buf::<[u64; 4]>::new();
     a.set1(0);
     a.set1(1);
@@ -109,17 +109,17 @@ fn intersection() {
     b.set1(2);
     b.set1(3);
     b.set1(192);
-    a.intersection(&b);
+    Masking::and(&mut a, &b);
     assert_eq!(a.as_ref().unwrap(), &[0b_0110, 0, 0, 0]);
     let mut c = Buf::<[u64; 4]>::new();
-    b.intersection(&c);
+    Masking::and(&mut b, &c);
     assert_eq!(b.as_ref(), None);
-    c.intersection(&a);
+    Masking::and(&mut c, &a);
     assert_eq!(c.as_ref(), None);
 }
 
 #[test]
-fn union() {
+fn masking_or() {
     let mut a = Buf::<[u64; 4]>::new();
     a.set1(0);
     a.set1(1);
@@ -130,15 +130,15 @@ fn union() {
     b.set1(2);
     b.set1(3);
     b.set1(192);
-    a.union(&b);
+    Masking::or(&mut a, &b);
     assert_eq!(a.as_ref().unwrap(), &[0b_1111, 0, 1, 1]);
     let mut c = Buf::<[u64; 4]>::new();
-    c.union(&b);
+    Masking::or(&mut c, &b);
     assert_eq!(c.as_ref().unwrap(), &[0b_1110, 0, 0, 1]);
 }
 
 #[test]
-fn difference() {
+fn masking_not() {
     let mut a = Buf::<[u64; 4]>::new();
     a.set1(0);
     a.set1(1);
@@ -151,16 +151,16 @@ fn difference() {
     b.set1(3);
     b.set1(192);
 
-    a.difference(&b);
+    Masking::not(&mut a, &b);
     assert_eq!(a.as_ref().unwrap(), &[0b_0001, 0, 1, 0]);
 
     let mut c = Buf::<[u64; 4]>::new();
-    c.difference(&a);
+    Masking::not(&mut c, &a);
     assert_eq!(c.as_ref(), None);
 }
 
 #[test]
-fn symmetric_difference() {
+fn masking_xor() {
     let mut a = Buf::<[u64; 4]>::new();
     a.set1(0);
     a.set1(1);
@@ -171,9 +171,9 @@ fn symmetric_difference() {
     b.set1(2);
     b.set1(3);
     b.set1(192);
-    a.symmetric_difference(&b);
+    Masking::xor(&mut a, &b);
     assert_eq!(a.as_ref().unwrap(), &[0b_1001, 0, 1, 1]);
     let mut c = Buf::<[u64; 4]>::new();
-    c.symmetric_difference(&a);
+    Masking::xor(&mut c, &a);
     assert_eq!(c.as_ref().unwrap(), &[0b_1001, 0, 1, 1]);
 }

@@ -9,16 +9,16 @@ use std::borrow::{
 /// Masking involves applying such a mask to self.
 pub trait Masking<Mask: ?Sized = Self> {
     /// Performs inplace and.
-    fn intersection(&mut self, mask: &Mask);
+    fn and(data: &mut Self, mask: &Mask);
 
     /// Performs inplace or.
-    fn union(&mut self, mask: &Mask);
+    fn or(data: &mut Self, mask: &Mask);
 
     /// Performs inplace not.
-    fn difference(&mut self, mask: &Mask);
+    fn not(data: &mut Self, mask: &Mask);
 
     /// Performs inplace xor.
-    fn symmetric_difference(&mut self, mask: &Mask);
+    fn xor(data: &mut Self, mask: &Mask);
 }
 
 impl<A, B> Masking<B> for Box<A>
@@ -27,20 +27,20 @@ where
     B: ?Sized,
 {
     #[inline]
-    fn intersection(&mut self, that: &B) {
-        self.as_mut().intersection(that);
+    fn and(data: &mut Self, mask: &B) {
+        Masking::and(data.as_mut(), mask);
     }
     #[inline]
-    fn union(&mut self, that: &B) {
-        self.as_mut().union(that);
+    fn or(data: &mut Self, mask: &B) {
+        Masking::or(data.as_mut(), mask);
     }
     #[inline]
-    fn difference(&mut self, that: &B) {
-        self.as_mut().difference(that);
+    fn not(data: &mut Self, mask: &B) {
+        Masking::not(data.as_mut(), mask);
     }
     #[inline]
-    fn symmetric_difference(&mut self, that: &B) {
-        self.as_mut().symmetric_difference(that);
+    fn xor(data: &mut Self, mask: &B) {
+        Masking::xor(data.as_mut(), mask);
     }
 }
 
@@ -51,20 +51,20 @@ where
     A::Owned: Masking<B>,
 {
     #[inline]
-    fn intersection(&mut self, that: &Cow<'b, B>) {
-        self.to_mut().intersection(that.as_ref());
+    fn and(data: &mut Self, mask: &Cow<'b, B>) {
+        Masking::and(data.to_mut(), mask);
     }
     #[inline]
-    fn union(&mut self, that: &Cow<'b, B>) {
-        self.to_mut().union(that.as_ref());
+    fn or(data: &mut Self, mask: &Cow<'b, B>) {
+        Masking::or(data.to_mut(), mask);
     }
     #[inline]
-    fn difference(&mut self, that: &Cow<'b, B>) {
-        self.to_mut().difference(that.as_ref());
+    fn not(data: &mut Self, mask: &Cow<'b, B>) {
+        Masking::not(data.to_mut(), mask);
     }
     #[inline]
-    fn symmetric_difference(&mut self, that: &Cow<'b, B>) {
-        self.to_mut().symmetric_difference(that.as_ref());
+    fn xor(data: &mut Self, mask: &Cow<'b, B>) {
+        Masking::xor(data.to_mut(), mask);
     }
 }
 
@@ -80,20 +80,20 @@ mod mask_test {
         ($( $Word:ty )*) => ($(
             impl crate::Masking<$Word> for $Word {
                 #[inline]
-                fn intersection(&mut self, that: &$Word) {
-                    *self &= *that;
+                fn and(data: &mut Self, mask: &$Word) {
+                    *data &= *mask;
                 }
                 #[inline]
-                fn union(&mut self, that: &$Word) {
-                    *self |= *that;
+                fn or(data: &mut Self, mask: &$Word) {
+                    *data |= *mask;
                 }
                 #[inline]
-                fn difference(&mut self, that: &$Word) {
-                    *self &= !*that;
+                fn not(data: &mut Self, mask: &$Word) {
+                    *data &= !*mask;
                 }
                 #[inline]
-                fn symmetric_difference(&mut self, that: &$Word) {
-                    *self ^= *that;
+                fn xor(data: &mut Self, mask: &$Word) {
+                    *data ^= *mask;
                 }
             }
         )*)

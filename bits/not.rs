@@ -76,7 +76,7 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    s1.difference(&s2);
+                    Masking::not(&mut s1, &s2);
                     return Some((i, s1));
                 }
                 Greater => {
