@@ -271,20 +271,11 @@ pub trait Bits {
         (n < self.count0()).then(|| binary_search(0, self.bits(), |k| self.rank0(..k) > n) - 1)
     }
 
-    /// Returns the intersection as an iterator of blocks.
+    /// Return the intersection of two sets as an iterator of blocks.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::borrow::Cow;
-    /// # use bits::Bits;
-    /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
-    /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
-    /// let mut iter = a.and(&b).into_iter();
-    /// assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000100)));
-    /// assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b01000000)));
-    /// assert_eq!(iter.next(), None);
-    /// ```
+    /// The intersection of two sets is the set containing
+    /// all elements of A that also belong to B or equivalently,
+    /// all elements of B that also belong to A.
     fn and<'a, That>(&'a self, that: That) -> And<&'a Self, That>
     where
         And<&'a Self, That>: IntoBlocks,
@@ -292,43 +283,10 @@ pub trait Bits {
         And { a: self, b: that }
     }
 
-    /// Returns the union as an iterator of blocks.
+    /// Returns the union of two sets as an iterator of blocks.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::borrow::Cow;
-    /// # use bits::Bits;
-    /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
-    /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
-    /// let mut iter = a.not(&b).into_iter();
-    /// assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000001)));
-    /// assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b01100011)));
-    /// assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b00100000)));
-    /// assert_eq!(iter.next(), None);
-    /// ```
-    fn not<'a, That>(&'a self, that: That) -> Not<&'a Self, That>
-    where
-        Not<&'a Self, That>: IntoBlocks,
-    {
-        Not { a: self, b: that }
-    }
-
-    /// Returns the difference as an iterator of blocks.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::borrow::Cow;
-    /// # use bits::Bits;
-    /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
-    /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
-    /// let mut iter = a.or(&b).into_iter();
-    /// assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000101)));
-    /// assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b11100011)));
-    /// assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b01100000)));
-    /// assert_eq!(iter.next(), None);
-    /// ```
+    /// The union of two sets is the set of all elements
+    /// in the both of the sets.
     fn or<'a, That>(&'a self, that: That) -> Or<&'a Self, That>
     where
         Or<&'a Self, That>: IntoBlocks,
@@ -336,21 +294,21 @@ pub trait Bits {
         Or { a: self, b: that }
     }
 
-    /// Returns the symmetric difference as an iterator of blocks.
+    /// Returns the difference of two sets as an iterator of blocks.
     ///
-    /// # Examples
+    /// The difference, or subtraction is the set that consists of
+    /// elements that are in A but not in B.
+    fn not<'a, That>(&'a self, that: That) -> Not<&'a Self, That>
+    where
+        Not<&'a Self, That>: IntoBlocks,
+    {
+        Not { a: self, b: that }
+    }
+
+    /// Returns the symmetric difference of two sets as an iterator of blocks.
     ///
-    /// ```
-    /// # use std::borrow::Cow;
-    /// # use bits::Bits;
-    /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
-    /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
-    /// let mut iter = a.xor(&b).into_iter();
-    /// assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000001)));
-    /// assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b11100011)));
-    /// assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b00100000)));
-    /// assert_eq!(iter.next(), None);
-    /// ```
+    /// The symmetric difference of two sets is the set of elements
+    /// which are in either of the sets, but not in their intersection.
     fn xor<'a, That>(&'a self, that: That) -> Xor<&'a Self, That>
     where
         Xor<&'a Self, That>: IntoBlocks,

@@ -1,6 +1,7 @@
 use crate::{
     Bits,
     BitsMut,
+    Block,
     Buf,
     Masking,
 };
@@ -72,20 +73,28 @@ fn rank0() {
 }
 
 #[test]
-fn select1() {
+fn select1_select0() {
     let b: Buf<[u8; 3]> = Buf::new();
     assert_eq!(b.select1(0), None);
     let b: Buf<[u8; 3]> = Buf::from([0, 1, 0]);
     assert_eq!(b.select1(0), Some(8));
-}
 
-#[test]
-fn select0() {
     let b: Buf<[u8; 3]> = Buf::new();
     assert_eq!(b.select0(0), Some(0));
     assert_eq!(b.select0(100), None);
     let b: Buf<[u8; 3]> = Buf::from([0, 1, 0]);
     assert_eq!(b.select0(10), Some(11));
+
+    let mut b = Buf::<[u64; 8]>::empty();
+    assert_eq!(b.select1(0), None);
+    assert_eq!(b.select0(0), Some(0));
+    assert_eq!(b.select0(Buf::<[u64; 8]>::BITS - 1), Some(511));
+    b.set1(1);
+    b.set1(511);
+    assert_eq!(b.select1(0), Some(1));
+    assert_eq!(b.select1(1), Some(511));
+    assert_eq!(b.select0(0), Some(0));
+    assert_eq!(b.select0(1), Some(2));
 }
 
 #[test]

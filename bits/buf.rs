@@ -59,92 +59,6 @@ impl<B: Word, const N: usize> From<[B; N]> for Buf<[B; N]> {
     }
 }
 
-// impl<B: Word, const N: usize> Block for Buf<[B; N]> {
-//     const BITS: usize = <[B; N]>::BITS;
-
-//     /// # Tests
-//     ///
-//     /// ```
-//     /// # use bits::block::*;
-//     /// # use bits_buf::Buf;
-//     /// let mut b = Buf::<[u32; 16]>::empty();
-//     /// assert_eq!(Buf::<[u32; 16]>::BITS, 512);
-//     ///
-//     /// b.set1(100);
-//     /// assert_eq!(b.count1(), 1);
-//     /// assert_eq!(b.count0(), 511);
-//     /// ```
-//     #[inline]
-//     fn empty() -> Self {
-//         Buf(None)
-//     }
-
-//     #[inline]
-//     fn test(&self, i: usize) -> Option<bool> {
-//         self.inner().and_then(|b| b.test(i))
-//     }
-// }
-// impl<B: Word, const N: usize> BlockMut for Buf<[B; N]> {
-//     #[inline]
-//     fn set1(&mut self, i: usize) {
-//         assert!(i < Self::BITS);
-//         self.or_empty().set1(i);
-//     }
-
-//     #[inline]
-//     fn set0(&mut self, i: usize) {
-//         assert!(i < Self::BITS);
-//         self.or_empty().set0(i);
-//     }
-// }
-
-// impl<B: Word, const N: usize> Count for Buf<[B; N]> {
-//     #[inline]
-//     fn count1(&self) -> usize {
-//         self.inner().map_or(0, |b| b.count1())
-//     }
-// }
-
-// impl<B: Word, const N: usize> Rank for Buf<[B; N]> {
-//     #[inline]
-//     fn rank1<R: RangeBounds<usize>>(&self, r: R) -> usize {
-//         self.inner().map_or(0, |b| b.rank1(r))
-//     }
-// }
-
-// impl<B: Word, const N: usize> Select for Buf<[B; N]> {
-//     #[inline]
-//     fn select1(&self, n: usize) -> Option<usize> {
-//         self.inner().and_then(|b| b.select1(n))
-//     }
-
-//     /// # Tests
-//     ///
-//     /// ```
-//     /// # use bits::block::*;
-//     /// # use bits_buf::Buf;
-//     /// let mut b = Buf::<[u64; 8]>::empty();
-//     /// assert_eq!(b.select1(0), None);
-//     /// assert_eq!(b.select0(0), Some(0));
-//     /// assert_eq!(b.select0(Buf::<[u64; 8]>::BITS - 1), Some(511));
-//     ///
-//     /// b.set1(1);
-//     /// b.set1(511);
-//     /// assert_eq!(b.select1(0), Some(1));
-//     /// assert_eq!(b.select1(1), Some(511));
-//     /// assert_eq!(b.select0(0), Some(0));
-//     /// assert_eq!(b.select0(1), Some(2));
-//     /// ```
-//     #[inline]
-//     fn select0(&self, n: usize) -> Option<usize> {
-//         match self.inner() {
-//             Some(b) => b.select0(n),
-//             // self.count0() == Self::BITS
-//             None => (n < Self::BITS).then_some(n),
-//         }
-//     }
-// }
-
 impl<B: Word, const N: usize> Bits for Buf<[B; N]> {
     #[inline]
     fn bits(&self) -> u64 {
@@ -196,7 +110,10 @@ impl<B: Word, const N: usize> Bits for Buf<[B; N]> {
     }
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
-        (n < self.count0()).then(|| self.0.as_ref().map_or(Some(n), |b| b.select0(n))).flatten()
+        match self.as_ref() {
+            Some(b) => b.select0(n),
+            None => (n < Self::BITS).then_some(n),
+        }
     }
 }
 

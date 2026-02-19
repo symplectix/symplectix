@@ -3,54 +3,23 @@ use std::borrow::{
     ToOwned,
 };
 
-use crate::Block;
-
 /// Helper trait for bit masking.
 ///
 /// The mask defines which bits to retain and which to clear.
 /// Masking involves applying such a mask to self.
 pub trait Masking<Mask: ?Sized = Self> {
-    /// The intersection of two sets A and B is the set containing
-    /// all elements of A that also belong to B or equivalently,
-    /// all elements of B that also belong to A.
+    /// Performs inplace and.
     fn intersection(&mut self, mask: &Mask);
 
-    /// The union of two sets is the set of all elements
-    /// in the both of the sets.
+    /// Performs inplace or.
     fn union(&mut self, mask: &Mask);
 
-    /// The difference, or subtraction is the set that consists of
-    /// elements that are in A but not in B.
+    /// Performs inplace not.
     fn difference(&mut self, mask: &Mask);
 
-    /// The symmetric difference of two sets is the set of elements
-    /// which are in either of the sets, but not in their intersection.
+    /// Performs inplace xor.
     fn symmetric_difference(&mut self, mask: &Mask);
 }
-
-macro_rules! impl_Assign_for_word {
-    ($( $Word:ty )*) => ($(
-        impl Masking<$Word> for $Word {
-            #[inline]
-            fn intersection(&mut self, that: &$Word) {
-                *self &= *that;
-            }
-            #[inline]
-            fn union(&mut self, that: &$Word) {
-                *self |= *that;
-            }
-            #[inline]
-            fn difference(&mut self, that: &$Word) {
-                *self &= !*that;
-            }
-            #[inline]
-            fn symmetric_difference(&mut self, that: &$Word) {
-                *self ^= *that;
-            }
-        }
-    )*)
-}
-impl_Assign_for_word!(u8 u16 u32 u64 u128);
 
 impl<A, B> Masking<B> for Box<A>
 where
@@ -99,26 +68,78 @@ where
     }
 }
 
-// impl<'a, 'b, T, U> Assign<Cow<'b, U>> for Cow<'a, T>
-// where
-//     T: ?Sized + ToOwned,
-//     U: ?Sized + ToOwned,
-//     T::Owned: Assign<U>,
-// {
-//     #[inline]
-//     fn and(this: &mut Self, that: &Cow<'b, U>) {
-//         <T::Owned as Assign<U>>::and(this.to_mut(), that.as_ref())
-//     }
-//     #[inline]
-//     fn not(this: &mut Self, that: &Cow<'b, U>) {
-//         <T::Owned as Assign<U>>::not(this.to_mut(), that.as_ref())
-//     }
-//     #[inline]
-//     fn or(this: &mut Self, that: &Cow<'b, U>) {
-//         <T::Owned as Assign<U>>::or(this.to_mut(), that.as_ref())
-//     }
-//     #[inline]
-//     fn xor(this: &mut Self, that: &Cow<'b, U>) {
-//         <T::Owned as Assign<U>>::xor(this.to_mut(), that.as_ref())
-//     }
-// }
+#[cfg(test)]
+mod mask_test {
+    use std::borrow::Cow;
+
+    use crate::Bits;
+
+    // For testing purposes only. Wrapping integers in a Cow is
+    // a waste of space.
+    macro_rules! impl_masking_for_word {
+        ($( $Word:ty )*) => ($(
+            impl crate::Masking<$Word> for $Word {
+                #[inline]
+                fn intersection(&mut self, that: &$Word) {
+                    *self &= *that;
+                }
+                #[inline]
+                fn union(&mut self, that: &$Word) {
+                    *self |= *that;
+                }
+                #[inline]
+                fn difference(&mut self, that: &$Word) {
+                    *self &= !*that;
+                }
+                #[inline]
+                fn symmetric_difference(&mut self, that: &$Word) {
+                    *self ^= *that;
+                }
+            }
+        )*)
+    }
+    impl_masking_for_word!(u8 u16 u32 u64 u128);
+
+    #[test]
+    fn and() {
+        let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
+        let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
+        let mut iter = a.and(&b).into_iter();
+        assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000100)));
+        assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b01000000)));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn or() {
+        let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
+        let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
+        let mut iter = a.or(&b).into_iter();
+        assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000101)));
+        assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b11100011)));
+        assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b01100000)));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn not() {
+        let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
+        let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
+        let mut iter = a.not(&b).into_iter();
+        assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000001)));
+        assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b01100011)));
+        assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b00100000)));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn xor() {
+        let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
+        let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
+        let mut iter = a.xor(&b).into_iter();
+        assert_eq!(iter.next().unwrap(), (0, Cow::Owned(0b00000001)));
+        assert_eq!(iter.next().unwrap(), (1, Cow::Owned(0b11100011)));
+        assert_eq!(iter.next().unwrap(), (2, Cow::Owned(0b00100000)));
+        assert_eq!(iter.next(), None);
+    }
+}
