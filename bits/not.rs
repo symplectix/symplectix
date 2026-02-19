@@ -4,18 +4,19 @@ use core::iter::{
     Peekable,
 };
 
-use super::{
-    Mask,
+use crate::{
+    IntoBlocks,
+    Masking,
     compare,
-    helper,
 };
 
+/// A and not B.
 pub struct Not<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct Difference<A: Iterator, B: Iterator> {
+pub struct NotMask<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
@@ -33,36 +34,36 @@ pub struct Difference<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for Not<A, B>
 where
-    Self: Mask,
+    Self: IntoBlocks,
 {
-    type Item = (usize, <Self as Mask>::Bits);
-    type IntoIter = <Self as Mask>::Iter;
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_mask()
+        self.into_blocks()
     }
 }
 
-impl<A: Mask, B: Mask> Mask for Not<A, B>
+impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Not<A, B>
 where
-    A::Bits: helper::Assign<B::Bits>,
+    A::Block: Masking<B::Block>,
 {
-    type Bits = A::Bits;
-    type Iter = Difference<A::Iter, B::Iter>;
+    type Block = A::Block;
+    type Blocks = NotMask<A::Blocks, B::Blocks>;
     #[inline]
-    fn into_mask(self) -> Self::Iter {
-        Difference {
-            a: self.a.into_mask().fuse().peekable(),
-            b: self.b.into_mask().fuse().peekable(),
+    fn into_blocks(self) -> Self::Blocks {
+        NotMask {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, S1, S2> Iterator for Difference<A, B>
+impl<A, B, S1, S2> Iterator for NotMask<A, B>
 where
     A: Iterator<Item = (usize, S1)>,
     B: Iterator<Item = (usize, S2)>,
-    S1: helper::Assign<S2>,
+    S1: Masking<S2>,
 {
     type Item = (usize, S1);
     fn next(&mut self) -> Option<Self::Item> {
@@ -75,7 +76,7 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    helper::Assign::not(&mut s1, &s2);
+                    s1.difference(&s2);
                     return Some((i, s1));
                 }
                 Greater => {

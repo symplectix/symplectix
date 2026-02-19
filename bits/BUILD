@@ -1,22 +1,23 @@
 load("//bazel:rust.bzl", "rust")
 
-package(default_visibility = ["//:__subpackages__"])
-
 rust.library(
     name = "bits",
-    srcs = glob([
-        "src/*.rs",
-        "src/mask/*.rs",
-        "src/block/*.rs",
-    ]),
-    deps = [
-        "//bit",
-        "@crates//:num",
-    ],
+    srcs = glob(["*.rs"]),
+    visibility = ["//:__subpackages__"],
+    deps = ["@crates//:num"],
 )
 
 rust.test(
     name = "bits_test",
     size = "small",
     crate = ":bits",
+)
+
+rust.doc_test(
+    name = "bits_doc_test",
+    size = "small",
+    crate = ":bits",
+    # The root cause is unknown, but in CI, doc_test fails
+    # due to an LLVM version mismatch. Skip the test for now.
+    tags = ["no-ci"],
 )
