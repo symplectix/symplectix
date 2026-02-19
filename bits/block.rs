@@ -35,15 +35,6 @@ impl<T: Block> Block for Box<T> {
     }
 }
 
-impl<T: Block> Block for Option<T> {
-    const BITS: u64 = T::BITS;
-
-    #[inline]
-    fn empty() -> Self {
-        None
-    }
-}
-
 impl<T, B> Block for Cow<'_, T>
 where
     T: ?Sized + ToOwned<Owned = B> + Bits,

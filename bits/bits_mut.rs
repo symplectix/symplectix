@@ -64,18 +64,6 @@ impl<T: BitsMut> BitsMut for Box<T> {
     }
 }
 
-impl<T: Block> BitsMut for Option<T> {
-    #[inline]
-    fn set1(&mut self, i: u64) {
-        self.get_or_insert_with(T::empty).set1(i)
-    }
-
-    #[inline]
-    fn set0(&mut self, i: u64) {
-        self.get_or_insert_with(T::empty).set0(i)
-    }
-}
-
 impl<T, B> BitsMut for Cow<'_, T>
 where
     T: ?Sized + ToOwned<Owned = B> + Bits,
