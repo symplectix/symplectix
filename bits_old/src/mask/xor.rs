@@ -4,19 +4,18 @@ use core::iter::{
     Peekable,
 };
 
-use crate::{
-    IntoBlocks,
-    Masking,
+use super::{
+    Mask,
     compare,
+    helper,
 };
 
-/// A xor B.
 pub struct Xor<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct XorMask<A: Iterator, B: Iterator> {
+pub struct SymmetricDifference<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
@@ -36,36 +35,36 @@ pub struct XorMask<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for Xor<A, B>
 where
-    Self: IntoBlocks,
+    Self: Mask,
 {
-    type Item = (usize, <Self as IntoBlocks>::Block);
-    type IntoIter = <Self as IntoBlocks>::Blocks;
+    type Item = (usize, <Self as Mask>::Bits);
+    type IntoIter = <Self as Mask>::Iter;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_blocks()
+        self.into_mask()
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Xor<A, B>
+impl<A: Mask, B: Mask<Bits = A::Bits>> Mask for Xor<A, B>
 where
-    A::Block: Masking<B::Block>,
+    A::Bits: helper::Assign<B::Bits>,
 {
-    type Block = A::Block;
-    type Blocks = XorMask<A::Blocks, B::Blocks>;
+    type Bits = A::Bits;
+    type Iter = SymmetricDifference<A::Iter, B::Iter>;
     #[inline]
-    fn into_blocks(self) -> Self::Blocks {
-        XorMask {
-            a: self.a.into_blocks().fuse().peekable(),
-            b: self.b.into_blocks().fuse().peekable(),
+    fn into_mask(self) -> Self::Iter {
+        SymmetricDifference {
+            a: self.a.into_mask().fuse().peekable(),
+            b: self.b.into_mask().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, S> Iterator for XorMask<A, B>
+impl<A, B, S> Iterator for SymmetricDifference<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,
-    S: Masking<S>,
+    S: helper::Assign<S>,
 {
     type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {
@@ -77,7 +76,7 @@ where
                 let (i, mut l) = a.next().expect("unreachable");
                 let (j, r) = b.next().expect("unreachable");
                 debug_assert_eq!(i, j);
-                l.symmetric_difference(&r);
+                helper::Assign::xor(&mut l, &r);
                 Some((i, l))
             }
             Greater => b.next(),

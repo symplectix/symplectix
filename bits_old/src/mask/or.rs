@@ -4,19 +4,18 @@ use core::iter::{
     Peekable,
 };
 
-use crate::{
-    IntoBlocks,
-    Masking,
+use super::{
+    Mask,
     compare,
+    helper,
 };
 
-/// A or B.
 pub struct Or<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct OrMask<A: Iterator, B: Iterator> {
+pub struct Union<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
@@ -35,36 +34,33 @@ pub struct OrMask<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for Or<A, B>
 where
-    Self: IntoBlocks,
+    Self: Mask,
 {
-    type Item = (usize, <Self as IntoBlocks>::Block);
-    type IntoIter = <Self as IntoBlocks>::Blocks;
+    type Item = (usize, <Self as Mask>::Bits);
+    type IntoIter = <Self as Mask>::Iter;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_blocks()
+        self.into_mask()
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Or<A, B>
+impl<A: Mask, B: Mask<Bits = A::Bits>> Mask for Or<A, B>
 where
-    A::Block: Masking<B::Block>,
+    A::Bits: helper::Assign<B::Bits>,
 {
-    type Block = A::Block;
-    type Blocks = OrMask<A::Blocks, B::Blocks>;
+    type Bits = A::Bits;
+    type Iter = Union<A::Iter, B::Iter>;
     #[inline]
-    fn into_blocks(self) -> Self::Blocks {
-        OrMask {
-            a: self.a.into_blocks().fuse().peekable(),
-            b: self.b.into_blocks().fuse().peekable(),
-        }
+    fn into_mask(self) -> Self::Iter {
+        Union { a: self.a.into_mask().fuse().peekable(), b: self.b.into_mask().fuse().peekable() }
     }
 }
 
-impl<A, B, S> Iterator for OrMask<A, B>
+impl<A, B, S> Iterator for Union<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,
-    S: Masking<S>,
+    S: helper::Assign<S>,
 {
     type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {
@@ -76,7 +72,7 @@ where
                 let (i, mut l) = x.next().expect("unreachable");
                 let (j, r) = y.next().expect("unreachable");
                 debug_assert_eq!(i, j);
-                l.union(&r);
+                helper::Assign::or(&mut l, &r);
                 Some((i, l))
             }
             Greater => y.next(),

@@ -4,19 +4,17 @@ use core::iter::{
     Peekable,
 };
 
-use crate::{
-    Block,
-    IntoBlocks,
-    Masking,
+use super::{
+    Mask,
+    helper,
 };
 
-/// A and B.
 pub struct And<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct AndMask<A: Iterator, B: Iterator> {
+pub struct Intersection<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
@@ -35,39 +33,40 @@ pub struct AndMask<A: Iterator, B: Iterator> {
 
 impl<A, B> IntoIterator for And<A, B>
 where
-    Self: IntoBlocks,
+    Self: Mask,
 {
-    type Item = (usize, <Self as IntoBlocks>::Block);
-    type IntoIter = <Self as IntoBlocks>::Blocks;
+    type Item = (usize, <Self as Mask>::Bits);
+    type IntoIter = <Self as Mask>::Iter;
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.into_blocks()
+        self.into_mask()
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for And<A, B>
+impl<A: Mask, B: Mask> Mask for And<A, B>
 where
-    A::Block: Block + Masking<B::Block>,
+    A::Bits: helper::Assign<B::Bits>,
 {
-    type Block = A::Block;
-    type Blocks = AndMask<A::Blocks, B::Blocks>;
-    fn into_blocks(self) -> Self::Blocks {
-        AndMask {
-            a: self.a.into_blocks().fuse().peekable(),
-            b: self.b.into_blocks().fuse().peekable(),
+    type Bits = A::Bits;
+    type Iter = Intersection<A::Iter, B::Iter>;
+    fn into_mask(self) -> Self::Iter {
+        Intersection {
+            a: self.a.into_mask().fuse().peekable(),
+            b: self.b.into_mask().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, T, U> Iterator for AndMask<A, B>
+impl<A, B, T, U> Iterator for Intersection<A, B>
 where
     A: Iterator<Item = (usize, T)>,
     B: Iterator<Item = (usize, U)>,
-    T: Block + Masking<U>,
+    T: helper::Assign<U>,
 {
     type Item = (usize, T);
 
     fn next(&mut self) -> Option<Self::Item> {
+        // let Intersection { mut a, mut b } = self;
         let a = &mut self.a;
         let b = &mut self.b;
         loop {
@@ -79,12 +78,8 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    s1.intersection(&s2);
-                    if s1.any() {
-                        break Some((i, s1));
-                    } else {
-                        continue;
-                    }
+                    helper::Assign::and(&mut s1, &s2);
+                    break Some((i, s1));
                 }
                 Greater => {
                     b.next();
