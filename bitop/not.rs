@@ -5,8 +5,8 @@ use core::iter::{
 };
 
 use crate::{
-    Difference,
     IntoBlocks,
+    Masking,
     compare,
 };
 
@@ -46,7 +46,7 @@ where
 
 impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Not<A, B>
 where
-    A::Block: Difference<B::Block>,
+    A::Block: Masking<B::Block>,
 {
     type Block = A::Block;
     type Blocks = NotMask<A::Blocks, B::Blocks>;
@@ -63,7 +63,7 @@ impl<A, B, S1, S2> Iterator for NotMask<A, B>
 where
     A: Iterator<Item = (usize, S1)>,
     B: Iterator<Item = (usize, S2)>,
-    S1: Difference<S2>,
+    S1: Masking<S2>,
 {
     type Item = (usize, S1);
     fn next(&mut self) -> Option<Self::Item> {

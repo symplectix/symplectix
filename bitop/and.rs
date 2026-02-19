@@ -6,8 +6,8 @@ use core::iter::{
 
 use crate::{
     Block,
-    Intersection,
     IntoBlocks,
+    Masking,
 };
 
 /// A and B.
@@ -47,7 +47,7 @@ where
 
 impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for And<A, B>
 where
-    A::Block: Block + Intersection<B::Block>,
+    A::Block: Block + Masking<B::Block>,
 {
     type Block = A::Block;
     type Blocks = AndMask<A::Blocks, B::Blocks>;
@@ -63,12 +63,11 @@ impl<A, B, T, U> Iterator for AndMask<A, B>
 where
     A: Iterator<Item = (usize, T)>,
     B: Iterator<Item = (usize, U)>,
-    T: Block + Intersection<U>,
+    T: Block + Masking<U>,
 {
     type Item = (usize, T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        // let Intersection { mut a, mut b } = self;
         let a = &mut self.a;
         let b = &mut self.b;
         loop {

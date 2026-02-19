@@ -6,7 +6,7 @@ use core::iter::{
 
 use crate::{
     IntoBlocks,
-    Union,
+    Masking,
     compare,
 };
 
@@ -47,7 +47,7 @@ where
 
 impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Or<A, B>
 where
-    A::Block: Union<B::Block>,
+    A::Block: Masking<B::Block>,
 {
     type Block = A::Block;
     type Blocks = OrMask<A::Blocks, B::Blocks>;
@@ -64,7 +64,7 @@ impl<A, B, S> Iterator for OrMask<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,
-    S: Union<S>,
+    S: Masking<S>,
 {
     type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {

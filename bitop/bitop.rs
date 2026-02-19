@@ -10,25 +10,20 @@ use core::ops::{
 mod bits;
 mod bits_mut;
 mod block;
+mod mask;
 mod word;
 mod word_array;
 
 pub use bits::Bits;
 pub use bits_mut::BitsMut;
-pub use block::Block;
-pub use word::Word;
-pub use word_array::Array;
-
-mod mask;
-
-pub use mask::{
-    Difference,
-    FromMask,
-    Intersection,
+pub use block::{
+    Block,
+    FromBlocks,
     IntoBlocks,
-    SymmetricDifference,
-    Union,
 };
+pub use mask::Masking;
+pub use word::Word;
+pub use word_array::Buf;
 
 mod and;
 mod not;

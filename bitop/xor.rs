@@ -6,7 +6,7 @@ use core::iter::{
 
 use crate::{
     IntoBlocks,
-    SymmetricDifference,
+    Masking,
     compare,
 };
 
@@ -48,7 +48,7 @@ where
 
 impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Xor<A, B>
 where
-    A::Block: SymmetricDifference<B::Block>,
+    A::Block: Masking<B::Block>,
 {
     type Block = A::Block;
     type Blocks = XorMask<A::Blocks, B::Blocks>;
@@ -65,7 +65,7 @@ impl<A, B, S> Iterator for XorMask<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,
-    S: SymmetricDifference<S>,
+    S: Masking<S>,
 {
     type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {

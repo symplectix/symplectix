@@ -1,19 +1,12 @@
 //! Provides bits::Block impls.
 
-use std::convert::{
-    AsMut,
-    AsRef,
-};
 use std::ops::RangeBounds;
 
 use crate::{
     Bits,
     BitsMut,
     Block,
-    Difference,
-    Intersection,
-    SymmetricDifference,
-    Union,
+    Masking,
     Word,
 };
 
@@ -25,9 +18,9 @@ mod private {
     impl<B: Word, const N: usize> Repr for [B; N] {}
 }
 
-/// An array of `Word`s which can be used as a fixed size of bits block.
+/// Buf is a boxed array of `Word` and can be used as a fixed-size bit block.
 #[derive(Debug, Clone, Default)]
-pub struct Array<A: private::Repr>(
+pub struct Buf<A: private::Repr>(
     // Note that `None` does not imply empty bits. `None` is
     // a bit sequence all set to 0.
     //
@@ -36,18 +29,21 @@ pub struct Array<A: private::Repr>(
     Option<Box<A>>,
 );
 
-impl<B: Word, const N: usize> Array<[B; N]> {
+impl<B: Word, const N: usize> Buf<[B; N]> {
     pub fn new() -> Self {
-        Array(None)
+        Buf(None)
     }
 
+    // TODO: const fn when as_deref and as_deref_mut is const fn.
+    // https://github.com/rust-lang/rust/issues/14387
+
     #[inline]
-    pub fn as_slice(&self) -> Option<&[B]> {
+    pub fn as_ref(&self) -> Option<&[B]> {
         self.0.as_deref().map(|a| a.as_slice())
     }
 
     #[inline]
-    pub fn as_mut_slice(&mut self) -> Option<&mut [B]> {
+    pub fn as_mut(&mut self) -> Option<&mut [B]> {
         self.0.as_deref_mut().map(|a| a.as_mut_slice())
     }
 
@@ -57,9 +53,9 @@ impl<B: Word, const N: usize> Array<[B; N]> {
     }
 }
 
-impl<B: Word, const N: usize> From<[B; N]> for Array<[B; N]> {
+impl<B: Word, const N: usize> From<[B; N]> for Buf<[B; N]> {
     fn from(array: [B; N]) -> Self {
-        Array(Some(Box::new(array)))
+        Buf(Some(Box::new(array)))
     }
 }
 
@@ -149,7 +145,7 @@ impl<B: Word, const N: usize> From<[B; N]> for Array<[B; N]> {
 //     }
 // }
 
-impl<B: Word, const N: usize> Bits for Array<[B; N]> {
+impl<B: Word, const N: usize> Bits for Buf<[B; N]> {
     #[inline]
     fn bits(&self) -> u64 {
         <[B; N]>::BITS
@@ -281,7 +277,7 @@ impl<B: Word, const N: usize> Bits for Array<[B; N]> {
     }
 }
 
-impl<B: Word, const N: usize> BitsMut for Array<[B; N]> {
+impl<B: Word, const N: usize> BitsMut for Buf<[B; N]> {
     #[inline]
     fn set1(&mut self, i: u64) {
         self.or_empty().set1(i)
@@ -293,27 +289,27 @@ impl<B: Word, const N: usize> BitsMut for Array<[B; N]> {
     }
 }
 
-impl<B: Word, const N: usize> Block for Array<[B; N]> {
+impl<B: Word, const N: usize> Block for Buf<[B; N]> {
     const BITS: u64 = <[B; N]>::BITS;
 
     #[inline]
     fn empty() -> Self {
-        Array::new()
+        Buf::new()
     }
 }
 
-impl<const N: usize> Intersection<Self> for Array<[u64; N]> {
+impl<const N: usize> Masking<Self> for Buf<[u64; N]> {
     /// # Tests
     ///
     /// ```
-    /// # use bitop::{Array, BitsMut, Intersection};
-    /// let mut a = Array::<[u64; 4]>::new();
+    /// # use bitop::{BitsMut, Buf, Masking};
+    /// let mut a = Buf::<[u64; 4]>::new();
     /// a.set1(0);
     /// a.set1(1);
     /// a.set1(2);
     /// a.set1(128);
     ///
-    /// let mut b = Array::<[u64; 4]>::new();
+    /// let mut b = Buf::<[u64; 4]>::new();
     /// b.set1(1);
     /// b.set1(2);
     /// b.set1(3);
@@ -330,21 +326,19 @@ impl<const N: usize> Intersection<Self> for Array<[u64; N]> {
     /// assert_eq!(c.as_slice(), None);
     /// ```
     fn intersection(&mut self, that: &Self) {
-        match (self.as_mut_slice(), that.as_slice()) {
+        match (self.as_mut(), that.as_ref()) {
             (Some(this), Some(that)) => {
                 for (a, b) in this.iter_mut().zip(that) {
                     *a &= *b;
                 }
             }
             (Some(_), None) => {
-                *self = Array::new();
+                *self = Buf::new();
             }
             _ => {}
         }
     }
-}
 
-impl<const N: usize> Union<Self> for Array<[u64; N]> {
     /// # Tests
     ///
     /// ```
@@ -370,7 +364,7 @@ impl<const N: usize> Union<Self> for Array<[u64; N]> {
     /// ```
     #[inline]
     fn union(&mut self, that: &Self) {
-        match (self.as_mut_slice(), that.as_slice()) {
+        match (self.as_mut(), that.as_ref()) {
             (Some(this), Some(that)) => {
                 for (a, b) in this.iter_mut().zip(that) {
                     *a |= *b;
@@ -382,9 +376,7 @@ impl<const N: usize> Union<Self> for Array<[u64; N]> {
             _ => {}
         }
     }
-}
 
-impl<const N: usize> Difference<Self> for Array<[u64; N]> {
     /// # Tests
     ///
     /// ```
@@ -410,15 +402,13 @@ impl<const N: usize> Difference<Self> for Array<[u64; N]> {
     /// ```
     #[inline]
     fn difference(&mut self, that: &Self) {
-        if let (Some(this), Some(that)) = (self.as_mut_slice(), that.as_slice()) {
+        if let (Some(this), Some(that)) = (self.as_mut(), that.as_ref()) {
             for (a, b) in this.iter_mut().zip(that) {
                 *a &= !*b;
             }
         }
     }
-}
 
-impl<const N: usize> SymmetricDifference<Self> for Array<[u64; N]> {
     /// # Tests
     ///
     /// ```
@@ -444,7 +434,7 @@ impl<const N: usize> SymmetricDifference<Self> for Array<[u64; N]> {
     /// ```
     #[inline]
     fn symmetric_difference(&mut self, that: &Self) {
-        match (self.as_mut_slice(), that.as_slice()) {
+        match (self.as_mut(), that.as_ref()) {
             (Some(this), Some(that)) => {
                 for (a, b) in this.iter_mut().zip(that) {
                     *a ^= *b;
