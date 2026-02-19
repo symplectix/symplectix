@@ -151,126 +151,49 @@ impl<B: Word, const N: usize> Bits for Buf<[B; N]> {
         <[B; N]>::BITS
     }
 
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert_eq!(b.count1(), 0);
-    /// let b: Array<[u8; 3]> = Array::from([0, 1, 0]);
-    /// assert_eq!(b.count1(), 1);
-    /// ```
     #[inline]
     fn count1(&self) -> u64 {
         self.0.as_ref().map_or(0, Bits::count1)
     }
-
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert_eq!(b.count0(), 24);
-    /// let b: Array<[u8; 3]> = Array::from([0, 0, 0]);
-    /// assert_eq!(b.count0(), 24);
-    /// ```
     #[inline]
     fn count0(&self) -> u64 {
         self.0.as_ref().map_or(<[B; N]>::BITS, Bits::count0)
     }
 
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert!(!b.all());
-    /// let b: Array<[u8; 3]> = Array::from([!0, !0, !0]);
-    /// assert!(b.all());
-    /// ```
     #[inline]
     fn all(&self) -> bool {
         self.0.as_ref().is_some_and(Bits::all)
     }
 
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert!(!b.any());
-    /// let b: Array<[u8; 3]> = Array::from([0, 0, 0]);
-    /// assert!(!b.any());
-    /// let b: Array<[u8; 3]> = Array::from([0, 1, 0]);
-    /// assert!(b.any());
-    /// ```
     #[inline]
     fn any(&self) -> bool {
         self.0.as_ref().is_some_and(Bits::any)
     }
 
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert!(!b.bit(8));
-    /// let b: Array<[u8; 3]> = Array::from([0, 1, 0]);
-    /// assert!(b.bit(8));
-    /// ```
     #[inline]
     fn bit(&self, i: u64) -> bool {
         self.0.as_ref().is_some_and(|b| b.bit(i))
     }
 
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert_eq!(b.word::<u8>(0, 3), 0b_000);
-    /// let b: Array<[u8; 3]> = Array::from([1, 1, 1]);
-    /// assert_eq!(b.word::<u8>(0, 3), 0b_001);
-    /// ```
     #[inline]
     fn word<T: Word>(&self, i: u64, len: u64) -> T {
         self.0.as_ref().map_or(T::empty(), |b| b.word(i, len))
     }
 
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert_eq!(b.rank1(..10), 0);
-    /// let b: Array<[u8; 3]> = Array::from([0, 1, 0]);
-    /// assert_eq!(b.rank1(..10), 1);
-    /// ```
     #[inline]
     fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.0.as_ref().map_or(0, |b| b.rank1(r))
     }
-
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert_eq!(b.rank0(..10), 10);
-    /// let b: Array<[u8; 3]> = Array::from([0, 1, 0]);
-    /// assert_eq!(b.rank0(..10), 9);
-    /// ```
     #[inline]
     fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         let (i, j) = crate::range(&r, 0, self.bits());
         self.0.as_ref().map_or(j - i, |b| b.rank0(r))
     }
 
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert_eq!(b.select1(0), None);
-    /// let b: Array<[u8; 3]> = Array::from([0, 1, 0]);
-    /// assert_eq!(b.select1(0), Some(8));
-    /// ```
     #[inline]
     fn select1(&self, n: u64) -> Option<u64> {
         self.0.as_ref().and_then(|b| b.select1(n))
     }
-
-    /// ```
-    /// # use bitop::{Array, Bits};
-    /// let b: Array<[u8; 3]> = Array::new();
-    /// assert_eq!(b.select0(0), Some(0));
-    /// assert_eq!(b.select0(100), None);
-    ///
-    /// let b: Array<[u8; 3]> = Array::from([0, 1, 0]);
-    /// assert_eq!(b.select0(10), Some(11));
-    /// ```
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         (n < self.count0()).then(|| self.0.as_ref().map_or(Some(n), |b| b.select0(n))).flatten()
@@ -299,32 +222,6 @@ impl<B: Word, const N: usize> Block for Buf<[B; N]> {
 }
 
 impl<const N: usize> Masking<Self> for Buf<[u64; N]> {
-    /// # Tests
-    ///
-    /// ```
-    /// # use bitop::{BitsMut, Buf, Masking};
-    /// let mut a = Buf::<[u64; 4]>::new();
-    /// a.set1(0);
-    /// a.set1(1);
-    /// a.set1(2);
-    /// a.set1(128);
-    ///
-    /// let mut b = Buf::<[u64; 4]>::new();
-    /// b.set1(1);
-    /// b.set1(2);
-    /// b.set1(3);
-    /// b.set1(192);
-    ///
-    /// a.intersection(&b);
-    /// assert_eq!(a.as_slice().unwrap(), &[0b_0110, 0, 0, 0]);
-    ///
-    /// let mut c = Array::<[u64; 4]>::new();
-    /// b.intersection(&c);
-    /// assert_eq!(b.as_slice(), None);
-    ///
-    /// c.intersection(&a);
-    /// assert_eq!(c.as_slice(), None);
-    /// ```
     fn intersection(&mut self, that: &Self) {
         match (self.as_mut(), that.as_ref()) {
             (Some(this), Some(that)) => {
@@ -339,29 +236,6 @@ impl<const N: usize> Masking<Self> for Buf<[u64; N]> {
         }
     }
 
-    /// # Tests
-    ///
-    /// ```
-    /// # use bitop::{Array, BitsMut, Union};
-    /// let mut a = Array::<[u64; 4]>::new();
-    /// a.set1(0);
-    /// a.set1(1);
-    /// a.set1(2);
-    /// a.set1(128);
-    ///
-    /// let mut b = Array::<[u64; 4]>::new();
-    /// b.set1(1);
-    /// b.set1(2);
-    /// b.set1(3);
-    /// b.set1(192);
-    ///
-    /// a.union(&b);
-    /// assert_eq!(a.as_slice().unwrap(), &[0b_1111, 0, 1, 1]);
-    ///
-    /// let mut c = Array::<[u64; 4]>::new();
-    /// c.union(&b);
-    /// assert_eq!(c.as_slice().unwrap(), &[0b_1110, 0, 0, 1]);
-    /// ```
     #[inline]
     fn union(&mut self, that: &Self) {
         match (self.as_mut(), that.as_ref()) {
@@ -377,29 +251,6 @@ impl<const N: usize> Masking<Self> for Buf<[u64; N]> {
         }
     }
 
-    /// # Tests
-    ///
-    /// ```
-    /// # use bitop::{Array, BitsMut, Difference};
-    /// let mut a = Array::<[u64; 4]>::new();
-    /// a.set1(0);
-    /// a.set1(1);
-    /// a.set1(2);
-    /// a.set1(128);
-    ///
-    /// let mut b = Array::<[u64; 4]>::new();
-    /// b.set1(1);
-    /// b.set1(2);
-    /// b.set1(3);
-    /// b.set1(192);
-    ///
-    /// a.difference(&b);
-    /// assert_eq!(a.as_slice().unwrap(), &[0b_0001, 0, 1, 0]);
-    ///
-    /// let mut c = Array::<[u64; 4]>::new();
-    /// c.difference(&a);
-    /// assert_eq!(c.as_slice(), None);
-    /// ```
     #[inline]
     fn difference(&mut self, that: &Self) {
         if let (Some(this), Some(that)) = (self.as_mut(), that.as_ref()) {
@@ -409,29 +260,6 @@ impl<const N: usize> Masking<Self> for Buf<[u64; N]> {
         }
     }
 
-    /// # Tests
-    ///
-    /// ```
-    /// # use bitop::{Array, BitsMut, SymmetricDifference};
-    /// let mut a = Array::<[u64; 4]>::new();
-    /// a.set1(0);
-    /// a.set1(1);
-    /// a.set1(2);
-    /// a.set1(128);
-    ///
-    /// let mut b = Array::<[u64; 4]>::new();
-    /// b.set1(1);
-    /// b.set1(2);
-    /// b.set1(3);
-    /// b.set1(192);
-    ///
-    /// a.symmetric_difference(&b);
-    /// assert_eq!(a.as_slice().unwrap(), &[0b_1001, 0, 1, 1]);
-    ///
-    /// let mut c = Array::<[u64; 4]>::new();
-    /// c.symmetric_difference(&a);
-    /// assert_eq!(c.as_slice().unwrap(), &[0b_1001, 0, 1, 1]);
-    /// ```
     #[inline]
     fn symmetric_difference(&mut self, that: &Self) {
         match (self.as_mut(), that.as_ref()) {

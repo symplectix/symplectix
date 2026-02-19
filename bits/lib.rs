@@ -10,9 +10,9 @@ use core::ops::{
 mod bits;
 mod bits_mut;
 mod block;
+mod buf;
 mod mask;
 mod word;
-mod word_array;
 
 pub use bits::Bits;
 pub use bits_mut::BitsMut;
@@ -21,9 +21,9 @@ pub use block::{
     FromBlocks,
     IntoBlocks,
 };
+pub use buf::Buf;
 pub use mask::Masking;
 pub use word::Word;
-pub use word_array::Buf;
 
 mod and;
 mod not;
@@ -34,6 +34,9 @@ pub use and::And;
 pub use not::Not;
 pub use or::Or;
 pub use xor::Xor;
+
+#[cfg(test)]
+mod buf_test;
 
 // TODO: Use type parameters instead of an argument.
 // Type parameters can not be used in const expressions.
@@ -96,24 +99,24 @@ const fn max_index_exclusive(bound: Bound<&u64>, max: u64) -> u64 {
 /// # Examples
 ///
 /// ```
-/// let mut it = bitop::chunks(10, 0, 3);
+/// let mut it = bits::chunks(10, 0, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 10, 3);
+/// let mut it = bits::chunks(10, 10, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 12, 3);
+/// let mut it = bits::chunks(10, 12, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 20, 3);
+/// let mut it = bits::chunks(10, 20, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));
 /// assert_eq!(it.next(), Some((18, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 21, 3);
+/// let mut it = bits::chunks(10, 21, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));

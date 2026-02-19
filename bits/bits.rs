@@ -24,7 +24,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert!(v.bit(0));
     /// assert!(v.bit(64));
@@ -39,7 +39,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let v: &[u16] = &[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001];
     /// assert_eq!(v.word::<u8>(0, 4), 0b0011);
     /// assert_eq!(v.word::<u8>(8, 4), 0b0001);
@@ -63,7 +63,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: &[u8] = &[];
     /// let b: &[u8] = &[0, 0, 0];
     /// let c: &[u8] = &[0, 1, 3];
@@ -81,7 +81,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: &[u64] = &[];
     /// let b: &[u64] = &[0, 0, 0];
     /// let c: &[u64] = &[0, 1, 3];
@@ -99,7 +99,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: &[u64] = &[];
     /// let b: &[u64] = &[0, 0, 0];
     /// let c: &[u64] = &[0, 1, 3];
@@ -118,7 +118,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: &[u64] = &[];
     /// let b: &[u64] = &[0, 0, 0];
     /// let c: &[u64] = &[!0, !0, !0];
@@ -137,7 +137,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: &[u64] = &[];
     /// let b: &[u64] = &[0, 0, 0];
     /// let c: &[u64] = &[0, 1, 0];
@@ -155,7 +155,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.rank1(..), v.count1());
     /// assert_eq!(v.rank1(..), 8);
@@ -165,13 +165,13 @@ pub trait Bits {
     /// ```
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let v: &[u64] = &[];
     /// assert_eq!(v.rank1(..), 0);
     /// ```
     ///
     /// ```should_panic
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// # let v: &[u64] = &[];
     /// assert_eq!(v.rank1(1..), 0);
     /// assert_eq!(v.rank1(..100), 0);
@@ -187,7 +187,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.rank0(..), v.count0());
     /// assert_eq!(v.rank0(..5), 3);
@@ -204,7 +204,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.excess(..), v.count1().abs_diff(v.count0()));
     /// assert_eq!(v.excess(10..20), v.rank1(10..20).abs_diff(v.rank0(10..20)));
@@ -231,7 +231,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.select1(0).unwrap(), 0);
     /// assert_eq!(v.select1(1).unwrap(), 2);
@@ -248,7 +248,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.select0(0).unwrap(), 1);
     /// assert_eq!(v.select0(1).unwrap(), 3);
@@ -277,7 +277,7 @@ pub trait Bits {
     ///
     /// ```
     /// # use std::borrow::Cow;
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
     /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
     /// let mut iter = a.and(&b).into_iter();
@@ -298,7 +298,7 @@ pub trait Bits {
     ///
     /// ```
     /// # use std::borrow::Cow;
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
     /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
     /// let mut iter = a.not(&b).into_iter();
@@ -320,7 +320,7 @@ pub trait Bits {
     ///
     /// ```
     /// # use std::borrow::Cow;
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
     /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
     /// let mut iter = a.or(&b).into_iter();
@@ -342,7 +342,7 @@ pub trait Bits {
     ///
     /// ```
     /// # use std::borrow::Cow;
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let a: Vec<u64> = vec![0b00000101, 0b01100011, 0b01100000];
     /// let b: Vec<u64> = vec![0b00000100, 0b10000000, 0b01000000];
     /// let mut iter = a.xor(&b).into_iter();
@@ -710,7 +710,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert_eq!(b.count1(), 0);
     /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
@@ -722,7 +722,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert_eq!(b.count0(), 24);
     /// let b: Option<[u8; 3]> = Some([0, 0, 0]);
@@ -734,7 +734,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert!(!b.all());
     /// let b: Option<[u8; 3]> = Some([!0, !0, !0]);
@@ -746,7 +746,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert!(!b.any());
     /// let b: Option<[u8; 3]> = Some([0, 0, 0]);
@@ -760,7 +760,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert!(!b.bit(8));
     /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
@@ -772,7 +772,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert_eq!(b.word::<u8>(0, 3), 0b_000);
     /// let b: Option<[u8; 3]> = Some([1, 1, 1]);
@@ -784,7 +784,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert_eq!(b.rank1(..10), 0);
     /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
@@ -796,7 +796,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert_eq!(b.rank0(..10), 10);
     /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
@@ -809,7 +809,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert_eq!(b.select1(0), None);
     /// let b: Option<[u8; 3]> = Some([0, 1, 0]);
@@ -821,7 +821,7 @@ impl<T: Block> Bits for Option<T> {
     }
 
     /// ```
-    /// # use bitop::Bits;
+    /// # use bits::Bits;
     /// let b: Option<[u8; 3]> = None;
     /// assert_eq!(b.select0(0), Some(0));
     /// assert_eq!(b.select0(100), None);
