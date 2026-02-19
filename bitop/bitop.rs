@@ -11,11 +11,13 @@ mod bits;
 mod bits_mut;
 mod block;
 mod word;
+mod word_array;
 
 pub use bits::Bits;
 pub use bits_mut::BitsMut;
 pub use block::Block;
 pub use word::Word;
+pub use word_array::Array;
 
 mod mask;
 
