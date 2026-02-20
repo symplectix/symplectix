@@ -2,8 +2,8 @@
 use bits::{
     BitsMut,
     Buf,
-    Masking,
 };
+use bitset::Masking;
 
 #[test]
 fn and() {

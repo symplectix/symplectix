@@ -7,16 +7,7 @@ use std::ops::{
     RangeBounds,
 };
 
-mod mask;
 mod word;
-
-pub use mask::{
-    And,
-    Masking,
-    Not,
-    Or,
-    Xor,
-};
 pub use word::{
     Buf,
     Word,
@@ -371,51 +362,6 @@ pub trait Bits {
     fn search0(&self, n: u64) -> Option<u64> {
         (n < self.count0()).then(|| binary_search(0, self.bits(), |k| self.rank0(..k) > n) - 1)
     }
-
-    /// Return the intersection of two sets as an iterator of blocks.
-    ///
-    /// The intersection of two sets is the set containing
-    /// all elements of A that also belong to B or equivalently,
-    /// all elements of B that also belong to A.
-    fn and<'a, That>(&'a self, that: That) -> And<&'a Self, That>
-    where
-        And<&'a Self, That>: IntoBlocks,
-    {
-        And { a: self, b: that }
-    }
-
-    /// Returns the union of two sets as an iterator of blocks.
-    ///
-    /// The union of two sets is the set of all elements
-    /// in the both of the sets.
-    fn or<'a, That>(&'a self, that: That) -> Or<&'a Self, That>
-    where
-        Or<&'a Self, That>: IntoBlocks,
-    {
-        Or { a: self, b: that }
-    }
-
-    /// Returns the difference of two sets as an iterator of blocks.
-    ///
-    /// The difference, or subtraction is the set that consists of
-    /// elements that are in A but not in B.
-    fn not<'a, That>(&'a self, that: That) -> Not<&'a Self, That>
-    where
-        Not<&'a Self, That>: IntoBlocks,
-    {
-        Not { a: self, b: that }
-    }
-
-    /// Returns the symmetric difference of two sets as an iterator of blocks.
-    ///
-    /// The symmetric difference of two sets is the set of elements
-    /// which are in either of the sets, but not in their intersection.
-    fn xor<'a, That>(&'a self, that: That) -> Xor<&'a Self, That>
-    where
-        Xor<&'a Self, That>: IntoBlocks,
-    {
-        Xor { a: self, b: that }
-    }
 }
 
 /// Finds the smallest index k in `[i, j)` at which f(k) is true,
@@ -502,7 +448,7 @@ pub trait Block: Clone + Bits + BitsMut {
     fn empty() -> Self;
 }
 
-/// A helper trait for blockwise iteration.
+/// Helper trait for blockwise iteration.
 pub trait IntoBlocks: Sized {
     /// Type of a bit container.
     type Block;
@@ -514,7 +460,7 @@ pub trait IntoBlocks: Sized {
     fn into_blocks(self) -> Self::Blocks;
 }
 
-/// A helper trait for blockwise iteration.
+/// Helper trait for blockwise iteration.
 pub trait FromBlocks<B>: Sized {
     /// Constructs a value from blocks.
     fn from_blocks<T: IntoBlocks<Block = B>>(iter: T) -> Self;
