@@ -9,7 +9,7 @@ use bits::{
     IntoBlocks,
 };
 
-use crate::Masking;
+use crate::Mask;
 
 /// The intersection of two sets A and B.
 pub struct Intersection<A, B> {
@@ -36,7 +36,7 @@ where
 
 impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Intersection<A, B>
 where
-    A::Block: Block + Masking<B::Block>,
+    A::Block: Block + Mask<B::Block>,
 {
     type Block = A::Block;
     type Blocks = Blocks<A::Blocks, B::Blocks>;
@@ -52,7 +52,7 @@ impl<A, B, T, U> Iterator for Blocks<A, B>
 where
     A: Iterator<Item = (usize, T)>,
     B: Iterator<Item = (usize, U)>,
-    T: Block + Masking<U>,
+    T: Block + Mask<U>,
 {
     type Item = (usize, T);
 
@@ -68,7 +68,7 @@ where
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    Masking::and(&mut s1, &s2);
+                    Mask::and(&mut s1, &s2);
                     if s1.any() {
                         break Some((i, s1));
                     } else {

@@ -7,7 +7,7 @@ use std::iter::{
 use bits::IntoBlocks;
 
 use crate::{
-    Masking,
+    Mask,
     compare,
 };
 
@@ -36,7 +36,7 @@ where
 
 impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Union<A, B>
 where
-    A::Block: Masking<B::Block>,
+    A::Block: Mask<B::Block>,
 {
     type Block = A::Block;
     type Blocks = Blocks<A::Blocks, B::Blocks>;
@@ -53,7 +53,7 @@ impl<A, B, S> Iterator for Blocks<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,
-    S: Masking<S>,
+    S: Mask<S>,
 {
     type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {
@@ -65,7 +65,7 @@ where
                 let (i, mut l) = x.next().expect("unreachable");
                 let (j, r) = y.next().expect("unreachable");
                 debug_assert_eq!(i, j);
-                Masking::or(&mut l, &r);
+                Mask::or(&mut l, &r);
                 Some((i, l))
             }
             Greater => y.next(),

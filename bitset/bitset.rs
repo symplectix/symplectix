@@ -21,7 +21,7 @@ pub use symmetric_difference::SymmetricDifference;
 pub use union::Union;
 
 /// Provides bitset operations.
-pub trait Mask {
+pub trait BitSet {
     /// Return the intersection of two sets as an iterator of blocks.
     ///
     /// The intersection of two sets is the set containing
@@ -73,7 +73,7 @@ pub trait Mask {
     // fn is_superset(...) -> ...
 }
 
-impl<'a, T> Mask for T
+impl<'a, T> BitSet for T
 where
     T: 'a,
     &'a T: IntoBlocks,
@@ -84,18 +84,18 @@ where
 ///
 /// The mask defines which bits to retain and which to clear.
 /// Masking involves applying such a mask to self.
-pub trait Masking<Mask: ?Sized = Self> {
+pub trait Mask<T: ?Sized = Self> {
     /// Performs inplace and.
-    fn and(data: &mut Self, mask: &Mask);
+    fn and(data: &mut Self, mask: &T);
 
     /// Performs inplace or.
-    fn or(data: &mut Self, mask: &Mask);
+    fn or(data: &mut Self, mask: &T);
 
     /// Performs inplace not.
-    fn not(data: &mut Self, mask: &Mask);
+    fn not(data: &mut Self, mask: &T);
 
     /// Performs inplace xor.
-    fn xor(data: &mut Self, mask: &Mask);
+    fn xor(data: &mut Self, mask: &T);
 }
 
 pub(crate) fn compare<X, Y>(
@@ -113,7 +113,7 @@ pub(crate) fn compare<X, Y>(
 
 macro_rules! buf_impls {
     ($( $Ty:ty ),*) => ($(
-        impl<const N: usize> Masking<Self> for Buf<[$Ty; N]> {
+        impl<const N: usize> Mask<Self> for Buf<[$Ty; N]> {
             fn and(data: &mut Self, that: &Self) {
                 match (data.as_mut(), that.as_ref()) {
                     (Some(this), Some(that)) => {
@@ -168,50 +168,50 @@ macro_rules! buf_impls {
 }
 buf_impls!(u8, u16, u32, u64, u128, usize);
 
-impl<A, B> Masking<B> for Box<A>
+impl<A, B> Mask<B> for Box<A>
 where
-    A: ?Sized + Masking<B>,
+    A: ?Sized + Mask<B>,
     B: ?Sized,
 {
     #[inline]
     fn and(data: &mut Self, mask: &B) {
-        Masking::and(data.as_mut(), mask);
+        Mask::and(data.as_mut(), mask);
     }
     #[inline]
     fn or(data: &mut Self, mask: &B) {
-        Masking::or(data.as_mut(), mask);
+        Mask::or(data.as_mut(), mask);
     }
     #[inline]
     fn not(data: &mut Self, mask: &B) {
-        Masking::not(data.as_mut(), mask);
+        Mask::not(data.as_mut(), mask);
     }
     #[inline]
     fn xor(data: &mut Self, mask: &B) {
-        Masking::xor(data.as_mut(), mask);
+        Mask::xor(data.as_mut(), mask);
     }
 }
 
-impl<'a, 'b, A, B> Masking<Cow<'b, B>> for Cow<'a, A>
+impl<'a, 'b, A, B> Mask<Cow<'b, B>> for Cow<'a, A>
 where
     A: ?Sized + ToOwned,
     B: ?Sized + ToOwned,
-    A::Owned: Masking<B>,
+    A::Owned: Mask<B>,
 {
     #[inline]
     fn and(data: &mut Self, mask: &Cow<'b, B>) {
-        Masking::and(data.to_mut(), mask);
+        Mask::and(data.to_mut(), mask);
     }
     #[inline]
     fn or(data: &mut Self, mask: &Cow<'b, B>) {
-        Masking::or(data.to_mut(), mask);
+        Mask::or(data.to_mut(), mask);
     }
     #[inline]
     fn not(data: &mut Self, mask: &Cow<'b, B>) {
-        Masking::not(data.to_mut(), mask);
+        Mask::not(data.to_mut(), mask);
     }
     #[inline]
     fn xor(data: &mut Self, mask: &Cow<'b, B>) {
-        Masking::xor(data.to_mut(), mask);
+        Mask::xor(data.to_mut(), mask);
     }
 }
 
@@ -219,13 +219,13 @@ where
 mod mask_test {
     use std::borrow::Cow;
 
-    use crate::Mask;
+    use crate::BitSet;
 
     // For testing purposes only. Wrapping integers in a Cow is
     // a waste of space.
     macro_rules! impl_masking_for_word {
         ($( $Word:ty )*) => ($(
-            impl crate::Masking<$Word> for $Word {
+            impl crate::Mask<$Word> for $Word {
                 #[inline]
                 fn and(data: &mut Self, mask: &$Word) {
                     *data &= *mask;

@@ -3,7 +3,7 @@ use bits::{
     BitsMut,
     Buf,
 };
-use bitset::Masking;
+use bitset::Mask;
 
 #[test]
 fn and() {
@@ -17,12 +17,12 @@ fn and() {
     b.set1(2);
     b.set1(3);
     b.set1(192);
-    Masking::and(&mut a, &b);
+    Mask::and(&mut a, &b);
     assert_eq!(a.as_ref().unwrap(), &[0b_0110, 0, 0, 0]);
     let mut c = Buf::<[u64; 4]>::new();
-    Masking::and(&mut b, &c);
+    Mask::and(&mut b, &c);
     assert_eq!(b.as_ref(), None);
-    Masking::and(&mut c, &a);
+    Mask::and(&mut c, &a);
     assert_eq!(c.as_ref(), None);
 }
 
@@ -38,10 +38,10 @@ fn or() {
     b.set1(2);
     b.set1(3);
     b.set1(192);
-    Masking::or(&mut a, &b);
+    Mask::or(&mut a, &b);
     assert_eq!(a.as_ref().unwrap(), &[0b_1111, 0, 1, 1]);
     let mut c = Buf::<[u64; 4]>::new();
-    Masking::or(&mut c, &b);
+    Mask::or(&mut c, &b);
     assert_eq!(c.as_ref().unwrap(), &[0b_1110, 0, 0, 1]);
 }
 
@@ -59,11 +59,11 @@ fn not() {
     b.set1(3);
     b.set1(192);
 
-    Masking::not(&mut a, &b);
+    Mask::not(&mut a, &b);
     assert_eq!(a.as_ref().unwrap(), &[0b_0001, 0, 1, 0]);
 
     let mut c = Buf::<[u64; 4]>::new();
-    Masking::not(&mut c, &a);
+    Mask::not(&mut c, &a);
     assert_eq!(c.as_ref(), None);
 }
 
@@ -79,9 +79,9 @@ fn xor() {
     b.set1(2);
     b.set1(3);
     b.set1(192);
-    Masking::xor(&mut a, &b);
+    Mask::xor(&mut a, &b);
     assert_eq!(a.as_ref().unwrap(), &[0b_1001, 0, 1, 1]);
     let mut c = Buf::<[u64; 4]>::new();
-    Masking::xor(&mut c, &a);
+    Mask::xor(&mut c, &a);
     assert_eq!(c.as_ref().unwrap(), &[0b_1001, 0, 1, 1]);
 }
