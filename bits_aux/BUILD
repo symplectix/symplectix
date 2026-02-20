@@ -5,7 +5,6 @@ rust.library(
     srcs = glob(["src/*.rs"]),
     visibility = ["//:__subpackages__"],
     deps = [
-        "//bit",
         "//bits",
         "//fenwicktree",
         "@crates//:num",
