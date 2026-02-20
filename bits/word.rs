@@ -49,6 +49,23 @@ trait SelectHelper {
     fn select1(self, n: u64) -> Option<u64>;
 }
 
+impl SelectHelper for u64 {
+    #[inline]
+    fn select1(self, n: u64) -> Option<u64> {
+        (n < self.count1()).then(|| {
+            #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+            if is_x86_feature_detected!("bmi2") {
+                use std::arch::x86_64::{
+                    _pdep_u64,
+                    _tzcnt_u64,
+                };
+                return unsafe { _tzcnt_u64(_pdep_u64(1 << n, self)) };
+            }
+            broadword(self, n)
+        })
+    }
+}
+
 impl SelectHelper for u8 {
     #[inline]
     fn select1(self, c: u64) -> Option<u64> {
@@ -68,28 +85,27 @@ impl SelectHelper for u32 {
     }
 }
 
-impl SelectHelper for u64 {
-    #[inline]
-    fn select1(self, n: u64) -> Option<u64> {
-        (n < self.count1()).then(|| {
-            #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-            if is_x86_feature_detected!("bmi2") {
-                use std::arch::x86_64::{
-                    _pdep_u64,
-                    _tzcnt_u64,
-                };
-                return unsafe { _tzcnt_u64(_pdep_u64(1 << n, self)) };
-            }
-            broadword(self, n)
-        })
-    }
-}
-
 impl SelectHelper for u128 {
     #[inline]
     fn select1(self, c: u64) -> Option<u64> {
         let arr = [self as u64, (self >> 64) as u64];
         arr.select1(c)
+    }
+}
+
+#[cfg(target_pointer_width = "32")]
+impl SelectHelper for usize {
+    #[inline]
+    fn select1(self, c: u64) -> Option<u64> {
+        (c < self.count1()).then(|| <u64 as SelectHelper>::select1(self as u64, c).unwrap())
+    }
+}
+
+#[cfg(target_pointer_width = "64")]
+impl SelectHelper for usize {
+    #[inline]
+    fn select1(self, c: u64) -> Option<u64> {
+        (c < self.count1()).then(|| <u64 as SelectHelper>::select1(self as u64, c).unwrap())
     }
 }
 
@@ -434,7 +450,7 @@ macro_rules! impls_for_word {
         }
     )*)
 }
-impls_for_word!(u8, u16, u32, u64, u128);
+impls_for_word!(u8, u16, u32, u64, u128, usize);
 
 #[cfg(test)]
 mod tests {
