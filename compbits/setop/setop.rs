@@ -1,4 +1,4 @@
-//! Provides bitset operations.
+//! Provides setop operations.
 
 use std::borrow::{
     Cow,
@@ -11,7 +11,7 @@ mod intersection;
 mod symmetric_difference;
 mod union;
 
-use bits::{
+use bitop::{
     Buf,
     IntoBlocks,
 };
@@ -20,7 +20,7 @@ pub use intersection::Intersection;
 pub use symmetric_difference::SymmetricDifference;
 pub use union::Union;
 
-/// Provides bitset operations.
+/// Provides setop operations.
 pub trait BitSet {
     /// Return the intersection of two sets as an iterator of blocks.
     ///

@@ -1,37 +1,36 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "bitset",
+    name = "bitop",
     srcs = glob(["*.rs"]),
     visibility = ["//:__subpackages__"],
-    deps = ["//bits"],
+    deps = ["@crates//:num"],
 )
 
 rust.test(
-    name = "bitset_test",
+    name = "bitop_test",
     size = "small",
-    crate = ":bitset",
+    crate = ":bitop",
 )
 
 rust.doc_test(
-    name = "bitset_doc_test",
+    name = "bitop_doc_test",
     size = "small",
-    crate = ":bitset",
+    crate = ":bitop",
     # The root cause is unknown, but in CI, doc_test fails
     # due to an LLVM version mismatch. Skip the test for now.
     tags = ["no-ci"],
 )
 
 rust.test_suite(
-    name = "bitset_integration",
+    name = "bitop_integration",
     size = "small",
     srcs = glob(["tests/*.rs"]),
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
     deps = [
-        ":bitset",
-        "//bits",
+        ":bitop",
         "@crates//:quickcheck",
     ],
 )

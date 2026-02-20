@@ -1,9 +1,9 @@
 #![allow(missing_docs)]
-use bits::{
+use bitop::{
     BitsMut,
     Buf,
 };
-use bitset::Mask;
+use setop::Mask;
 
 #[test]
 fn and() {

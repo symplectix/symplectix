@@ -11,7 +11,7 @@ rust.library(
     ]),
     visibility = ["//:__subpackages__"],
     deps = [
-        "//bits",
+        "//compbits/bitop",
     ],
 )
 
@@ -36,7 +36,7 @@ rust.test_suite(
     ],
     deps = [
         ":compbits",
-        "//bits",
+        "//compbits/bitop",
         "@crates//:lazy_static",
         "@crates//:quickcheck",
         "@crates//:rand",
