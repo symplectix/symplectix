@@ -1,38 +1,26 @@
 //! Provides basic bit operations and utilities.
 
 use std::borrow::Cow;
-use std::cmp::Ordering;
 use std::iter::successors;
 use std::ops::{
     Bound,
     RangeBounds,
 };
 
-mod bits_mut;
-mod block;
-mod buf;
 mod mask;
 mod word;
 
-pub use bits_mut::BitsMut;
-pub use block::{
-    Block,
-    FromBlocks,
-    IntoBlocks,
+pub use mask::{
+    And,
+    Masking,
+    Not,
+    Or,
+    Xor,
 };
-pub use buf::Buf;
-pub use mask::Masking;
-pub use word::Word;
-
-mod and;
-mod not;
-mod or;
-mod xor;
-
-pub use and::And;
-pub use not::Not;
-pub use or::Or;
-pub use xor::Xor;
+pub use word::{
+    Buf,
+    Word,
+};
 
 /// Calculates the minimum number of blocks to store `n` bits.
 #[inline]
@@ -122,19 +110,6 @@ const fn next_multiple_of(x: u64, n: u64) -> u64 {
     // https://doc.rust-lang.org/std/primitive.usize.html#method.checked_next_multiple_of
     // https://github.com/rust-lang/rust/issues/88581
     x + (n - x % n)
-}
-
-pub(crate) fn compare<X, Y>(
-    x: Option<&(usize, X)>,
-    y: Option<&(usize, Y)>,
-    when_x_is_none: Ordering,
-    when_y_is_none: Ordering,
-) -> Ordering {
-    match (x, y) {
-        (None, _) => when_x_is_none,
-        (_, None) => when_y_is_none,
-        (Some((i, _x)), Some((j, _y))) => i.cmp(j),
-    }
 }
 
 /// A bit sequence, consisting of 1s and 0s.
@@ -509,17 +484,52 @@ mod excess_helper {
     }
 }
 
-impl<T: Block> Bits for [T] {
+/// A mutatable bit sequence.
+pub trait BitsMut: Bits {
+    /// Set a bit at `i`.
+    fn set1(&mut self, i: u64);
+
+    /// Unset a bit at `i`.
+    fn set0(&mut self, i: u64);
+}
+
+/// Fixed sized bits.
+pub trait Block: Clone + Bits + BitsMut {
+    /// The number of bits, which must always be equal to `Bits::bits`.
+    const BITS: u64;
+
+    /// Constructs an empty bits block.
+    fn empty() -> Self;
+}
+
+/// A helper trait for blockwise iteration.
+pub trait IntoBlocks: Sized {
+    /// Type of a bit container.
+    type Block;
+
+    /// An iterator which yields `Block`s with its index.
+    type Blocks: Iterator<Item = (usize, Self::Block)>;
+
+    /// Returns an iterator.
+    fn into_blocks(self) -> Self::Blocks;
+}
+
+/// A helper trait for blockwise iteration.
+pub trait FromBlocks<B>: Sized {
+    /// Constructs a value from blocks.
+    fn from_blocks<T: IntoBlocks<Block = B>>(iter: T) -> Self;
+}
+
+impl<B: Block> Bits for [B] {
     #[inline]
     fn bits(&self) -> u64 {
-        T::BITS * self.len() as u64
+        B::BITS * self.len() as u64
     }
 
     #[inline]
     fn count1(&self) -> u64 {
         self.iter().map(|b| b.count1()).sum()
     }
-
     #[inline]
     fn count0(&self) -> u64 {
         self.iter().map(|b| b.count0()).sum()
@@ -529,7 +539,6 @@ impl<T: Block> Bits for [T] {
     fn all(&self) -> bool {
         self.iter().all(|b| b.all())
     }
-
     #[inline]
     fn any(&self) -> bool {
         self.iter().any(|b| b.any())
@@ -537,27 +546,27 @@ impl<T: Block> Bits for [T] {
 
     #[inline]
     fn bit(&self, i: u64) -> bool {
-        let (i, o) = crate::index(i, T::BITS);
+        let (i, o) = crate::index(i, B::BITS);
         self.get(i).is_some_and(|t| t.bit(o))
     }
 
-    fn word<B: Word>(&self, i: u64, len: u64) -> B {
-        debug_assert!(i < self.bits() && len <= B::BITS);
-        let (s, p) = crate::index(i, T::BITS);
-        let (e, q) = crate::index(i + len, T::BITS);
+    fn word<T: Word>(&self, i: u64, len: u64) -> T {
+        debug_assert!(i < self.bits() && len <= T::BITS);
+        let (s, p) = crate::index(i, B::BITS);
+        let (e, q) = crate::index(i + len, B::BITS);
         if s == e {
             self[s].word(p, q - p)
         } else {
             let mut cur = 0;
-            let mut out = B::empty();
-            out |= self[s].word::<B>(p, T::BITS - p) << (cur as usize);
-            cur += T::BITS - p;
+            let mut out = T::empty();
+            out |= self[s].word::<T>(p, B::BITS - p) << (cur as usize);
+            cur += B::BITS - p;
             for block in self.iter().take(e).skip(s + 1) {
-                out |= block.word::<B>(0, T::BITS) << (cur as usize);
-                cur += T::BITS;
+                out |= block.word::<T>(0, B::BITS) << (cur as usize);
+                cur += B::BITS;
             }
             if e < self.len() {
-                out |= self[e].word::<B>(0, q) << (cur as usize);
+                out |= self[e].word::<T>(0, q) << (cur as usize);
             }
             out
         }
@@ -566,12 +575,12 @@ impl<T: Block> Bits for [T] {
     fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         match crate::range(&r, 0, self.bits()) {
             (0, j) => {
-                let (j, q) = crate::index(j, T::BITS);
+                let (j, q) = crate::index(j, B::BITS);
                 self[..j].count1() + self.get(j).map_or(0, |p| p.rank1(..q))
             }
             (i, j) => {
-                let (i, p) = crate::index(i, T::BITS);
-                let (j, q) = crate::index(j, T::BITS);
+                let (i, p) = crate::index(i, B::BITS);
+                let (j, q) = crate::index(j, B::BITS);
                 if i == j {
                     self[i].rank1(p..q)
                 } else {
@@ -594,7 +603,7 @@ impl<T: Block> Bits for [T] {
             let i = i as u64;
             let count = b.count1();
             if n < count {
-                return Some(i * T::BITS + b.select1(n).expect("bug"));
+                return Some(i * B::BITS + b.select1(n).expect("bug"));
             }
             n -= count;
         }
@@ -606,7 +615,7 @@ impl<T: Block> Bits for [T] {
             let i = i as u64;
             let count = b.count0();
             if n < count {
-                return Some(i * T::BITS + b.select0(n).expect("bug"));
+                return Some(i * B::BITS + b.select0(n).expect("bug"));
             }
             n -= count;
         }
@@ -614,174 +623,245 @@ impl<T: Block> Bits for [T] {
     }
 }
 
-impl<T: Block, const N: usize> Bits for [T; N] {
+impl<B: Block> BitsMut for [B] {
+    #[inline]
+    fn set1(&mut self, i: u64) {
+        let (i, o) = crate::index(i, B::BITS);
+        self[i].set1(o)
+    }
+    #[inline]
+    fn set0(&mut self, i: u64) {
+        let (i, o) = crate::index(i, B::BITS);
+        self[i].set0(o)
+    }
+}
+
+impl<'a, B: Block> IntoBlocks for &'a [B] {
+    type Block = Cow<'a, B>;
+    type Blocks = slice::Blocks<'a, B>;
+    fn into_blocks(self) -> Self::Blocks {
+        slice::Blocks { blocks: self.iter().enumerate() }
+    }
+}
+
+mod slice {
+    use std::borrow::Cow;
+    use std::iter::Enumerate;
+
+    use crate::Block;
+
+    pub struct Blocks<'a, B> {
+        pub(crate) blocks: Enumerate<std::slice::Iter<'a, B>>,
+    }
+    impl<'a, B: Block> Iterator for Blocks<'a, B> {
+        type Item = (usize, Cow<'a, B>);
+        #[inline]
+        fn next(&mut self) -> Option<Self::Item> {
+            self.blocks.find_map(|(i, b)| b.any().then(|| (i, Cow::Borrowed(b))))
+        }
+    }
+}
+
+impl<B: Block, const N: usize> Bits for [B; N] {
     #[inline]
     fn bits(&self) -> u64 {
-        T::BITS * N as u64
+        B::BITS * N as u64
     }
-
     #[inline]
     fn count1(&self) -> u64 {
         self.as_slice().count1()
     }
-
     #[inline]
     fn count0(&self) -> u64 {
         self.as_slice().count0()
     }
-
     #[inline]
     fn all(&self) -> bool {
         self.as_slice().all()
     }
-
     #[inline]
     fn any(&self) -> bool {
         self.as_slice().any()
     }
-
     #[inline]
     fn bit(&self, i: u64) -> bool {
         self.as_slice().bit(i)
     }
-
     #[inline]
-    fn word<B: Word>(&self, i: u64, len: u64) -> B {
+    fn word<T: Word>(&self, i: u64, len: u64) -> T {
         self.as_slice().word(i, len)
     }
-
     #[inline]
     fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.as_slice().rank1(r)
     }
-
     #[inline]
     fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.as_slice().rank0(r)
     }
-
     #[inline]
     fn select1(&self, n: u64) -> Option<u64> {
         self.as_slice().select1(n)
     }
-
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         self.as_slice().select0(n)
     }
 }
+impl<B: Block, const N: usize> BitsMut for [B; N] {
+    #[inline]
+    fn set1(&mut self, i: u64) {
+        self.as_mut_slice().set1(i)
+    }
+    #[inline]
+    fn set0(&mut self, i: u64) {
+        self.as_mut_slice().set0(i)
+    }
+}
+impl<B: Word, const N: usize> Block for [B; N] {
+    const BITS: u64 = B::BITS * N as u64;
+    #[inline]
+    fn empty() -> Self {
+        [B::empty(); N]
+    }
+}
+impl<'a, B, const N: usize> IntoBlocks for &'a [B; N]
+where
+    &'a [B]: IntoBlocks,
+{
+    type Block = <&'a [B] as IntoBlocks>::Block;
+    type Blocks = <&'a [B] as IntoBlocks>::Blocks;
+    #[inline]
+    fn into_blocks(self) -> Self::Blocks {
+        self.as_ref().into_blocks()
+    }
+}
 
-impl<T: Block> Bits for Vec<T> {
+impl<B: Block> Bits for Vec<B> {
     #[inline]
     fn bits(&self) -> u64 {
-        T::BITS * self.as_slice().len() as u64
+        B::BITS * self.as_slice().len() as u64
     }
-
     #[inline]
     fn count1(&self) -> u64 {
         self.as_slice().count1()
     }
-
     #[inline]
     fn count0(&self) -> u64 {
         self.as_slice().count0()
     }
-
     #[inline]
     fn all(&self) -> bool {
         self.as_slice().all()
     }
-
     #[inline]
     fn any(&self) -> bool {
         self.as_slice().any()
     }
-
     #[inline]
     fn bit(&self, i: u64) -> bool {
         self.as_slice().bit(i)
     }
-
     #[inline]
-    fn word<B: Word>(&self, i: u64, len: u64) -> B {
+    fn word<T: Word>(&self, i: u64, len: u64) -> T {
         self.as_slice().word(i, len)
     }
-
     #[inline]
     fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.as_slice().rank1(r)
     }
-
     #[inline]
     fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.as_slice().rank0(r)
     }
-
     #[inline]
     fn select1(&self, n: u64) -> Option<u64> {
         self.as_slice().select1(n)
     }
-
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         self.as_slice().select0(n)
     }
 }
+impl<B: Block> BitsMut for Vec<B> {
+    #[inline]
+    fn set1(&mut self, i: u64) {
+        self.as_mut_slice().set1(i)
+    }
+    #[inline]
+    fn set0(&mut self, i: u64) {
+        self.as_mut_slice().set0(i)
+    }
+}
+impl<'a, B: Block> IntoBlocks for &'a Vec<B> {
+    type Block = <&'a [B] as IntoBlocks>::Block;
+    type Blocks = <&'a [B] as IntoBlocks>::Blocks;
+    fn into_blocks(self) -> Self::Blocks {
+        self.as_slice().into_blocks()
+    }
+}
 
-impl<T: Bits> Bits for Box<T> {
+impl<B: Bits> Bits for Box<B> {
     #[inline]
     fn bits(&self) -> u64 {
         self.as_ref().bits()
     }
-
     #[inline]
     fn count1(&self) -> u64 {
         self.as_ref().count1()
     }
-
     #[inline]
     fn count0(&self) -> u64 {
         self.as_ref().count0()
     }
-
     #[inline]
     fn all(&self) -> bool {
         self.as_ref().all()
     }
-
     #[inline]
     fn any(&self) -> bool {
         self.as_ref().any()
     }
-
     #[inline]
     fn bit(&self, i: u64) -> bool {
         self.as_ref().bit(i)
     }
-
     #[inline]
-    fn word<B: Word>(&self, i: u64, len: u64) -> B {
+    fn word<T: Word>(&self, i: u64, len: u64) -> T {
         self.as_ref().word(i, len)
     }
-
     #[inline]
     fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.as_ref().rank1(r)
     }
-
     #[inline]
     fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.as_ref().rank0(r)
     }
-
     #[inline]
     fn select1(&self, n: u64) -> Option<u64> {
         self.as_ref().select1(n)
     }
-
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         self.as_ref().select0(n)
+    }
+}
+impl<B: BitsMut> BitsMut for Box<B> {
+    #[inline]
+    fn set1(&mut self, i: u64) {
+        self.as_mut().set1(i)
+    }
+    #[inline]
+    fn set0(&mut self, i: u64) {
+        self.as_mut().set0(i)
+    }
+}
+impl<B: Block> Block for Box<B> {
+    const BITS: u64 = B::BITS;
+    #[inline]
+    fn empty() -> Self {
+        Box::new(B::empty())
     }
 }
 
@@ -793,55 +873,82 @@ where
     fn bits(&self) -> u64 {
         self.as_ref().bits()
     }
-
     #[inline]
     fn count1(&self) -> u64 {
         self.as_ref().count1()
     }
-
     #[inline]
     fn count0(&self) -> u64 {
         self.as_ref().count0()
     }
-
     #[inline]
     fn all(&self) -> bool {
         self.as_ref().all()
     }
-
     #[inline]
     fn any(&self) -> bool {
         self.as_ref().any()
     }
-
     #[inline]
     fn bit(&self, i: u64) -> bool {
         self.as_ref().bit(i)
     }
-
     #[inline]
-    fn word<B: Word>(&self, i: u64, len: u64) -> B {
+    fn word<W: Word>(&self, i: u64, len: u64) -> W {
         self.as_ref().word(i, len)
     }
-
     #[inline]
     fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.as_ref().rank1(r)
     }
-
     #[inline]
     fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
         self.as_ref().rank0(r)
     }
-
     #[inline]
     fn select1(&self, n: u64) -> Option<u64> {
         self.as_ref().select1(n)
     }
-
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         self.as_ref().select0(n)
+    }
+}
+impl<T, B> BitsMut for Cow<'_, T>
+where
+    T: ?Sized + ToOwned<Owned = B> + Bits,
+    B: BitsMut,
+{
+    #[inline]
+    fn set1(&mut self, i: u64) {
+        self.to_mut().set1(i)
+    }
+    #[inline]
+    fn set0(&mut self, i: u64) {
+        self.to_mut().set0(i)
+    }
+}
+impl<T, B> Block for Cow<'_, T>
+where
+    T: ?Sized + ToOwned<Owned = B> + Bits,
+    B: Block,
+{
+    const BITS: u64 = B::BITS;
+    #[inline]
+    fn empty() -> Self {
+        Cow::Owned(B::empty())
+    }
+}
+
+impl<'inner, T: ?Sized> IntoBlocks for &&'inner T
+where
+    &'inner T: IntoBlocks,
+{
+    type Block = <&'inner T as IntoBlocks>::Block;
+    type Blocks = <&'inner T as IntoBlocks>::Blocks;
+    #[inline]
+    fn into_blocks(self) -> Self::Blocks {
+        IntoBlocks::into_blocks(*self)
     }
 }
 

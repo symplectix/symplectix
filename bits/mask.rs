@@ -2,6 +2,17 @@ use std::borrow::{
     Cow,
     ToOwned,
 };
+use std::cmp::Ordering;
+use std::cmp::Ordering::*;
+use std::iter::{
+    Fuse,
+    Peekable,
+};
+
+use crate::{
+    Block,
+    IntoBlocks,
+};
 
 /// Helper trait for bit masking.
 ///
@@ -19,6 +30,281 @@ pub trait Masking<Mask: ?Sized = Self> {
 
     /// Performs inplace xor.
     fn xor(data: &mut Self, mask: &Mask);
+}
+
+pub(crate) fn compare<X, Y>(
+    x: Option<&(usize, X)>,
+    y: Option<&(usize, Y)>,
+    when_x_is_none: Ordering,
+    when_y_is_none: Ordering,
+) -> Ordering {
+    match (x, y) {
+        (None, _) => when_x_is_none,
+        (_, None) => when_y_is_none,
+        (Some((i, _x)), Some((j, _y))) => i.cmp(j),
+    }
+}
+
+/// A and B.
+pub struct And<A, B> {
+    pub(crate) a: A,
+    pub(crate) b: B,
+}
+
+pub struct Intersection<A: Iterator, B: Iterator> {
+    a: Peekable<Fuse<A>>,
+    b: Peekable<Fuse<B>>,
+}
+
+impl<A, B> IntoIterator for And<A, B>
+where
+    Self: IntoBlocks,
+{
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.into_blocks()
+    }
+}
+
+impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for And<A, B>
+where
+    A::Block: Block + Masking<B::Block>,
+{
+    type Block = A::Block;
+    type Blocks = Intersection<A::Blocks, B::Blocks>;
+    fn into_blocks(self) -> Self::Blocks {
+        Intersection {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
+        }
+    }
+}
+
+impl<A, B, T, U> Iterator for Intersection<A, B>
+where
+    A: Iterator<Item = (usize, T)>,
+    B: Iterator<Item = (usize, U)>,
+    T: Block + Masking<U>,
+{
+    type Item = (usize, T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let a = &mut self.a;
+        let b = &mut self.b;
+        loop {
+            match Ord::cmp(&a.peek()?.0, &b.peek()?.0) {
+                Less => {
+                    a.next();
+                }
+                Equal => {
+                    let (i, mut s1) = a.next().expect("unreachable");
+                    let (j, s2) = b.next().expect("unreachable");
+                    debug_assert_eq!(i, j);
+                    Masking::and(&mut s1, &s2);
+                    if s1.any() {
+                        break Some((i, s1));
+                    } else {
+                        continue;
+                    }
+                }
+                Greater => {
+                    b.next();
+                }
+            }
+        }
+    }
+}
+
+/// A or B.
+pub struct Or<A, B> {
+    pub(crate) a: A,
+    pub(crate) b: B,
+}
+
+pub struct Union<A: Iterator, B: Iterator> {
+    a: Peekable<Fuse<A>>,
+    b: Peekable<Fuse<B>>,
+}
+
+impl<A, B> IntoIterator for Or<A, B>
+where
+    Self: IntoBlocks,
+{
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.into_blocks()
+    }
+}
+
+impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Or<A, B>
+where
+    A::Block: Masking<B::Block>,
+{
+    type Block = A::Block;
+    type Blocks = Union<A::Blocks, B::Blocks>;
+    #[inline]
+    fn into_blocks(self) -> Self::Blocks {
+        Union {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
+        }
+    }
+}
+
+impl<A, B, S> Iterator for Union<A, B>
+where
+    A: Iterator<Item = (usize, S)>,
+    B: Iterator<Item = (usize, S)>,
+    S: Masking<S>,
+{
+    type Item = (usize, S);
+    fn next(&mut self) -> Option<Self::Item> {
+        let x = &mut self.a;
+        let y = &mut self.b;
+        match compare(x.peek(), y.peek(), Greater, Less) {
+            Less => x.next(),
+            Equal => {
+                let (i, mut l) = x.next().expect("unreachable");
+                let (j, r) = y.next().expect("unreachable");
+                debug_assert_eq!(i, j);
+                Masking::or(&mut l, &r);
+                Some((i, l))
+            }
+            Greater => y.next(),
+        }
+    }
+}
+
+/// A and not B.
+pub struct Not<A, B> {
+    pub(crate) a: A,
+    pub(crate) b: B,
+}
+
+pub struct Difference<A: Iterator, B: Iterator> {
+    a: Peekable<Fuse<A>>,
+    b: Peekable<Fuse<B>>,
+}
+
+impl<A, B> IntoIterator for Not<A, B>
+where
+    Self: IntoBlocks,
+{
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.into_blocks()
+    }
+}
+
+impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Not<A, B>
+where
+    A::Block: Masking<B::Block>,
+{
+    type Block = A::Block;
+    type Blocks = Difference<A::Blocks, B::Blocks>;
+    #[inline]
+    fn into_blocks(self) -> Self::Blocks {
+        Difference {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
+        }
+    }
+}
+
+impl<A, B, S1, S2> Iterator for Difference<A, B>
+where
+    A: Iterator<Item = (usize, S1)>,
+    B: Iterator<Item = (usize, S2)>,
+    S1: Masking<S2>,
+{
+    type Item = (usize, S1);
+    fn next(&mut self) -> Option<Self::Item> {
+        let a = &mut self.a;
+        let b = &mut self.b;
+        loop {
+            match compare(a.peek(), b.peek(), Less, Less) {
+                Less => return a.next(),
+                Equal => {
+                    let (i, mut s1) = a.next().expect("unreachable");
+                    let (j, s2) = b.next().expect("unreachable");
+                    debug_assert_eq!(i, j);
+                    Masking::not(&mut s1, &s2);
+                    return Some((i, s1));
+                }
+                Greater => {
+                    b.next();
+                }
+            };
+        }
+    }
+}
+
+/// A xor B.
+pub struct Xor<A, B> {
+    pub(crate) a: A,
+    pub(crate) b: B,
+}
+
+pub struct SymmetricDifference<A: Iterator, B: Iterator> {
+    a: Peekable<Fuse<A>>,
+    b: Peekable<Fuse<B>>,
+}
+
+impl<A, B> IntoIterator for Xor<A, B>
+where
+    Self: IntoBlocks,
+{
+    type Item = (usize, <Self as IntoBlocks>::Block);
+    type IntoIter = <Self as IntoBlocks>::Blocks;
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.into_blocks()
+    }
+}
+
+impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Xor<A, B>
+where
+    A::Block: Masking<B::Block>,
+{
+    type Block = A::Block;
+    type Blocks = SymmetricDifference<A::Blocks, B::Blocks>;
+    #[inline]
+    fn into_blocks(self) -> Self::Blocks {
+        SymmetricDifference {
+            a: self.a.into_blocks().fuse().peekable(),
+            b: self.b.into_blocks().fuse().peekable(),
+        }
+    }
+}
+
+impl<A, B, S> Iterator for SymmetricDifference<A, B>
+where
+    A: Iterator<Item = (usize, S)>,
+    B: Iterator<Item = (usize, S)>,
+    S: Masking<S>,
+{
+    type Item = (usize, S);
+    fn next(&mut self) -> Option<Self::Item> {
+        let a = &mut self.a;
+        let b = &mut self.b;
+        match compare(a.peek(), b.peek(), Greater, Less) {
+            Less => a.next(),
+            Equal => {
+                let (i, mut l) = a.next().expect("unreachable");
+                let (j, r) = b.next().expect("unreachable");
+                debug_assert_eq!(i, j);
+                Masking::xor(&mut l, &r);
+                Some((i, l))
+            }
+            Greater => b.next(),
+        }
+    }
 }
 
 impl<A, B> Masking<B> for Box<A>
