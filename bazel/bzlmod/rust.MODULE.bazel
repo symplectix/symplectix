@@ -29,6 +29,7 @@ crate.spec(
     package = "bitpacking",
     version = "0.9",
 )
+
 # TODO: consider to remove when TransmuteFrom stabilized.
 # https://doc.rust-lang.org/nightly/std/mem/trait.TransmuteFrom.html
 crate.spec(
