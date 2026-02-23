@@ -8,6 +8,7 @@ use crate::{
     Bits,
     BitsMut,
     Block,
+    Mask,
 };
 
 /// Unsigned integers as a bits block.
@@ -394,6 +395,58 @@ macro_rules! impls_for_word {
             #[inline]
             fn set0(&mut self, i: u64) {
                 *self &= !(1 << i);
+            }
+        }
+
+        impl<const N: usize> Mask<Self> for Buf<[$Ty; N]> {
+            fn and(data: &mut Self, that: &Self) {
+                match (data.as_mut(), that.as_ref()) {
+                    (Some(this), Some(that)) => {
+                        for (a, b) in this.iter_mut().zip(that) {
+                            *a &= *b;
+                        }
+                    }
+                    (Some(_), None) => {
+                        *data = Buf::new();
+                    }
+                    _ => {}
+                }
+            }
+
+            fn or(data: &mut Self, that: &Self) {
+                match (data.as_mut(), that.as_ref()) {
+                    (Some(this), Some(that)) => {
+                        for (a, b) in this.iter_mut().zip(that) {
+                            *a |= *b;
+                        }
+                    }
+                    (None, Some(that)) => {
+                        data.or_empty().copy_from_slice(that);
+                    }
+                    _ => {}
+                }
+            }
+
+            fn not(data: &mut Self, that: &Self) {
+                if let (Some(this), Some(that)) = (data.as_mut(), that.as_ref()) {
+                    for (a, b) in this.iter_mut().zip(that) {
+                        *a &= !*b;
+                    }
+                }
+            }
+
+            fn xor(data: &mut Self, that: &Self) {
+                match (data.as_mut(), that.as_ref()) {
+                    (Some(this), Some(that)) => {
+                        for (a, b) in this.iter_mut().zip(that) {
+                            *a ^= *b;
+                        }
+                    }
+                    (None, Some(that)) => {
+                        data.or_empty().copy_from_slice(that);
+                    }
+                    _ => {}
+                }
             }
         }
     )*)

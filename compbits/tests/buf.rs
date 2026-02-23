@@ -1,5 +1,5 @@
 #![allow(missing_docs)]
-use bitop::{
+use compbits::{
     Bits,
     BitsMut,
     Block,

@@ -4,15 +4,14 @@ use std::iter::{
     Peekable,
 };
 
-use bitop::IntoBlocks;
-
 use crate::{
+    IntoBlocks,
     Mask,
     compare,
 };
 
-/// The difference of two sets A and B.
-pub struct Difference<A, B> {
+/// The symmetric difference of two sets A and B.
+pub struct SymmetricDifference<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
@@ -22,7 +21,7 @@ pub struct Blocks<A: Iterator, B: Iterator> {
     b: Peekable<Fuse<B>>,
 }
 
-impl<A, B> IntoIterator for Difference<A, B>
+impl<A, B> IntoIterator for SymmetricDifference<A, B>
 where
     Self: IntoBlocks,
 {
@@ -34,7 +33,7 @@ where
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Difference<A, B>
+impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for SymmetricDifference<A, B>
 where
     A::Block: Mask<B::Block>,
 {
@@ -49,30 +48,26 @@ where
     }
 }
 
-impl<A, B, S1, S2> Iterator for Blocks<A, B>
+impl<A, B, S> Iterator for Blocks<A, B>
 where
-    A: Iterator<Item = (usize, S1)>,
-    B: Iterator<Item = (usize, S2)>,
-    S1: Mask<S2>,
+    A: Iterator<Item = (usize, S)>,
+    B: Iterator<Item = (usize, S)>,
+    S: Mask<S>,
 {
-    type Item = (usize, S1);
+    type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {
         let a = &mut self.a;
         let b = &mut self.b;
-        loop {
-            match compare(a.peek(), b.peek(), Less, Less) {
-                Less => return a.next(),
-                Equal => {
-                    let (i, mut s1) = a.next().expect("unreachable");
-                    let (j, s2) = b.next().expect("unreachable");
-                    debug_assert_eq!(i, j);
-                    Mask::not(&mut s1, &s2);
-                    return Some((i, s1));
-                }
-                Greater => {
-                    b.next();
-                }
-            };
+        match compare(a.peek(), b.peek(), Greater, Less) {
+            Less => a.next(),
+            Equal => {
+                let (i, mut l) = a.next().expect("unreachable");
+                let (j, r) = b.next().expect("unreachable");
+                debug_assert_eq!(i, j);
+                Mask::xor(&mut l, &r);
+                Some((i, l))
+            }
+            Greater => b.next(),
         }
     }
 }

@@ -5,7 +5,7 @@ rust.library(
     srcs = glob(["src/*.rs"]),
     visibility = ["//:__subpackages__"],
     deps = [
-        "//compbits/bitop",
+        "//compbits",
     ],
 )
 
@@ -29,7 +29,7 @@ rust.test_suite(
     ],
     deps = [
         ":fenwicktree",
-        "//compbits/bitop",
+        "//compbits",
         "@crates//:quickcheck",
     ],
 )

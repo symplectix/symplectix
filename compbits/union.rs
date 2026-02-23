@@ -4,15 +4,14 @@ use std::iter::{
     Peekable,
 };
 
-use bitop::IntoBlocks;
-
 use crate::{
+    IntoBlocks,
     Mask,
     compare,
 };
 
-/// The symmetric difference of two sets A and B.
-pub struct SymmetricDifference<A, B> {
+/// The union of two sets A and B.
+pub struct Union<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
@@ -22,7 +21,7 @@ pub struct Blocks<A: Iterator, B: Iterator> {
     b: Peekable<Fuse<B>>,
 }
 
-impl<A, B> IntoIterator for SymmetricDifference<A, B>
+impl<A, B> IntoIterator for Union<A, B>
 where
     Self: IntoBlocks,
 {
@@ -34,7 +33,7 @@ where
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for SymmetricDifference<A, B>
+impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Union<A, B>
 where
     A::Block: Mask<B::Block>,
 {
@@ -57,18 +56,18 @@ where
 {
     type Item = (usize, S);
     fn next(&mut self) -> Option<Self::Item> {
-        let a = &mut self.a;
-        let b = &mut self.b;
-        match compare(a.peek(), b.peek(), Greater, Less) {
-            Less => a.next(),
+        let x = &mut self.a;
+        let y = &mut self.b;
+        match compare(x.peek(), y.peek(), Greater, Less) {
+            Less => x.next(),
             Equal => {
-                let (i, mut l) = a.next().expect("unreachable");
-                let (j, r) = b.next().expect("unreachable");
+                let (i, mut l) = x.next().expect("unreachable");
+                let (j, r) = y.next().expect("unreachable");
                 debug_assert_eq!(i, j);
-                Mask::xor(&mut l, &r);
+                Mask::or(&mut l, &r);
                 Some((i, l))
             }
-            Greater => b.next(),
+            Greater => y.next(),
         }
     }
 }

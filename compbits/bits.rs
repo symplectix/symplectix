@@ -1,7 +1,15 @@
 use std::borrow::Cow;
 use std::ops::RangeBounds;
 
-use crate::Word;
+use crate::{
+    Block,
+    Difference,
+    Intersection,
+    IntoBlocks,
+    SymmetricDifference,
+    Union,
+    Word,
+};
 
 /// A bit sequence, consisting of 1s and 0s.
 ///
@@ -16,7 +24,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert!(v.bit(0));
     /// assert!(v.bit(64));
@@ -31,7 +39,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let v: &[u16] = &[0b_1101_0001_1010_0011, 0b_1001_1110_1110_1001];
     /// assert_eq!(v.word::<u8>(0, 4), 0b0011);
     /// assert_eq!(v.word::<u8>(8, 4), 0b0001);
@@ -55,7 +63,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let a: &[u8] = &[];
     /// let b: &[u8] = &[0, 0, 0];
     /// let c: &[u8] = &[0, 1, 3];
@@ -73,7 +81,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let a: &[u64] = &[];
     /// let b: &[u64] = &[0, 0, 0];
     /// let c: &[u64] = &[0, 1, 3];
@@ -91,7 +99,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let a: &[u64] = &[];
     /// let b: &[u64] = &[0, 0, 0];
     /// let c: &[u64] = &[0, 1, 3];
@@ -110,7 +118,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let a: &[u64] = &[];
     /// let b: &[u64] = &[0, 0, 0];
     /// let c: &[u64] = &[!0, !0, !0];
@@ -129,7 +137,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let a: &[u64] = &[];
     /// let b: &[u64] = &[0, 0, 0];
     /// let c: &[u64] = &[0, 1, 0];
@@ -147,7 +155,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.rank1(..), v.count1());
     /// assert_eq!(v.rank1(..), 8);
@@ -157,13 +165,13 @@ pub trait Bits {
     /// ```
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let v: &[u64] = &[];
     /// assert_eq!(v.rank1(..), 0);
     /// ```
     ///
     /// ```should_panic
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// # let v: &[u64] = &[];
     /// assert_eq!(v.rank1(1..), 0);
     /// assert_eq!(v.rank1(..100), 0);
@@ -179,7 +187,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.rank0(..), v.count0());
     /// assert_eq!(v.rank0(..5), 3);
@@ -196,7 +204,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.excess(..), v.count1().abs_diff(v.count0()));
     /// assert_eq!(v.excess(10..20), v.rank1(10..20).abs_diff(v.rank0(10..20)));
@@ -223,7 +231,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.select1(0).unwrap(), 0);
     /// assert_eq!(v.select1(1).unwrap(), 2);
@@ -240,7 +248,7 @@ pub trait Bits {
     /// # Examples
     ///
     /// ```
-    /// # use bitop::Bits;
+    /// # use compbits::Bits;
     /// let v: &[u64] = &[0b00000101, 0b01100011, 0b01100000];
     /// assert_eq!(v.select0(0).unwrap(), 1);
     /// assert_eq!(v.select0(1).unwrap(), 3);
@@ -262,6 +270,56 @@ pub trait Bits {
     fn search0(&self, n: u64) -> Option<u64> {
         (n < self.count0()).then(|| binary_search(0, self.bits(), |k| self.rank0(..k) > n) - 1)
     }
+
+    /// Return the intersection of two sets as an iterator of blocks.
+    ///
+    /// The intersection of two sets is the set containing
+    /// all elements of A that also belong to B or equivalently,
+    /// all elements of B that also belong to A.
+    fn and<'a, That>(&'a self, that: That) -> Intersection<&'a Self, That>
+    where
+        Intersection<&'a Self, That>: IntoBlocks,
+    {
+        Intersection { a: self, b: that }
+    }
+
+    /// Returns the union of two sets as an iterator of blocks.
+    ///
+    /// The union of two sets is the set of all elements
+    /// in the both of the sets.
+    fn or<'a, That>(&'a self, that: That) -> Union<&'a Self, That>
+    where
+        Union<&'a Self, That>: IntoBlocks,
+    {
+        Union { a: self, b: that }
+    }
+
+    /// Returns the difference of two sets as an iterator of blocks.
+    ///
+    /// The difference, or subtraction is the set that consists of
+    /// elements that are in A but not in B.
+    fn not<'a, That>(&'a self, that: That) -> Difference<&'a Self, That>
+    where
+        Difference<&'a Self, That>: IntoBlocks,
+    {
+        Difference { a: self, b: that }
+    }
+
+    /// Returns the symmetric difference of two sets as an iterator of blocks.
+    ///
+    /// The symmetric difference of two sets is the set of elements
+    /// which are in either of the sets, but not in their intersection.
+    fn xor<'a, That>(&'a self, that: That) -> SymmetricDifference<&'a Self, That>
+    where
+        SymmetricDifference<&'a Self, That>: IntoBlocks,
+    {
+        SymmetricDifference { a: self, b: that }
+    }
+
+    // TODO
+    // fn is_disjoint(...) -> ...
+    // fn is_subset(...) -> ...
+    // fn is_superset(...) -> ...
 }
 
 /// Finds the smallest index k in `[i, j)` at which f(k) is true,
@@ -337,33 +395,6 @@ pub trait BitsMut: Bits {
 
     /// Unset a bit at `i`.
     fn set0(&mut self, i: u64);
-}
-
-/// Fixed sized bits.
-pub trait Block: Clone + Bits + BitsMut {
-    /// The number of bits, which must always be equal to `Bits::bits`.
-    const BITS: u64;
-
-    /// Constructs an empty bits block.
-    fn empty() -> Self;
-}
-
-/// Helper trait for blockwise iteration.
-pub trait IntoBlocks: Sized {
-    /// Type of a bit container.
-    type Block;
-
-    /// An iterator which yields `Block`s with its index.
-    type Blocks: Iterator<Item = (usize, Self::Block)>;
-
-    /// Returns an iterator.
-    fn into_blocks(self) -> Self::Blocks;
-}
-
-/// Helper trait for blockwise iteration.
-pub trait FromBlocks<B>: Sized {
-    /// Constructs a value from blocks.
-    fn from_blocks<T: IntoBlocks<Block = B>>(iter: T) -> Self;
 }
 
 impl<B: Block> Bits for [B] {
@@ -482,32 +513,6 @@ impl<B: Block> BitsMut for [B] {
     }
 }
 
-impl<'a, B: Block> IntoBlocks for &'a [B] {
-    type Block = Cow<'a, B>;
-    type Blocks = slice::Blocks<'a, B>;
-    fn into_blocks(self) -> Self::Blocks {
-        slice::Blocks { blocks: self.iter().enumerate() }
-    }
-}
-
-mod slice {
-    use std::borrow::Cow;
-    use std::iter::Enumerate;
-
-    use crate::Block;
-
-    pub struct Blocks<'a, B> {
-        pub(crate) blocks: Enumerate<std::slice::Iter<'a, B>>,
-    }
-    impl<'a, B: Block> Iterator for Blocks<'a, B> {
-        type Item = (usize, Cow<'a, B>);
-        #[inline]
-        fn next(&mut self) -> Option<Self::Item> {
-            self.blocks.find_map(|(i, b)| b.any().then(|| (i, Cow::Borrowed(b))))
-        }
-    }
-}
-
 impl<B: Block, const N: usize> Bits for [B; N] {
     #[inline]
     fn bits(&self) -> u64 {
@@ -562,24 +567,6 @@ impl<B: Block, const N: usize> BitsMut for [B; N] {
     #[inline]
     fn set0(&mut self, i: u64) {
         self.as_mut_slice().set0(i)
-    }
-}
-impl<B: Word, const N: usize> Block for [B; N] {
-    const BITS: u64 = B::BITS * N as u64;
-    #[inline]
-    fn empty() -> Self {
-        [B::empty(); N]
-    }
-}
-impl<'a, B, const N: usize> IntoBlocks for &'a [B; N]
-where
-    &'a [B]: IntoBlocks,
-{
-    type Block = <&'a [B] as IntoBlocks>::Block;
-    type Blocks = <&'a [B] as IntoBlocks>::Blocks;
-    #[inline]
-    fn into_blocks(self) -> Self::Blocks {
-        self.as_ref().into_blocks()
     }
 }
 
@@ -639,13 +626,6 @@ impl<B: Block> BitsMut for Vec<B> {
         self.as_mut_slice().set0(i)
     }
 }
-impl<'a, B: Block> IntoBlocks for &'a Vec<B> {
-    type Block = <&'a [B] as IntoBlocks>::Block;
-    type Blocks = <&'a [B] as IntoBlocks>::Blocks;
-    fn into_blocks(self) -> Self::Blocks {
-        self.as_slice().into_blocks()
-    }
-}
 
 impl<B: Bits> Bits for Box<B> {
     #[inline]
@@ -701,13 +681,6 @@ impl<B: BitsMut> BitsMut for Box<B> {
     #[inline]
     fn set0(&mut self, i: u64) {
         self.as_mut().set0(i)
-    }
-}
-impl<B: Block> Block for Box<B> {
-    const BITS: u64 = B::BITS;
-    #[inline]
-    fn empty() -> Self {
-        Box::new(B::empty())
     }
 }
 
@@ -772,28 +745,5 @@ where
     #[inline]
     fn set0(&mut self, i: u64) {
         self.to_mut().set0(i)
-    }
-}
-impl<T, B> Block for Cow<'_, T>
-where
-    T: ?Sized + ToOwned<Owned = B> + Bits,
-    B: Block,
-{
-    const BITS: u64 = B::BITS;
-    #[inline]
-    fn empty() -> Self {
-        Cow::Owned(B::empty())
-    }
-}
-
-impl<'inner, T: ?Sized> IntoBlocks for &&'inner T
-where
-    &'inner T: IntoBlocks,
-{
-    type Block = <&'inner T as IntoBlocks>::Block;
-    type Blocks = <&'inner T as IntoBlocks>::Blocks;
-    #[inline]
-    fn into_blocks(self) -> Self::Blocks {
-        IntoBlocks::into_blocks(*self)
     }
 }

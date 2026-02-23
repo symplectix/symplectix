@@ -1,38 +1,43 @@
 load("//bazel:rust.bzl", "rust")
 
 rust.library(
-    name = "bitfunnel",
+    name = "compbits_roaring",
     srcs = glob([
-        "*.rs",
+        "src/*.rs",
+        "src/bit_set/*.rs",
+        "src/bit_set/mask/*.rs",
+        "src/bit_set/ops/*.rs",
+        "src/bit_set/tests/*.rs",
     ]),
     visibility = ["//:__subpackages__"],
     deps = [
-        "//compbits_roaring",
+        "//compbits",
     ],
 )
 
 rust.test(
-    name = "bitfunnel_test",
+    name = "compbits_roaring_test",
     size = "small",
-    crate = ":bitfunnel",
+    crate = ":compbits_roaring",
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
     deps = [
         "@crates//:quickcheck",
-        "@crates//:rand",
     ],
 )
 
 rust.test_suite(
-    name = "bitfunnel_integration",
+    name = "compbits_roaring_integration",
     size = "small",
     srcs = glob(["tests/*.rs"]),
     proc_macro_deps = [
         "@crates//:quickcheck_macros",
     ],
     deps = [
-        ":bitfunnel",
+        ":compbits_roaring",
+        "//compbits",
+        "@crates//:lazy_static",
         "@crates//:quickcheck",
         "@crates//:rand",
     ],

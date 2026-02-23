@@ -4,15 +4,14 @@ use std::iter::{
     Peekable,
 };
 
-use bitop::{
-    Block,
+use crate::{
     IntoBlocks,
+    Mask,
+    compare,
 };
 
-use crate::Mask;
-
-/// The intersection of two sets A and B.
-pub struct Intersection<A, B> {
+/// The difference of two sets A and B.
+pub struct Difference<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
@@ -22,7 +21,7 @@ pub struct Blocks<A: Iterator, B: Iterator> {
     b: Peekable<Fuse<B>>,
 }
 
-impl<A, B> IntoIterator for Intersection<A, B>
+impl<A, B> IntoIterator for Difference<A, B>
 where
     Self: IntoBlocks,
 {
@@ -34,12 +33,13 @@ where
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Intersection<A, B>
+impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Difference<A, B>
 where
-    A::Block: Block + Mask<B::Block>,
+    A::Block: Mask<B::Block>,
 {
     type Block = A::Block;
     type Blocks = Blocks<A::Blocks, B::Blocks>;
+    #[inline]
     fn into_blocks(self) -> Self::Blocks {
         Blocks {
             a: self.a.into_blocks().fuse().peekable(),
@@ -48,37 +48,30 @@ where
     }
 }
 
-impl<A, B, T, U> Iterator for Blocks<A, B>
+impl<A, B, S1, S2> Iterator for Blocks<A, B>
 where
-    A: Iterator<Item = (usize, T)>,
-    B: Iterator<Item = (usize, U)>,
-    T: Block + Mask<U>,
+    A: Iterator<Item = (usize, S1)>,
+    B: Iterator<Item = (usize, S2)>,
+    S1: Mask<S2>,
 {
-    type Item = (usize, T);
-
+    type Item = (usize, S1);
     fn next(&mut self) -> Option<Self::Item> {
         let a = &mut self.a;
         let b = &mut self.b;
         loop {
-            match Ord::cmp(&a.peek()?.0, &b.peek()?.0) {
-                Less => {
-                    a.next();
-                }
+            match compare(a.peek(), b.peek(), Less, Less) {
+                Less => return a.next(),
                 Equal => {
                     let (i, mut s1) = a.next().expect("unreachable");
                     let (j, s2) = b.next().expect("unreachable");
                     debug_assert_eq!(i, j);
-                    Mask::and(&mut s1, &s2);
-                    if s1.any() {
-                        break Some((i, s1));
-                    } else {
-                        continue;
-                    }
+                    Mask::not(&mut s1, &s2);
+                    return Some((i, s1));
                 }
                 Greater => {
                     b.next();
                 }
-            }
+            };
         }
     }
 }

@@ -7,7 +7,7 @@ use std::{
     ops,
 };
 
-use bitop::Word;
+use compbits::Word;
 use fenwicktree::{
     Incr,
     LowerBound,

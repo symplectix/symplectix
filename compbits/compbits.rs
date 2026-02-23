@@ -1,5 +1,6 @@
 //! Provides basic bit operations and utilities.
 
+use std::cmp::Ordering;
 use std::iter::successors;
 use std::ops::{
     Bound,
@@ -7,19 +8,33 @@ use std::ops::{
 };
 
 mod bits;
+mod block;
 mod word;
 
 pub use bits::{
     Bits,
     BitsMut,
+};
+pub use block::{
     Block,
     FromBlocks,
     IntoBlocks,
+    Mask,
 };
 pub use word::{
     Buf,
     Word,
 };
+
+mod difference;
+mod intersection;
+mod symmetric_difference;
+mod union;
+
+pub use difference::Difference;
+pub use intersection::Intersection;
+pub use symmetric_difference::SymmetricDifference;
+pub use union::Union;
 
 /// Calculates the minimum number of blocks to store `n` bits.
 #[inline]
@@ -74,24 +89,24 @@ const fn max_index_exclusive(bound: Bound<&u64>, max: u64) -> u64 {
 /// # Examples
 ///
 /// ```
-/// let mut it = bitop::chunks(10, 0, 3);
+/// let mut it = compbits::chunks(10, 0, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 10, 3);
+/// let mut it = compbits::chunks(10, 10, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 12, 3);
+/// let mut it = compbits::chunks(10, 12, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 20, 3);
+/// let mut it = compbits::chunks(10, 20, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));
 /// assert_eq!(it.next(), Some((18, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 21, 3);
+/// let mut it = compbits::chunks(10, 21, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));
@@ -109,6 +124,19 @@ const fn next_multiple_of(x: u64, n: u64) -> u64 {
     // https://doc.rust-lang.org/std/primitive.usize.html#method.checked_next_multiple_of
     // https://github.com/rust-lang/rust/issues/88581
     x + (n - x % n)
+}
+
+pub(crate) fn compare<X, Y>(
+    x: Option<&(usize, X)>,
+    y: Option<&(usize, Y)>,
+    when_x_is_none: Ordering,
+    when_y_is_none: Ordering,
+) -> Ordering {
+    match (x, y) {
+        (None, _) => when_x_is_none,
+        (_, None) => when_y_is_none,
+        (Some((i, _x)), Some((j, _y))) => i.cmp(j),
+    }
 }
 
 #[cfg(test)]
