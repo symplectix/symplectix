@@ -1,8 +1,8 @@
-//! Defines bit operations and their implementations for builtin types.
+//! Provides basic bit operations and utilities.
 
-use core::cmp::Ordering;
-use core::iter::successors;
-use core::ops::{
+use std::cmp::Ordering;
+use std::iter::successors;
+use std::ops::{
     Bound,
     RangeBounds,
 };
@@ -10,22 +10,20 @@ use core::ops::{
 mod bits;
 mod bits_mut;
 mod block;
+mod mask;
 mod word;
 
 pub use bits::Bits;
 pub use bits_mut::BitsMut;
-pub use block::Block;
-pub use word::Word;
-
-mod mask;
-
-pub use mask::{
-    Difference,
-    FromMask,
-    Intersection,
-    IntoMask,
-    SymmetricDifference,
-    Union,
+pub use block::{
+    Block,
+    FromBlocks,
+    IntoBlocks,
+};
+pub use mask::Mask;
+pub use word::{
+    Buf,
+    Word,
 };
 
 mod and;
@@ -37,14 +35,6 @@ pub use and::And;
 pub use not::Not;
 pub use or::Or;
 pub use xor::Xor;
-
-// TODO: Use type parameters instead of an argument.
-// Type parameters can not be used in const expressions.
-// Blocked by Rust issue #60551.
-// #[inline]
-// pub const fn address<const N: usize>(i: usize) -> (usize, usize) {
-//     (i / N, i % N)
-// }
 
 /// Calculates the minimum number of blocks to store `n` bits.
 #[inline]
@@ -99,24 +89,24 @@ const fn max_index_exclusive(bound: Bound<&u64>, max: u64) -> u64 {
 /// # Examples
 ///
 /// ```
-/// let mut it = bitop::chunks(10, 0, 3);
+/// let mut it = bits::chunks(10, 0, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 10, 3);
+/// let mut it = bits::chunks(10, 10, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 12, 3);
+/// let mut it = bits::chunks(10, 12, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 20, 3);
+/// let mut it = bits::chunks(10, 20, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));
 /// assert_eq!(it.next(), Some((18, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = bitop::chunks(10, 21, 3);
+/// let mut it = bits::chunks(10, 21, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));

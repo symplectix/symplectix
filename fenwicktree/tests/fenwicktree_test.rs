@@ -7,7 +7,7 @@ use std::{
     ops,
 };
 
-use bits::word::Word;
+use bits::Word;
 use fenwicktree::{
     Incr,
     LowerBound,
@@ -114,7 +114,7 @@ fn prefix() {
 }
 
 fn build<T: Word + ops::AddAssign>(mut vec: Vec<T>) -> Vec<T> {
-    vec.insert(0, T::_0); // ensure vec.len() > 0
+    vec.insert(0, T::empty()); // ensure vec.len() > 0
     fenwicktree::build(&mut vec);
     vec
 }

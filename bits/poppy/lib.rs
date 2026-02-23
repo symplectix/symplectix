@@ -4,15 +4,7 @@ use std::cmp;
 use std::iter::Sum;
 use std::ops::RangeBounds;
 
-use bits::block::{
-    Block,
-    *,
-};
-use bits::word::Word;
-use bits::{
-    BitVec,
-    Bits,
-};
+use bits::*;
 use fenwicktree::{
     LowerBound,
     Nodes,
@@ -21,11 +13,13 @@ use fenwicktree::{
 
 mod l1l2;
 
+use l1l2::L1L2;
+
 /// `Pop<T>` stores auxiliary data to compute `Rank` and `Select` more efficiently.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pop<T> {
     aux:  Aux,
-    repr: BitVec<T>,
+    repr: T,
 }
 
 // pub type PopVec<T> = Pop<Vec<T>>;
@@ -38,17 +32,16 @@ pub struct Pop<T> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Aux {
     ubs: Vec<u64>,
-    lbs: Vec<l1l2::L1L2>,
+    lbs: Vec<L1L2>,
 }
 
-const UPPER_BLOCK: usize = 1 << 32;
+const UPPER_BLOCK: u64 = 1 << 32;
+const SUPER_BLOCK: u64 = BASIC_BLOCK * 4;
+const BASIC_BLOCK: u64 = 512;
 
-const SUPER_BLOCK: usize = 1 << 11; // 4 basic blocks
-const BASIC_BLOCK: usize = 1 << 9; // 512 bits block
+const MAX_SB_LEN: usize = (UPPER_BLOCK / SUPER_BLOCK) as usize;
 
-const MAX_SB_LEN: usize = UPPER_BLOCK / SUPER_BLOCK;
-
-fn build<'a, T, I>(size: usize, super_blocks: I) -> Aux
+fn build<'a, T, I>(size: u64, super_blocks: I) -> Aux
 where
     T: Word + 'a,
     I: IntoIterator<Item = Option<&'a [T]>>,
@@ -62,7 +55,7 @@ where
 
         // +1 to skip dummy index
         aux.ubs[q + 1] += sum;
-        aux.lb_mut(q)[r + 1] = l1l2::L1L2::merge([sum, bbs[0], bbs[1], bbs[2]]);
+        aux.lb_mut(q)[r + 1] = L1L2::merge([sum, bbs[0], bbs[1], bbs[2]]);
     }
 
     aux
@@ -72,8 +65,9 @@ fn basic_blocks<W: Word>(sb: Option<&[W]>) -> ([u64; l1l2::LEN], u64) {
     let mut bbs = [0; l1l2::LEN];
     let mut sum = 0;
     if let Some(sb) = sb {
-        for (i, bb) in sb.chunks(BASIC_BLOCK / W::BITS).enumerate() {
-            let count1 = Bits::new(bb).count1() as u64;
+        let chunk_size = (BASIC_BLOCK / W::BITS) as usize;
+        for (i, bb) in sb.chunks(chunk_size).enumerate() {
+            let count1 = bb.count1();
             bbs[i] = count1;
             sum += count1;
         }
@@ -82,19 +76,20 @@ fn basic_blocks<W: Word>(sb: Option<&[W]>) -> ([u64; l1l2::LEN], u64) {
 }
 
 fn super_blocks_from_words<T: Word>(slice: &[T]) -> impl Iterator<Item = Option<&[T]>> {
-    slice.chunks(SUPER_BLOCK / T::BITS).map(Some)
+    let chunk_size = (SUPER_BLOCK / T::BITS) as usize;
+    slice.chunks(chunk_size).map(Some)
 }
 
-fn ubs_len(n: usize) -> usize {
-    bit::blocks(n, UPPER_BLOCK) + 1
+fn ubs_len(n: u64) -> usize {
+    bits::blocks(n, UPPER_BLOCK) + 1
 }
 
-fn lbs_len(n: usize) -> usize {
+fn lbs_len(n: u64) -> usize {
     if n == 0 {
         1
     } else {
         // A minimum and a *logical* length of a vector to store `L1L2`.
-        let supers = bit::blocks(n, SUPER_BLOCK);
+        let supers = bits::blocks(n, SUPER_BLOCK);
         supers + {
             // Remenber that fenwicks for L1 and L2 is logically `Vec<Vec<LL>>` but flattened.
             // Need additional space for each fenwicks because of its 1-based indexing.
@@ -104,9 +99,9 @@ fn lbs_len(n: usize) -> usize {
     }
 }
 
-impl<T: Word> From<Vec<T>> for Pop<T> {
+impl<T: Word> From<Vec<T>> for Pop<Vec<T>> {
     fn from(repr: Vec<T>) -> Self {
-        let mut aux = build(Bits::new(&repr).bits(), super_blocks_from_words(&repr));
+        let mut aux = build(repr.bits(), super_blocks_from_words(&repr));
 
         // TODO: should be in the [`build`] loop.
         {
@@ -119,85 +114,78 @@ impl<T: Word> From<Vec<T>> for Pop<T> {
             }
         }
 
-        Pop { aux, repr: BitVec::from(repr) }
+        Pop { aux, repr }
     }
 }
 
-impl<T: Block> Pop<T> {
+impl<B: bits::Block> Pop<Vec<B>> {
     #[inline]
-    pub fn new(n: usize) -> Pop<T> {
-        let repr = BitVec::new(n);
+    pub fn new(n: u64) -> Pop<Vec<B>> {
+        let repr = vec![B::empty(); bits::blocks(n, B::BITS)];
         Pop { aux: Aux::new(repr.bits()), repr }
     }
 }
 
 impl<T> Pop<T> {
-    pub fn inner(&self) -> &Bits<T> {
+    pub fn inner(&self) -> &T {
         &self.repr
     }
 }
 
-impl<T: Block> Pop<T> {
+impl<B: Bits> Pop<B> {
     #[inline]
-    pub fn bits(&self) -> usize {
+    pub fn bits(&self) -> u64 {
         self.repr.bits()
     }
 
     #[inline]
-    pub fn test(&self, i: usize) -> Option<bool> {
-        self.repr.test(i)
+    pub fn bit(&self, i: u64) -> bool {
+        self.repr.bit(i)
     }
-}
 
-impl<T: Block> Pop<T> {
     #[inline]
-    pub fn count1(&self) -> usize {
+    pub fn count1(&self) -> u64 {
         let ubs = &self.aux.ubs;
-        num::cast::<u64, usize>(ubs.sum(ubs.nodes())).expect("failed to cast from u64 to usize")
+        ubs.sum(ubs.nodes())
     }
 
     #[inline]
-    pub fn count0(&self) -> usize {
+    pub fn count0(&self) -> u64 {
         self.bits() - self.count1()
     }
-}
 
-impl<T: Block + Rank> Pop<T> {
-    pub fn rank1<Idx: RangeBounds<usize>>(&self, index: Idx) -> usize {
-        fn rank1_impl<U: Block + Rank>(me: &Pop<U>, p0: usize) -> usize {
-            if p0 == 0 {
-                0
-            } else if p0 == me.bits() {
-                me.count1()
-            } else {
-                let (q0, r0) = (p0 / UPPER_BLOCK, p0 % UPPER_BLOCK);
-                let (q1, r1) = (r0 / SUPER_BLOCK, r0 % SUPER_BLOCK);
-                let (q2, r2) = (r1 / BASIC_BLOCK, r1 % BASIC_BLOCK);
+    fn rank1_impl(&self, p0: u64) -> u64 {
+        if p0 == 0 {
+            0
+        } else if p0 == self.bits() {
+            self.count1()
+        } else {
+            let (q0, r0) = bits::index(p0, UPPER_BLOCK);
+            let (q1, r1) = bits::index(r0, SUPER_BLOCK);
+            let (q2, r2) = bits::index(r1, BASIC_BLOCK);
 
-                let hi = &me.aux.ubs;
-                let lo = me.aux.lb(q0);
-                let c0: u64 = hi.sum(q0);
-                let c1: u64 = lo.sum(q1);
-                let c2 = lo[q1 + 1].l2_sum(q2);
-                num::cast::<_, usize>(c0 + c1 + c2).expect("failed to cast from u64 to usize")
-                    + me.repr.rank1(p0 - r2..p0)
-            }
+            let hi = &self.aux.ubs;
+            let lo = self.aux.lb(q0);
+            let c0: u64 = hi.sum(q0);
+            let c1: u64 = lo.sum(q1);
+            let c2 = lo[q1 + 1].l2_sum(q2);
+            c0 + c1 + c2 + self.repr.rank1(p0 - r2..p0)
         }
-        use std::ops::Range;
-        let Range { start, end } = bit::bounded(&index, 0, self.bits());
-        rank1_impl(self, end) - rank1_impl(self, start)
+    }
+
+    pub fn rank1<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        let (i, j) = bits::range(&r, 0, self.bits());
+        self.rank1_impl(j) - self.rank1_impl(i)
     }
 
     #[inline]
-    pub fn rank0<R: RangeBounds<usize>>(&self, r: R) -> usize {
-        let r = bit::bounded(&r, 0, self.bits());
-        r.len() - self.rank1(r)
+    pub fn rank0<R: RangeBounds<u64>>(&self, r: R) -> u64 {
+        let (i, j) = bits::range(&r, 0, self.bits());
+        (j - i) - (self.rank1_impl(j) - self.rank1_impl(i))
     }
-}
 
-impl<T: Block + Select + Pack> Pop<T> {
-    pub fn select1(&self, n: usize) -> Option<usize> {
-        let mut r = num::cast(n).expect("failed to cast from usize to u64");
+    pub fn select1(&self, n: u64) -> Option<u64> {
+        let mut r = n;
 
         let (s, e) = {
             let p0 = find_l0(&self.aux.ubs[..], &mut r)?;
@@ -207,11 +195,10 @@ impl<T: Block + Select + Pack> Pop<T> {
             let l2 = [ll.l2::<0>(), ll.l2::<1>(), ll.l2::<2>()];
             let p2 = find_l2(&l2, &mut r);
 
-            let s = p0 * UPPER_BLOCK + p1 * SUPER_BLOCK + p2 * BASIC_BLOCK;
+            let s = p0 as u64 * UPPER_BLOCK + p1 as u64 * SUPER_BLOCK + p2 as u64 * BASIC_BLOCK;
             (s, cmp::min(s + BASIC_BLOCK, self.bits()))
         };
 
-        let mut r = r as usize;
         {
             debug_assert!(n - r == self.rank1(..s));
             debug_assert!(r < self.rank1(s..e));
@@ -219,9 +206,9 @@ impl<T: Block + Select + Pack> Pop<T> {
 
         // i + imp.bit_vec[x..y].select1(r).unwrap()
 
-        const BITS: usize = <u128 as Block>::BITS;
-        for i in (s..e).step_by(BITS) {
-            let b = self.repr.unpack::<u128>(i, BITS);
+        const BITS: u64 = <u128 as Block>::BITS;
+        for i in (s..e).step_by(BITS as usize) {
+            let b = self.repr.word::<u128>(i, BITS);
             let c = b.count1();
             if r < c {
                 // #[cfg(test)]
@@ -237,13 +224,13 @@ impl<T: Block + Select + Pack> Pop<T> {
         unreachable!()
     }
 
-    pub fn select0(&self, n: usize) -> Option<usize> {
-        let mut r = num::cast(n).expect("failed to cast from usize to u64");
+    pub fn select0(&self, n: u64) -> Option<u64> {
+        let mut r = n;
 
         let (s, e) = {
-            const UB: u64 = UPPER_BLOCK as u64;
-            const SB: u64 = SUPER_BLOCK as u64;
-            const BB: u64 = BASIC_BLOCK as u64;
+            const UB: u64 = UPPER_BLOCK;
+            const SB: u64 = SUPER_BLOCK;
+            const BB: u64 = BASIC_BLOCK;
             let hi_complemented = fenwicktree::complement(&self.aux.ubs[..], UB);
             let p0 = find_l0(&hi_complemented, &mut r)?;
             let lo = self.aux.lb(p0);
@@ -253,19 +240,18 @@ impl<T: Block + Select + Pack> Pop<T> {
             let l2 = [BB - ll.l2::<0>(), BB - ll.l2::<1>(), BB - ll.l2::<2>()];
             let p2 = find_l2(&l2, &mut r);
 
-            let s = p0 * UPPER_BLOCK + p1 * SUPER_BLOCK + p2 * BASIC_BLOCK;
+            let s = p0 as u64 * UPPER_BLOCK + p1 as u64 * SUPER_BLOCK + p2 as u64 * BASIC_BLOCK;
             (s, cmp::min(s + BASIC_BLOCK, self.bits()))
         };
 
-        let mut r = r as usize;
         {
             debug_assert!(n - r == self.rank0(..s));
             debug_assert!(r < self.rank0(s..e));
         }
 
-        const BITS: usize = <u128 as Block>::BITS;
-        for i in (s..e).step_by(BITS) {
-            let b = self.repr.unpack::<u128>(i, BITS);
+        const BITS: u64 = <u128 as Block>::BITS;
+        for i in (s..e).step_by(BITS as usize) {
+            let b = self.repr.word::<u128>(i, BITS);
             let c = b.count0();
             if r < c {
                 return Some(i + b.select0(r).unwrap());
@@ -317,29 +303,27 @@ where
     p2
 }
 
-impl<T: Block + BlockMut> Pop<T> {
+impl<B: bits::BitsMut> Pop<B> {
     /// Swaps a bit at `i` by `bit` and returns the previous value.
-    fn swap(&mut self, i: usize, bit: bool) -> bool {
-        let before = self.repr.test(i);
+    fn swap(&mut self, i: u64, bit: bool) -> bool {
+        let before = self.repr.bit(i);
         if bit {
             self.repr.set1(i);
         } else {
             self.repr.set0(i);
         }
-        before.unwrap_or(false)
+        before
     }
-}
 
-impl<T: Block + BlockMut> Pop<T> {
     #[inline]
-    pub fn set1(&mut self, index: usize) {
+    pub fn set1(&mut self, index: u64) {
         if !self.swap(index, true) {
             self.aux.incr(index, 1);
         }
     }
 
     #[inline]
-    pub fn set0(&mut self, index: usize) {
+    pub fn set0(&mut self, index: u64) {
         if self.swap(index, false) {
             self.aux.decr(index, 1);
         }
@@ -347,21 +331,21 @@ impl<T: Block + BlockMut> Pop<T> {
 }
 
 impl Aux {
-    fn new(n: usize) -> Aux {
+    fn new(n: u64) -> Aux {
         let ubs = vec![0; ubs_len(n)];
-        let lbs = vec![l1l2::L1L2::zero(); lbs_len(n)];
+        let lbs = vec![L1L2::zero(); lbs_len(n)];
         Aux { ubs, lbs }
     }
 
     #[inline]
-    fn lb(&self, i: usize) -> &[l1l2::L1L2] {
+    fn lb(&self, i: usize) -> &[L1L2] {
         let s = (MAX_SB_LEN + 1) * i;
         let e = cmp::min(s + (MAX_SB_LEN + 1), self.lbs.len());
         &self.lbs[s..e]
     }
 
     #[inline]
-    fn lb_mut(&mut self, i: usize) -> &mut [l1l2::L1L2] {
+    fn lb_mut(&mut self, i: usize) -> &mut [L1L2] {
         let s = (MAX_SB_LEN + 1) * i;
         let e = cmp::min(s + (MAX_SB_LEN + 1), self.lbs.len());
         &mut self.lbs[s..e]
@@ -376,14 +360,14 @@ impl Aux {
         // } else {
         //     blocks(self.low.len(), MAXL1 + 1)
         // }
-        bit::blocks(self.lbs.len(), MAX_SB_LEN + 1)
+        bits::blocks(self.lbs.len() as u64, MAX_SB_LEN as u64 + 1)
     }
 
-    fn incr(&mut self, p0: usize, delta: u64) {
+    fn incr(&mut self, p0: u64, delta: u64) {
         use fenwicktree::Incr;
 
-        let (q0, r0) = (p0 / UPPER_BLOCK, p0 % UPPER_BLOCK);
-        let (q1, r1) = (r0 / SUPER_BLOCK, r0 % SUPER_BLOCK);
+        let (q0, r0) = bits::index(p0, UPPER_BLOCK);
+        let (q1, r1) = bits::index(r0, SUPER_BLOCK);
 
         self.ubs.incr(q0 + 1, delta);
 
@@ -392,21 +376,21 @@ impl Aux {
 
         // Update L2 array which is interleaved into L1
         let sb = q1 + 1; // +1 because fenwick doesn't use index 0
-        let bb = r1 / BASIC_BLOCK + 1; // +1 to skip index 0 which is for L1
+        let bb = (r1 / BASIC_BLOCK + 1) as usize; // +1 to skip index 0 which is for L1
         if bb < l1l2::LEN {
             lo[sb] = {
-                let mut arr = l1l2::L1L2::split(lo[sb]);
+                let mut arr = L1L2::split(lo[sb]);
                 arr[bb] += delta;
-                l1l2::L1L2::merge(arr)
+                L1L2::merge(arr)
             };
         }
     }
 
-    fn decr(&mut self, p0: usize, delta: u64) {
+    fn decr(&mut self, p0: u64, delta: u64) {
         use fenwicktree::Decr;
 
-        let (q0, r0) = (p0 / UPPER_BLOCK, p0 % UPPER_BLOCK);
-        let (q1, r1) = (r0 / SUPER_BLOCK, r0 % SUPER_BLOCK);
+        let (q0, r0) = bits::index(p0, UPPER_BLOCK);
+        let (q1, r1) = bits::index(r0, SUPER_BLOCK);
 
         let hi = &mut self.ubs;
         hi.decr(q0 + 1, delta);
@@ -415,12 +399,12 @@ impl Aux {
         lo.decr(q1 + 1, delta);
 
         let sb = q1 + 1;
-        let bb = r1 / BASIC_BLOCK + 1;
+        let bb = (r1 / BASIC_BLOCK + 1) as usize;
         if bb < l1l2::LEN {
             lo[sb] = {
-                let mut arr = l1l2::L1L2::split(lo[sb]);
+                let mut arr = L1L2::split(lo[sb]);
                 arr[bb] -= delta;
-                l1l2::L1L2::merge(arr)
+                L1L2::merge(arr)
             };
         }
     }
