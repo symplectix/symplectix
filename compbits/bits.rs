@@ -388,15 +388,6 @@ mod excess_helper {
     }
 }
 
-/// A mutatable bit sequence.
-pub trait BitsMut: Bits {
-    /// Set a bit at `i`.
-    fn set1(&mut self, i: u64);
-
-    /// Unset a bit at `i`.
-    fn set0(&mut self, i: u64);
-}
-
 impl<B: Block> Bits for [B] {
     #[inline]
     fn bits(&self) -> u64 {
@@ -500,19 +491,6 @@ impl<B: Block> Bits for [B] {
     }
 }
 
-impl<B: Block> BitsMut for [B] {
-    #[inline]
-    fn set1(&mut self, i: u64) {
-        let (i, o) = crate::index(i, B::BITS);
-        self[i].set1(o)
-    }
-    #[inline]
-    fn set0(&mut self, i: u64) {
-        let (i, o) = crate::index(i, B::BITS);
-        self[i].set0(o)
-    }
-}
-
 impl<B: Block, const N: usize> Bits for [B; N] {
     #[inline]
     fn bits(&self) -> u64 {
@@ -557,16 +535,6 @@ impl<B: Block, const N: usize> Bits for [B; N] {
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         self.as_slice().select0(n)
-    }
-}
-impl<B: Block, const N: usize> BitsMut for [B; N] {
-    #[inline]
-    fn set1(&mut self, i: u64) {
-        self.as_mut_slice().set1(i)
-    }
-    #[inline]
-    fn set0(&mut self, i: u64) {
-        self.as_mut_slice().set0(i)
     }
 }
 
@@ -616,16 +584,6 @@ impl<B: Block> Bits for Vec<B> {
         self.as_slice().select0(n)
     }
 }
-impl<B: Block> BitsMut for Vec<B> {
-    #[inline]
-    fn set1(&mut self, i: u64) {
-        self.as_mut_slice().set1(i)
-    }
-    #[inline]
-    fn set0(&mut self, i: u64) {
-        self.as_mut_slice().set0(i)
-    }
-}
 
 impl<B: Bits> Bits for Box<B> {
     #[inline]
@@ -671,16 +629,6 @@ impl<B: Bits> Bits for Box<B> {
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         self.as_ref().select0(n)
-    }
-}
-impl<B: BitsMut> BitsMut for Box<B> {
-    #[inline]
-    fn set1(&mut self, i: u64) {
-        self.as_mut().set1(i)
-    }
-    #[inline]
-    fn set0(&mut self, i: u64) {
-        self.as_mut().set0(i)
     }
 }
 
@@ -731,19 +679,5 @@ where
     #[inline]
     fn select0(&self, n: u64) -> Option<u64> {
         self.as_ref().select0(n)
-    }
-}
-impl<T, B> BitsMut for Cow<'_, T>
-where
-    T: ?Sized + ToOwned<Owned = B> + Bits,
-    B: BitsMut,
-{
-    #[inline]
-    fn set1(&mut self, i: u64) {
-        self.to_mut().set1(i)
-    }
-    #[inline]
-    fn set0(&mut self, i: u64) {
-        self.to_mut().set0(i)
     }
 }

@@ -8,33 +8,33 @@ use std::ops::{
 };
 
 mod bits;
+mod bits_mut;
 mod block;
+mod mask;
 mod word;
 
-pub use bits::{
-    Bits,
-    BitsMut,
-};
+pub use bits::Bits;
+pub use bits_mut::BitsMut;
 pub use block::{
     Block,
     FromBlocks,
     IntoBlocks,
-    Mask,
 };
+pub use mask::Mask;
 pub use word::{
     Buf,
     Word,
 };
 
-mod difference;
-mod intersection;
-mod symmetric_difference;
-mod union;
+mod and;
+mod not;
+mod or;
+mod xor;
 
-pub use difference::Difference;
-pub use intersection::Intersection;
-pub use symmetric_difference::SymmetricDifference;
-pub use union::Union;
+pub use and::Intersection;
+pub use not::Difference;
+pub use or::Union;
+pub use xor::SymmetricDifference;
 
 /// Calculates the minimum number of blocks to store `n` bits.
 #[inline]
