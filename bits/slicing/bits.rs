@@ -1,3 +1,4 @@
+#![allow(missing_docs, unused)]
 use std::ops::{
     Deref,
     DerefMut,
@@ -30,12 +31,23 @@ impl Bits {
         &mut self.0
     }
 
-    pub(crate) fn num_chunks(&self) -> u32 {
-        self.0.is_empty().then_some(0).unwrap_or_else(|| {
+    pub(crate) fn num_chunks(&self) -> usize {
+        if self.0.is_empty() {
+            0
+        } else {
             let bs = self.as_bytes();
             // MAX_CHUNKS is 1<<16. -1 to store the chunk value as u16.
-            u16::from_le_bytes([bs[0], bs[1]]) as u32 + 1
-        })
+            u16::from_le_bytes([bs[0], bs[1]]) as usize + 1
+        }
+    }
+
+    pub(crate) fn header1_bytes(&self) -> usize {
+        self.num_chunks() * 8
+    }
+
+    pub(crate) fn header1(&self) -> &[u16] {
+        // returns as &[u16] for alignment.
+        bytemuck::cast_slice(&self.as_bytes()[2..2 + self.header1_bytes()])
     }
 }
 
