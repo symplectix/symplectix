@@ -2,13 +2,13 @@ use std::borrow::Cow;
 use std::ops::RangeBounds;
 
 use crate::{
+    And,
     Block,
-    Difference,
-    Intersection,
     IntoBlocks,
-    SymmetricDifference,
-    Union,
+    Not,
+    Or,
     Word,
+    Xor,
 };
 
 /// A bit sequence, consisting of 1s and 0s.
@@ -276,44 +276,44 @@ pub trait Bits {
     /// The intersection of two sets is the set containing
     /// all elements of A that also belong to B or equivalently,
     /// all elements of B that also belong to A.
-    fn and<'a, That>(&'a self, that: That) -> Intersection<&'a Self, That>
+    fn and<'a, That>(&'a self, that: That) -> And<&'a Self, That>
     where
-        Intersection<&'a Self, That>: IntoBlocks,
+        And<&'a Self, That>: IntoBlocks,
     {
-        Intersection { a: self, b: that }
+        And { a: self, b: that }
     }
 
     /// Returns the union of two sets as an iterator of blocks.
     ///
     /// The union of two sets is the set of all elements
     /// in the both of the sets.
-    fn or<'a, That>(&'a self, that: That) -> Union<&'a Self, That>
+    fn or<'a, That>(&'a self, that: That) -> Or<&'a Self, That>
     where
-        Union<&'a Self, That>: IntoBlocks,
+        Or<&'a Self, That>: IntoBlocks,
     {
-        Union { a: self, b: that }
+        Or { a: self, b: that }
     }
 
     /// Returns the difference of two sets as an iterator of blocks.
     ///
     /// The difference, or subtraction is the set that consists of
     /// elements that are in A but not in B.
-    fn not<'a, That>(&'a self, that: That) -> Difference<&'a Self, That>
+    fn not<'a, That>(&'a self, that: That) -> Not<&'a Self, That>
     where
-        Difference<&'a Self, That>: IntoBlocks,
+        Not<&'a Self, That>: IntoBlocks,
     {
-        Difference { a: self, b: that }
+        Not { a: self, b: that }
     }
 
     /// Returns the symmetric difference of two sets as an iterator of blocks.
     ///
     /// The symmetric difference of two sets is the set of elements
     /// which are in either of the sets, but not in their intersection.
-    fn xor<'a, That>(&'a self, that: That) -> SymmetricDifference<&'a Self, That>
+    fn xor<'a, That>(&'a self, that: That) -> Xor<&'a Self, That>
     where
-        SymmetricDifference<&'a Self, That>: IntoBlocks,
+        Xor<&'a Self, That>: IntoBlocks,
     {
-        SymmetricDifference { a: self, b: that }
+        Xor { a: self, b: that }
     }
 
     // TODO

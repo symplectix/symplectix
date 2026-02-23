@@ -11,17 +11,17 @@ use crate::{
 };
 
 /// The intersection of two sets A and B.
-pub struct Intersection<A, B> {
+pub struct And<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct Blocks<A: Iterator, B: Iterator> {
+pub struct Intersection<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
 
-impl<A, B> IntoIterator for Intersection<A, B>
+impl<A, B> IntoIterator for And<A, B>
 where
     Self: IntoBlocks,
 {
@@ -33,21 +33,21 @@ where
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for Intersection<A, B>
+impl<A: IntoBlocks, B: IntoBlocks> IntoBlocks for And<A, B>
 where
     A::Block: Block + Mask<B::Block>,
 {
     type Block = A::Block;
-    type Blocks = Blocks<A::Blocks, B::Blocks>;
+    type Blocks = Intersection<A::Blocks, B::Blocks>;
     fn into_blocks(self) -> Self::Blocks {
-        Blocks {
+        Intersection {
             a: self.a.into_blocks().fuse().peekable(),
             b: self.b.into_blocks().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, T, U> Iterator for Blocks<A, B>
+impl<A, B, T, U> Iterator for Intersection<A, B>
 where
     A: Iterator<Item = (usize, T)>,
     B: Iterator<Item = (usize, U)>,

@@ -11,17 +11,17 @@ use crate::{
 };
 
 /// The symmetric difference of two sets A and B.
-pub struct SymmetricDifference<A, B> {
+pub struct Xor<A, B> {
     pub(crate) a: A,
     pub(crate) b: B,
 }
 
-pub struct Blocks<A: Iterator, B: Iterator> {
+pub struct SymmetricDifference<A: Iterator, B: Iterator> {
     a: Peekable<Fuse<A>>,
     b: Peekable<Fuse<B>>,
 }
 
-impl<A, B> IntoIterator for SymmetricDifference<A, B>
+impl<A, B> IntoIterator for Xor<A, B>
 where
     Self: IntoBlocks,
 {
@@ -33,22 +33,22 @@ where
     }
 }
 
-impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for SymmetricDifference<A, B>
+impl<A: IntoBlocks, B: IntoBlocks<Block = A::Block>> IntoBlocks for Xor<A, B>
 where
     A::Block: Mask<B::Block>,
 {
     type Block = A::Block;
-    type Blocks = Blocks<A::Blocks, B::Blocks>;
+    type Blocks = SymmetricDifference<A::Blocks, B::Blocks>;
     #[inline]
     fn into_blocks(self) -> Self::Blocks {
-        Blocks {
+        SymmetricDifference {
             a: self.a.into_blocks().fuse().peekable(),
             b: self.b.into_blocks().fuse().peekable(),
         }
     }
 }
 
-impl<A, B, S> Iterator for Blocks<A, B>
+impl<A, B, S> Iterator for SymmetricDifference<A, B>
 where
     A: Iterator<Item = (usize, S)>,
     B: Iterator<Item = (usize, S)>,

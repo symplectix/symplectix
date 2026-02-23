@@ -31,10 +31,10 @@ mod not;
 mod or;
 mod xor;
 
-pub use and::Intersection;
-pub use not::Difference;
-pub use or::Union;
-pub use xor::SymmetricDifference;
+pub use and::And;
+pub use not::Not;
+pub use or::Or;
+pub use xor::Xor;
 
 /// Calculates the minimum number of blocks to store `n` bits.
 #[inline]
