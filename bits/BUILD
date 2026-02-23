@@ -40,6 +40,30 @@ rust.test(
 )
 
 rust.library(
+    name = "slicing",
+    srcs = glob([
+        "slicing/*.rs",
+    ]),
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":bits",
+        "@crates//:bytemuck",
+    ],
+)
+
+rust.test(
+    name = "slicing_test",
+    size = "small",
+    crate = ":slicing",
+    proc_macro_deps = [
+        "@crates//:quickcheck_macros",
+    ],
+    deps = [
+        "@crates//:quickcheck",
+    ],
+)
+
+rust.library(
     name = "roaring",
     srcs = glob([
         "roaring/*.rs",
