@@ -90,7 +90,7 @@ mod tests {
     // `comb.py`.
     fn eq_to_comb_py(n: usize) {
         let r = Runfiles::create().expect("failed to create Runfiles");
-        let path = rlocation!(r, format!("_main/compbits_rrr/comb_table_{n}.json")).unwrap();
+        let path = rlocation!(r, format!("_main/rrr/comb_table_{n}.json")).unwrap();
         let json_file =
             fs::OpenOptions::new().read(true).open(path).expect("failed to open a json file");
         let buf = std::io::BufReader::new(json_file);
