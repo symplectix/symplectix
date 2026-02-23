@@ -12,7 +12,7 @@ use std::hash::{
 };
 use std::marker::PhantomData;
 
-type Repr = compbits_roaring::BitSet<u64>;
+type Repr = roaring::BitSet<u64>;
 
 // n: 256, fp: 0.06
 const DEFAULT_SIZEOF_FILTER: usize = 1500;

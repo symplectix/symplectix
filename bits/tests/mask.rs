@@ -1,5 +1,5 @@
 #![allow(missing_docs)]
-use compbits::{
+use bits::{
     BitsMut,
     Buf,
     Mask,

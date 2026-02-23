@@ -7,7 +7,7 @@ rust.library(
     ]),
     visibility = ["//:__subpackages__"],
     deps = [
-        "//compbits_roaring",
+        "//bits:roaring",
     ],
 )
 

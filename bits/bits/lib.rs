@@ -89,24 +89,24 @@ const fn max_index_exclusive(bound: Bound<&u64>, max: u64) -> u64 {
 /// # Examples
 ///
 /// ```
-/// let mut it = compbits::chunks(10, 0, 3);
+/// let mut it = bits::chunks(10, 0, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = compbits::chunks(10, 10, 3);
+/// let mut it = bits::chunks(10, 10, 3);
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = compbits::chunks(10, 12, 3);
+/// let mut it = bits::chunks(10, 12, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = compbits::chunks(10, 20, 3);
+/// let mut it = bits::chunks(10, 20, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));
 /// assert_eq!(it.next(), Some((18, 2)));
 /// assert_eq!(it.next(), None);
 ///
-/// let mut it = compbits::chunks(10, 21, 3);
+/// let mut it = bits::chunks(10, 21, 3);
 /// assert_eq!(it.next(), Some((10, 2)));
 /// assert_eq!(it.next(), Some((12, 3)));
 /// assert_eq!(it.next(), Some((15, 3)));

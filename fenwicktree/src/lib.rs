@@ -8,7 +8,7 @@ use std::ops::{
     SubAssign,
 };
 
-use compbits::Word;
+use bits::Word;
 pub use index::{
     children,
     prefix,
@@ -97,7 +97,7 @@ mod index {
         Sub,
     };
 
-    use compbits::Word;
+    use bits::Word;
 
     // The next node to be updated can be found by adding the node size `n.lsb()`.
     #[inline]
