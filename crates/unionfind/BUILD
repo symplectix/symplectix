@@ -2,7 +2,7 @@ load("//bazel:rust.bzl", "rust")
 
 rust.library(
     name = "unionfind",
-    srcs = ["unionfind.rs"],
+    srcs = ["src/lib.rs"],
     visibility = ["//:__subpackages__"],
 )
 
