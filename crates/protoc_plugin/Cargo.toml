@@ -1,0 +1,14 @@
+[package]
+name = "protoc_plugin"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+prost.workspace = true
+prost-reflect.workspace = true
+prost-types.workspace = true
+
+[[example]]
+name = "protoc-gen-message-descriptor-dump"
