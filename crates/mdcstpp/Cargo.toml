@@ -1,0 +1,10 @@
+[package]
+name = "mdcstpp"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+clap.workspace = true
+tree-sitter.workspace = true
+tree-sitter-md.workspace = true
