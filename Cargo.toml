@@ -22,13 +22,17 @@ edition = "2024"
 # protoc_plugin = { path = "crates/protoc_plugin" }
 # reaper = { path = "crates/reaper" }
 # shtok = { path = "crates/shtok" }
+streamvbyte = { path = "crates/streamvbyte" }
 # testing = { path = "crates/testing" }
+varint = { path = "crates/varint" }
 
 anyhow = { version = "1" }
 arcswap = { version = "1.8" }
 bitflags = { version = "2" }
+bitpacking = { version = "0.9" }
 byteorder = { version = "1" }
 bon = { version = "3.8" }
+criterion = { version = "0.8" }
 cc = { version = "1" }
 clap = { version = "4.5", features = ["derive"] }
 futures = { version = "0.3" }

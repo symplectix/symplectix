@@ -1,0 +1,17 @@
+[package]
+name = "compint_bench"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dev-dependencies]
+criterion.workspace = true
+
+[dependencies]
+bitpacking.workspace = true
+streamvbyte.workspace = true
+varint.workspace = true
+
+[[bench]]
+name = "compint"
+harness = false

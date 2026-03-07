@@ -41,9 +41,9 @@ pub fn bench_encode(c: &mut Criterion) {
         0, 12, 13, 3, 13, 5, 4, 15, 9, 8, 9, 3, 3, 3, 1, 12, 0, 6, 11, 11, 12, 4,
     ];
 
-    let mut group = c.benchmark_group("Encode");
+    let mut group = c.benchmark_group("compint_encode");
     group.throughput(Throughput::Bytes(data.len() as u64));
-    group.bench_function("Stream VByte", |b| {
+    group.bench_function("streamvbyte", |b| {
         const VBYTE: usize = 256;
         let mut buf = vec![0u8; VBYTE * varint::MAX_VARINT_LEN32];
         // let mut ctl = vec![0u8; (data.len() + 3) / 4];
@@ -53,7 +53,7 @@ pub fn bench_encode(c: &mut Criterion) {
             n += streamvbyte::encode(&mut buf, &mut ctl, black_box(&data));
         })
     });
-    group.bench_function("BitPacker4x", |b| {
+    group.bench_function("bitpacker4x", |b| {
         // Detects if `SSE3` is available on the current computer.
         let bitpacker = BitPacker4x::new();
         // Computes the number of bits used for each integer in the blocks.
