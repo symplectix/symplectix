@@ -1,0 +1,15 @@
+[package]
+name = "faccess"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lib]
+path = "src/faccess.rs"
+
+[dev-dependencies]
+
+[dependencies]
+bitflags.workspace = true
+bon.workspace = true
+libc.workspace = true
