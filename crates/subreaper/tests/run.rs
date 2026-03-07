@@ -13,31 +13,26 @@ use std::process::{
 use std::thread;
 use std::time::Duration;
 
-use runfiles::{
-    Runfiles,
-    rlocation,
-};
+use faccess::faccess;
 
-fn procrun() -> PathBuf {
-    let r = Runfiles::create().expect("failed to create Runfiles");
-    rlocation!(r, "_main/proclib/procrun").unwrap()
+fn subreaper() -> PathBuf {
+    PathBuf::from(env!("CARGO_BIN_EXE_subreaper"))
 }
 
 fn orphan() -> PathBuf {
-    let r = Runfiles::create().expect("failed to create Runfiles");
-    rlocation!(r, "_main/proclib/orphan").unwrap()
+    subreaper_test::orphan()
 }
 
 #[test]
-fn can_find_procrun_bin() {
-    assert!(procrun().exists());
-    assert!(byc::faccess().x_ok().at(procrun()).is_ok());
+fn subreaper_bin_exist() {
+    assert!(subreaper().exists());
+    assert!(faccess().x_ok().at(subreaper()).is_ok());
 }
 
 #[test]
-fn can_find_orphan_bin() {
+fn orphan_bin_exist() {
     assert!(orphan().exists());
-    assert!(byc::faccess().x_ok().at(orphan()).is_ok());
+    assert!(faccess().x_ok().at(orphan()).is_ok());
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,17 +43,17 @@ struct OrphanLog {
 }
 
 #[test]
-fn procrun_orphan_behave_as_expected() {
-    let procrun = Command::new(procrun())
+fn subreaper_orphan_behave_as_expected() {
+    let subreaper = Command::new(subreaper())
         .arg(orphan())
         .stdout(Stdio::null())
         .stderr(Stdio::piped())
-        .env("PROCRUN_LOG", "info")
+        .env("subreaper_LOG", "info")
         .spawn()
-        .expect("failed to spawn procrun");
-    let procrun_id = procrun.id();
+        .expect("failed to spawn subreaper");
+    let subreaper_id = subreaper.id();
 
-    let out = procrun.wait_with_output().expect("failed to wait outout");
+    let out = subreaper.wait_with_output().expect("failed to wait outout");
     assert!(out.status.success());
 
     let stderr = BufReader::new(&out.stderr[..]);
@@ -85,20 +80,20 @@ fn procrun_orphan_behave_as_expected() {
 
     dbg!(&lines);
     if !lines.is_empty() {
-        // head: the first process spawned by procrun.
+        // head: the first process spawned by subreaper.
         let head = &lines[0];
-        assert_eq!(head.ppid, format!("parent={procrun_id}"));
+        assert_eq!(head.ppid, format!("parent={subreaper_id}"));
 
         // The parent process immediately exits to make the child process an orphan process. While
         // it might be possible to reliably obtain the output of the orphaned child process,
-        // I don't believe procrun guarantees this.
+        // I don't believe subreaper guarantees this.
         if lines.len() == 2 {
             // Both of parent and child are belong to the same group.
             assert!(all_eq(lines.iter().map(|e| &e.pgid)));
 
-            // the orphan process should be reparented to procrun.
+            // the orphan process should be reparented to subreaper.
             let last = &lines[1];
-            assert_eq!(last.ppid, format!("parent={procrun_id}"));
+            assert_eq!(last.ppid, format!("parent={subreaper_id}"));
         }
     }
 }
@@ -118,12 +113,12 @@ where
     I: IntoIterator<Item = T>,
     T: AsRef<OsStr>,
 {
-    let mut cmd = Command::new(procrun());
+    let mut cmd = Command::new(subreaper());
     cmd.arg("--")
         .args(args)
         .stdout(Stdio::null())
         .stderr(Stdio::inherit())
-        .env("PROCRUN_LOG", "debug");
+        .env("subreaper_LOG", "debug");
     cmd
 }
 
@@ -132,25 +127,25 @@ where
     I: IntoIterator<Item = T>,
     T: AsRef<OsStr>,
 {
-    let mut cmd = Command::new(procrun());
+    let mut cmd = Command::new(subreaper());
     cmd.arg("--kill-after")
         .arg(duration)
         .arg("--")
         .args(args)
         .stdout(Stdio::null())
         .stderr(Stdio::inherit())
-        .env("PROCRUN_LOG", "debug");
+        .env("subreaper_LOG", "debug");
     cmd
 }
 
 #[test]
-fn procrun_success_status() {
+fn subreaper_success_status() {
     let r = from_args(["test", "-e", "/tmp"]).output().unwrap();
     assert!(r.status.success());
 }
 
 #[test]
-fn procrun_failure_status() {
+fn subreaper_failure_status() {
     let r = from_args(["test", "-e", "/xxx"]).output().unwrap();
     assert!(!r.status.success());
     let r = from_args(["not_command", "foo"]).output().unwrap();
@@ -158,7 +153,7 @@ fn procrun_failure_status() {
 }
 
 #[test]
-fn procrun_exits_with_same_code_with_its_child() {
+fn subreaper_exits_with_same_code_with_its_child() {
     let exit = from_args(["sh", "-c", "exit 0"]).output().unwrap();
     assert!(exit.status.success());
     assert_eq!(exit.status.code(), Some(0));
@@ -173,7 +168,7 @@ fn procrun_exits_with_same_code_with_its_child() {
 }
 
 #[test]
-fn procrun_sleep_kill() {
+fn subreaper_sleep_kill() {
     let mut sleep = from_args(["sleep", "10"]).spawn().unwrap();
     // Cannot obtain the expected exit status
     // if you kill it too quickly,
@@ -185,7 +180,7 @@ fn procrun_sleep_kill() {
 }
 
 #[test]
-fn procrun_exits_with_124_when_timedout() {
+fn subreaper_exits_with_124_when_timedout() {
     let sleep = timeout("10ms", ["sleep", "1"]).output().unwrap();
     assert!(!sleep.status.success());
     assert_eq!(sleep.status.code(), Some(124));

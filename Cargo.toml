@@ -14,20 +14,21 @@ edition = "2024"
 # bits = { path = "crates/bits" }
 # bits_aux = { path = "crates/bits_aux" }
 # bits_buf = { path = "crates/bits_buf" }
-# byc = { path = "crates/byc" }
+faccess = { path = "crates/faccess" }
 # fenwicktree = { path = "crates/fenwicktree" }
 # print_md_cst = { path = "crates/print_md_cst" }
 # procrun = { path = "crates/procrun" }
 # procrun_test = { path = "crates/procrun_test" }
 # protoc_plugin = { path = "crates/protoc_plugin" }
-# reaper = { path = "crates/reaper" }
 # shtok = { path = "crates/shtok" }
 streamvbyte = { path = "crates/streamvbyte" }
-# testing = { path = "crates/testing" }
+subreaper = { path = "crates/subreaper" }
+subreaper_test = { path = "crates/subreaper_test" }
+testing = { path = "crates/testing" }
 varint = { path = "crates/varint" }
 
 anyhow = { version = "1" }
-arcswap = { version = "1.8" }
+arc-swap = { version = "1.8" }
 bitflags = { version = "2" }
 bitpacking = { version = "0.9" }
 byteorder = { version = "1" }
@@ -50,7 +51,7 @@ tempfile = { version = "3" }
 thiserror = { version = "1" }
 tokio = { version = "1.48", features = ["full"] }
 tracing = { version = "0.1" }
-tracing-subscriber = { version = "0.3", features = ["envfilter"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tree-sitter = { version = "0.25" }
 tree-sitter-md = { version = "0.5" }
 

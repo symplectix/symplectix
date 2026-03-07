@@ -3,6 +3,6 @@
 
 use std::env;
 
-fn main() -> proclib::ProcExit {
-    proclib::run(env::args_os())
+fn main() -> subreaper::ProcExit {
+    subreaper::run(env::args_os())
 }

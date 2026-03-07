@@ -1,19 +1,20 @@
-//! A library for procrun.
+//! Child process subreaper.
 
 use std::ffi::OsString;
+use std::io;
 use std::os::unix::process::ExitStatusExt;
 use std::path::PathBuf;
 use std::process::{
+    self,
     ExitCode,
     Stdio,
     Termination,
 };
-use std::sync::Arc;
-use std::time::Duration;
-use std::{
-    io,
-    process,
+use std::sync::{
+    Arc,
+    LazyLock,
 };
+use std::time::Duration;
 
 use anyhow::Context;
 use arc_swap::ArcSwap;
@@ -27,7 +28,12 @@ use tokio::signal::unix::{
     SignalKind,
     signal,
 };
-use tokio::time;
+use tokio::sync::broadcast;
+use tokio::sync::broadcast::error::SendError;
+use tokio::{
+    task,
+    time,
+};
 use tracing::{
     error,
     info,
@@ -78,7 +84,7 @@ where
                 .with_ansi(false)
                 .without_time(),
         )
-        .with(EnvFilter::from_env("PROCRUN_LOG"))
+        .with(EnvFilter::from_env("SUBREAPER_LOG"))
         .init();
 
     let proc =
@@ -89,6 +95,130 @@ where
         .context("Failed to fetch wait status")?
         .exit_ok()
         .context("Got a failure on running the process")
+}
+
+static SUBREAPER: LazyLock<Subreaper> = LazyLock::new(|| {
+    #[cfg(target_os = "linux")]
+    unsafe {
+        assert_eq!(0, libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0));
+    }
+    Subreaper::start()
+});
+
+struct Subreaper {
+    tx: broadcast::Sender<(libc::c_int, process::ExitStatus)>,
+    #[allow(dead_code)]
+    jh: task::JoinHandle<usize>,
+}
+
+impl Subreaper {
+    fn start() -> Self {
+        let (tx, _rx) = broadcast::channel(16);
+        let tx_cloned = tx.clone();
+        let jh = task::spawn(async move {
+            let mut signal = signal(SignalKind::child()).expect("failed to create a signal");
+            let mut reaped = 0;
+            while signal.recv().await.is_some() {
+                loop {
+                    // Waits for any child process.
+                    //
+                    // The WNOHANG option is used to indicate that the call should not block
+                    // if there are no processes that wish to report status.
+                    let mut status: libc::c_int = 0;
+                    match unsafe { libc::waitpid(-1, &mut status, libc::WNOHANG) } {
+                        -1 => {
+                            // If RawOsError was constructed via last_os_error,
+                            // then this function always return Some.
+                            match io::Error::last_os_error().raw_os_error().unwrap() {
+                                libc::ECHILD => {
+                                    trace!("ECHILD: no children that it has not yet waited for");
+                                    break;
+                                }
+                                libc::EINTR => {
+                                    // This likely can't happen since we are calling libc::waitpid
+                                    // with WNOHANG.
+                                    trace!("EINTR: got interrupted, continue reaping");
+                                }
+                                errno => {
+                                    trace!(
+                                        "got an error({}), or caught signal aborts the call",
+                                        errno,
+                                    );
+                                }
+                            }
+                        }
+                        0 => {
+                            trace!("no children wish to report status");
+                            break;
+                        }
+                        pid => {
+                            match tx.send((pid, process::ExitStatus::from_raw(status))) {
+                                Ok(_subscribers) => {}
+                                Err(SendError((pid, exit_status))) => {
+                                    trace!(
+                                        reaped = pid,
+                                        exit_status = exit_status.code(),
+                                        "reaped but no active receivers WIFEXITED({}) WEXITSTATUS({})",
+                                        libc::WIFEXITED(status),
+                                        libc::WEXITSTATUS(status)
+                                    );
+                                }
+                            }
+
+                            reaped += 1;
+                        }
+                    }
+                }
+            }
+
+            reaped
+        });
+
+        Subreaper { tx: tx_cloned, jh }
+    }
+
+    /// Gets a receiver channel.
+    fn subscribe() -> Channel {
+        Channel { rx: SUBREAPER.tx.subscribe() }
+    }
+
+    // Aborts the reaper.
+    // fn abort() {
+    //     SUBREAPER.jh.abort();
+    // }
+}
+
+/// Receiving the results of reaping.
+struct Channel {
+    rx: broadcast::Receiver<(libc::c_int, process::ExitStatus)>,
+}
+
+/// Returns when recv failed.
+#[derive(Debug, PartialEq, Eq, Clone)]
+struct RecvError(broadcast::error::RecvError);
+
+impl Channel {
+    /// Receives the results of reaping.
+    pub async fn recv(&mut self) -> Result<(libc::c_int, process::ExitStatus), RecvError> {
+        // TODO: Consider not to return Closed.
+        self.rx.recv().await.map_err(RecvError)
+    }
+}
+
+impl RecvError {
+    /// There are no active reaper.
+    pub fn closed(&self) -> bool {
+        matches!(self.0, broadcast::error::RecvError::Closed)
+    }
+
+    /// The receiver lagged too far behind.
+    ///
+    /// Attempting to receive again will return the oldest message
+    /// still retained by the channel.
+    /// Includes the number of skipped messages.
+    pub fn lagged(&self) -> Option<u64> {
+        if let broadcast::error::RecvError::Lagged(n) = self.0 { Some(n) } else { None }
+    }
 }
 
 mod fsutil {
@@ -177,7 +307,7 @@ struct Command {
 }
 
 struct Process {
-    reaped:    reaper::Channel,
+    reaped:    Channel,
     child:     tokio::process::Child,
     child_pid: u32,
     flags:     Arc<ArcSwap<Flags>>,
@@ -235,7 +365,7 @@ impl Command {
             ),
         })?;
 
-        let reaped = reaper::subscribe();
+        let reaped = Subreaper::subscribe();
         let child = self
             .cmd
             .args(&flags.args[..])
