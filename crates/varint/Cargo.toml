@@ -1,0 +1,14 @@
+[package]
+name = "varint"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lib]
+path = "src/varint.rs"
+
+[dev-dependencies]
+quickcheck.workspace = true
+quickcheck_macros.workspace = true
+
+[dependencies]
