@@ -1,0 +1,15 @@
+[package]
+name = "streamvbyte"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lib]
+path = "src/streamvbyte.rs"
+
+[dev-dependencies]
+quickcheck.workspace = true
+quickcheck_macros.workspace = true
+
+[dependencies]
+byteorder.workspace = true

@@ -27,6 +27,7 @@ edition = "2024"
 anyhow = { version = "1" }
 arcswap = { version = "1.8" }
 bitflags = { version = "2" }
+byteorder = { version = "1" }
 bon = { version = "3.8" }
 cc = { version = "1" }
 clap = { version = "4.5", features = ["derive"] }
