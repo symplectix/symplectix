@@ -1,0 +1,11 @@
+[package]
+name = "compacts"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dev-dependencies]
+quickcheck.workspace = true
+quickcheck_macros.workspace = true
+lazy_static.workspace = true
+rand.workspace = true
