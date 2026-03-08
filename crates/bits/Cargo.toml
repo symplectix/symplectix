@@ -1,0 +1,12 @@
+[package]
+name = "bits"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dev-dependencies]
+quickcheck.workspace = true
+quickcheck_macros.workspace = true
+
+[dependencies]
+num.workspace = true

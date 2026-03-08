@@ -56,7 +56,6 @@ fn lt8(x: u64, y: u64) -> u64 {
 }
 
 impl Select1 for u64 {
-    #[cfg_attr(feature = "clippy", allow(cast_lossless))]
     fn select1(&self, c: u64) -> u64 {
         assert!(c < self.count1());
 
@@ -95,7 +94,6 @@ impl Select1 for u128 {
 macro_rules! impl_Select1 {
     ( $( $ty:ty ),* ) => ($(
         impl Select1 for $ty {
-            #[cfg_attr(feature = "cargo-clippy", allow(cast_lossless))]
             #[inline]
             fn select1(&self, c: u64) -> u64 {
                 assert!(c < self.count1());

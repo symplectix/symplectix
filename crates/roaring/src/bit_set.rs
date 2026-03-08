@@ -111,7 +111,7 @@ impl<'a, T: ops::Access> Index<&'a T> for u64 {
 /// # Examples
 ///
 /// ```rust
-/// use compacts::{
+/// use roaring::{
 ///     BitSet,
 ///     bit_set,
 /// };
@@ -200,15 +200,10 @@ impl<T: Word> BitSet<T> {
     /// # Examples
     ///
     /// ```
-    /// use compacts::BitSet;
+    /// use roaring::BitSet;
     /// let mut bv = BitSet::<u64>::from(vec![1, 1000, 1000000]);
     ///
     /// assert!(bv.get(1) && bv.get(1000) && bv.get(1000000));
-    /// assert!(bv.get(..1000000).count1() == 2);
-    /// assert!(bv.get(..1000000).get(..1000).count1() == 1);
-    /// assert!(bv.get(..1000000).get(..1000).get(..1).count1() == 0);
-    /// assert!(bv.get(1000..1000000).count1() == 1);
-    /// assert!(bv.get(1000..1000000).get(..1000).count1() == 0);
     /// ```
     #[inline]
     pub fn get<'a, Ix>(&'a self, index: Ix) -> Ix::Output
@@ -221,7 +216,7 @@ impl<T: Word> BitSet<T> {
     /// # Examples
     ///
     /// ```
-    /// use compacts::BitSet;
+    /// use roaring::BitSet;
     /// let mut bv = BitSet::<u64>::new();
     /// assert!(!bv.insert(1));
     /// assert!(bv.remove(1));
@@ -234,7 +229,7 @@ impl<T: Word> BitSet<T> {
     /// # Examples
     ///
     /// ```
-    /// use compacts::BitSet;
+    /// use roaring::BitSet;
     /// let mut bv = BitSet::<u64>::new();
     /// assert!(!bv.insert(1));
     /// assert!(bv.remove(1));

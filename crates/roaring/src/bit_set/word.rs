@@ -140,7 +140,6 @@ impl_Word!(u8, u16, u32, u64, u128, usize);
 macro_rules! impl_CastAs {
     ( $small:ty, $( $large:ty ),* ) => ($(
         impl CastAs<$large> for $small {
-            #[cfg_attr(feature = "cargo-clippy", allow(cast_lossless))]
             #[inline]
             fn cast_as(self) -> $large {
                 self as $large
@@ -176,7 +175,6 @@ mod cast_as_for_usize {
 macro_rules! impl_CastTo {
     ( $large:ty, $( $small:ty ),* ) => ($(
         impl CastTo<$small> for $large {
-            #[cfg_attr(feature = "cargo-clippy", allow(cast_lossless))]
             #[inline]
             fn cast_to(self) -> Option<$small> {
                 const MIN: $small = 0;

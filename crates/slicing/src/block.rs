@@ -22,6 +22,7 @@ pub struct Block<'a> {
     data: BlockData<'a>,
 }
 
+#[cfg(test)]
 impl<'a> Block<'a> {
     pub(crate) fn data(&self) -> &'a [u8] {
         match self.data {
@@ -83,6 +84,8 @@ impl<'a> BlocksHeader<'a> {
     fn new(header: &'a [u8]) -> Self {
         BlocksHeader(header.chunks_exact(BLOCK_INFO_SIZE))
     }
+
+    #[cfg(test)]
     pub(crate) fn remainder(&self) -> &[u8] {
         self.0.remainder()
     }

@@ -22,7 +22,6 @@ pub trait Access {
 
 macro_rules! impl_Access_for_words {
     ($($ty:ty),*) => ($(
-        #[cfg_attr(feature = "cargo-clippy", allow(cast_lossless))]
         impl Capacity for $ty {
             const CAPACITY: u64 = std::mem::size_of::<$ty>() as u64 * 8;
         }

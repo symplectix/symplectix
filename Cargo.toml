@@ -9,18 +9,15 @@ version = "0.0.0"
 edition = "2024"
 
 [workspace.dependencies]
-# ano = { path = "crates/ano" }
-# bit = { path = "crates/bit" }
-# bits = { path = "crates/bits" }
-# bits_aux = { path = "crates/bits_aux" }
-# bits_buf = { path = "crates/bits_buf" }
+bits = { path = "crates/bits" }
+fenwicktree = { path = "crates/fenwicktree" }
+poppy = { path = "crates/poppy" }
+roaring = { path = "crates/roaring" }
+slicing = { path = "crates/slicing" }
+
 faccess = { path = "crates/faccess" }
-# fenwicktree = { path = "crates/fenwicktree" }
-# print_md_cst = { path = "crates/print_md_cst" }
-# procrun = { path = "crates/procrun" }
-# procrun_test = { path = "crates/procrun_test" }
-# protoc_plugin = { path = "crates/protoc_plugin" }
-# shtok = { path = "crates/shtok" }
+protoc_plugin = { path = "crates/protoc_plugin" }
+shtok = { path = "crates/shtok" }
 streamvbyte = { path = "crates/streamvbyte" }
 subreaper = { path = "crates/subreaper" }
 subreaper_test = { path = "crates/subreaper_test" }
@@ -31,11 +28,12 @@ anyhow = { version = "1" }
 arc-swap = { version = "1.8" }
 bitflags = { version = "2" }
 bitpacking = { version = "0.9" }
-byteorder = { version = "1" }
 bon = { version = "3.8" }
-criterion = { version = "0.8" }
+bytemuck = { version = "1.25" }
+byteorder = { version = "1" }
 cc = { version = "1" }
 clap = { version = "4.5", features = ["derive"] }
+criterion = { version = "0.8" }
 futures = { version = "0.3" }
 humantime = { version = "2" }
 itertools = { version = "0.14" }
@@ -61,8 +59,8 @@ pedantic = "warn"
 [workspace.lints.rust]
 missing_docs = "deny"
 
-# [profile.dev.package.fenwicktree]
-# overflowchecks = false
+[profile.dev.package.fenwicktree]
+overflow-checks = false
 
 [profile.release]
 lto = true
