@@ -1,0 +1,13 @@
+[package]
+name = "bitfunnel"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dev-dependencies]
+quickcheck.workspace = true
+quickcheck_macros.workspace = true
+rand.workspace = true
+
+[dependencies]
+roaring.workspace = true
