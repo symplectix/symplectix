@@ -1,6 +1,6 @@
-#![allow(missing_docs)]
+use quickcheck_macros::quickcheck;
 
-use quickcheck::quickcheck;
+use crate::rrr15;
 
 fn rrr15_check(mut bits: u16, class: u8, offset: u16) {
     bits &= (1 << 15) - 1;
@@ -34,6 +34,7 @@ fn rrr15_class_2() {
 #[test]
 fn rrr15_class_15() {
     rrr15_check(0b_0111_1111_1111_1111, 15, 0);
+    rrr15_check(0b_1111_1111_1111_1111, 15, 0);
 }
 
 #[test]
@@ -41,11 +42,10 @@ fn class_values() {
     assert_eq!(rrr15::CLASS_SIZE, 4);
 }
 
-quickcheck! {
-    fn rrr15(b: u16) -> bool {
-        let b = b & ((1 << 15) - 1);
-        let (c, o) = rrr15::encode(b);
-        let decoded = rrr15::decode(c, o);
-        b == decoded
-    }
+#[quickcheck]
+fn encode_decode(b: u16) -> bool {
+    let b = b & ((1 << 15) - 1);
+    let (c, o) = rrr15::encode(b);
+    let decoded = rrr15::decode(c, o);
+    b == decoded
 }

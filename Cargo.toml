@@ -13,6 +13,7 @@ bits = { path = "crates/bits" }
 fenwicktree = { path = "crates/fenwicktree" }
 poppy = { path = "crates/poppy" }
 roaring = { path = "crates/roaring" }
+rrr = { path = "crates/rrr" }
 rrrutil = { path = "crates/rrrutil" }
 slicing = { path = "crates/slicing" }
 

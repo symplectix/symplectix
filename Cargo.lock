@@ -1146,6 +1146,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rrr"
+version = "0.0.0"
+dependencies = [
+ "quickcheck",
+ "quickcheck_macros",
+ "rrrutil",
+]
+
+[[package]]
 name = "rrrutil"
 version = "0.0.0"
 dependencies = [
