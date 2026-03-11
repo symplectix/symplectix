@@ -13,16 +13,18 @@ bits = { path = "crates/bits" }
 fenwicktree = { path = "crates/fenwicktree" }
 poppy = { path = "crates/poppy" }
 roaring = { path = "crates/roaring" }
+rrrutil = { path = "crates/rrrutil" }
 slicing = { path = "crates/slicing" }
+
+streamvbyte = { path = "crates/streamvbyte" }
+varint = { path = "crates/varint" }
 
 faccess = { path = "crates/faccess" }
 protoc_plugin = { path = "crates/protoc_plugin" }
 shtok = { path = "crates/shtok" }
-streamvbyte = { path = "crates/streamvbyte" }
 subreaper = { path = "crates/subreaper" }
 subreaper_test = { path = "crates/subreaper_test" }
 testing = { path = "crates/testing" }
-varint = { path = "crates/varint" }
 
 anyhow = { version = "1" }
 arc-swap = { version = "1.8" }
@@ -37,8 +39,8 @@ criterion = { version = "0.8" }
 futures = { version = "0.3" }
 humantime = { version = "2" }
 itertools = { version = "0.14" }
-libc = { version = "0.2" }
 lazy_static = { version = "1.5" }
+libc = { version = "0.2" }
 libfuzzer-sys = { version = "0.4" }
 num = { version = "0.4" }
 prost = { version = "0.13" }
@@ -47,6 +49,8 @@ prost-types = { version = "0.13" }
 quickcheck = { version = "1" }
 quickcheck_macros = { version = "1" }
 rand = { version = "0.10" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
 tempfile = { version = "3" }
 thiserror = { version = "1" }
 tokio = { version = "1.48", features = ["full"] }
