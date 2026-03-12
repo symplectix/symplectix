@@ -5,6 +5,8 @@ import datetime as dt
 import os
 import subprocess
 
+from pydantic import BaseModel, Field
+
 
 def git_rev_parse() -> str:
     """Return the working tree revision."""
@@ -50,17 +52,31 @@ def git_rev_count(since: dt.datetime | None) -> int:
     return status.stdout.rstrip()
 
 
-def version(major: int = 0) -> str:
+class WorkspaceStatus(BaseModel):
+    major: int = Field(default=0, description="")
+    year: int = Field(description="")
+    week: int = Field(description="")
+    rev_count: int = Field(description="")
+    rev_parse: str = Field(description="")
+
+
+def workspace_status(major: int = 0) -> WorkspaceStatus:
     """Return the version string."""
     now = dt.datetime.now(tz=dt.UTC)
     (year, week, _wday) = now.isocalendar()
     monday = now - dt.timedelta(days=now.weekday())
     rev_count = git_rev_count(monday)
     rev_parse = git_rev_parse()
-    return f"{major}.{year - 2000}.{week}+r{rev_count}.{rev_parse}"
+    return WorkspaceStatus(
+        major=major,
+        year=year - 2000,
+        week=week,
+        rev_count=rev_count,
+        rev_parse=rev_parse,
+    )
 
 
 if __name__ == "__main__":
     if bwd := os.getenv("BUILD_WORKING_DIRECTORY"):
         os.chdir(bwd)
-    print("STABLE_VERSION", version())
+    print(workspace_status().model_dump_json())
