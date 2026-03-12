@@ -4,12 +4,15 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
-[build-dependencies]
+[dependencies]
 rrrutil.workspace = true
 
 [dev-dependencies]
 quickcheck.workspace = true
 quickcheck_macros.workspace = true
 
-[dependencies]
+[build-dependencies]
 rrrutil.workspace = true
+
+[lints]
+workspace = true

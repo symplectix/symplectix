@@ -1,3 +1,5 @@
+//! Build script for RRR.
+
 fn main() -> std::io::Result<()> {
     rrrutil::write_mod("u8", 4)?;
     rrrutil::write_mod("u16", 15)?;

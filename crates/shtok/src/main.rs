@@ -1,3 +1,5 @@
+//! Tokenize shell lines.
+
 use std::io;
 
 fn main() -> io::Result<()> {

@@ -4,14 +4,17 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
-[dev-dependencies]
-criterion.workspace = true
+[[bench]]
+harness = false
+name = "compint"
 
 [dependencies]
 bitpacking.workspace = true
 streamvbyte.workspace = true
 varint.workspace = true
 
-[[bench]]
-name = "compint"
-harness = false
+[dev-dependencies]
+criterion.workspace = true
+
+[lints]
+workspace = true

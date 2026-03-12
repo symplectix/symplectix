@@ -7,9 +7,12 @@ publish = false
 [lib]
 path = "src/faccess.rs"
 
-[dev-dependencies]
-
 [dependencies]
 bitflags.workspace = true
 bon.workspace = true
 libc.workspace = true
+
+[dev-dependencies]
+
+[lints]
+workspace = true

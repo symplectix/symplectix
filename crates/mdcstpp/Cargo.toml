@@ -8,3 +8,6 @@ publish = false
 clap.workspace = true
 tree-sitter.workspace = true
 tree-sitter-md.workspace = true
+
+[lints]
+workspace = true

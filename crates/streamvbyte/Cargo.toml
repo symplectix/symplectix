@@ -7,9 +7,12 @@ publish = false
 [lib]
 path = "src/streamvbyte.rs"
 
+[dependencies]
+byteorder.workspace = true
+
 [dev-dependencies]
 quickcheck.workspace = true
 quickcheck_macros.workspace = true
 
-[dependencies]
-byteorder.workspace = true
+[lints]
+workspace = true

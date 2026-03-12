@@ -4,11 +4,14 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
+[[example]]
+name = "protoc-gen-message-descriptor-dump"
+
 [dependencies]
 anyhow.workspace = true
 prost.workspace = true
 prost-reflect.workspace = true
 prost-types.workspace = true
 
-[[example]]
-name = "protoc-gen-message-descriptor-dump"
+[lints]
+workspace = true

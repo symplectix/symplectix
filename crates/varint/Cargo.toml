@@ -7,8 +7,11 @@ publish = false
 [lib]
 path = "src/varint.rs"
 
+[dependencies]
+
 [dev-dependencies]
 quickcheck.workspace = true
 quickcheck_macros.workspace = true
 
-[dependencies]
+[lints]
+workspace = true

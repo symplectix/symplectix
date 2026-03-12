@@ -4,11 +4,14 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
-[build-dependencies]
-cc.workspace = true
+[dependencies]
 
 [dev-dependencies]
 quickcheck.workspace = true
 quickcheck_macros.workspace = true
 
-[dependencies]
+[build-dependencies]
+cc.workspace = true
+
+[lints]
+workspace = true

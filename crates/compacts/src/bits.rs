@@ -10,7 +10,6 @@ macro_rules! divrem {
 }
 
 mod mask;
-mod rrr;
 
 pub mod pop_vec;
 pub use pop_vec::Pop;
@@ -41,7 +40,6 @@ pub use mask::{
     or,
     xor,
 };
-pub use rrr::Rrr;
 
 use crate::num::{
     Int,

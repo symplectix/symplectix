@@ -1,3 +1,5 @@
+//! Build an executable for test.
+
 use std::path::PathBuf;
 use std::process::Command;
 use std::{

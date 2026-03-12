@@ -4,10 +4,13 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
+[dependencies]
+roaring.workspace = true
+
 [dev-dependencies]
 quickcheck.workspace = true
 quickcheck_macros.workspace = true
 rand.workspace = true
 
-[dependencies]
-roaring.workspace = true
+[lints]
+workspace = true
