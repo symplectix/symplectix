@@ -50,11 +50,13 @@ const SIZE: usize = {b};
 pub const CLASS_SIZE: u8 = {class_size};
 
 /// Encodes data into a pair of `class` and `offset`.
+#[inline]
 pub fn encode(data: {item_type}) -> (u8, {item_type}) {{
     bitcomp_rrrutil::encode!(data)
 }}
 
 /// Decodes data from a pair of `class` and `offset`.
+#[inline]
 pub fn decode(class: u8, offset: {item_type}) -> {item_type} {{
     bitcomp_rrrutil::decode!(class, offset)
 }}

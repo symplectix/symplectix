@@ -138,11 +138,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitcomp_slicing"
+version = "0.0.0"
+dependencies = [
+ "bits",
+ "bytemuck",
+ "quickcheck",
+ "quickcheck_macros",
+]
+
+[[package]]
 name = "bitcomp_test"
 version = "0.0.0"
 dependencies = [
+ "bitcomp_roaring",
+ "bitcomp_rrr",
+ "bitcomp_slicing",
  "bitpacking",
+ "bits",
  "criterion",
+ "lazy_static",
+ "rand",
  "streamvbyte",
  "varint",
 ]
@@ -1298,16 +1314,6 @@ name = "slab"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
-
-[[package]]
-name = "slicing"
-version = "0.0.0"
-dependencies = [
- "bits",
- "bytemuck",
- "quickcheck",
- "quickcheck_macros",
-]
 
 [[package]]
 name = "smallvec"

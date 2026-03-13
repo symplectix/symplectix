@@ -1,5 +1,5 @@
 [package]
-name = "slicing"
+name = "bitcomp_slicing"
 version.workspace = true
 edition.workspace = true
 publish = false

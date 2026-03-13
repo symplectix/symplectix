@@ -1,21 +1,16 @@
+//! Bench!!
+
 #![feature(test)]
 extern crate test;
 
-#[allow(unused_imports)]
-use {
-    compacts::{
-        BitArray,
-        WaveletMatrix,
-        bits::{
-            Fold,
-            Mask,
-        },
-        ops::*,
-    },
-    lazy_static::lazy_static,
-    rand::prelude::*,
-    test::Bencher,
+use compacts::ops::*;
+use compacts::{
+    BitArray,
+    WaveletMatrix,
 };
+use lazy_static::lazy_static;
+use rand::prelude::*;
+use test::Bencher;
 
 type BitMap = compacts::BitMap<[u64; 1024]>;
 
@@ -24,7 +19,7 @@ macro_rules! generate {
         // let mut build = Vec::<u64>::with_capacity($len);
         let mut build = vec![0; $len];
         for i in 0..$len {
-            build[i] = $tab[$rng.gen_range(0, $tab.len())];
+            build[i] = $tab[$rng.random_range(0..$tab.len())];
         }
         build
     }};
@@ -32,7 +27,7 @@ macro_rules! generate {
         // let mut build = Vec::<u64>::with_capacity($len);
         let mut build = vec![0; $len];
         for i in 0..$len {
-            build[i] = $rng.gen_range(0, $len as u32);
+            build[i] = $rng.random_range(0..$len as u32);
         }
         build
     }};
@@ -41,9 +36,9 @@ macro_rules! generate {
 const LENGTH: usize = 100_000_000;
 
 lazy_static! {
-    static ref T1: Vec<u32> = generate!(thread_rng(), 1000);
-    static ref S0: Vec<u32> = generate!(thread_rng(), LENGTH);
-    static ref S1: Vec<u32> = generate!(thread_rng(), 100_000_000, T1);
+    static ref T1: Vec<u32> = generate!(rand::rng(), 1000);
+    static ref S0: Vec<u32> = generate!(rand::rng(), LENGTH);
+    static ref S1: Vec<u32> = generate!(rand::rng(), 100_000_000, T1);
 }
 
 mod wm_vec {
@@ -69,54 +64,54 @@ mod wm_vec {
 
     #[bench]
     fn rank5(bench: &mut Bencher) {
-        bench.iter(|| W0.rank(&5, thread_rng().gen_range(0, W0.size())));
+        bench.iter(|| W0.rank(&5, ..rand::rng().random_range(0..W0.size())));
     }
 
     #[bench]
     fn rank5_all(bench: &mut Bencher) {
-        bench.iter(|| W0.view(0..thread_rng().gen_range(0, W0.size())).counts(&5));
+        bench.iter(|| W0.view(0..rand::rng().random_range(0..W0.size())).counts(&5));
     }
 
     #[bench]
     fn rank7(bench: &mut Bencher) {
-        bench.iter(|| W0.rank(&7, thread_rng().gen_range(0, W0.size())));
+        bench.iter(|| W0.rank(&7, ..rand::rng().random_range(0..W0.size())));
     }
 
     #[bench]
     fn select5(bench: &mut Bencher) {
-        let c = W0.rank(&5, W0.size());
+        let c = W0.rank(&5, ..W0.size());
         bench.iter(|| W0.select(&5, c / 2));
     }
 
     #[bench]
     fn select7(bench: &mut Bencher) {
-        let c = W0.rank(&7, W0.size());
+        let c = W0.rank(&7, ..W0.size());
         bench.iter(|| W0.select(&7, c / 2));
     }
 
     #[bench]
     fn quantile(bench: &mut Bencher) {
-        bench.iter(|| W0.view(2_000_000..14_000_000).quantile(thread_rng().gen_range(0, 1000)));
+        bench.iter(|| W0.view(2_000_000..14_000_000).quantile(rand::rng().random_range(0..1000)));
     }
 
     #[bench]
     fn topk(bench: &mut Bencher) {
-        let m = thread_rng().gen_range(0, 2_000_000);
-        let n = thread_rng().gen_range(0, 7_000_000);
+        let m = rand::rng().random_range(0..2_000_000);
+        let n = rand::rng().random_range(0..7_000_000);
         bench.iter(|| W1.view(m..m + n).topk(1000));
     }
 
     #[bench]
     fn mink(bench: &mut Bencher) {
-        let m = thread_rng().gen_range(0, 2_000_000);
-        let n = thread_rng().gen_range(0, 7_000_000);
+        let m = rand::rng().random_range(0..2_000_000);
+        let n = rand::rng().random_range(0..7_000_000);
         bench.iter(|| W1.view(m..m + n).mink(1000));
     }
 
     #[bench]
     fn maxk(bench: &mut Bencher) {
-        let m = thread_rng().gen_range(0, 2_000_000);
-        let n = thread_rng().gen_range(0, 7_000_000);
+        let m = rand::rng().random_range(0..2_000_000);
+        let n = rand::rng().random_range(0..7_000_000);
         bench.iter(|| W1.view(m..m + n).maxk(1000));
     }
 }
@@ -144,54 +139,54 @@ mod wm_map {
 
     #[bench]
     fn rank5(bench: &mut Bencher) {
-        bench.iter(|| W0.rank(&5, thread_rng().gen_range(0, W0.size())));
+        bench.iter(|| W0.rank(&5, ..rand::rng().random_range(0..W0.size())));
     }
 
     #[bench]
     fn rank5_all(bench: &mut Bencher) {
-        bench.iter(|| W0.view(0..thread_rng().gen_range(0, W0.size())).counts(&5));
+        bench.iter(|| W0.view(0..rand::rng().random_range(0..W0.size())).counts(&5));
     }
 
     #[bench]
     fn rank7(bench: &mut Bencher) {
-        bench.iter(|| W0.rank(&7, thread_rng().gen_range(0, W0.size())));
+        bench.iter(|| W0.rank(&7, ..rand::rng().random_range(0..W0.size())));
     }
 
     #[bench]
     fn select5(bench: &mut Bencher) {
-        let c = W0.rank(&5, W0.size());
+        let c = W0.rank(&5, ..W0.size());
         bench.iter(|| W0.select(&5, c / 2));
     }
 
     #[bench]
     fn select7(bench: &mut Bencher) {
-        let c = W0.rank(&7, W0.size());
+        let c = W0.rank(&7, ..W0.size());
         bench.iter(|| W0.select(&7, c / 2));
     }
 
     #[bench]
     fn quantile(bench: &mut Bencher) {
-        bench.iter(|| W0.view(2_000_000..14_000_000).quantile(thread_rng().gen_range(0, 1000)));
+        bench.iter(|| W0.view(2_000_000..14_000_000).quantile(rand::rng().random_range(0..1000)));
     }
 
     #[bench]
     fn topk(bench: &mut Bencher) {
-        let m = thread_rng().gen_range(0, 2_000_000);
-        let n = thread_rng().gen_range(0, 7_000_000);
+        let m = rand::rng().random_range(0..2_000_000);
+        let n = rand::rng().random_range(0..7_000_000);
         bench.iter(|| W1.view(m..m + n).topk(1000));
     }
 
     #[bench]
     fn mink(bench: &mut Bencher) {
-        let m = thread_rng().gen_range(0, 2_000_000);
-        let n = thread_rng().gen_range(0, 7_000_000);
+        let m = rand::rng().random_range(0..2_000_000);
+        let n = rand::rng().random_range(0..7_000_000);
         bench.iter(|| W1.view(m..m + n).mink(1000));
     }
 
     #[bench]
     fn maxk(bench: &mut Bencher) {
-        let m = thread_rng().gen_range(0, 2_000_000);
-        let n = thread_rng().gen_range(0, 7_000_000);
+        let m = rand::rng().random_range(0..2_000_000);
+        let n = rand::rng().random_range(0..7_000_000);
         bench.iter(|| W1.view(m..m + n).maxk(1000));
     }
 }

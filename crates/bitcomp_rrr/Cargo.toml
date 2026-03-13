@@ -4,10 +4,6 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
-[[bench]]
-harness = false
-name = "rrr15"
-
 [dependencies]
 bitcomp_rrrutil.workspace = true
 
