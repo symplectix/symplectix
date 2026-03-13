@@ -4,9 +4,13 @@ extern crate test;
 #[allow(unused_imports)]
 use {
     compacts::{
-        bits::{Fold, Mask},
+        BitArray,
+        WaveletMatrix,
+        bits::{
+            Fold,
+            Mask,
+        },
         ops::*,
-        BitArray, WaveletMatrix,
     },
     lazy_static::lazy_static,
     rand::prelude::*,
@@ -92,10 +96,7 @@ mod wm_vec {
 
     #[bench]
     fn quantile(bench: &mut Bencher) {
-        bench.iter(|| {
-            W0.view(2_000_000..14_000_000)
-                .quantile(thread_rng().gen_range(0, 1000))
-        });
+        bench.iter(|| W0.view(2_000_000..14_000_000).quantile(thread_rng().gen_range(0, 1000)));
     }
 
     #[bench]
@@ -170,10 +171,7 @@ mod wm_map {
 
     #[bench]
     fn quantile(bench: &mut Bencher) {
-        bench.iter(|| {
-            W0.view(2_000_000..14_000_000)
-                .quantile(thread_rng().gen_range(0, 1000))
-        });
+        bench.iter(|| W0.view(2_000_000..14_000_000).quantile(thread_rng().gen_range(0, 1000)));
     }
 
     #[bench]

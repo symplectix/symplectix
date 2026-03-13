@@ -5,9 +5,15 @@ extern crate test;
 #[allow(unused_imports)]
 use {
     compacts::{
-        bits::{Fold, Mask},
+        BitArray,
+        BitMap,
+        Pop,
+        WaveletMatrix,
+        bits::{
+            Fold,
+            Mask,
+        },
         ops::*,
-        BitArray, BitMap, Pop, WaveletMatrix,
     },
     lazy_static::lazy_static,
     rand::prelude::*,
