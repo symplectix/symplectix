@@ -51,12 +51,12 @@ pub const CLASS_SIZE: u8 = {class_size};
 
 /// Encodes data into a pair of `class` and `offset`.
 pub fn encode(data: {item_type}) -> (u8, {item_type}) {{
-    rrrutil::encode!(data)
+    bitcomp_rrrutil::encode!(data)
 }}
 
 /// Decodes data from a pair of `class` and `offset`.
 pub fn decode(class: u8, offset: {item_type}) -> {item_type} {{
-    rrrutil::decode!(class, offset)
+    bitcomp_rrrutil::decode!(class, offset)
 }}
 
 #[allow(clippy::unreadable_literal)]

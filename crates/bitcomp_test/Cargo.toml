@@ -1,12 +1,12 @@
 [package]
-name = "compint_bench"
+name = "bitcomp_test"
 version.workspace = true
 edition.workspace = true
 publish = false
 
 [[bench]]
-name = "compint"
 harness = false
+name = "compint"
 
 [dependencies]
 bitpacking.workspace = true

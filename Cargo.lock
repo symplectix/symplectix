@@ -98,6 +98,56 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
+name = "bitcomp_poppy"
+version = "0.0.0"
+dependencies = [
+ "bits",
+ "fenwicktree",
+ "quickcheck",
+ "quickcheck_macros",
+]
+
+[[package]]
+name = "bitcomp_roaring"
+version = "0.0.0"
+dependencies = [
+ "bits",
+ "lazy_static",
+ "quickcheck",
+ "quickcheck_macros",
+ "rand",
+]
+
+[[package]]
+name = "bitcomp_rrr"
+version = "0.0.0"
+dependencies = [
+ "bitcomp_rrrutil",
+ "criterion",
+ "quickcheck",
+ "quickcheck_macros",
+ "rand",
+]
+
+[[package]]
+name = "bitcomp_rrrutil"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "bitcomp_test"
+version = "0.0.0"
+dependencies = [
+ "bitpacking",
+ "criterion",
+ "streamvbyte",
+ "varint",
+]
+
+[[package]]
 name = "bitflags"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -107,10 +157,10 @@ checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
 name = "bitfunnel"
 version = "0.0.0"
 dependencies = [
+ "bitcomp_roaring",
  "quickcheck",
  "quickcheck_macros",
  "rand",
- "roaring",
 ]
 
 [[package]]
@@ -294,16 +344,6 @@ dependencies = [
  "quickcheck",
  "quickcheck_macros",
  "rand",
-]
-
-[[package]]
-name = "compint_bench"
-version = "0.0.0"
-dependencies = [
- "bitpacking",
- "criterion",
- "streamvbyte",
- "varint",
 ]
 
 [[package]]
@@ -954,16 +994,6 @@ name = "plying"
 version = "0.0.0"
 
 [[package]]
-name = "poppy"
-version = "0.0.0"
-dependencies = [
- "bits",
- "fenwicktree",
- "quickcheck",
- "quickcheck_macros",
-]
-
-[[package]]
 name = "prettyplease"
 version = "0.2.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1146,34 +1176,6 @@ name = "regex-syntax"
 version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
-
-[[package]]
-name = "roaring"
-version = "0.0.0"
-dependencies = [
- "bits",
- "quickcheck",
- "quickcheck_macros",
-]
-
-[[package]]
-name = "rrr"
-version = "0.0.0"
-dependencies = [
- "criterion",
- "quickcheck",
- "quickcheck_macros",
- "rand",
- "rrrutil",
-]
-
-[[package]]
-name = "rrrutil"
-version = "0.0.0"
-dependencies = [
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "rustix"

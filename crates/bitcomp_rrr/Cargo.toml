@@ -1,5 +1,5 @@
 [package]
-name = "rrr"
+name = "bitcomp_rrr"
 version.workspace = true
 edition.workspace = true
 publish = false
@@ -9,7 +9,7 @@ harness = false
 name = "rrr15"
 
 [dependencies]
-rrrutil.workspace = true
+bitcomp_rrrutil.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
@@ -18,7 +18,7 @@ quickcheck_macros.workspace = true
 rand.workspace = true
 
 [build-dependencies]
-rrrutil.workspace = true
+bitcomp_rrrutil.workspace = true
 
 [lints]
 workspace = true

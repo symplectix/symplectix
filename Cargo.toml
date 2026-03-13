@@ -10,13 +10,13 @@ version = "0.0.0"
 edition = "2024"
 
 [workspace.dependencies]
+bitcomp_poppy = { path = "crates/bitcomp_poppy" }
+bitcomp_roaring = { path = "crates/bitcomp_roaring" }
+bitcomp_rrr = { path = "crates/bitcomp_rrr" }
+bitcomp_rrrutil = { path = "crates/bitcomp_rrrutil" }
+bitcomp_slicing = { path = "crates/bitcomp_slicing" }
 bits = { path = "crates/bits" }
 fenwicktree = { path = "crates/fenwicktree" }
-poppy = { path = "crates/poppy" }
-roaring = { path = "crates/roaring" }
-rrr = { path = "crates/rrr" }
-rrrutil = { path = "crates/rrrutil" }
-slicing = { path = "crates/slicing" }
 
 streamvbyte = { path = "crates/streamvbyte" }
 varint = { path = "crates/varint" }

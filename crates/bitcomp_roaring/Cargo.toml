@@ -1,5 +1,5 @@
 [package]
-name = "roaring"
+name = "bitcomp_roaring"
 version.workspace = true
 edition.workspace = true
 publish = false
@@ -8,8 +8,10 @@ publish = false
 bits.workspace = true
 
 [dev-dependencies]
+lazy_static.workspace = true
 quickcheck.workspace = true
 quickcheck_macros.workspace = true
+rand.workspace = true
 
 [lints]
 workspace = true

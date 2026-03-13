@@ -5,7 +5,7 @@ edition.workspace = true
 publish = false
 
 [dependencies]
-roaring.workspace = true
+bitcomp_roaring.workspace = true
 
 [dev-dependencies]
 quickcheck.workspace = true

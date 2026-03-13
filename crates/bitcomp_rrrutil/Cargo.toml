@@ -1,16 +1,14 @@
 [package]
-name = "poppy"
+name = "bitcomp_rrrutil"
 version.workspace = true
 edition.workspace = true
 publish = false
 
 [dependencies]
-bits.workspace = true
-fenwicktree.workspace = true
 
 [dev-dependencies]
-quickcheck.workspace = true
-quickcheck_macros.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 
 [lints]
 workspace = true
