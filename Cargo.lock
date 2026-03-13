@@ -1160,8 +1160,10 @@ dependencies = [
 name = "rrr"
 version = "0.0.0"
 dependencies = [
+ "criterion",
  "quickcheck",
  "quickcheck_macros",
+ "rand",
  "rrrutil",
 ]
 

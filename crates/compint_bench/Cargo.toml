@@ -5,8 +5,8 @@ edition.workspace = true
 publish = false
 
 [[bench]]
-harness = false
 name = "compint"
+harness = false
 
 [dependencies]
 bitpacking.workspace = true

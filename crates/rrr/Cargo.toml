@@ -4,12 +4,18 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
+[[bench]]
+harness = false
+name = "rrr15"
+
 [dependencies]
 rrrutil.workspace = true
 
 [dev-dependencies]
+criterion.workspace = true
 quickcheck.workspace = true
 quickcheck_macros.workspace = true
+rand.workspace = true
 
 [build-dependencies]
 rrrutil.workspace = true
