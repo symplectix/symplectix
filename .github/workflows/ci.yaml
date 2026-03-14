@@ -41,7 +41,6 @@ jobs:
           prefix-key: "rust-cache-v0"
           # To only cache release builds from `main`.
           save-if: ${{ github.ref == 'refs/heads/main' && matrix.profile == 'release' }}
-      - run: cargo dev info 2>/dev/null
       - run: cargo clippy --profile ${{ matrix.profile }} --no-deps --all-targets --all-features
       - run: cargo build --profile ${{ matrix.profile }} --workspace
       - run: cargo test --profile ${{ matrix.profile }} --workspace
