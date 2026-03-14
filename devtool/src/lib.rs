@@ -31,7 +31,6 @@ struct Context {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct WorkspaceStatus {
-    major:     u32,
     year:      u32,
     week:      u32,
     rev_count: u32,
@@ -40,8 +39,8 @@ struct WorkspaceStatus {
 
 impl WorkspaceStatus {
     fn version(&self) -> String {
-        let WorkspaceStatus { major, year, week, rev_count, rev_parse } = self;
-        format!("{major}.{year}.{week}+r{rev_count}.{rev_parse}")
+        let WorkspaceStatus { year, week, rev_count, rev_parse } = self;
+        format!("{year}.{week}.{rev_count}+r{rev_parse}")
     }
 }
 
@@ -73,10 +72,17 @@ impl Cli {
                 .arg("run")
                 .arg("devtool/workspace_status.py")
                 .stdout(Stdio::piped())
-                .stderr(Stdio::null())
+                .stderr(Stdio::piped())
                 .spawn()?
                 .wait_with_output()?;
-            serde_json::from_slice(&output.stdout)?
+            if output.status.success() {
+                serde_json::from_slice(&output.stdout)?
+            } else {
+                let err = str::from_utf8(&output.stderr)
+                    .expect("workspace_status.py emits non-utf8 error string");
+                println!("workspace_status.py failed: {}", err);
+                process::exit(1);
+            }
         };
 
         // Github Actions environment variables.

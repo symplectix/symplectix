@@ -53,14 +53,13 @@ def git_rev_count(since: dt.datetime | None) -> int:
 
 
 class WorkspaceStatus(BaseModel):
-    major: int = Field(default=0, description="")
     year: int = Field(description="")
     week: int = Field(description="")
     rev_count: int = Field(description="")
     rev_parse: str = Field(description="")
 
 
-def workspace_status(major: int = 0) -> WorkspaceStatus:
+def workspace_status() -> WorkspaceStatus:
     """Return the version string."""
     now = dt.datetime.now(tz=dt.UTC)
     (year, week, _wday) = now.isocalendar()
@@ -68,7 +67,6 @@ def workspace_status(major: int = 0) -> WorkspaceStatus:
     rev_count = git_rev_count(monday)
     rev_parse = git_rev_parse()
     return WorkspaceStatus(
-        major=major,
         year=year - 2000,
         week=week,
         rev_count=rev_count,
