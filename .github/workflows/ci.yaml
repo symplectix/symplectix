@@ -18,7 +18,7 @@ jobs:
         with:
           components: clippy, rustfmt
       - run: cargo fmt --all --check
-      - run: cargo clippy --profile ${{ matrix.profile }} --no-deps --all-targets --all-features
+      - run: cargo clippy --no-deps --all-targets --all-features
 
   testing:
     strategy:
