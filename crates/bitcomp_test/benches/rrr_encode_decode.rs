@@ -10,7 +10,7 @@ use criterion::{
 use rand::prelude::*;
 
 fn benchmark(c: &mut Criterion) {
-    let mut group = c.benchmark_group("bitcomp_rrr15");
+    let mut group = c.benchmark_group("bitcomp_rrr");
     group.bench_function("encode", |b| {
         let mut rng = rand::rng();
         b.iter(|| {

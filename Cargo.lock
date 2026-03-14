@@ -122,17 +122,10 @@ dependencies = [
 name = "bitcomp_rrr"
 version = "0.0.0"
 dependencies = [
- "bitcomp_rrrutil",
  "criterion",
  "quickcheck",
  "quickcheck_macros",
  "rand",
-]
-
-[[package]]
-name = "bitcomp_rrrutil"
-version = "0.0.0"
-dependencies = [
  "serde",
  "serde_json",
 ]

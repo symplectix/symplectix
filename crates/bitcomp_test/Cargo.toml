@@ -10,7 +10,7 @@ name = "rank_select"
 
 [[bench]]
 harness = false
-name = "rrr15"
+name = "rrr_encode_decode"
 
 [[bench]]
 harness = false

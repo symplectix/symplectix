@@ -5,16 +5,16 @@ edition.workspace = true
 publish = false
 
 [dependencies]
-bitcomp_rrrutil.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
 quickcheck.workspace = true
 quickcheck_macros.workspace = true
 rand.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 
 [build-dependencies]
-bitcomp_rrrutil.workspace = true
 
 [lints]
 workspace = true

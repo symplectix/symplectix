@@ -13,7 +13,6 @@ edition = "2024"
 bitcomp_poppy = { path = "crates/bitcomp_poppy" }
 bitcomp_roaring = { path = "crates/bitcomp_roaring" }
 bitcomp_rrr = { path = "crates/bitcomp_rrr" }
-bitcomp_rrrutil = { path = "crates/bitcomp_rrrutil" }
 bitcomp_slicing = { path = "crates/bitcomp_slicing" }
 bits = { path = "crates/bits" }
 fenwicktree = { path = "crates/fenwicktree" }
