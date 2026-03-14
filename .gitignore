@@ -1,26 +1,13 @@
-### Bazel
-/bazel-*
-/bazel/bazelrc/user.bazelrc
-
 ### Temporary directory
 /tmp
 
 ### Direnv
 /.direnv
 
-### Dev Container
-# TODO: Remove once 'down' is supported.
-# https://github.com/devcontainers/ci/issues/207
-.devcontainer/exec.sh
-.devcontainer/build.json
-.devcontainer/up.json
-
 ### Rust
 /target
-/rust-project.json
 
 ### Python
-venv
 .venv
 .mypy_cache
 .ruff_cache
