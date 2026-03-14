@@ -1,0 +1,34 @@
+[package]
+name = "bitcomp_test"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[[bench]]
+harness = false
+name = "rank_select"
+
+[[bench]]
+harness = false
+name = "rrr_encode_decode"
+
+[[bench]]
+harness = false
+name = "compint"
+
+[dependencies]
+
+[dev-dependencies]
+bitcomp_roaring.workspace = true
+bitcomp_rrr.workspace = true
+bitcomp_slicing.workspace = true
+bits.workspace = true
+bitpacking.workspace = true
+criterion.workspace = true
+lazy_static.workspace = true
+rand.workspace = true
+streamvbyte.workspace = true
+varint.workspace = true
+
+[lints]
+workspace = true

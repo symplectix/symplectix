@@ -1,0 +1,17 @@
+[package]
+name = "subreaper_test"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+
+[dev-dependencies]
+quickcheck.workspace = true
+quickcheck_macros.workspace = true
+
+[build-dependencies]
+cc.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,15 @@
+[package]
+name = "fenwicktree"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+bits.workspace = true
+
+[dev-dependencies]
+quickcheck.workspace = true
+quickcheck_macros.workspace = true
+
+[lints]
+workspace = true
