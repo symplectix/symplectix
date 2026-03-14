@@ -8,6 +8,9 @@ use std::{
 };
 
 fn main() -> io::Result<()> {
+    println!("cargo:rerun-if-env-changed=CC");
+    println!("cargo:rerun-if-changed=orphan.c");
+
     let status = Command::new("cc")
         .arg("orphan.c")
         .arg("-o")
